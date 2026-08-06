@@ -89,3 +89,13 @@
 - **决定者：** Codex，依据 AC-08 的 framework-attributed 边界。
 - **影响：** CPU/MPS 得到同口径真实峰值 `69,214,208 B`；基础预测 `54,534,144 B` 的 21.21% 偏差可进入受控校准。
 - **回滚条件：** 框架提供跨设备等价 allocator peak API 时可新增对照，但不能混写现有指标。
+
+## D-010：第三次同一外部环境失败后进入 BLOCKED
+
+- **时间：** 2026-08-06T20:46:06+08:00
+- **背景证据：** C020 两次与 C021 一次真实 preflight 均返回 `load-above-policy`、`competing-process-above-policy`；两个 autoresearch board 服务已持续约 13 天，停止它们需要用户授权。
+- **选项：** 绕过门禁继续采样 / 擅自停止用户服务 / 保持原合同并进入 BLOCKED。
+- **决定：** 保持 3%/5 次/5% 与 C020 policy 不变，禁止无效采样，不影响用户进程，生成交接包并等待操作或授权。
+- **决定者：** Codex，依据 Goal 的 BLOCKED 条件与权限边界。
+- **影响：** AC-06/07/08/10/12 暂不完成；已有代码、CI 和证据继续可用；恢复后必须建立全新 cohort。
+- **回滚条件：** 用户恢复 Goal 且 preflight PASS；将 GOAL/CURRENT_STATUS 恢复为执行态。

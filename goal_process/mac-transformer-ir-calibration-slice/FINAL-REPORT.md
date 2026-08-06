@@ -1,6 +1,6 @@
 # 最终审计报告：Mac 两层 Transformer 建模与校准穿刺
 
-> **状态：CONTROLLED RERUN PENDING。** 软件与真实执行链路已经交付；受控环境门禁已经实现并识别到当前后台竞争，因此 Goal 不能标记 DONE，Calibration Profile 也没有被错误晋升。
+> **状态：BLOCKED。** 软件与真实执行链路已经交付；受控环境门禁连续三个 Goal 回合识别到同一长期后台竞争。未经用户授权不能停止这些服务，因此 Goal 不能标记 DONE，Calibration Profile 也没有被错误晋升。
 
 ## 交付结果
 
@@ -78,4 +78,4 @@ preflight；首次真实检查因 normalized load `0.363>0.25`、
 `mediaanalysisd 58.1%>25%` 在 benchmark 前拒绝。待这些外部负载消退且
 preflight PASS 后，重新建立不复用 C012–C018 的 fit/holdout cohort。
 
-当前最科学的状态是：代码可用、证据完整、失败诚实、门禁自动执行，等待可接受的本机运行条件。
+当前最科学的状态是：代码可用、证据完整、失败诚实、门禁自动执行。恢复需要用户暂停两个 autoresearch board 服务（C021 时 PID 18974/18975）或授权临时停止，然后等待系统媒体分析降载并让 preflight PASS。

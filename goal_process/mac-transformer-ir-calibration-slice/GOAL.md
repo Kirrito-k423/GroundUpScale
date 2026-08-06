@@ -1,7 +1,7 @@
 ---
 goal_id: mac-transformer-ir-calibration-slice
 title: 跑通 Mac CPU/MPS 两层 Transformer 性能建模与实测校准链路
-status: READY
+status: BLOCKED
 owner: Kirrito-k423
 executor: Codex
 created_at: 2026-08-06T00:00:00+08:00

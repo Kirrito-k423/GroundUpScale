@@ -13,4 +13,4 @@
 | AC-09 | E2E 偏差可下钻且保留未归因桶/置信度 | DONE | C017：每 Bundle 60 spans、52 operator spans、exact Stable Path coverage 100%；未归因 host 桶显式保留 | 2026-08-06 |
 | AC-10 | Explanation Graph 可下钻到公式、校准和 Span | IN_PROGRESS | M4：181 nodes/115 edges，latency/throughput/memory→scope→CostRule→span；待 M5 calibration evidence 节点 | 2026-08-06 |
 | AC-11 | 公共 CI 与受信任 M4 证据流程完整 | DONE | C020：GitHub Actions `31102277844` Success/60s；trusted script 强制环境 preflight，public Linux lane 不运行硬件 benchmark | 2026-08-06 |
-| AC-12 | 交付物在约定路径且远端 main 与验证提交一致 | IN_PROGRESS | 当前实现已推送且 clean checkout 复验；待本轮最终审计 commit，以及 Goal gate 决策后才能整体 DONE | 2026-08-06 |
+| AC-12 | 交付物在约定路径且远端 main 与验证提交一致 | BLOCKED | 已交付部分均推送并通过 CI；完整最终审计依赖 AC-06/07/08/10，C021 交接说明恢复条件 | 2026-08-06 |

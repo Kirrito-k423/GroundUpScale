@@ -1,6 +1,6 @@
 # RMB Cost Report
 
-> **状态：** 等待受控环境重跑，estimate。C020 已实现并验证环境门禁；因 Goal 尚未结束，不计算虚假的最终费用。
+> **状态：** Goal 因外部环境进入 blocked，estimate。C020–C021 已重复验证门禁；因没有完整原始 token 分项和本轮价格/汇率核验，不计算虚假的最终费用。
 
 ## 监控范围
 
@@ -9,9 +9,9 @@
 - Codex thread：`019fcfdd-7b51-7880-aacf-ac9839a19f67`
 - Session JSONL：`/Users/Zhuanz/.codex/sessions/2026/08/05/rollout-2026-08-05T11-00-26-019fcfdd-7b51-7880-aacf-ac9839a19f67.jsonl`
 - 启动时 Codex effective goal meter：182,481 tokens（来自 `get_goal`，不等同于原始输入/输出 token 总数）
-- 当前审计时间：2026-08-06T20:37:15+08:00
-- 当前 Codex effective goal meter：1,577,245 tokens，11,400 seconds（来自 `get_goal`；不等同于原始 API billing token 分项）
-- 结束时间：待受控环境完成全新 fit/holdout 后确定
+- 当前审计时间：2026-08-06T20:46:06+08:00
+- 当前 Codex effective goal meter：1,640,735 tokens，11,892 seconds（来自 `get_goal`；不等同于原始 API billing token 分项）
+- 结束时间：2026-08-06T20:46:06+08:00（blocked；恢复后将开启新的审计区间）
 
 ## Token 与费用分项
 
