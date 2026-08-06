@@ -19,7 +19,7 @@
 
 ## 交付状态
 
-- **代码：** 当前软件实现已推送 `97c3dfe`；最终审计文档待最后 commit。
+- **代码：** 软件实现与最终审计文档均已推送；交付时以 `git rev-parse HEAD` 和 `git ls-remote` 的一致结果为准。
 - **文档：** M1–M5 reports、C001–C019、runbook、FINAL-REPORT。
 - **复现：** 本地与 clean checkout 均 34 passed；public CI Success；canonical compile deterministic。
 - **日志与报告：** `.groundupscale/runs/` 保留全部 raw Bundle；过程目录保留精简证据；`RMB-Cost.md` 持续 estimate。
