@@ -38,9 +38,13 @@ def test_compile_cli_writes_inspectable_structural_and_semantic_artifacts(
         "model-ir.json",
         "workload-ir.json",
         "semantic-ir.json",
+        "cost-ir.json",
         "provenance.json",
         "compilation.json",
     ):
         path = tmp_path / artifact
         assert path.is_file()
         assert json.loads(path.read_text(encoding="utf-8"))
+    assert summary["total_flops"] == 9_710_850_048
+    assert summary["parameter_bytes"] == 33_562_624
+    assert summary["explicit_activation_bytes"] == 121_634_816

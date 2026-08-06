@@ -6,6 +6,15 @@ from groundupscale.ir.common import (
     canonical_json,
     content_fingerprint,
 )
+from groundupscale.ir.cost import (
+    CostFormula,
+    CostLoweringResult,
+    CostMetrics,
+    CostOperation,
+    CostProgram,
+    CostRegion,
+    CostSummary,
+)
 from groundupscale.ir.model import (
     IRCallStep,
     IREntrypoint,
@@ -49,6 +58,13 @@ __all__ = [
     "IRTensorType",
     "ModelIR",
     "CompilerDiagnostic",
+    "CostFormula",
+    "CostLoweringResult",
+    "CostMetrics",
+    "CostOperation",
+    "CostProgram",
+    "CostRegion",
+    "CostSummary",
     "ProvenanceGraph",
     "SemanticCompilationResult",
     "SemanticOperation",

@@ -4,9 +4,9 @@
 |---|---|---|---|---|
 | AC-01 | 干净 checkout 可创建锁定环境并运行测试 | IN_PROGRESS | C001：`uv.lock`、本地 sync、公开 CLI 测试 1 passed；待干净 checkout/CI 复验 | 2026-08-06 |
 | AC-02 | YAML 可选择 CPU/MPS 并运行固定 Shape forward/prefill | IN_PROGRESS | M2：CPU/MPS YAML Plan 可编译且 placement 隔离；待 M4 执行 | 2026-08-06 |
-| AC-03 | 确定性产出四层 IR 与 provenance | IN_PROGRESS | M2：ModelIR/WorkloadIR/SemanticIR + 246 derivations，CPU/MPS byte-identical；待 CostIR | 2026-08-06 |
+| AC-03 | 确定性产出四层 IR 与 provenance | DONE | M3：四层 IR、Cost Rule/公式、合并 provenance；CPU/MPS SemanticIR/CostIR byte-identical | 2026-08-06 |
 | AC-04 | CPU 数值正确且 MPS 在声明容差内对齐 | IN_PROGRESS | C001：8 类原子操作通过，MPS max abs error `9.536743e-07`；待真实模型 | 2026-08-06 |
-| AC-05 | FLOPs 与逻辑/参数/激活字节精确一致 | NOT_STARTED | 待 M3 | 2026-08-06 |
+| AC-05 | FLOPs 与逻辑/参数/激活字节精确一致 | DONE | M3：逐 op + 单层 + 两层 independent literal tests，CostIR SHA/fingerprint | 2026-08-06 |
 | AC-06 | CPU 强制 Case 留出 median latency 误差均 ≤5% | NOT_STARTED | 待 M5 | 2026-08-06 |
 | AC-07 | MPS 强制 Case 留出 median latency 误差均 ≤5% 且无 fallback | NOT_STARTED | 待 M5 | 2026-08-06 |
 | AC-08 | CPU/MPS 可归因峰值分配误差均 ≤5% | NOT_STARTED | 待 M5 | 2026-08-06 |

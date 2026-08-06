@@ -9,6 +9,8 @@ from pathlib import Path
 
 from groundupscale.compiler import (
     CompilationContext,
+    CostLowerer,
+    CostLoweringRequest,
     ModelBuilder,
     SemanticCompileRequest,
     SemanticCompiler,
@@ -100,18 +102,27 @@ def _run_compile(args: argparse.Namespace) -> int:
             ),
         )
     )
+    cost_result = CostLowerer().lower(
+        CostLoweringRequest(
+            semantic_ir=result.semantic_ir,
+            provenance=result.provenance,
+        )
+    )
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     model_payload: object = models[0] if len(models) == 1 else {"models": models}
     _write_json(output / "model-ir.json", model_payload)
     _write_json(output / "workload-ir.json", workload)
     _write_json(output / "semantic-ir.json", result.semantic_ir)
-    _write_json(output / "provenance.json", result.provenance)
+    _write_json(output / "cost-ir.json", cost_result.cost_ir)
+    _write_json(output / "provenance.json", cost_result.provenance)
     compilation = {
         "schema": "groundupscale.dev/semantic-compilation/v1alpha1",
         "compilation_fingerprint": result.compilation_fingerprint,
+        "cost_compilation_fingerprint": cost_result.compilation_fingerprint,
         "diagnostics": result.diagnostics,
-        "validation_results": result.validation_results,
+        "semantic_validation_results": result.validation_results,
+        "cost_validation_results": cost_result.validation_results,
         "sources": bundle.sources,
     }
     _write_json(output / "compilation.json", compilation)
@@ -127,6 +138,13 @@ def _run_compile(args: argparse.Namespace) -> int:
             1 for _ in result.semantic_ir.walk_operations()
         ),
         "semantic_compilation_fingerprint": result.compilation_fingerprint,
+        "cost_compilation_fingerprint": cost_result.compilation_fingerprint,
+        "total_flops": cost_result.cost_ir.summary.metrics.flops,
+        "parameter_bytes": cost_result.cost_ir.summary.parameter_bytes,
+        "buffer_bytes": cost_result.cost_ir.summary.buffer_bytes,
+        "explicit_activation_bytes": (
+            cost_result.cost_ir.summary.metrics.explicit_activation_bytes
+        ),
         "output": str(output),
     }
     if args.as_json:

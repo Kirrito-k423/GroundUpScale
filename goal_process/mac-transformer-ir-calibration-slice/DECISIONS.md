@@ -49,3 +49,13 @@
 - **决定者：** Codex，遵循 ADR-0018/0027。
 - **影响：** consumer 闭包可验证，调用方和未来插件无法原地修改现有 IR。
 - **回滚条件：** 无；如需增量编译，在内部引入持久化数据结构，不放宽公开不可变契约。
+
+## D-006：CostIR 同时保留逻辑 bytes 与物化 bytes
+
+- **时间：** 2026-08-06T18:36:36+08:00
+- **背景证据：** View/Transpose 有逻辑 result Shape，但在当前语义下只 alias storage；参数占用、读取量、累计 activation 与峰值 live-set 也不是同一口径。
+- **选项：** 只报一个 bytes / 只报物化 bytes / 多口径显式分列。
+- **决定：** 每个 Cost op 分列 logical read/write、materialized read/write、parameter/buffer/activation read、explicit activation 与 alias result；Program 再给唯一 parameter/buffer/artifact bytes。
+- **决定者：** Codex，依据 AC-05 与用户的可解释/深入追溯要求。
+- **影响：** UI 可展示逻辑规模且不虚构 alias 分配；M4 peak memory 必须另做生命周期分析。
+- **回滚条件：** 不删除既有口径；需要更接近真实 traffic 时由 Backend 新增 cache/transfer estimate，不覆写 CostIR。

@@ -52,15 +52,17 @@ and schedulers without mutating compiler state or relying on implicit order.
 
 ## Current status
 
-The repository is in architecture definition. The first planned vertical slice
-is a fixed-shape, two-layer Transformer-like model built from MatMul, Add, and
-RMSNorm, compiled through Semantic IR and Cost IR, predicted on CPU and Apple
-MPS, and compared with immutable local measurements.
+The first vertical slice now compiles strict YAML for a fixed-shape, causal,
+two-layer Transformer through Model IR, Workload IR, Semantic IR, and
+hardware-independent Cost IR. Local CPU/MPS execution, trace alignment,
+calibration, and the final 5% held-out gate are the remaining implementation
+milestones.
 
 ## Design documents
 
 - [Domain language](CONTEXT.md)
 - [Semantic compilation](docs/architecture/semantic-compilation.md)
+- [Cost formulas and worked example](docs/methods/cost-model-formulas.md)
 - [Explainability architecture](docs/architecture/explainability.md)
 - [Hardware measurement and calibration CI](docs/validation/hardware-calibration-ci.md)
 - [Instrumentation and trace alignment](docs/validation/instrumentation-and-trace-alignment.md)
