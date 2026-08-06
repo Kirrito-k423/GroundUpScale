@@ -18,4 +18,4 @@
 
 `layer_0` 与 `layer_1` 的 Stable Path/Node ID 不同，Definition ID 相同。ModelIR root 的 repeat_call 已确定性展开成两条带 carry 的 call；WorkloadIR ModelCall 仍是叶子，不直接拥有模型子节点。
 
-> C008 语义审计补充：为使 `prefill` 明确具有自回归 causal 语义，每层新增一个读取 mask buffer 的 Add；最终模型为 61 modules（7 composite、54 primitive），最终 fingerprint 见 M2 milestone report。上表保留 C007 当轮的真实中间结果。
+> C008 语义审计补充：为使 `prefill` 明确具有自回归 causal 语义，每层新增一个读取 mask buffer 的 Add。C011 真实运行又修正了 attention context 的布局表达；当前最终模型为 59 modules（7 composite、52 primitive），最终 fingerprint 见 M2 milestone report。上表保留 C007 当轮的真实中间结果。

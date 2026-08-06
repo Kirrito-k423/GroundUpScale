@@ -95,6 +95,36 @@ class _MatMulRule:
     def estimate(self, context: CostRuleContext) -> RuleEstimate:
         if len(context.operands) != 2 or len(context.results) != 1:
             raise CostLoweringError("MatMul requires two operands and one result")
+        attributes = dict(context.operation.attributes)
+        if attributes.get("equation") == "bhqk,bhkd->bqhd":
+            left = context.operands[0].tensor.shape
+            right = context.operands[1].tensor.shape
+            output = context.results[0].tensor.shape
+            if len(left) != 4 or len(right) != 4 or len(output) != 4:
+                raise CostLoweringError("attention contraction requires rank-4 tensors")
+            batch, query, heads, width = output
+            key_length = right[2]
+            if left != (batch, heads, query, key_length) or right != (
+                batch,
+                heads,
+                key_length,
+                width,
+            ):
+                raise CostLoweringError(
+                    f"attention contraction mismatch: left={left}, right={right}, output={output}"
+                )
+            flops = 2 * batch * heads * query * key_length * width
+            return RuleEstimate(
+                flops=flops,
+                expression=(
+                    f"2 * {batch} * {heads} * {query} * {key_length} * "
+                    f"{width} = {flops}"
+                ),
+                assumptions=(
+                    "bhqk,bhkd->bqhd is one batched contraction written directly into sequence-major contiguous storage",
+                    "one multiply and one add count as two FLOPs",
+                ),
+            )
         left = context.operands[0].tensor.shape
         right = context.operands[1].tensor.shape
         output = context.results[0].tensor.shape

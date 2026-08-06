@@ -211,23 +211,16 @@ spec:
                       tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
                   outputs:
                     - name: output
-                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: contiguous}
-                - id: context_transpose
-                  kind: primitive
-                  operation: Transpose
-                  inputs:
-                    - name: x
-                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: contiguous}
-                  outputs:
-                    - name: output
-                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: transposed}
-                  attributes: {permutation: "0,2,1,3"}
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: contiguous}
+                  attributes:
+                    equation: "bhqk,bhkd->bqhd"
+                    output_layout: sequence_major_contiguous
                 - id: context_view
                   kind: primitive
                   operation: View
                   inputs:
                     - name: x
-                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: transposed}
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: contiguous}
                   outputs:
                     - name: output
                       tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
@@ -270,8 +263,7 @@ spec:
                     - {kind: call, id: v_view, target: v_view, inputs: {x: v}, outputs: {output: v_view}}
                     - {kind: call, id: v_transpose, target: v_transpose, inputs: {x: v_view}, outputs: {output: v_heads}}
                     - {kind: call, id: context_matmul, target: context_matmul, inputs: {left: probabilities, right: v_heads}, outputs: {output: context_heads}}
-                    - {kind: call, id: context_transpose, target: context_transpose, inputs: {x: context_heads}, outputs: {output: context_view}}
-                    - {kind: call, id: context_view, target: context_view, inputs: {x: context_view}, outputs: {output: context}}
+                    - {kind: call, id: context_view, target: context_view, inputs: {x: context_heads}, outputs: {output: context}}
                     - {kind: call, id: out_proj, target: out_proj, inputs: {x: context}, outputs: {output: hidden}}
             - id: residual_1
               kind: primitive

@@ -54,7 +54,7 @@ def test_semantic_compiler_preserves_nested_regions_and_expands_all_primitives()
     program = result.semantic_ir
 
     assert result.compilation_fingerprint == (
-        "44e2dbb4d59c86ff913f43b5044b3613b95a498cea362fb1fa64fa76903033d6"
+        "02d0facf395b847acc2bb850e039136b27b696a476d33bd26d58369eba1b2233"
     )
 
     assert program.root.kind == "analysis_case"
@@ -72,7 +72,7 @@ def test_semantic_compiler_preserves_nested_regions_and_expands_all_primitives()
     operations = [
         item for item in _walk_items(program.root) if isinstance(item, SemanticOperation)
     ]
-    assert len(operations) == 54
+    assert len(operations) == 52
     assert {operation.operation for operation in operations} == {
         "MatMul",
         "Add",
@@ -88,7 +88,7 @@ def test_semantic_compiler_preserves_nested_regions_and_expands_all_primitives()
         for value in program.values
         for dimension in value.tensor.shape
     )
-    assert len(program.values) == 75
+    assert len(program.values) == 73
     assert len(program.state_artifacts) == 22
     assert len(program.state_effects) == 22
 

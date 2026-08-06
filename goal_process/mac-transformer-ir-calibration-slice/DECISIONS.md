@@ -59,3 +59,13 @@
 - **决定者：** Codex，依据 AC-05 与用户的可解释/深入追溯要求。
 - **影响：** UI 可展示逻辑规模且不虚构 alias 分配；M4 peak memory 必须另做生命周期分析。
 - **回滚条件：** 不删除既有口径；需要更接近真实 traffic 时由 Backend 新增 cache/transfer estimate，不覆写 CostIR。
+
+## D-007：Attention MatMul 显式约束输出布局
+
+- **时间：** 2026-08-06T18:52:33+08:00
+- **背景证据：** C011 证明 heads-major context transpose 后不可零物化 flatten；直接 einsum 的输出也非 contiguous；MPS 非连续 `out=` 在小 Shape 正确但目标 `S=512` 静默错误。
+- **选项：** 隐藏 `.contiguous()` / 扩展 Copy 操作 / 由 MatMul Backend 满足声明的输出布局。
+- **决定：** Semantic MatMul 声明 `output_layout: sequence_major_contiguous`；reference Backend 用 query-major alias view + broadcast batched MatMul 直接生成目标布局，保留 V transpose 与最终 View 的零物化语义。
+- **决定者：** Codex，依据 Goal 冻结操作集合、H-04 反证条件与 CPU/MPS 目标 Shape 实测。
+- **影响：** 不扩目标操作集、不隐藏物化；Model/Semantic/CostIR 最终为 59 modules、52 ops、73 values，CPU/MPS E2E max abs `7.1526e-07`。
+- **回滚条件：** 后端无法满足输出布局时必须显式引入 Materialize/Copy 并触发 Goal 范围升级，不能在 runner 内偷拷贝。

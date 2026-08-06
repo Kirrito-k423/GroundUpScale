@@ -2,7 +2,7 @@
 
 ## 结论
 
-M3 已完成。54 个 Semantic Operation 均降低为硬件无关 Cost Operation；每个节点带公式 Rule ID、concrete expression、逻辑/物化 bytes、状态分类、dependency 和 derivation。单层与两层聚合值通过不调用生产公式的 hard-coded literal 测试。
+M3 已完成。52 个 Semantic Operation 均降低为硬件无关 Cost Operation；每个节点带公式 Rule ID、concrete expression、逻辑/物化 bytes、状态分类、dependency 和 derivation。单层与两层聚合值通过不调用生产公式的 hard-coded literal 测试。
 
 ## 两层最终结果
 
@@ -10,15 +10,15 @@ M3 已完成。54 个 Semantic Operation 均降低为硬件无关 Cost Operation
 |---|---:|
 | FLOPs / serial work | 9,710,850,048 |
 | ideal-parallel critical-path FLOPs | 6,489,624,576 |
-| logical read bytes | 186,654,720 |
-| logical write bytes | 140,509,184 |
+| logical read bytes | 184,557,568 |
+| logical write bytes | 138,412,032 |
 | materialized read bytes | 167,780,352 |
 | materialized write bytes | 121,634,816 |
 | parameter read / unique parameter bytes | 33,562,624 |
 | buffer read / unique buffer bytes | 2,097,152 |
-| activation read bytes | 150,994,944 |
+| activation read bytes | 148,897,792 |
 | explicit activation bytes | 121,634,816 |
-| alias result bytes | 18,874,368 |
+| alias result bytes | 16,777,216 |
 | workload input/output Artifact bytes | 2,097,152 |
 
 ## 口径边界
@@ -31,7 +31,9 @@ M3 已完成。54 个 Semantic Operation 均降低为硬件无关 Cost Operation
 
 ## 确定性与复现
 
-- Cost compilation fingerprint：`65dba693c740d94cfbc5add162c2545e50b65953fd59c8fd5949ff7cd8f8c46e`。
-- CPU/MPS `cost-ir.json` SHA-256：`cc8c83d0b5ddd0a915b936692ae39ad982ad2e75302144bbaa9d3b3743bb2185`。
+- Cost compilation fingerprint：`0e7e1de24ff0b472ffa9c66407830f21f5ab1551817e4cb002a3b9b540690a02`。
+- CPU/MPS `cost-ir.json` SHA-256：`1e2f1857d3ece1319644528491aea5e8eb17eb341df37091ec03d8c6ebd4c028`。
 - C009 3 passed；C010 4 passed；全量 21 passed。
 - 公式、范例和串并行边界：`docs/methods/cost-model-formulas.md`。
+
+以上数量与摘要在 C011 真实布局穿刺后修订；FLOPs、物化 bytes、状态和 critical path 不变，零物化 alias 的逻辑累计量按最终 52-op 表示更新。

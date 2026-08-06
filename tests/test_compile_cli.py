@@ -32,7 +32,7 @@ def test_compile_cli_writes_inspectable_structural_and_semantic_artifacts(
 
     assert completed.returncode == 0, completed.stderr
     summary = json.loads(completed.stdout)
-    assert summary["semantic_operation_count"] == 54
+    assert summary["semantic_operation_count"] == 52
     assert summary["semantic_compilation_fingerprint"]
     for artifact in (
         "model-ir.json",

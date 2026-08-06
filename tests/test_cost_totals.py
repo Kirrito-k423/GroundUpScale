@@ -23,15 +23,15 @@ def test_one_layer_totals_match_hand_calculated_literals() -> None:
     metrics = layer.metrics
 
     assert metrics.flops == 4_855_425_024
-    assert metrics.logical_read_bytes == 93_327_360
-    assert metrics.logical_write_bytes == 70_254_592
+    assert metrics.logical_read_bytes == 92_278_784
+    assert metrics.logical_write_bytes == 69_206_016
     assert metrics.materialized_read_bytes == 83_890_176
     assert metrics.materialized_write_bytes == 60_817_408
     assert metrics.parameter_read_bytes == 16_781_312
     assert metrics.buffer_read_bytes == 1_048_576
-    assert metrics.activation_read_bytes == 75_497_472
+    assert metrics.activation_read_bytes == 74_448_896
     assert metrics.explicit_activation_bytes == 60_817_408
-    assert metrics.alias_result_bytes == 9_437_184
+    assert metrics.alias_result_bytes == 8_388_608
 
 
 def test_two_layer_summary_matches_hand_calculated_literals() -> None:
@@ -40,18 +40,18 @@ def test_two_layer_summary_matches_hand_calculated_literals() -> None:
     metrics = summary.metrics
 
     assert result.compilation_fingerprint == (
-        "65dba693c740d94cfbc5add162c2545e50b65953fd59c8fd5949ff7cd8f8c46e"
+        "0e7e1de24ff0b472ffa9c66407830f21f5ab1551817e4cb002a3b9b540690a02"
     )
     assert metrics.flops == 9_710_850_048
-    assert metrics.logical_read_bytes == 186_654_720
-    assert metrics.logical_write_bytes == 140_509_184
+    assert metrics.logical_read_bytes == 184_557_568
+    assert metrics.logical_write_bytes == 138_412_032
     assert metrics.materialized_read_bytes == 167_780_352
     assert metrics.materialized_write_bytes == 121_634_816
     assert metrics.parameter_read_bytes == 33_562_624
     assert metrics.buffer_read_bytes == 2_097_152
-    assert metrics.activation_read_bytes == 150_994_944
+    assert metrics.activation_read_bytes == 148_897_792
     assert metrics.explicit_activation_bytes == 121_634_816
-    assert metrics.alias_result_bytes == 18_874_368
+    assert metrics.alias_result_bytes == 16_777_216
     assert summary.parameter_bytes == 33_562_624
     assert summary.buffer_bytes == 2_097_152
     assert summary.workload_artifact_bytes == 2_097_152

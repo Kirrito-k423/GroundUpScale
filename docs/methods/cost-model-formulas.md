@@ -77,13 +77,13 @@ parameter read   = 1,048,576 bytes
 | 指标 | 单层 | 两层 E2E |
 |---|---:|---:|
 | FLOPs | 4,855,425,024 | 9,710,850,048 |
-| logical read bytes | 93,327,360 | 186,654,720 |
-| logical write bytes | 70,254,592 | 140,509,184 |
+| logical read bytes | 92,278,784 | 184,557,568 |
+| logical write bytes | 69,206,016 | 138,412,032 |
 | materialized read bytes | 83,890,176 | 167,780,352 |
 | materialized write / explicit activation bytes | 60,817,408 | 121,634,816 |
 | parameter read bytes | 16,781,312 | 33,562,624 |
 | buffer read bytes | 1,048,576 | 2,097,152 |
-| alias result bytes | 9,437,184 | 18,874,368 |
+| alias result bytes | 8,388,608 | 16,777,216 |
 
 两层去重状态占用：parameter `33,562,624 B`，causal-mask buffer `2,097,152 B`，Workload 输入/输出 Artifact 合计 `2,097,152 B`。
 
