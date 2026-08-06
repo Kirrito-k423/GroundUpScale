@@ -1,6 +1,6 @@
 # C019：公共 CI、运行手册与干净 checkout 审计
 
-- **开始/结束：** 2026-08-06T20:02:18+08:00 / 进行中
+- **开始/结束：** 2026-08-06T20:02:18+08:00 / 2026-08-06T20:08:00+08:00
 - **阶段：** M6 / CI AND DELIVERY
 - **动作类型：** IMPLEMENT + VERIFY
 - **关联验收/未知量：** AC-01、AC-11、AC-12、D-01、D-05、D-07
@@ -21,8 +21,15 @@
 
 - **脱敏命令：** `commands.md`
 - **代码差异：** workflow、本地脚本、runbook、README、CI security test 已起草。
-- **日志/指标：** 待验证。
+- **日志/指标：** 本地 34 passed；clean checkout `97c3dfe` 重新安装后 34 passed；两次 compile artifact `diff -ru` 无差异；GitHub Actions run `31099822022` Status Success、56s；workflow security test PASS。
 
 ## 结果
 
+- 干净 clone 使用 Python 3.11.15、锁定 43 packages，测试 `34 passed in 18.86s`。
+- Model/Semantic/Cost fingerprint 与仓内基线一致；两目录所有 canonical artifacts byte-identical。
+- 公共 CI 只使用 `ubuntu-latest`、read-only contents permission，不含 `self-hosted` 或 `groundupscale run`。
+- trusted local 脚本只在 Darwin/arm64 + MPS available 时运行，并显式 `PYTORCH_ENABLE_MPS_FALLBACK=0`。
+
 ## 结论
+
+PASS。AC-01、AC-11 DONE。M6 软件发布与安全边界完成；Goal 仍因 AC-06/07/08 的已确认噪声前置门禁和连带 AC-10/12 未完成而进入用户决策点。

@@ -1,6 +1,6 @@
 # RMB Cost Report
 
-> **状态：** 运行中，estimate。当前仅建立费用监控证据；尚未结束 Goal，未计算最终费用。
+> **状态：** 等待 Goal 升级决策，estimate。软件执行已到当前最晚决策点；因 Goal 尚未结束，不计算虚假的最终费用。
 
 ## 监控范围
 
@@ -9,7 +9,9 @@
 - Codex thread：`019fcfdd-7b51-7880-aacf-ac9839a19f67`
 - Session JSONL：`/Users/Zhuanz/.codex/sessions/2026/08/05/rollout-2026-08-05T11-00-26-019fcfdd-7b51-7880-aacf-ac9839a19f67.jsonl`
 - 启动时 Codex effective goal meter：182,481 tokens（来自 `get_goal`，不等同于原始输入/输出 token 总数）
-- 结束时间：待完成
+- 当前审计时间：2026-08-06T20:08:00+08:00
+- 当前 Codex effective goal meter：1,216,618 tokens，9,519 seconds（来自 `get_goal`；不等同于原始 API billing token 分项）
+- 结束时间：待用户决策后完成
 
 ## Token 与费用分项
 
@@ -24,4 +26,5 @@
 
 - 本轮尚未核验最新 GPT、DeepSeek API 价格和 USD/CNY 汇率。
 - 因此本报告必须保持 `estimate`；不得用未核验默认值冒充应付费用。
-- Goal 结束后使用 `$rmb-cost-report` 提供的 `build_rmb_cost_report.py` 从上述 session JSONL、起止时间和 goal meter 生成最终明细。
+- Goal 当前尚未达到 DONE；输入未命中缓存、输入命中缓存和输出的原始分项未从 session JSONL 完整核验，因此本报告保持 estimate。
+- 用户完成升级决策并结束 Goal 后，使用 `$rmb-cost-report` 提供的 `build_rmb_cost_report.py` 从上述 session JSONL、起止时间和 goal meter 生成最终明细。

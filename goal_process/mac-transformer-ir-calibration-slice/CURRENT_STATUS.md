@@ -1,35 +1,35 @@
 # 当前状态
 
 - **Goal：** `mac-transformer-ir-calibration-slice`
-- **更新时间：** 2026-08-06T19:26:58+08:00
-- **状态：** 黄（CPU noise gate 升级）
-- **阶段：** M4 COMPLETE → M5
+- **更新时间：** 2026-08-06T20:08:00+08:00
+- **状态：** 黄（软件交付完成，校准门禁待用户决策）
+- **阶段：** M6 COMPLETE / GOAL ESCALATION REQUIRED
 - **截止时间：** 无固定期限
-- **验收进度：** 5/12
+- **验收进度：** 7/12
 
 ## 一分钟摘要
 
 - **目标：** 在 Apple M4 上跑通固定 Shape 两层 Transformer 的 YAML 到 Cost IR、CPU/MPS 预测—实测和 5% 留出门禁。
-- **已完成：** M1–M4；YAML→四层 IR→真实 CPU/MPS→5 Case benchmark→60-span trace→Run Bundle→HTML/Explanation Graph 完整闭环。
-- **当前主阻塞：** CPU C017 Softmax `IQR/median=3.380%`，超过已确认 3%；MPS 5/5 通过。不能合法宣称 CPU 5% 校准门禁成立。
-- **关键证据：** `evidence/m4-milestone-report.md`；29 tests；AC-02/03/04/05/09 DONE。
-- **已解决：** benchmark/trace observer effect 分离、60/60 exact alignment、未归因桶、跨设备 Tensor storage memory 口径、不可覆盖 Bundle 与 digest verification。
-- **下一步：** 实现版本化 calibration fit/holdout 框架并完成 MPS；CPU 只保留诚实失败，等待升级决策。
+- **已完成：** M1–M6 的软件、真实穿刺、Run Bundle、calibration governance、公共 CI、运行手册和远端发布；AC-01/02/03/04/05/09/11 DONE。
+- **当前主阻塞：** CPU C017 noise FAIL；MPS C018 7 个 holdout 只有 3 个有效，低于 minimum=5。Profile 未晋升，不能宣称 AC-06/07/08/10/12 DONE。
+- **关键证据：** `evidence/m5-calibration-attempt-report.md`、`FINAL-REPORT.md`；34 tests；GitHub Actions Success。
+- **已解决：** 从 YAML/IR/公式到 CPU/MPS 实测、下钻解释、内存同口径、fit/holdout 隔离、拒绝错误晋升和 public/trusted CI 安全边界。
+- **下一步：** 用户选择更受控的测量环境，或通过 Goal 变更批准新的统计有效性口径；在选择前不继续采样碰运气。
 - **需要决策：** 无。
 
 ## 交付状态
 
-- **代码：** M1–M3 与 C011 已推送；M4 Benchmark/Trace/Bundle 待 checkpoint commit。
-- **文档：** M1–M4 reports、C001–C017、架构 ADR 与真实 YAML bundle。
-- **复现：** `uv run pytest -q` 为 29 passed；C017 两个 Bundle digest PASS。
-- **日志与报告：** `runs/` 下 C001–C017；本地 `.groundupscale/runs/` 保留 raw Bundle；`RMB-Cost.md` 持续监控。
+- **代码：** 当前软件实现已推送 `97c3dfe`；最终审计文档待最后 commit。
+- **文档：** M1–M5 reports、C001–C019、runbook、FINAL-REPORT。
+- **复现：** 本地与 clean checkout 均 34 passed；public CI Success；canonical compile deterministic。
+- **日志与报告：** `.groundupscale/runs/` 保留全部 raw Bundle；过程目录保留精简证据；`RMB-Cost.md` 持续 estimate。
 
 ## 时间与预算
 
 - **环境：** M1 已完成，约 9 分钟（含下载与兼容收尾）。
 - **调研：** 已完成仓库、硬件、Python/uv 基线核验。
-- **实现：** M1 probe + M2 编译 + M3 CostIR + M4 reference/measurement/explanation；29 tests。
-- **实验：** C001–C011 环境/编译/正确性；C012–C017 真实 Case 测量、协议反证和 CPU noise 升级。
+- **实现：** 六个里程碑的软件部分全部落地；34 tests。
+- **实验：** C001–C017 环境/编译/测量；C018 3 fit + 7 holdout；C019 clean checkout/public CI。
 - **文档与交付：** Goal 合同与过程账本。
 - **资源等待：** 0。
 - **剩余预算：** 无固定期限；本轮最多 3 个超过 10 分钟实验；同签名无新证据重跑 1 次；版本候选 2 个。
@@ -37,6 +37,6 @@
 
 ## 条件化 ETA
 
-- **路径 A：** MPS 成立，进入 M5。
-- **路径 B：** CPU 已触发：受控测量仍有 Case 超过 3%，不可判定 5% 校准门禁。
-- **最晚决策点：** 完成不依赖 CPU 门禁的 M5/M6 实现后，需要用户决定是否接受更受控的本机运行条件或调整 CPU 统计口径；当前不自行降标。
+- **路径 A：** 模型误差在有效 MPS holdout 上成立（最大 3.715%），但有效样本数量未成立。
+- **路径 B：** CPU 与连续 MPS 均触发测量有效性升级。
+- **最晚决策点：** 已到达。需要用户明确批准“更受控环境重跑”或一项 Goal 统计口径变更；当前不自行降标。
