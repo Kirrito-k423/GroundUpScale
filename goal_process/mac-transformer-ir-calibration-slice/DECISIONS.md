@@ -29,3 +29,23 @@
 - **决定者：** Codex，遵循用户确认的 3% 噪声门禁与“不隐藏偏差”原则。
 - **影响：** 当前探针 CPU 1.611%、MPS 0.314%；异常 window 可诊断但不会由单点主导 run-level median。
 - **回滚条件：** 真实 Case 证明组内 median 引入系统性偏差，届时必须用保留的原始数据对比并经 Goal 变更，而不是静默换口径。
+
+## D-004：Semantic Compiler 只消费逻辑策略投影
+
+- **时间：** 2026-08-06T18:24:08+08:00
+- **背景证据：** CPU/MPS AnalysisPlan 只在 placement 不同；SemanticIR 禁止包含设备、时延和 schedule。
+- **选项：** 把完整 DeploymentIntent 纳入 fingerprint / 完全忽略 DeploymentIntent / 只投影逻辑策略。
+- **决定：** `semantic_deployment_plan()` 丢弃 placement，只保留可能改变逻辑 partition/communication/state 的版本化 strategy；未注册策略显式失败。Execution 阶段仍消费完整 placement。
+- **决定者：** 既有 ADR-0006/0009/0029 与 C008 实测。
+- **影响：** CPU/MPS semantic JSON byte-identical；同一逻辑工作可跨硬件复用 CostIR。
+- **回滚条件：** 某 deployment 字段被证明会改变数学/逻辑语义时，必须把它提升为明确 strategy effect，而不是偷偷读取 placement。
+
+## D-005：内部草稿连线后一次冻结 SemanticIR
+
+- **时间：** 2026-08-06T18:24:08+08:00
+- **背景证据：** Typed Value 的 consumer 只有遍历完跨 Region 数据流后才完整，但外部 IR 必须不可变。
+- **选项：** 对外暴露可变 IR / 每步复制整图 / 编译器内部 draft 后冻结。
+- **决定：** SemanticCompiler 内部使用私有 Value draft 累积 consumer，所有 pass 完成并验证后一次性生成 frozen dataclass；request/result 与插件边界始终不可变。
+- **决定者：** Codex，遵循 ADR-0018/0027。
+- **影响：** consumer 闭包可验证，调用方和未来插件无法原地修改现有 IR。
+- **回滚条件：** 无；如需增量编译，在内部引入持久化数据结构，不放宽公开不可变契约。

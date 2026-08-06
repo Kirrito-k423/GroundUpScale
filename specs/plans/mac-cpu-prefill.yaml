@@ -1,0 +1,14 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: AnalysisPlan
+metadata:
+  name: mac-cpu-prefill
+  version: 0.1.0
+spec:
+  workload: {path: specs/workloads/prefill.yaml, version: 0.1.0}
+  analysis_case: {path: specs/analysis-cases/fixed-prefill.yaml, version: 0.1.0}
+  deployment_intent: {path: specs/deployment-intents/mac-cpu.yaml, version: 0.1.0}
+  hardware:
+    - {path: specs/hardware/apple-m4.yaml, version: 0.1.0}
+  fabric_graph: {path: specs/fabrics/local-m4.yaml, version: 0.1.0}
+  benchmark_cases:
+    - {path: specs/benchmarks/core-prefill.yaml, version: 0.1.0}

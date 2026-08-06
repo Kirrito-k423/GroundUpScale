@@ -1,0 +1,19 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: HardwareSpec
+metadata:
+  name: apple-m4
+  version: 0.1.0
+spec:
+  devices:
+    - id: cpu
+      kind: cpu
+      vendor: Apple
+      model: M4
+      compute_units: 10
+      memory_bytes: 17179869184
+    - id: gpu
+      kind: gpu
+      vendor: Apple
+      model: M4
+      compute_units: 8
+      memory_bytes: 17179869184

@@ -1,0 +1,10 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: DeploymentIntent
+metadata:
+  name: mac-mps
+  version: 0.1.0
+spec:
+  bindings:
+    - scope: workload/transformer-prefill/request/model-prefill
+      placement: local-m4/gpu
+      strategies: []

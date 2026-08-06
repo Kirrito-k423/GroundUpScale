@@ -1,0 +1,423 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: ModelSpec
+metadata:
+  name: two-layer-transformer
+  version: 0.1.0
+  description: Two-layer pre-norm Transformer with self-attention and gated MLP.
+spec:
+  symbols:
+    B: {type: integer, minimum: 1}
+    S: {type: integer, minimum: 1}
+    H: {type: integer, minimum: 1}
+    NH: {type: integer, minimum: 1}
+    D: {type: integer, minimum: 1}
+    I: {type: integer, minimum: 1}
+  constraints:
+    - H == NH * D
+  root:
+    id: transformer
+    kind: composite
+    children:
+      - id: layers
+        kind: repeat
+        count: 2
+        id_template: layer_{index}
+        template:
+          id: layer
+          kind: composite
+          children:
+            - id: input_norm
+              kind: primitive
+              operation: RMSNorm
+              inputs:
+                - name: x
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              outputs:
+                - name: output
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              state:
+                - name: weight
+                  role: parameter
+                  tensor: {dtype: float32, shape: [H], layout: contiguous}
+                  trainable: true
+              attributes: {epsilon: 0.000001}
+            - id: attention
+              kind: composite
+              children:
+                - id: q_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, H], layout: contiguous}
+                      trainable: true
+                - id: k_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, H], layout: contiguous}
+                      trainable: true
+                - id: v_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, H], layout: contiguous}
+                      trainable: true
+                - id: q_view
+                  kind: primitive
+                  operation: View
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  attributes: {target_shape: "B,S,NH,D"}
+                - id: q_transpose
+                  kind: primitive
+                  operation: Transpose
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                  attributes: {permutation: "0,2,1,3"}
+                - id: k_view
+                  kind: primitive
+                  operation: View
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  attributes: {target_shape: "B,S,NH,D"}
+                - id: k_transpose
+                  kind: primitive
+                  operation: Transpose
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                  attributes: {permutation: "0,2,1,3"}
+                - id: k_key_transpose
+                  kind: primitive
+                  operation: Transpose
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, D, S], layout: transposed}
+                  attributes: {permutation: "0,1,3,2"}
+                - id: qk_matmul
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: left
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                    - name: right
+                      tensor: {dtype: float32, shape: [B, NH, D, S], layout: transposed}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                - id: scale
+                  kind: primitive
+                  operation: Mul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  attributes: {scalar: 0.125}
+                - id: causal_mask
+                  kind: primitive
+                  operation: Add
+                  inputs:
+                    - name: scores
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  state:
+                    - name: mask
+                      role: buffer
+                      tensor: {dtype: float32, shape: [B, 1, S, S], layout: broadcast}
+                      trainable: false
+                - id: softmax
+                  kind: primitive
+                  operation: Softmax
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                  attributes: {dimension: -1}
+                - id: v_view
+                  kind: primitive
+                  operation: View
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  attributes: {target_shape: "B,S,NH,D"}
+                - id: v_transpose
+                  kind: primitive
+                  operation: Transpose
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: view}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                  attributes: {permutation: "0,2,1,3"}
+                - id: context_matmul
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: left
+                      tensor: {dtype: float32, shape: [B, NH, S, S], layout: contiguous}
+                    - name: right
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: transposed}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: contiguous}
+                - id: context_transpose
+                  kind: primitive
+                  operation: Transpose
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, NH, S, D], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: transposed}
+                  attributes: {permutation: "0,2,1,3"}
+                - id: context_view
+                  kind: primitive
+                  operation: View
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, NH, D], layout: transposed}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  attributes: {target_shape: "B,S,H"}
+                - id: out_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, H], layout: contiguous}
+                      trainable: true
+              entrypoints:
+                - name: forward
+                  inputs:
+                    - name: hidden
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: hidden
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  steps:
+                    - {kind: call, id: q_proj, target: q_proj, inputs: {x: hidden}, outputs: {output: q}}
+                    - {kind: call, id: k_proj, target: k_proj, inputs: {x: hidden}, outputs: {output: k}}
+                    - {kind: call, id: v_proj, target: v_proj, inputs: {x: hidden}, outputs: {output: v}}
+                    - {kind: call, id: q_view, target: q_view, inputs: {x: q}, outputs: {output: q_view}}
+                    - {kind: call, id: q_transpose, target: q_transpose, inputs: {x: q_view}, outputs: {output: q_heads}}
+                    - {kind: call, id: k_view, target: k_view, inputs: {x: k}, outputs: {output: k_view}}
+                    - {kind: call, id: k_transpose, target: k_transpose, inputs: {x: k_view}, outputs: {output: k_heads}}
+                    - {kind: call, id: k_key_transpose, target: k_key_transpose, inputs: {x: k_heads}, outputs: {output: k_keys}}
+                    - {kind: call, id: qk_matmul, target: qk_matmul, inputs: {left: q_heads, right: k_keys}, outputs: {output: scores}}
+                    - {kind: call, id: scale, target: scale, inputs: {x: scores}, outputs: {output: scaled_scores}}
+                    - {kind: call, id: causal_mask, target: causal_mask, inputs: {scores: scaled_scores}, outputs: {output: masked_scores}}
+                    - {kind: call, id: softmax, target: softmax, inputs: {x: masked_scores}, outputs: {output: probabilities}}
+                    - {kind: call, id: v_view, target: v_view, inputs: {x: v}, outputs: {output: v_view}}
+                    - {kind: call, id: v_transpose, target: v_transpose, inputs: {x: v_view}, outputs: {output: v_heads}}
+                    - {kind: call, id: context_matmul, target: context_matmul, inputs: {left: probabilities, right: v_heads}, outputs: {output: context_heads}}
+                    - {kind: call, id: context_transpose, target: context_transpose, inputs: {x: context_heads}, outputs: {output: context_view}}
+                    - {kind: call, id: context_view, target: context_view, inputs: {x: context_view}, outputs: {output: context}}
+                    - {kind: call, id: out_proj, target: out_proj, inputs: {x: context}, outputs: {output: hidden}}
+            - id: residual_1
+              kind: primitive
+              operation: Add
+              inputs:
+                - name: left
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                - name: right
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              outputs:
+                - name: output
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+            - id: post_norm
+              kind: primitive
+              operation: RMSNorm
+              inputs:
+                - name: x
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              outputs:
+                - name: output
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              state:
+                - name: weight
+                  role: parameter
+                  tensor: {dtype: float32, shape: [H], layout: contiguous}
+                  trainable: true
+              attributes: {epsilon: 0.000001}
+            - id: mlp
+              kind: composite
+              children:
+                - id: gate_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, I], layout: contiguous}
+                      trainable: true
+                - id: up_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [H, I], layout: contiguous}
+                      trainable: true
+                - id: silu
+                  kind: primitive
+                  operation: SiLU
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                - id: gate_mul
+                  kind: primitive
+                  operation: Mul
+                  inputs:
+                    - name: left
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                    - name: right
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                - id: down_proj
+                  kind: primitive
+                  operation: MatMul
+                  inputs:
+                    - name: x
+                      tensor: {dtype: float32, shape: [B, S, I], layout: contiguous}
+                  outputs:
+                    - name: output
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  state:
+                    - name: weight
+                      role: parameter
+                      tensor: {dtype: float32, shape: [I, H], layout: contiguous}
+                      trainable: true
+              entrypoints:
+                - name: forward
+                  inputs:
+                    - name: hidden
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  outputs:
+                    - name: hidden
+                      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                  steps:
+                    - {kind: call, id: gate_proj, target: gate_proj, inputs: {x: hidden}, outputs: {output: gate}}
+                    - {kind: call, id: up_proj, target: up_proj, inputs: {x: hidden}, outputs: {output: up}}
+                    - {kind: call, id: silu, target: silu, inputs: {x: gate}, outputs: {output: activated_gate}}
+                    - {kind: call, id: gate_mul, target: gate_mul, inputs: {left: activated_gate, right: up}, outputs: {output: gated}}
+                    - {kind: call, id: down_proj, target: down_proj, inputs: {x: gated}, outputs: {output: hidden}}
+            - id: residual_2
+              kind: primitive
+              operation: Add
+              inputs:
+                - name: left
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+                - name: right
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              outputs:
+                - name: output
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+          entrypoints:
+            - name: forward
+              inputs:
+                - name: hidden
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              outputs:
+                - name: hidden
+                  tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+              steps:
+                - {kind: call, id: input_norm, target: input_norm, inputs: {x: hidden}, outputs: {output: normed}}
+                - {kind: call, id: attention, target: attention, entrypoint: forward, inputs: {hidden: normed}, outputs: {hidden: attention_output}}
+                - {kind: call, id: residual_1, target: residual_1, inputs: {left: hidden, right: attention_output}, outputs: {output: post_attention}}
+                - {kind: call, id: post_norm, target: post_norm, inputs: {x: post_attention}, outputs: {output: post_attention_normed}}
+                - {kind: call, id: mlp, target: mlp, entrypoint: forward, inputs: {hidden: post_attention_normed}, outputs: {hidden: mlp_output}}
+                - {kind: call, id: residual_2, target: residual_2, inputs: {left: post_attention, right: mlp_output}, outputs: {output: hidden}}
+    entrypoints:
+      - name: prefill
+        inputs:
+          - name: hidden
+            tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+        outputs:
+          - name: hidden
+            tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+        steps:
+          - kind: repeat_call
+            id: layers
+            group: layers
+            entrypoint: forward
+            input_port: hidden
+            output_port: hidden
+            initial: hidden
+            result: hidden

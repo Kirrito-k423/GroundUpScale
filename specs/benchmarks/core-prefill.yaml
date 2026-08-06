@@ -1,0 +1,12 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: BenchmarkCase
+metadata:
+  name: core-prefill
+  version: 0.1.0
+spec:
+  cases:
+    - {id: matmul-q-proj, scope: model/two-layer-transformer/transformer/layer_0/attention/q_proj, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: rmsnorm-input, scope: model/two-layer-transformer/transformer/layer_0/input_norm, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: softmax-attention, scope: model/two-layer-transformer/transformer/layer_0/attention/softmax, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: transformer-layer, scope: model/two-layer-transformer/transformer/layer_0, mode: module, warmup_iterations: 50, samples: 20}
+    - {id: two-layer-prefill, scope: workload/transformer-prefill/request/model-prefill, mode: e2e, warmup_iterations: 20, samples: 20}

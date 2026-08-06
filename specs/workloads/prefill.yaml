@@ -1,0 +1,23 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: WorkloadSpec
+metadata:
+  name: transformer-prefill
+  version: 0.1.0
+spec:
+  artifacts:
+    - name: hidden-input
+      role: input
+      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+    - name: hidden-output
+      role: output
+      tensor: {dtype: float32, shape: [B, S, H], layout: contiguous}
+  root:
+    id: request
+    kind: sequence
+    children:
+      - id: model-prefill
+        kind: model_call
+        model: {path: specs/models/two-layer-transformer.yaml, version: 0.1.0}
+        entrypoint: prefill
+        inputs: {hidden: hidden-input}
+        outputs: {hidden: hidden-output}

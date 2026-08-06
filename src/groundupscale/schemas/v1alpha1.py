@@ -1,0 +1,344 @@
+"""Strict v1alpha1 YAML document models.
+
+Pydantic models are the executable schema source. ``document_schema`` exposes
+their JSON Schema representation for Web forms and CI schema export.
+"""
+
+from __future__ import annotations
+
+from typing import Annotated, Any, Literal, TypeAlias
+
+from pydantic import BaseModel, ConfigDict, Field, PositiveFloat, PositiveInt
+
+
+API_VERSION = "groundupscale.dev/v1alpha1"
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class Metadata(StrictModel):
+    name: str = Field(min_length=1, pattern=r"^[a-z0-9][a-z0-9._-]*$")
+    version: str = Field(min_length=1)
+    description: str | None = None
+    labels: dict[str, str] = Field(default_factory=dict)
+
+
+class SpecReference(StrictModel):
+    path: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+
+
+ShapeDimension: TypeAlias = int | str
+
+
+class TensorSpec(StrictModel):
+    dtype: Literal["float32", "bfloat16", "float16", "int64", "bool"]
+    shape: tuple[ShapeDimension, ...] = Field(min_length=1)
+    layout: str = Field(default="contiguous", min_length=1)
+
+
+class PortSpec(StrictModel):
+    name: str = Field(min_length=1)
+    tensor: TensorSpec
+
+
+class StateSpec(StrictModel):
+    name: str = Field(min_length=1)
+    role: Literal["parameter", "buffer", "cache"] = "parameter"
+    tensor: TensorSpec
+    trainable: bool = True
+
+
+class SymbolSpec(StrictModel):
+    type: Literal["integer"]
+    minimum: int | None = None
+    maximum: int | None = None
+
+
+class CallStepSpec(StrictModel):
+    kind: Literal["call"]
+    id: str = Field(min_length=1)
+    target: str = Field(min_length=1)
+    entrypoint: str = "forward"
+    inputs: dict[str, str]
+    outputs: dict[str, str]
+
+
+class RepeatCallStepSpec(StrictModel):
+    kind: Literal["repeat_call"]
+    id: str = Field(min_length=1)
+    group: str = Field(min_length=1)
+    entrypoint: str = "forward"
+    input_port: str
+    output_port: str
+    initial: str
+    result: str
+
+
+EntrypointStepSpec: TypeAlias = Annotated[
+    CallStepSpec | RepeatCallStepSpec, Field(discriminator="kind")
+]
+
+
+class EntrypointSpec(StrictModel):
+    name: str = Field(min_length=1)
+    inputs: tuple[PortSpec, ...]
+    outputs: tuple[PortSpec, ...]
+    steps: tuple[EntrypointStepSpec, ...]
+
+
+AttributeValue: TypeAlias = str | int | float | bool
+
+
+class PrimitiveModuleSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["primitive"]
+    operation: Literal[
+        "MatMul", "Add", "RMSNorm", "Softmax", "SiLU", "Mul", "View", "Transpose"
+    ]
+    inputs: tuple[PortSpec, ...]
+    outputs: tuple[PortSpec, ...]
+    state: tuple[StateSpec, ...] = ()
+    attributes: dict[str, AttributeValue] = Field(default_factory=dict)
+
+
+class ModuleRepeatSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["repeat"]
+    count: PositiveInt
+    id_template: str = Field(min_length=1)
+    template: PrimitiveModuleSpec | CompositeModuleSpec
+
+
+class CompositeModuleSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["composite"]
+    children: tuple[PrimitiveModuleSpec | CompositeModuleSpec | ModuleRepeatSpec, ...]
+    entrypoints: tuple[EntrypointSpec, ...]
+
+
+ModuleRepeatSpec.model_rebuild()
+CompositeModuleSpec.model_rebuild()
+
+
+class ModelSpecBody(StrictModel):
+    symbols: dict[str, SymbolSpec] = Field(default_factory=dict)
+    constraints: tuple[str, ...] = ()
+    root: CompositeModuleSpec
+
+
+class ModelSpecDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["ModelSpec"]
+    metadata: Metadata
+    spec: ModelSpecBody
+
+
+class ArtifactSpec(StrictModel):
+    name: str = Field(min_length=1)
+    tensor: TensorSpec
+    role: Literal["input", "output", "intermediate", "state"] = "intermediate"
+
+
+class ModelCallNodeSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["model_call"]
+    model: SpecReference
+    entrypoint: str = Field(min_length=1)
+    inputs: dict[str, str]
+    outputs: dict[str, str]
+
+
+class SequenceNodeSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["sequence"]
+    children: tuple[ModelCallNodeSpec | SequenceNodeSpec, ...]
+
+
+SequenceNodeSpec.model_rebuild()
+WorkloadNodeSpec: TypeAlias = Annotated[
+    ModelCallNodeSpec | SequenceNodeSpec, Field(discriminator="kind")
+]
+
+
+class WorkloadSpecBody(StrictModel):
+    artifacts: tuple[ArtifactSpec, ...]
+    root: WorkloadNodeSpec
+
+
+class WorkloadSpecDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["WorkloadSpec"]
+    metadata: Metadata
+    spec: WorkloadSpecBody
+
+
+class FixedShapeProfile(StrictModel):
+    kind: Literal["fixed"]
+    bindings: dict[str, PositiveInt]
+    dtype: Literal["float32", "bfloat16", "float16"]
+
+
+class FixedIterationsDriver(StrictModel):
+    kind: Literal["fixed_iterations"]
+    warmup_iterations: int = Field(ge=0)
+    measured_iterations: PositiveInt
+
+
+class IterationObservationWindow(StrictModel):
+    kind: Literal["iterations"]
+    value: PositiveInt
+
+
+class AnalysisCaseBody(StrictModel):
+    shape: FixedShapeProfile
+    driver: FixedIterationsDriver
+    observation_window: IterationObservationWindow
+
+
+class AnalysisCaseDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["AnalysisCase"]
+    metadata: Metadata
+    spec: AnalysisCaseBody
+
+
+class StrategyConfiguration(StrictModel):
+    type: str = Field(pattern=r"^[a-z0-9.-]+/[a-zA-Z0-9._-]+$")
+    version: str = Field(min_length=1)
+    config: dict[str, Any] = Field(default_factory=dict)
+
+
+class DeploymentBinding(StrictModel):
+    scope: str = Field(min_length=1)
+    placement: str = Field(min_length=1)
+    strategies: tuple[StrategyConfiguration, ...] = ()
+
+
+class DeploymentIntentBody(StrictModel):
+    bindings: tuple[DeploymentBinding, ...]
+
+
+class DeploymentIntentDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["DeploymentIntent"]
+    metadata: Metadata
+    spec: DeploymentIntentBody
+
+
+class HardwareDevice(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal["cpu", "gpu"]
+    vendor: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    compute_units: PositiveInt
+    memory_bytes: PositiveInt
+
+
+class HardwareSpecBody(StrictModel):
+    devices: tuple[HardwareDevice, ...] = Field(min_length=1)
+
+
+class HardwareSpecDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["HardwareSpec"]
+    metadata: Metadata
+    spec: HardwareSpecBody
+
+
+class FabricNode(StrictModel):
+    id: str = Field(min_length=1)
+    hardware: str = Field(min_length=1)
+    device: str = Field(min_length=1)
+
+
+class FabricLink(StrictModel):
+    id: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+    target: str = Field(min_length=1)
+    kind: Literal["unified_memory", "pcie", "network"]
+    bandwidth_bytes_per_second: PositiveFloat
+    latency_seconds: float = Field(ge=0)
+
+
+class FabricGraphBody(StrictModel):
+    nodes: tuple[FabricNode, ...] = Field(min_length=1)
+    links: tuple[FabricLink, ...]
+
+
+class FabricGraphDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["FabricGraph"]
+    metadata: Metadata
+    spec: FabricGraphBody
+
+
+class BenchmarkDefinition(StrictModel):
+    id: str = Field(min_length=1)
+    scope: str = Field(min_length=1)
+    mode: Literal["operator", "module", "e2e"]
+    warmup_iterations: int = Field(ge=0)
+    samples: PositiveInt
+
+
+class BenchmarkCaseBody(StrictModel):
+    cases: tuple[BenchmarkDefinition, ...] = Field(min_length=1)
+
+
+class BenchmarkCaseDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["BenchmarkCase"]
+    metadata: Metadata
+    spec: BenchmarkCaseBody
+
+
+class AnalysisPlanBody(StrictModel):
+    workload: SpecReference
+    analysis_case: SpecReference
+    deployment_intent: SpecReference
+    hardware: tuple[SpecReference, ...] = Field(min_length=1)
+    fabric_graph: SpecReference
+    benchmark_cases: tuple[SpecReference, ...] = Field(min_length=1)
+
+
+class AnalysisPlanDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["AnalysisPlan"]
+    metadata: Metadata
+    spec: AnalysisPlanBody
+
+
+SpecDocument: TypeAlias = (
+    ModelSpecDocument
+    | WorkloadSpecDocument
+    | AnalysisCaseDocument
+    | DeploymentIntentDocument
+    | HardwareSpecDocument
+    | FabricGraphDocument
+    | BenchmarkCaseDocument
+    | AnalysisPlanDocument
+)
+
+
+DOCUMENT_TYPES: dict[str, type[StrictModel]] = {
+    "ModelSpec": ModelSpecDocument,
+    "WorkloadSpec": WorkloadSpecDocument,
+    "AnalysisCase": AnalysisCaseDocument,
+    "DeploymentIntent": DeploymentIntentDocument,
+    "HardwareSpec": HardwareSpecDocument,
+    "FabricGraph": FabricGraphDocument,
+    "BenchmarkCase": BenchmarkCaseDocument,
+    "AnalysisPlan": AnalysisPlanDocument,
+}
+
+
+def document_schema(kind: str) -> dict[str, Any]:
+    """Return JSON Schema for a registered human-authored document kind."""
+    try:
+        document_type = DOCUMENT_TYPES[kind]
+    except KeyError as error:
+        raise ValueError(f"unknown spec kind: {kind}") from error
+    return document_type.model_json_schema()

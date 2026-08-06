@@ -1,0 +1,10 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: FabricGraph
+metadata:
+  name: local-m4
+  version: 0.1.0
+spec:
+  nodes:
+    - {id: local-m4/cpu, hardware: apple-m4, device: cpu}
+    - {id: local-m4/gpu, hardware: apple-m4, device: gpu}
+  links: []
