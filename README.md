@@ -54,9 +54,28 @@ and schedulers without mutating compiler state or relying on implicit order.
 
 The first vertical slice now compiles strict YAML for a fixed-shape, causal,
 two-layer Transformer through Model IR, Workload IR, Semantic IR, and
-hardware-independent Cost IR. Local CPU/MPS execution, trace alignment,
-calibration, and the final 5% held-out gate are the remaining implementation
-milestones.
+hardware-independent Cost IR; runs the same reference on CPU/MPS; and emits
+digest-verified benchmark, trace, alignment, live-set, explanation, and HTML
+artifacts in an immutable Run Bundle.
+
+The controlled calibration workflow is implemented and refuses mixed cohorts,
+fit/holdout overlap, noisy fitting data, insufficient valid holdouts, or a
+failed 5% gate. The current local experiment intentionally remains unpromoted:
+repeated measurements did not yield the required five holdouts whose
+`IQR / median` all stayed below 3%. See the
+[M4 report](goal_process/mac-transformer-ir-calibration-slice/evidence/m4-milestone-report.md)
+and the [local runbook](docs/runbooks/local-mac-calibration.md).
+
+## Quick start
+
+```sh
+uv sync --locked --group dev
+uv run pytest -q
+uv run groundupscale run specs/plans/mac-cpu-prefill.yaml \
+  --repository-root . --run-id example-cpu \
+  --target-window-ms 100 --windows-per-sample 9 --json
+uv run groundupscale explain .groundupscale/runs/example-cpu
+```
 
 ## Design documents
 
@@ -67,4 +86,5 @@ milestones.
 - [Hardware measurement and calibration CI](docs/validation/hardware-calibration-ci.md)
 - [Instrumentation and trace alignment](docs/validation/instrumentation-and-trace-alignment.md)
 - [Workspace and Run Bundle layout](docs/reference/workspace-and-run-bundle.md)
+- [Local Mac execution and calibration runbook](docs/runbooks/local-mac-calibration.md)
 - [Architecture decision records](docs/adr/)

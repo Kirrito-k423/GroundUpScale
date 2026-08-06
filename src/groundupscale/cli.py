@@ -7,6 +7,13 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
+from groundupscale.calibration import (
+    fit_calibration,
+    load_calibration_yaml,
+    promote_calibration,
+    validate_calibration,
+    write_calibration_yaml,
+)
 from groundupscale.ir import canonical_data
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
@@ -57,6 +64,26 @@ def _parser() -> argparse.ArgumentParser:
     )
     explain_command.add_argument("run_bundle")
     explain_command.add_argument("--json", action="store_true", dest="as_json")
+    fit_command = subparsers.add_parser(
+        "fit-calibration", help="fit a candidate profile from declared Run Bundles"
+    )
+    fit_command.add_argument("--run-bundle", action="append", required=True)
+    fit_command.add_argument("--output", required=True)
+    fit_command.add_argument("--json", action="store_true", dest="as_json")
+    validate_command = subparsers.add_parser(
+        "validate-calibration", help="validate a candidate against independent holdouts"
+    )
+    validate_command.add_argument("profile")
+    validate_command.add_argument("--run-bundle", action="append", required=True)
+    validate_command.add_argument("--output", required=True)
+    validate_command.add_argument("--json", action="store_true", dest="as_json")
+    promote_command = subparsers.add_parser(
+        "promote-calibration", help="promote a candidate only after a passing validation"
+    )
+    promote_command.add_argument("profile")
+    promote_command.add_argument("validation")
+    promote_command.add_argument("--output", required=True)
+    promote_command.add_argument("--json", action="store_true", dest="as_json")
     return parser
 
 
@@ -87,6 +114,7 @@ def _run_probe(args: argparse.Namespace) -> int:
 
 
 def _write_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(canonical_data(value), ensure_ascii=False, indent=2, sort_keys=True)
         + "\n",
@@ -241,6 +269,67 @@ def _run_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_fit_calibration(args: argparse.Namespace) -> int:
+    profile = fit_calibration(args.run_bundle)
+    write_calibration_yaml(args.output, profile)
+    summary = {
+        "profile_id": profile["metadata"]["profile_id"],
+        "status": profile["metadata"]["status"],
+        "device": profile["spec"]["applicability"]["device"],
+        "fit_runs": len(profile["spec"]["fit_evidence"]),
+        "output": str(Path(args.output).resolve()),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"candidate {summary['profile_id'][:12]}: {summary['fit_runs']} fit runs "
+            f"for {summary['device']}"
+        )
+        print(f"  output: {summary['output']}")
+    return 0
+
+
+def _run_validate_calibration(args: argparse.Namespace) -> int:
+    profile = load_calibration_yaml(args.profile)
+    validation = validate_calibration(profile, args.run_bundle)
+    _write_json(Path(args.output).resolve(), validation)
+    summary = {
+        "profile_id": validation["profile_id"],
+        "passed": validation["passed"],
+        "valid_holdout_runs": validation["valid_holdout_runs"],
+        "quarantined_noisy_runs": validation["quarantined_noisy_runs"],
+        "output": str(Path(args.output).resolve()),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"validation: {'PASS' if summary['passed'] else 'FAIL'} "
+            f"({summary['valid_holdout_runs']} valid holdouts)"
+        )
+        print(f"  output: {summary['output']}")
+    return 0 if validation["passed"] else 1
+
+
+def _run_promote_calibration(args: argparse.Namespace) -> int:
+    profile = load_calibration_yaml(args.profile)
+    validation = json.loads(Path(args.validation).read_text(encoding="utf-8"))
+    promoted = promote_calibration(profile, validation)
+    write_calibration_yaml(args.output, promoted)
+    summary = {
+        "profile_id": promoted["metadata"]["profile_id"],
+        "status": promoted["metadata"]["status"],
+        "output": str(Path(args.output).resolve()),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(f"profile {summary['profile_id'][:12]} promoted to active")
+        print(f"  output: {summary['output']}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.command == "probe":
@@ -253,6 +342,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_verify(args)
     if args.command == "explain":
         return _run_explain(args)
+    if args.command == "fit-calibration":
+        return _run_fit_calibration(args)
+    if args.command == "validate-calibration":
+        return _run_validate_calibration(args)
+    if args.command == "promote-calibration":
+        return _run_promote_calibration(args)
     raise AssertionError(f"unhandled command: {args.command}")  # pragma: no cover
 
 

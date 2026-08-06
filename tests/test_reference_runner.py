@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import torch
 
 from groundupscale.benchmark import ReferenceRunner
@@ -51,6 +52,10 @@ def test_cpu_reference_is_deterministic() -> None:
     torch.testing.assert_close(first.output, second.output, rtol=0, atol=0)
 
 
+@pytest.mark.skipif(
+    not torch.backends.mps.is_available(),
+    reason="MPS correctness runs only in the trusted local Mac lane",
+)
 def test_mps_matches_cpu_without_fallback_or_cpu_leaf_outputs() -> None:
     runner = _runner()
     report = runner.compare_cpu_mps(atol=1e-4, rtol=1e-3)
