@@ -15,6 +15,9 @@ def canonical_data(value: Any) -> Any:
             field.name: canonical_data(getattr(value, field.name))
             for field in fields(value)
         }
+    model_dump = getattr(value, "model_dump", None)
+    if callable(model_dump):
+        return canonical_data(model_dump(mode="json"))
     if isinstance(value, Mapping):
         return {
             str(key): canonical_data(item)

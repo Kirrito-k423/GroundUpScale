@@ -5,7 +5,10 @@ from pathlib import Path
 import torch
 
 from groundupscale.benchmark import ReferenceRunner
+from groundupscale.compiler import SemanticCompiler
 from groundupscale.specs import SpecRepository
+
+from test_semantic_compiler import _request
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
@@ -31,6 +34,11 @@ def test_reference_model_matches_cost_state_and_semantic_leaf_counts() -> None:
     assert cpu.audit.output_device == "cpu"
     assert len(cpu.audit.alias_checks) == 16
     assert all(check.aliases_input_storage for check in cpu.audit.alias_checks)
+    semantic_paths = {
+        operation.stable_path
+        for operation in SemanticCompiler().compile(_request()).semantic_ir.walk_operations()
+    }
+    assert set(dict(cpu.audit.leaf_output_devices)) == semantic_paths
 
 
 def test_cpu_reference_is_deterministic() -> None:

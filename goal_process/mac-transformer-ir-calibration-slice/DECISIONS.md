@@ -69,3 +69,23 @@
 - **决定者：** Codex，依据 Goal 冻结操作集合、H-04 反证条件与 CPU/MPS 目标 Shape 实测。
 - **影响：** 不扩目标操作集、不隐藏物化；Model/Semantic/CostIR 最终为 59 modules、52 ops、73 values，CPU/MPS E2E max abs `7.1526e-07`。
 - **回滚条件：** 后端无法满足输出布局时必须显式引入 Materialize/Copy 并触发 Goal 范围升级，不能在 runner 内偷拷贝。
+
+## D-008：Benchmark 按 Case 粒度使用不同 window 工作量
+
+- **时间：** 2026-08-06T19:26:58+08:00
+- **背景证据：** C012–C017 证明短 operator 需要更长批量窗口摊薄固定开销，而对 42–95 ms 的 module/E2E 连续执行会放大 CPU 系统漂移；4P+6E thread 假设被 C016 反证。
+- **选项：** 所有 Case 同 inner / operator 自适应而 module/E2E inner=1 / 单线程 CPU / 放宽 3%。
+- **决定：** operator 使用 10-call pilot 和约 100 ms target window；module/E2E 每个 raw window 执行一次；每 sample 取 9 个 raw windows 的 median，保留 20 个 samples 和全部原始窗口。保持默认 10 threads，不放宽门禁。
+- **决定者：** Codex，依据 C012–C017 的不可变失败与对照证据。
+- **影响：** MPS 5/5 Case 通过；CPU C017 Softmax 仍为 3.380%，因此 CPU 校准门禁继续升级而不是拼接历史成功值。
+- **回滚条件：** 新硬件/Shape 必须重新验证窗口协议；不能把本机参数声明为通用默认真理。
+
+## D-009：内存门禁采用 live unique Tensor storage
+
+- **时间：** 2026-08-06T19:26:58+08:00
+- **背景证据：** CPU 没有 PyTorch allocator peak API；MPS current/driver allocation 与逻辑 Tensor、CPU RSS 不是同一口径。
+- **选项：** CPU RSS / MPS driver bytes / Semantic live-set自证 / 跨设备真实 Tensor storage observer。
+- **决定：** 用 forward hook + weakref 观测真实执行中仍存活的唯一 Tensor storage，涵盖参数、buffer、输入和 operation outputs；allocator reservation、driver、kernel workspace、Python RSS 单列排除。
+- **决定者：** Codex，依据 AC-08 的 framework-attributed 边界。
+- **影响：** CPU/MPS 得到同口径真实峰值 `69,214,208 B`；基础预测 `54,534,144 B` 的 21.21% 偏差可进入受控校准。
+- **回滚条件：** 框架提供跨设备等价 allocator peak API 时可新增对照，但不能混写现有指标。

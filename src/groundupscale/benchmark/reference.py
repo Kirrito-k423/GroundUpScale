@@ -14,9 +14,6 @@ from groundupscale.schemas.v1alpha1 import ModuleRepeatSpec
 from groundupscale.specs import AnalysisBundle
 
 
-MODEL_ROOT = "model/two-layer-transformer/transformer"
-
-
 @dataclass(frozen=True)
 class ReferenceConfig:
     batch_size: int
@@ -26,6 +23,7 @@ class ReferenceConfig:
     head_dim: int
     intermediate_size: int
     layers: int
+    model_root: str
     dtype: torch.dtype = torch.float32
 
     @classmethod
@@ -43,6 +41,12 @@ class ReferenceConfig:
         ]
         if len(repeats) != 1:
             raise ValueError("model must contain one layers repeat")
+        workload_root = bundle.workload.spec.root
+        if workload_root.kind != "sequence" or len(workload_root.children) != 1:
+            raise ValueError("reference slice requires one ModelCall in a Sequence")
+        model_call = workload_root.children[0]
+        if model_call.kind != "model_call":
+            raise ValueError("reference slice requires a ModelCall leaf")
         return cls(
             batch_size=bindings["B"],
             sequence_length=bindings["S"],
@@ -51,6 +55,10 @@ class ReferenceConfig:
             head_dim=bindings["D"],
             intermediate_size=bindings["I"],
             layers=repeats[0].count,
+            model_root=(
+                f"semantic/workload/{bundle.workload.metadata.name}/"
+                f"{workload_root.id}/{model_call.id}/model/{model.spec.root.id}"
+            ),
         )
 
 
@@ -286,7 +294,7 @@ class TransformerLayer(nn.Module):
         self, config: ReferenceConfig, index: int, generator: torch.Generator
     ) -> None:
         super().__init__()
-        self.stable_path = f"{MODEL_ROOT}/layer_{index}"
+        self.stable_path = f"{config.model_root}/layer_{index}"
         self.input_norm = RMSNormOp(
             f"{self.stable_path}/input_norm", config.hidden_size, 1e-6
         )
@@ -311,7 +319,7 @@ class TwoLayerTransformer(nn.Module):
         if config.hidden_size != config.heads * config.head_dim:
             raise ValueError("hidden_size must equal heads * head_dim")
         self.config = config
-        self.stable_path = MODEL_ROOT
+        self.stable_path = config.model_root
         generator = torch.Generator(device="cpu").manual_seed(seed)
         self.layers = nn.ModuleList(
             TransformerLayer(config, index, generator)

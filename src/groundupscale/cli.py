@@ -7,19 +7,10 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
-from groundupscale.compiler import (
-    CompilationContext,
-    CostLowerer,
-    CostLoweringRequest,
-    ModelBuilder,
-    SemanticCompileRequest,
-    SemanticCompiler,
-    WorkloadBuilder,
-    semantic_deployment_plan,
-)
 from groundupscale.ir import canonical_data
+from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
-from groundupscale.specs import SpecRepository
+from groundupscale.run_bundle import RunBundleWriter, verify_run_bundle
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -44,6 +35,28 @@ def _parser() -> argparse.ArgumentParser:
     compile_command.add_argument("--repository-root", default=".")
     compile_command.add_argument("--output", required=True)
     compile_command.add_argument("--json", action="store_true", dest="as_json")
+    run_command = subparsers.add_parser(
+        "run", help="compile and execute one YAML AnalysisPlan into a Run Bundle"
+    )
+    run_command.add_argument("plan")
+    run_command.add_argument("--repository-root", default=".")
+    run_command.add_argument("--artifact-store", default=".groundupscale")
+    run_command.add_argument("--run-id")
+    run_command.add_argument("--samples", type=int)
+    run_command.add_argument("--warmup", type=int)
+    run_command.add_argument("--windows-per-sample", type=int, default=5)
+    run_command.add_argument("--target-window-ms", type=float, default=20.0)
+    run_command.add_argument("--json", action="store_true", dest="as_json")
+    verify_command = subparsers.add_parser(
+        "verify-run", help="verify every artifact digest in a Run Bundle"
+    )
+    verify_command.add_argument("run_bundle")
+    verify_command.add_argument("--json", action="store_true", dest="as_json")
+    explain_command = subparsers.add_parser(
+        "explain", help="show the headline metrics and report path for a Run Bundle"
+    )
+    explain_command.add_argument("run_bundle")
+    explain_command.add_argument("--json", action="store_true", dest="as_json")
     return parser
 
 
@@ -83,31 +96,12 @@ def _write_json(path: Path, value: object) -> None:
 
 def _run_compile(args: argparse.Namespace) -> int:
     repository_root = Path(args.repository_root).resolve()
-    bundle = SpecRepository(repository_root).load_analysis_plan(Path(args.plan))
-    models = tuple(
-        ModelBuilder().build(document)
-        for _, document in sorted(bundle.models.items())
-    )
-    workload = WorkloadBuilder().build(
-        bundle.workload, models_by_reference=bundle.models_by_reference
-    )
-    result = SemanticCompiler().compile(
-        SemanticCompileRequest(
-            workload=workload,
-            models=models,
-            analysis_case=bundle.analysis_case,
-            deployment=semantic_deployment_plan(bundle.deployment_intent),
-            context=CompilationContext(
-                compiler_version="0.1.0", plugin_versions=()
-            ),
-        )
-    )
-    cost_result = CostLowerer().lower(
-        CostLoweringRequest(
-            semantic_ir=result.semantic_ir,
-            provenance=result.provenance,
-        )
-    )
+    compiled = compile_analysis_plan(repository_root, Path(args.plan))
+    bundle = compiled.bundle
+    models = compiled.models
+    workload = compiled.workload
+    result = compiled.semantic
+    cost_result = compiled.cost
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     model_payload: object = models[0] if len(models) == 1 else {"models": models}
@@ -159,12 +153,106 @@ def _run_compile(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_analysis(args: argparse.Namespace) -> int:
+    repository_root = Path(args.repository_root).resolve()
+    compiled = compile_analysis_plan(repository_root, Path(args.plan))
+    run = RunBundleWriter(compiled).run(
+        Path(args.artifact_store),
+        run_id=args.run_id,
+        samples_override=args.samples,
+        warmup_override=args.warmup,
+        windows_per_sample=args.windows_per_sample,
+        target_window_ns=int(args.target_window_ms * 1_000_000),
+    )
+    verification = verify_run_bundle(run)
+    manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
+    summary = {
+        "schema": "groundupscale.dev/run-summary/v1alpha1",
+        "run_id": manifest["run_id"],
+        "status": manifest["status"],
+        "device": manifest["device"],
+        "artifact_count": verification["artifact_count"],
+        "digests_verified": verification["passed"],
+        "run_bundle": str(run),
+        "report": str(run / "reports/report.html"),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(f"run {summary['run_id']}: {summary['status']} on {summary['device']}")
+        print(f"  bundle: {summary['run_bundle']}")
+        print(f"  report: {summary['report']}")
+    return 0 if verification["passed"] else 1
+
+
+def _run_verify(args: argparse.Namespace) -> int:
+    result = verify_run_bundle(args.run_bundle)
+    if args.as_json:
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"run {result['run_id']}: "
+            f"{'PASS' if result['passed'] else 'FAIL'} ({result['artifact_count']} artifacts)"
+        )
+        for failure in result["failures"]:
+            print(f"  {failure}")
+    return 0 if result["passed"] else 1
+
+
+def _run_explain(args: argparse.Namespace) -> int:
+    run = Path(args.run_bundle).resolve()
+    manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
+    benchmark = json.loads(
+        (run / "observation/raw/benchmark.json").read_text(encoding="utf-8")
+    )
+    prediction = json.loads(
+        (run / "prediction/metrics.json").read_text(encoding="utf-8")
+    )
+    summary = {
+        "schema": "groundupscale.dev/explain-summary/v1alpha1",
+        "run_id": manifest["run_id"],
+        "device": manifest["device"],
+        "cases": [
+            {
+                "case_id": case["case_id"],
+                "stable_path": case["resolved_scope"],
+                "median_ns": case["latency"]["median_ns"],
+                "iqr_over_median": case["latency"]["iqr_over_median"],
+                "throughput_per_second": case["latency"]["throughput_per_second"],
+            }
+            for case in benchmark["cases"]
+        ],
+        "predicted_framework_peak_bytes": prediction["live_set"][
+            "predicted_framework_peak_bytes"
+        ],
+        "report": str(run / "reports/report.html"),
+        "explanation_graph": str(run / "prediction/explanation.graph.json"),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(f"run {summary['run_id']} on {summary['device']}")
+        for case in summary["cases"]:
+            print(
+                f"  {case['case_id']}: {case['median_ns'] / 1_000_000:.3f} ms "
+                f"(IQR/median {case['iqr_over_median']:.2%})"
+            )
+        print(f"  report: {summary['report']}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.command == "probe":
         return _run_probe(args)
     if args.command == "compile":
         return _run_compile(args)
+    if args.command == "run":
+        return _run_analysis(args)
+    if args.command == "verify-run":
+        return _run_verify(args)
+    if args.command == "explain":
+        return _run_explain(args)
     raise AssertionError(f"unhandled command: {args.command}")  # pragma: no cover
 
 
