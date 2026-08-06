@@ -61,5 +61,8 @@ MPS, and compared with immutable local measurements.
 
 - [Domain language](CONTEXT.md)
 - [Semantic compilation](docs/architecture/semantic-compilation.md)
+- [Explainability architecture](docs/architecture/explainability.md)
 - [Hardware measurement and calibration CI](docs/validation/hardware-calibration-ci.md)
+- [Instrumentation and trace alignment](docs/validation/instrumentation-and-trace-alignment.md)
+- [Workspace and Run Bundle layout](docs/reference/workspace-and-run-bundle.md)
 - [Architecture decision records](docs/adr/)

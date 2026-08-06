@@ -4,6 +4,11 @@
 > collects real measurements only in trusted hardware cohorts, and promotes
 > calibration changes through independent validation rather than silent updates.
 
+Detailed module, operator, runtime, and schedule observation follows the
+[instrumentation and trace-alignment contract](instrumentation-and-trace-alignment.md).
+All generated inputs and evidence are packaged according to the
+[Run Bundle layout](../reference/workspace-and-run-bundle.md).
+
 ## Four validation lanes
 
 | Lane | Environment | Primary responsibility | Gate |

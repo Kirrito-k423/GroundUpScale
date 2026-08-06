@@ -69,6 +69,14 @@ _Avoid_: YAML anchor, implicit global lookup, copied configuration
 The human-authored YAML entry point that assembles references to one Workload Spec, Analysis Case, Deployment Intent, Fabric Graph, and optional Calibration Profile for a reproducible analysis.
 _Avoid_: Analysis Case, prediction report, merged mega-spec
 
+**Run Bundle**:
+An immutable, self-describing collection of locked inputs and generated artifacts from one analysis or measurement attempt, indexed by a Run Manifest.
+_Avoid_: Mutable output directory, evidence dataset
+
+**Run Manifest**:
+The authoritative index of a Run Bundle's artifact roles, locations, Schema versions, content digests, producer lineage, Hardware Cohort, and validity state.
+_Avoid_: Directory convention, latest symlink
+
 **Plugin Spec Type**:
 A registered, namespaced, versioned type through which a Spec Document selects a plugin capability and supplies Schema-validated configuration.
 _Avoid_: Arbitrary extension map, untyped plugin options
@@ -257,6 +265,14 @@ _Avoid_: Ad-hoc timing script, Calibration Profile
 Immutable raw or minimally normalized measurements from one real execution, including environment identity, timestamps, shapes, configuration, events, metrics, and collection provenance.
 _Avoid_: Calibrated prediction, Hardware Spec
 
+**Instrumentation Profile**:
+A declared observation policy selecting benchmark, trace, or targeted deep-probe collection together with its synchronization, metadata, and accepted-overhead rules.
+_Avoid_: Ad-hoc print statements, Benchmark Case
+
+**Alignment Map**:
+A versioned mapping from measured spans and events to Stable Paths, Semantic IR nodes, Execution IR events, or explicitly unattributed buckets, including match method and confidence.
+_Avoid_: Assumed name equality, modified Observation Trace
+
 **Observation Dataset**:
 A versioned, quality-checked collection of Observation Traces partitioned for calibration, validation, or regression evaluation.
 _Avoid_: Mutable metrics table, Calibration Profile
@@ -276,6 +292,18 @@ _Avoid_: Theoretical hardware peak, Calibrated Prediction
 **Calibrated Prediction**:
 A Base Prediction adjusted by one identified Calibration Profile while preserving the original value, delta, uncertainty, validity domain, and evidence links.
 _Avoid_: Overwritten Base Prediction
+
+**Explanation Graph**:
+A queryable derived graph connecting predicted or measured metrics to logical scopes, formulas, implementation choices, schedule causes, uncertainty, calibration evidence, and provenance.
+_Avoid_: Visualization, another compilation IR
+
+**Metric Derivation**:
+The explainable derivation of one metric with its aggregation semantics, contributing scopes or events, assumptions, bounds, uncertainty, and source records.
+_Avoid_: Scalar result, arbitrary percentage breakdown
+
+**Error Attribution**:
+An evidence-backed classification and decomposition of prediction-versus-observation discrepancy across semantic, cost, backend, scheduling, observation, and environment causes.
+_Avoid_: Uniformly distributed residual, calibration update
 
 **Deployment Intent**:
 User-supplied constraints that associate selected workload or model scopes with execution strategies, placement requirements, and deployable service policies.
