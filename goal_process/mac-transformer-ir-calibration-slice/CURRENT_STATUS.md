@@ -12,16 +12,16 @@
 - **目标：** 在 Apple M4 上跑通固定 Shape 两层 Transformer 的 YAML 到 Cost IR、CPU/MPS 预测—实测和 5% 留出门禁。
 - **已完成：** M1–M6 的软件、真实穿刺、Run Bundle、calibration governance、公共 CI、运行手册和远端发布；AC-01/02/03/04/05/09/11 DONE。
 - **当前主阻塞：** C020 真实 preflight 检测到 normalized load 0.363>0.25、`mediaanalysisd` 58.1% CPU>25%，按预注册 policy 在 benchmark 前拒绝。Profile 未晋升，不能宣称 AC-06/07/08/10/12 DONE。
-- **关键证据：** `evidence/m5-calibration-attempt-report.md`、`evidence/c020-environment-preflight-summary.md`；42 tests；GitHub Actions Success。
+- **关键证据：** `evidence/m5-calibration-attempt-report.md`、`evidence/c020-environment-preflight-summary.md`；42 tests；GitHub Actions `31102277844` Success。
 - **已解决：** 从 YAML/IR/公式到 CPU/MPS 实测、下钻解释、内存同口径、fit/holdout 隔离、拒绝错误晋升和 public/trusted CI 安全边界。
 - **下一步：** 保持 3%/5 次/5% 原合同；待外部 Python、媒体分析/索引负载结束且 preflight 通过后，创建全新 MPS fit/holdout cohort。
 - **需要决策：** 无。
 
 ## 交付状态
 
-- **代码：** 软件实现与最终审计文档均已推送；交付时以 `git rev-parse HEAD` 和 `git ls-remote` 的一致结果为准。
+- **代码：** C020 实现提交 `cb77dd0` 已推送并通过 CI；最终文档提交以 `git rev-parse HEAD` 和 `git ls-remote` 的一致结果为准。
 - **文档：** M1–M5 reports、C001–C019、runbook、FINAL-REPORT。
-- **复现：** 本地 42 passed；上一 clean checkout 34 passed；public CI Success；canonical compile deterministic。
+- **复现：** 本地 42 passed；public CI `31102277844` Success 且 canonical double compile deterministic。
 - **日志与报告：** `.groundupscale/runs/` 保留全部 raw Bundle；过程目录保留精简证据；`RMB-Cost.md` 持续 estimate。
 
 ## 时间与预算

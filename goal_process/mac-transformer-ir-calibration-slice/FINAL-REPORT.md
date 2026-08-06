@@ -50,7 +50,7 @@ flowchart LR
 | AC-08 | BLOCKED | 有效 MPS memory error 0%，但有效数不足；CPU 无合法留出 |
 | AC-09 | DONE | E2E→module/operator/runtime，下钻和未归因桶完整 |
 | AC-10 | INCOMPLETE | 公式/span 下钻已完成；因无 active profile，不能伪造 calibration evidence 节点 |
-| AC-11 | DONE | GitHub Actions `31099822022` Success；public/trusted lanes 隔离；trusted lane 强制 preflight |
+| AC-11 | DONE | GitHub Actions `31102277844` Success；public/trusted lanes 隔离；trusted lane 强制 preflight |
 | AC-12 | INCOMPLETE | 当前状态已发布和复验；完整 Goal 仍缺 06/07/08/10 门禁 |
 
 ## 校准没有晋升的原因
@@ -66,7 +66,7 @@ Candidate `1f66d803cc23...` 只使用 3 个合格 fit Run。7 个独立 MPS hold
 ## 代码与发布证据
 
 - 本地/clean checkout：34 tests。
-- 公共 CI：[Compiler CI #1](https://github.com/Kirrito-k423/GroundUpScale/actions/runs/31099822022)，Success，56 秒。
+- 公共 CI：[Compiler CI C020](https://github.com/Kirrito-k423/GroundUpScale/actions/runs/31102277844)，Success，60 秒，包含 42 tests 与 canonical double compile。
 - 干净 checkout 验证提交：`97c3dfece742f7f4797a725be1e2be542a0b1843`。
 - 运行手册：`docs/runbooks/local-mac-calibration.md`。
 - M4/M5 证据：`evidence/m4-milestone-report.md`、`evidence/m5-calibration-attempt-report.md`。

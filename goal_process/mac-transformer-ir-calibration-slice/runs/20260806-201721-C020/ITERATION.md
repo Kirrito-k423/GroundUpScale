@@ -21,7 +21,7 @@
 
 - **脱敏命令：** `commands.md`
 - **代码差异：** 新增 `environment.py`、`preflight` CLI、Run Bundle 硬门禁、Manifest/环境 artifact 状态、calibration evidence 前置拒绝，以及 trusted local script 接入。
-- **日志/指标：** 42 tests PASS；真实 3×1 s preflight 正确识别 `normalized load=0.3632>0.25`、`mediaanalysisd=58.1%>25%`，返回 `eligible=false`；真实 `run --require-valid-environment` 返回结构化拒绝且未创建 Bundle。
+- **日志/指标：** 42 tests PASS；真实 3×1 s preflight 正确识别 `normalized load=0.3632>0.25`、`mediaanalysisd=58.1%>25%`，返回 `eligible=false`；真实 `run --require-valid-environment` 返回结构化拒绝且未创建 Bundle；GitHub Actions `31102277844` Success（60 s）。
 
 ## 结果
 

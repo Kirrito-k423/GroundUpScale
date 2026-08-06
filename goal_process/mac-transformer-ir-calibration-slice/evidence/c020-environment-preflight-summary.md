@@ -43,3 +43,5 @@ fail-closed 的测量前置门禁。它不会修改原校准合同，也不替�
   Bundle，因此 C012–C018 的旧未受控 Run 不能被复用进新 cohort；
 - 全量测试：`42 passed`；真实 `run --require-valid-environment` 返回
   `run-rejection/v1alpha1` 且确认目标 Run Bundle 不存在。
+- 实现提交：`cb77dd0764040db7b2b316bcf2e544ae4b948c2d`；公共 Compiler CI
+  `31102277844` Success（60 s）。
