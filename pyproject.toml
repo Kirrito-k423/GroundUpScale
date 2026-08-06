@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "groundupscale"
+version = "0.1.0"
+description = "Explainable, composable performance modeling from hardware atoms to model throughput."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kirrito-k423" }]
+dependencies = [
+  "numpy==2.4.6",
+  "psutil==7.2.2",
+  "torch==2.13.0",
+]
+
+[project.scripts]
+groundupscale = "groundupscale.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest==9.0.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/groundupscale"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
