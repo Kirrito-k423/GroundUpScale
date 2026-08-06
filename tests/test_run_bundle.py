@@ -7,8 +7,10 @@ import sys
 
 import pytest
 
+from groundupscale.environment import evaluate_environment_validity
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.run_bundle import (
+    EnvironmentValidityError,
     RunBundleExistsError,
     RunBundleWriter,
     verify_run_bundle,
@@ -16,6 +18,29 @@ from groundupscale.run_bundle import (
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
+
+
+def _valid_preflight() -> dict[str, object]:
+    return evaluate_environment_validity(
+        {
+            "platform": {
+                "system": "Darwin",
+                "machine": "arm64",
+                "logical_cpu_count": 10,
+            },
+            "power": {"source": "ac", "battery_percent": 100.0},
+            "thermal": {"status": "nominal"},
+            "load": {
+                "one_minute": 1.0,
+                "five_minutes": 1.0,
+                "fifteen_minutes": 1.0,
+            },
+            "competitors": {
+                "sample_interval_seconds": 1.0,
+                "top": [],
+            },
+        }
+    )
 
 
 def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
@@ -32,12 +57,15 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
         warmup_override=0,
         windows_per_sample=1,
         target_window_ns=1,
+        environment_validity=_valid_preflight(),
+        require_valid_environment=True,
     )
 
     assert run == tmp_path / "runs/test-cpu-run"
     manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
     assert manifest["status"] == "completed"
     assert manifest["device"] == "cpu"
+    assert manifest["environment_validity"] == "passed"
     assert manifest["stages"]["duration_prediction"] == "skipped-uncalibrated"
     assert len(manifest["artifacts"]) >= 15
     roles = {artifact["role"] for artifact in manifest["artifacts"]}
@@ -78,6 +106,13 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
         "peak_framework_tensor_bytes"
     )
     assert memory["framework_tensor_storage"]["peak_framework_tensor_bytes"] > 0
+    environment = json.loads(
+        (run / "resolved/environment.json").read_text(encoding="utf-8")
+    )
+    assert environment["measurement_preflight"]["eligible"] is True
+    assert environment["measurement_preflight"]["policy"]["policy_id"] == (
+        "local-apple-silicon-v1"
+    )
     report = (run / "reports/report.html").read_text(encoding="utf-8")
     assert "GroundUpScale 可解释运行报告" in report
     assert "two-layer-prefill" in report
@@ -90,6 +125,8 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
             warmup_override=0,
             windows_per_sample=1,
             target_window_ns=1,
+            environment_validity=_valid_preflight(),
+            require_valid_environment=True,
         )
 
     explained = subprocess.run(
@@ -109,3 +146,26 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     explain_summary = json.loads(explained.stdout)
     assert explain_summary["run_id"] == "test-cpu-run"
     assert len(explain_summary["cases"]) == 5
+
+
+def test_required_environment_gate_rejects_before_publishing_a_run(
+    tmp_path: Path,
+) -> None:
+    compiled = compile_analysis_plan(
+        REPOSITORY_ROOT, REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+    invalid = _valid_preflight()
+    invalid["eligible"] = False
+    invalid["reason_codes"] = ["competing-process-above-policy"]
+
+    with pytest.raises(
+        EnvironmentValidityError, match="competing-process-above-policy"
+    ):
+        RunBundleWriter(compiled).run(
+            tmp_path,
+            run_id="must-not-run",
+            environment_validity=invalid,
+            require_valid_environment=True,
+        )
+
+    assert not (tmp_path / "runs/must-not-run").exists()

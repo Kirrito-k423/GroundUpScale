@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from groundupscale.calibration import (
@@ -14,6 +14,7 @@ from groundupscale.calibration import (
     validate_calibration,
     write_calibration_yaml,
 )
+from groundupscale.environment import collect_environment_validity
 from groundupscale.ir import canonical_data
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
@@ -35,6 +36,13 @@ def _parser() -> argparse.ArgumentParser:
     probe.add_argument("--matrix-size", type=int, default=512)
     probe.add_argument("--seed", type=int, default=20260806)
     probe.add_argument("--json", action="store_true", dest="as_json")
+    preflight = subparsers.add_parser(
+        "preflight",
+        help="check whether the local Mac environment is eligible for trusted evidence",
+    )
+    preflight.add_argument("--sample-interval-seconds", type=float, default=1.0)
+    preflight.add_argument("--process-samples", type=int, default=3)
+    preflight.add_argument("--json", action="store_true", dest="as_json")
     compile_command = subparsers.add_parser(
         "compile", help="compile a YAML AnalysisPlan through Semantic IR"
     )
@@ -53,6 +61,11 @@ def _parser() -> argparse.ArgumentParser:
     run_command.add_argument("--warmup", type=int)
     run_command.add_argument("--windows-per-sample", type=int, default=5)
     run_command.add_argument("--target-window-ms", type=float, default=20.0)
+    run_command.add_argument("--require-valid-environment", action="store_true")
+    run_command.add_argument(
+        "--preflight-sample-interval-seconds", type=float, default=1.0
+    )
+    run_command.add_argument("--preflight-process-samples", type=int, default=3)
     run_command.add_argument("--json", action="store_true", dest="as_json")
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
@@ -111,6 +124,29 @@ def _run_probe(args: argparse.Namespace) -> int:
     if args.require_mps and not report["mps"]["available"]:
         return 2
     return 0 if report["ok"] else 1
+
+
+def _run_preflight(args: argparse.Namespace) -> int:
+    report = collect_environment_validity(
+        sample_interval_seconds=args.sample_interval_seconds,
+        process_sample_count=args.process_samples,
+    )
+    if args.as_json:
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            "trusted measurement preflight: "
+            f"{'PASS' if report['eligible'] else 'FAIL'}"
+        )
+        for check in report["checks"]:
+            status = "PASS" if check["passed"] else "FAIL"
+            print(
+                f"  {check['check_id']}: {status} "
+                f"(observed={check['observed']!r})"
+            )
+        if report["reason_codes"]:
+            print(f"  reasons: {', '.join(report['reason_codes'])}")
+    return 0 if report["eligible"] else 2
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -181,9 +217,40 @@ def _run_compile(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_analysis(args: argparse.Namespace) -> int:
+def _run_analysis(
+    args: argparse.Namespace,
+    *,
+    environment_collector: Callable[..., dict[str, object]] = (
+        collect_environment_validity
+    ),
+) -> int:
     repository_root = Path(args.repository_root).resolve()
     compiled = compile_analysis_plan(repository_root, Path(args.plan))
+    environment_validity = (
+        environment_collector(
+            sample_interval_seconds=args.preflight_sample_interval_seconds,
+            process_sample_count=args.preflight_process_samples,
+        )
+        if args.require_valid_environment
+        else None
+    )
+    if (
+        args.require_valid_environment
+        and environment_validity is not None
+        and environment_validity.get("eligible") is not True
+    ):
+        rejection = {
+            "schema": "groundupscale.dev/run-rejection/v1alpha1",
+            "status": "rejected-before-benchmark",
+            "reason_codes": environment_validity.get("reason_codes", []),
+            "environment_validity": environment_validity,
+        }
+        if args.as_json:
+            print(json.dumps(rejection, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print("trusted measurement rejected before benchmark")
+            print(f"  reasons: {', '.join(rejection['reason_codes'])}")
+        return 2
     run = RunBundleWriter(compiled).run(
         Path(args.artifact_store),
         run_id=args.run_id,
@@ -191,6 +258,8 @@ def _run_analysis(args: argparse.Namespace) -> int:
         warmup_override=args.warmup,
         windows_per_sample=args.windows_per_sample,
         target_window_ns=int(args.target_window_ms * 1_000_000),
+        environment_validity=environment_validity,
+        require_valid_environment=args.require_valid_environment,
     )
     verification = verify_run_bundle(run)
     manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
@@ -330,14 +399,22 @@ def _run_promote_calibration(args: argparse.Namespace) -> int:
     return 0
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    environment_collector: Callable[..., dict[str, object]] = (
+        collect_environment_validity
+    ),
+) -> int:
     args = _parser().parse_args(argv)
     if args.command == "probe":
         return _run_probe(args)
+    if args.command == "preflight":
+        return _run_preflight(args)
     if args.command == "compile":
         return _run_compile(args)
     if args.command == "run":
-        return _run_analysis(args)
+        return _run_analysis(args, environment_collector=environment_collector)
     if args.command == "verify-run":
         return _run_verify(args)
     if args.command == "explain":

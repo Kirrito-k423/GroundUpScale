@@ -60,9 +60,12 @@ artifacts in an immutable Run Bundle.
 
 The controlled calibration workflow is implemented and refuses mixed cohorts,
 fit/holdout overlap, noisy fitting data, insufficient valid holdouts, or a
-failed 5% gate. The current local experiment intentionally remains unpromoted:
-repeated measurements did not yield the required five holdouts whose
-`IQR / median` all stayed below 3%. See the
+failed 5% gate. Trusted Mac runs now also fail closed on a versioned preflight
+for platform, AC power, thermal status, settled load, and competing processes;
+calibration rejects any Bundle without a passed preflight. The current local
+experiment intentionally remains unpromoted: repeated uncontrolled
+measurements did not yield the required five holdouts whose `IQR / median` all
+stayed below 3%. See the
 [M4 report](goal_process/mac-transformer-ir-calibration-slice/evidence/m4-milestone-report.md)
 and the [local runbook](docs/runbooks/local-mac-calibration.md).
 
@@ -71,11 +74,17 @@ and the [local runbook](docs/runbooks/local-mac-calibration.md).
 ```sh
 uv sync --locked --group dev
 uv run pytest -q
+uv run groundupscale preflight --json  # trusted hardware evidence only
 uv run groundupscale run specs/plans/mac-cpu-prefill.yaml \
   --repository-root . --run-id example-cpu \
   --target-window-ms 100 --windows-per-sample 9 --json
 uv run groundupscale explain .groundupscale/runs/example-cpu
 ```
+
+For calibration-grade local evidence, use
+`scripts/run-local-m4-evidence.sh <tag>` or add
+`--require-valid-environment`; an ordinary development run is deliberately
+marked `environment_validity=not-required` and cannot enter calibration.
 
 ## Design documents
 

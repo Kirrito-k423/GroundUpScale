@@ -78,6 +78,35 @@ sequenceDiagram
     EV-->>CI: validity, error, noise, and drift result
 ```
 
+## Environment-validity preflight
+
+The trusted local lane executes a versioned, fail-closed preflight before each
+benchmark. The initial `local-apple-silicon-v1` policy requires:
+
+- Darwin on arm64 and AC power;
+- nominal `pmset` thermal and performance status, where unknown is a failure;
+- one-minute load divided by logical CPU count no greater than `0.25`;
+- no single process outside the coordinator/ancestor chain above `25%` CPU over
+  three one-second samples.
+
+```mermaid
+flowchart LR
+    P["Collect allowlisted signals"] --> V{"All preflight checks pass?"}
+    V -->|No| Q["Reject before benchmark\nrecord reason codes"]
+    V -->|Yes| B["Run immutable Benchmark Case"]
+    B --> N{"IQR / median <= 3%?"}
+    N -->|No| H["Quarantine noisy Run"]
+    N -->|Yes| C["Eligible calibration evidence"]
+```
+
+The preflight reduces known environmental interference; it does not prove a
+Run is stable and never replaces the per-Case noise gate. The report captures
+only allowlisted platform, power, normalized load, thermal flags, and top
+process PID/name/CPU fields. It never captures command arguments, environment
+variables, or unrestricted paths. A Run Manifest must say
+`environment_validity: passed` before either fitting or holdout validation can
+read it.
+
 An Observation Trace records at least:
 
 - commit, Spec, IR, plugin, rule, and calibration fingerprints;
@@ -148,6 +177,8 @@ Use different decisions for different evidence:
 - Unsupported backend operations are explicit compatibility failures or skips,
   never CPU timings mislabeled as GPU results.
 - Noisy measurements are quarantined and retried; they do not fit calibration.
+- Evidence without a passed environment preflight is rejected before fitting
+  or holdout validation.
 - Performance drift becomes blocking only when it exceeds its relative,
   absolute, and measured-noise budgets under the cohort's policy.
 - Calibration fitting uses a declared training partition and is accepted only

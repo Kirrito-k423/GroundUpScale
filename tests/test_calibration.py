@@ -28,6 +28,7 @@ def _run(
     delta: float = 0.0,
     noise: float = 0.01,
     device: str = "mps",
+    environment_validity: str = "passed",
 ) -> Path:
     run = root / run_id
     _write_json(
@@ -39,6 +40,7 @@ def _run(
             "compilation_fingerprint": "semantic-fingerprint",
             "cost_compilation_fingerprint": "cost-fingerprint",
             "hardware_cohort": f"apple-m4-test-{device}",
+            "environment_validity": environment_validity,
         },
     )
     cases = []
@@ -156,3 +158,16 @@ def test_fit_and_holdout_overlap_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(CalibrationError, match="overlap"):
         validate_calibration(profile, [fit])
+
+
+def test_calibration_rejects_evidence_without_passed_environment_preflight(
+    tmp_path: Path,
+) -> None:
+    unverified = _run(
+        tmp_path,
+        "unverified",
+        environment_validity="not-required",
+    )
+
+    with pytest.raises(CalibrationError, match="environment preflight"):
+        fit_calibration([unverified])

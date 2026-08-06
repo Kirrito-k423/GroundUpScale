@@ -42,6 +42,10 @@ def _load_evidence(path: str | Path) -> dict[str, Any]:
     cost = _read_json(root / "ir/cost.ir.json")
     if manifest.get("status") != "completed":
         raise CalibrationError(f"run {root} is not completed")
+    if manifest.get("environment_validity") != "passed":
+        raise CalibrationError(
+            f"run {root} lacks a passed environment preflight"
+        )
     cases = {case["case_id"]: case for case in benchmark["cases"]}
     if len(cases) != len(benchmark["cases"]):
         raise CalibrationError(f"run {root} contains duplicate case IDs")

@@ -68,6 +68,10 @@ class RunBundleExistsError(FileExistsError):
     pass
 
 
+class EnvironmentValidityError(RuntimeError):
+    pass
+
+
 class RunBundleWriter:
     def __init__(self, compiled: CompiledAnalysis, seed: int = 20260806) -> None:
         self.compiled = compiled
@@ -82,6 +86,8 @@ class RunBundleWriter:
         warmup_override: int | None = None,
         windows_per_sample: int = 5,
         target_window_ns: int = 20_000_000,
+        environment_validity: dict[str, Any] | None = None,
+        require_valid_environment: bool = False,
     ) -> Path:
         benchmark_runner = BenchmarkRunner(self.compiled.bundle, seed=self.seed)
         device = benchmark_runner.device
@@ -90,6 +96,40 @@ class RunBundleWriter:
         )
         if not RUN_ID_PATTERN.fullmatch(selected_run_id):
             raise ValueError(f"unsafe run_id: {selected_run_id!r}")
+        if environment_validity is not None and environment_validity.get(
+            "schema"
+        ) != "groundupscale.dev/environment-validity/v1alpha1":
+            raise EnvironmentValidityError(
+                "environment validity report has an unsupported schema"
+            )
+        if require_valid_environment and not (
+            environment_validity is not None
+            and environment_validity.get("eligible") is True
+        ):
+            reason_codes = (
+                environment_validity.get("reason_codes", ["preflight-not-supplied"])
+                if environment_validity is not None
+                else ["preflight-not-supplied"]
+            )
+            raise EnvironmentValidityError(
+                "trusted measurement environment is ineligible: "
+                + ", ".join(str(reason) for reason in reason_codes)
+            )
+        if environment_validity is None:
+            preflight_status = "not-required"
+            preflight_artifact: dict[str, Any] = {
+                "schema": "groundupscale.dev/environment-validity/v1alpha1",
+                "eligible": None,
+                "status": "not-collected",
+                "reason_codes": ["preflight-not-requested"],
+            }
+        else:
+            preflight_status = (
+                "passed"
+                if environment_validity.get("eligible") is True
+                else "failed-not-required"
+            )
+            preflight_artifact = environment_validity
         runs_root = Path(artifact_store).resolve() / "runs"
         runs_root.mkdir(parents=True, exist_ok=True)
         destination = runs_root / selected_run_id
@@ -222,6 +262,7 @@ class RunBundleWriter:
                     "mps_built": bool(torch.backends.mps.is_built()),
                     "mps_available": bool(torch.backends.mps.is_available()),
                 },
+                "measurement_preflight": preflight_artifact,
                 "policy": "allowlisted fields only; no unrestricted environment dump",
             }
             model_payload: Any = (
@@ -280,6 +321,7 @@ class RunBundleWriter:
                 "cost_compilation_fingerprint": self.compiled.cost.compilation_fingerprint,
                 "hardware_cohort": f"{hardware_names}-{platform.release()}-torch{torch.__version__}-{device}",
                 "device": device,
+                "environment_validity": preflight_status,
                 "seed": self.seed,
                 "stages": {
                     "compilation": "completed",
@@ -331,6 +373,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
 
 
 __all__ = [
+    "EnvironmentValidityError",
     "RunBundleExistsError",
     "RunBundleWriter",
     "verify_run_bundle",

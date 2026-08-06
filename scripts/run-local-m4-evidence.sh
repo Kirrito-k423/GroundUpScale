@@ -19,6 +19,7 @@ uv run groundupscale run specs/plans/mac-cpu-prefill.yaml \
   --run-id "${run_tag}-cpu" \
   --target-window-ms 100 \
   --windows-per-sample 9 \
+  --require-valid-environment \
   --json
 
 PYTORCH_ENABLE_MPS_FALLBACK=0 uv run groundupscale run \
@@ -28,6 +29,7 @@ PYTORCH_ENABLE_MPS_FALLBACK=0 uv run groundupscale run \
   --run-id "${run_tag}-mps" \
   --target-window-ms 100 \
   --windows-per-sample 9 \
+  --require-valid-environment \
   --json
 
 uv run groundupscale verify-run "$artifact_store/runs/${run_tag}-cpu" --json

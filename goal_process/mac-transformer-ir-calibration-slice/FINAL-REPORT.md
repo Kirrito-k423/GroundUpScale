@@ -1,6 +1,6 @@
 # 最终审计报告：Mac 两层 Transformer 建模与校准穿刺
 
-> **状态：ESCALATION REQUIRED。** 软件与真实执行链路已经交付并发布；用户确认的统计前置门禁没有足够有效留出，因而 Goal 不能标记 DONE，Calibration Profile 也没有被错误晋升。
+> **状态：CONTROLLED RERUN PENDING。** 软件与真实执行链路已经交付；受控环境门禁已经实现并识别到当前后台竞争，因此 Goal 不能标记 DONE，Calibration Profile 也没有被错误晋升。
 
 ## 交付结果
 
@@ -17,7 +17,9 @@ flowchart LR
     F --> H["Immutable Run Bundle"]
     G --> H
     H --> I["Alignment + Error Attribution + Explanation Graph + HTML"]
-    H --> J["Candidate Calibration"]
+    H --> P{"Environment preflight passed?"}
+    P -->|"No"| Q["Reject before benchmark"]
+    P -->|"Yes"| J["Candidate Calibration"]
     J --> K{"5 valid holdouts?"}
     K -->|"本轮：3"| L["拒绝晋升"]
 ```
@@ -32,12 +34,13 @@ flowchart LR
 - Explanation Graph 181 nodes/115 edges，可从 latency/throughput/memory 下钻到 scope、公式和 span。
 - Semantic peak base `54,534,144 B`；真实 CPU/MPS live Tensor storage peak `69,214,208 B`。
 - Run Bundle writer 原子发布、拒绝覆盖，每个 artifact 有 role/Schema/lineage/SHA-256；standalone HTML 可本地打开。
+- C020 preflight 对平台、供电、热状态、负载和竞争进程 fail closed；calibration 拒绝未通过环境门禁的 Bundle。
 
 ## 验收审计
 
 | AC | 状态 | 结论 |
 |---|---|---|
-| AC-01 | DONE | clean clone、locked sync、34 tests、双 compile byte-identical |
+| AC-01 | DONE | clean clone、locked sync、当前本地 42 tests、双 compile byte-identical |
 | AC-02 | DONE | 仅改 CPU/MPS YAML Plan 即可运行 |
 | AC-03 | DONE | 四层 IR、identity、Shape/dtype、formula、provenance 确定性 |
 | AC-04 | DONE | CPU reference 与 MPS correctness/fallback/device audit |
@@ -47,7 +50,7 @@ flowchart LR
 | AC-08 | BLOCKED | 有效 MPS memory error 0%，但有效数不足；CPU 无合法留出 |
 | AC-09 | DONE | E2E→module/operator/runtime，下钻和未归因桶完整 |
 | AC-10 | INCOMPLETE | 公式/span 下钻已完成；因无 active profile，不能伪造 calibration evidence 节点 |
-| AC-11 | DONE | GitHub Actions `31099822022` Success；public/trusted lanes 隔离 |
+| AC-11 | DONE | GitHub Actions `31099822022` Success；public/trusted lanes 隔离；trusted lane 强制 preflight |
 | AC-12 | INCOMPLETE | 当前状态已发布和复验；完整 Goal 仍缺 06/07/08/10 门禁 |
 
 ## 校准没有晋升的原因
@@ -68,13 +71,11 @@ Candidate `1f66d803cc23...` 只使用 3 个合格 fit Run。7 个独立 MPS hold
 - 运行手册：`docs/runbooks/local-mac-calibration.md`。
 - M4/M5 证据：`evidence/m4-milestone-report.md`、`evidence/m5-calibration-attempt-report.md`。
 
-## 必须由用户决定的下一步
+## 已确定的下一步
 
-推荐保持 3%/5 次/5% 原合同不变，在更受控条件下重新建立 hardware cohort：关闭重负载后台任务、接通电源、冷机稳定后独占运行，并把电源/热状态加入环境证据。若仍失败，再讨论统计合同变更。
+保持 3%/5 次/5% 原合同不变。C020 已实现 `local-apple-silicon-v1`
+preflight；首次真实检查因 normalized load `0.363>0.25`、
+`mediaanalysisd 58.1%>25%` 在 benchmark 前拒绝。待这些外部负载消退且
+preflight PASS 后，重新建立不复用 C012–C018 的 fit/holdout cohort。
 
-另外两种选择会改变 Goal，不能由执行者自行采用：
-
-1. 预先固定更大的总 holdout 数（例如 10），允许 noisy quarantine 后要求至少 5 个有效；
-2. 放宽单 Run 噪声门禁（例如 3%→5%）。
-
-当前最科学的状态是：代码可用、证据完整、失败诚实、等待一次明确授权。
+当前最科学的状态是：代码可用、证据完整、失败诚实、门禁自动执行，等待可接受的本机运行条件。

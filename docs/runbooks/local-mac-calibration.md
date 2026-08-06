@@ -15,7 +15,43 @@ uv run pytest -q
 
 非 Mac 公共 CI 会跳过一条真实 MPS correctness 测试；Schema、四层 IR、Cost 公式、CPU reference、Run Bundle、trace、calibration governance 仍全部执行。
 
-## 2. 只改 YAML 选择 CPU 或 MPS
+## 2. 先检查当前环境是否允许测量
+
+```sh
+uv run groundupscale preflight --json
+```
+
+退出码 `0` 表示可以开始可信测量，`2` 表示当前环境不合格。初始
+`local-apple-silicon-v1` policy 固定检查：
+
+- Darwin/arm64 且使用交流供电；
+- `pmset` 报告无 thermal/performance warning，未知状态也拒绝；
+- `1 min load average / logical CPU count <= 0.25`；
+- 连续 3 个 1 秒样本中，coordinator 及其祖先进程以外的单个进程均不超过
+  `25% CPU`。
+
+报告只记录 PID、进程名和 CPU 百分比等 allowlist 字段，不记录命令参数、
+环境变量或文件路径。不要让脚本自动杀进程；退出计算任务、等待索引/照片分析
+结束和 load average 回落后重新执行。preflight 通过只是采样前置条件，Run 内
+每个 Case 的 `IQR / median <= 3%` 仍是独立硬门禁。
+
+```mermaid
+sequenceDiagram
+    participant U as Local coordinator
+    participant P as Preflight
+    participant B as Benchmark
+    participant C as Calibration
+    U->>P: 采集供电/热/负载/竞争进程
+    alt 不合格
+        P-->>U: exit 2 + reason_codes
+    else 合格
+        P->>B: environment_validity=passed
+        B->>B: 逐 Case IQR/median 检验
+        B->>C: 仅传递稳定 Run Bundle
+    end
+```
+
+## 3. 只改 YAML 选择 CPU 或 MPS
 
 ```sh
 uv run groundupscale compile specs/plans/mac-cpu-prefill.yaml \
@@ -23,14 +59,15 @@ uv run groundupscale compile specs/plans/mac-cpu-prefill.yaml \
 
 uv run groundupscale run specs/plans/mac-mps-prefill.yaml \
   --repository-root . --run-id my-mps-run \
-  --target-window-ms 100 --windows-per-sample 9 --json
+  --target-window-ms 100 --windows-per-sample 9 \
+  --require-valid-environment --json
 ```
 
 CPU/MPS 由 AnalysisPlan 引用的 DeploymentIntent 决定；CLI 不接受一个会覆盖 YAML placement 的 `--device` 开关。MPS runner 检测到 `PYTORCH_ENABLE_MPS_FALLBACK=1` 会拒绝执行。
 
 正式协议只适用于当前固定 Shape：operator 用 10-call pilot 选择约 100 ms 的 raw window，module/E2E 每 window 调用一次；20 个 sample 各取 9 个 raw window 的 median。每个 raw window 都进入 Bundle，不删除异常点。
 
-## 3. 检查和下钻
+## 4. 检查和下钻
 
 ```sh
 uv run groundupscale verify-run .groundupscale/runs/my-mps-run --json
@@ -51,7 +88,7 @@ flowchart LR
 
 Benchmark 是 headline 真值；trace 带 forward hooks，只用于定位。MPS leaf span 是 host enqueue 时间，不冒充 device kernel duration。Error Attribution 永远保留未归因桶。
 
-## 4. Run Bundle 组织
+## 5. Run Bundle 组织
 
 ```text
 .groundupscale/runs/<run-id>/
@@ -65,8 +102,10 @@ Benchmark 是 headline 真值；trace 带 forward hooks，只用于定位。MPS 
 ```
 
 Manifest 记录每个 artifact 的 role、Schema、producer、inputs 与 SHA-256。writer 拒绝覆盖既有 Run ID；重新测量必须创建新 ID。
+可信运行还会把完整 preflight 写入 `resolved/environment.json`，并在 Manifest
+记录 `environment_validity: passed`；没有该状态的 Bundle 不能进入校准。
 
-## 5. 受控校准
+## 6. 受控校准
 
 拟合和留出 Run ID 必须完全分离：
 
@@ -88,13 +127,17 @@ uv run groundupscale validate-calibration \
 
 Profile 精确锁定 device、硬件 cohort、CostIR fingerprint、Case 集、thread 数和 instrumentation profile。fit 证据有任一 Case 噪声超过 3%会被拒绝；holdout 噪声超标则隔离，至少需要 5 份有效 holdout。只有全部有效留出的逐 Case latency 与 Tensor-storage memory 误差不超过 5%，`promote-calibration` 才允许生成 active profile。
 
-## 6. 当前实测限制
+## 7. 当前实测限制
 
 2026-08-06 的 C012–C018 证明：单次 Run 常能满足 3%，有效 MPS holdout 的最大校准误差也只有 3.71%，但连续采集时后台/调度噪声会使部分 Run 超过 3%。C018 的 7 个 MPS holdout 只有 3 个有效，因此 Profile 没有晋升。CPU C017 同样有 Softmax 3.38% 的噪声失败。
 
-这不是公式误差通过，而是测量有效性失败。当前必须选择更受控的运行环境或经 Goal 变更调整统计口径；不能挑历史成功 Run 拼出结果。
+这不是公式误差失败，而是测量有效性失败。现在已有显式 preflight 防止继续
+无条件采样：2026-08-06 首次真实检查识别到归一化 1 分钟负载 `0.363`、
+`mediaanalysisd` 最高 `58.1% CPU`，因此在 benchmark 前拒绝。必须等待环境
+满足预注册 policy 后创建全新 fit/holdout cohort；不能把旧的偶然成功 Run
+拼入结果。
 
-## 7. 公共 CI 与本机安全边界
+## 8. 公共 CI 与本机安全边界
 
 - `.github/workflows/compiler-ci.yml` 在 GitHub-hosted Linux runner 上运行，不执行 MPS benchmark。
 - 个人 Mac 不注册为公共 PR 的通用 self-hosted runner。

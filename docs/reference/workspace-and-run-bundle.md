@@ -134,6 +134,7 @@ contains:
   "compilation_fingerprint": "sha256:...",
   "status": "completed",
   "hardware_cohort": "apple-m4-macos15-pytorch-mps",
+  "environment_validity": "passed",
   "artifacts": [
     {
       "role": "semantic-ir",
@@ -151,6 +152,12 @@ contains:
 Every artifact entry declares its semantic role, Schema, content digest,
 producer, and lineage. Readers resolve roles through the manifest rather than
 guessing filenames.
+
+For a trusted hardware observation, `resolved/environment.json` contains the
+full `groundupscale.dev/environment-validity/v1alpha1` preflight under
+`measurement_preflight`. The Manifest value is `passed` only when that report
+was supplied and had `eligible=true`; ordinary development runs use
+`not-required`. Calibration never treats `not-required` as measured evidence.
 
 ## Format policy
 
