@@ -1,0 +1,283 @@
+{
+  "schema": "groundupscale.dev/throwaway-schedule-frontier-input/v0",
+  "prototype_only": true,
+  "case_id": "two-layer-prefill-m4-cpu-aggregated",
+  "cohort": "apple-m4-cpu-local-functional-untrusted",
+  "source_facts": {
+    "plan": "specs/plans/mac-cpu-prefill.yaml",
+    "cost_totals": "tests/test_cost_totals.py",
+    "hardware_method": "docs/methods/apple-m4-cpu-backend.md",
+    "comparison_method": "docs/methods/prediction-observation-comparison.md"
+  },
+  "resource_capabilities": {
+    "compute.fp32_flop_per_s_p80": 1748450139577.8,
+    "memory.shared_byte_per_s_p80": 126832587409.13748
+  },
+  "reference_observations_ms": {
+    "two_layer_prefill": {
+      "value": 92.814479,
+      "source_kind": "published_functional_m4_run",
+      "trusted_calibration": false
+    },
+    "layer_0": {
+      "value": 45.059563,
+      "source_kind": "published_functional_m4_trace",
+      "trusted_calibration": false
+    },
+    "layer_0_q_projection": {
+      "value": 0.154288,
+      "source_kind": "published_functional_m4_trace",
+      "trusted_calibration": false
+    },
+    "layer_0_softmax": {
+      "value": 0.699458,
+      "source_kind": "published_functional_m4_trace",
+      "trusted_calibration": false
+    }
+  },
+  "layers": [0, 1],
+  "operator_templates": [
+    {
+      "key": "rms_norm",
+      "module": "attention",
+      "stage": "pre_attention",
+      "semantic_after": ["$previous_layer"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.016551, "memory.shared": 0.012},
+      "candidate_components_ms": {"compute.fp32": 0.066, "memory.shared": 0.045},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.006,
+      "observed_ms": [0.064, 0.065]
+    },
+    {
+      "key": "q_projection",
+      "module": "attention",
+      "stage": "qkv_projection",
+      "semantic_after": ["rms_norm"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.024802},
+      "candidate_components_ms": {"compute.fp32": 0.16, "memory.shared": 0.05},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.01,
+      "observed_ms": [0.154288, 0.156]
+    },
+    {
+      "key": "k_projection",
+      "module": "attention",
+      "stage": "qkv_projection",
+      "semantic_after": ["rms_norm"],
+      "execution_after": ["q_projection"],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.024802},
+      "candidate_components_ms": {"compute.fp32": 0.16, "memory.shared": 0.05},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.01,
+      "observed_ms": [0.158, 0.157]
+    },
+    {
+      "key": "v_projection",
+      "module": "attention",
+      "stage": "qkv_projection",
+      "semantic_after": ["rms_norm"],
+      "execution_after": ["k_projection"],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.024802},
+      "candidate_components_ms": {"compute.fp32": 0.16, "memory.shared": 0.05},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.01,
+      "observed_ms": [0.159, 0.158]
+    },
+    {
+      "key": "attention_score",
+      "module": "attention",
+      "stage": "attention",
+      "semantic_after": ["q_projection", "k_projection"],
+      "execution_after": ["v_projection"],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.04},
+      "candidate_components_ms": {"compute.fp32": 1.4, "memory.shared": 0.35},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.1,
+      "observed_ms": [1.38, 1.39]
+    },
+    {
+      "key": "softmax",
+      "module": "attention",
+      "stage": "attention",
+      "semantic_after": ["attention_score"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.132278, "memory.shared": 0.05},
+      "candidate_components_ms": {"compute.fp32": 0.72, "memory.shared": 0.18},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.05,
+      "observed_ms": [0.699458, 0.71]
+    },
+    {
+      "key": "attention_value",
+      "module": "attention",
+      "stage": "attention",
+      "semantic_after": ["softmax", "v_projection"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.04},
+      "candidate_components_ms": {"compute.fp32": 1.5, "memory.shared": 0.38},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.1,
+      "observed_ms": [1.47, 1.48]
+    },
+    {
+      "key": "output_projection",
+      "module": "attention",
+      "stage": "attention_output",
+      "semantic_after": ["attention_value"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.153528, "memory.shared": 0.03},
+      "candidate_components_ms": {"compute.fp32": 0.55, "memory.shared": 0.14},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.04,
+      "observed_ms": [0.54, 0.545]
+    },
+    {
+      "key": "residual_add",
+      "module": "attention",
+      "stage": "attention_output",
+      "semantic_after": ["output_projection", "rms_norm"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.03, "memory.shared": 0.02},
+      "candidate_components_ms": {"compute.fp32": 0.4, "memory.shared": 0.3},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.03,
+      "observed_ms": [0.39, 0.395]
+    },
+    {
+      "key": "mlp_up_gate",
+      "module": "mlp",
+      "stage": "mlp",
+      "semantic_after": ["residual_add"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.8, "memory.shared": 0.11},
+      "candidate_components_ms": {"compute.fp32": 8.2, "memory.shared": 1.8},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.3,
+      "observed_ms": [8.1, 8.15]
+    },
+    {
+      "key": "activation",
+      "module": "mlp",
+      "stage": "mlp",
+      "semantic_after": ["mlp_up_gate"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.05, "memory.shared": 0.04},
+      "candidate_components_ms": {"compute.fp32": 3.0, "memory.shared": 1.2},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.15,
+      "observed_ms": [2.95, 2.98]
+    },
+    {
+      "key": "mlp_down_residual",
+      "module": "mlp",
+      "stage": "mlp_output",
+      "semantic_after": ["activation", "residual_add"],
+      "execution_after": [],
+      "resource_claim": "cpu.shared",
+      "physical_components_ms": {"compute.fp32": 0.826991, "memory.shared": 0.12},
+      "candidate_components_ms": {"compute.fp32": 9.5, "memory.shared": 2.1},
+      "candidate_overlap_rule": "max",
+      "frontier_uncertainty_ms": 0.35,
+      "observed_ms": [9.4, 9.45]
+    }
+  ],
+  "schedule_candidates": [
+    {
+      "id": "serial_reference",
+      "validated_for_prototype": true,
+      "explicit_transformations": [],
+      "required_overheads_ms": [
+        {"id": "layer_0_dispatch_floor", "duration_ms": 1.2},
+        {"id": "layer_1_dispatch_floor", "duration_ms": 1.2},
+        {"id": "e2e_sync_floor", "duration_ms": 0.8}
+      ]
+    },
+    {
+      "id": "batched_dispatch_counterfactual",
+      "validated_for_prototype": true,
+      "explicit_transformations": [
+        {
+          "kind": "batched_dispatch",
+          "explicit": true,
+          "preserves_operator_frontier": true,
+          "removes_observed_buckets": ["layer_0_dispatch_queue", "layer_1_dispatch_queue"]
+        }
+      ],
+      "required_overheads_ms": [
+        {"id": "layer_0_batched_dispatch_floor", "duration_ms": 0.4},
+        {"id": "layer_1_batched_dispatch_floor", "duration_ms": 0.4},
+        {"id": "e2e_sync_floor", "duration_ms": 0.8}
+      ]
+    }
+  ],
+  "observed_overheads_ms": [
+    {
+      "id": "layer_0_dispatch_queue",
+      "duration_ms": 6.0,
+      "kind": "schedule_wait",
+      "scope": "layer_0/attention",
+      "explicit_cause": "framework_dispatch_queue"
+    },
+    {
+      "id": "layer_0_resource_contention",
+      "duration_ms": 5.0,
+      "kind": "schedule_wait",
+      "scope": "layer_0/mlp",
+      "explicit_cause": "cpu.shared claim contention"
+    },
+    {
+      "id": "layer_0_framework_integration",
+      "duration_ms": 8.594817,
+      "kind": "integration",
+      "scope": "layer_0/attention",
+      "explicit_cause": "trace residual after aligned operator and wait buckets"
+    },
+    {
+      "id": "layer_1_dispatch_queue",
+      "duration_ms": 6.0,
+      "kind": "schedule_wait",
+      "scope": "layer_1/attention",
+      "explicit_cause": "framework_dispatch_queue"
+    },
+    {
+      "id": "layer_1_resource_contention",
+      "duration_ms": 5.0,
+      "kind": "schedule_wait",
+      "scope": "layer_1/mlp",
+      "explicit_cause": "cpu.shared claim contention"
+    },
+    {
+      "id": "layer_1_framework_integration",
+      "duration_ms": 8.0,
+      "kind": "integration",
+      "scope": "layer_1/attention",
+      "explicit_cause": "trace residual after aligned operator and wait buckets"
+    },
+    {
+      "id": "e2e_framework_residual",
+      "duration_ms": 3.118916,
+      "kind": "integration",
+      "scope": "e2e/runtime",
+      "explicit_cause": "unaligned E2E trace residual"
+    }
+  ],
+  "counterexamples": [
+    {"id": "implicit_fusion", "kind": "fusion", "explicit": false, "expected_reason": "fusion_requires_explicit_group"},
+    {"id": "implicit_concurrency", "kind": "concurrency", "explicit": false, "expected_reason": "concurrency_requires_explicit_execution_semantics"},
+    {"id": "implicit_communication_masking", "kind": "communication_masking", "explicit": false, "expected_reason": "communication_masking_requires_explicit_event_pair"},
+    {"id": "unclaimed_resource_contention", "kind": "resource_contention", "explicit": false, "expected_reason": "contention_requires_explicit_resource_claim"}
+  ]
+}

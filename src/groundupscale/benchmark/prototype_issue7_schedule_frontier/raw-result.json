@@ -1,0 +1,2085 @@
+{
+  "schema": "groundupscale.dev/throwaway-schedule-frontier-result/v0",
+  "prototype_only": true,
+  "question_answered": true,
+  "input": {
+    "sha256": "613ab1620ff7eb4d2479d0f4c32bd9d79e7b28f64a37390dc306cde7408e17ad",
+    "fixture": {
+      "schema": "groundupscale.dev/throwaway-schedule-frontier-input/v0",
+      "prototype_only": true,
+      "case_id": "two-layer-prefill-m4-cpu-aggregated",
+      "cohort": "apple-m4-cpu-local-functional-untrusted",
+      "source_facts": {
+        "plan": "specs/plans/mac-cpu-prefill.yaml",
+        "cost_totals": "tests/test_cost_totals.py",
+        "hardware_method": "docs/methods/apple-m4-cpu-backend.md",
+        "comparison_method": "docs/methods/prediction-observation-comparison.md"
+      },
+      "resource_capabilities": {
+        "compute.fp32_flop_per_s_p80": 1748450139577.8,
+        "memory.shared_byte_per_s_p80": 126832587409.13748
+      },
+      "reference_observations_ms": {
+        "two_layer_prefill": {
+          "value": 92.814479,
+          "source_kind": "published_functional_m4_run",
+          "trusted_calibration": false
+        },
+        "layer_0": {
+          "value": 45.059563,
+          "source_kind": "published_functional_m4_trace",
+          "trusted_calibration": false
+        },
+        "layer_0_q_projection": {
+          "value": 0.154288,
+          "source_kind": "published_functional_m4_trace",
+          "trusted_calibration": false
+        },
+        "layer_0_softmax": {
+          "value": 0.699458,
+          "source_kind": "published_functional_m4_trace",
+          "trusted_calibration": false
+        }
+      },
+      "layers": [
+        0,
+        1
+      ],
+      "operator_templates": [
+        {
+          "key": "rms_norm",
+          "module": "attention",
+          "stage": "pre_attention",
+          "semantic_after": [
+            "$previous_layer"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.016551,
+            "memory.shared": 0.012
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.066,
+            "memory.shared": 0.045
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.006,
+          "observed_ms": [
+            0.064,
+            0.065
+          ]
+        },
+        {
+          "key": "q_projection",
+          "module": "attention",
+          "stage": "qkv_projection",
+          "semantic_after": [
+            "rms_norm"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.024802
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.16,
+            "memory.shared": 0.05
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.01,
+          "observed_ms": [
+            0.154288,
+            0.156
+          ]
+        },
+        {
+          "key": "k_projection",
+          "module": "attention",
+          "stage": "qkv_projection",
+          "semantic_after": [
+            "rms_norm"
+          ],
+          "execution_after": [
+            "q_projection"
+          ],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.024802
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.16,
+            "memory.shared": 0.05
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.01,
+          "observed_ms": [
+            0.158,
+            0.157
+          ]
+        },
+        {
+          "key": "v_projection",
+          "module": "attention",
+          "stage": "qkv_projection",
+          "semantic_after": [
+            "rms_norm"
+          ],
+          "execution_after": [
+            "k_projection"
+          ],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.024802
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.16,
+            "memory.shared": 0.05
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.01,
+          "observed_ms": [
+            0.159,
+            0.158
+          ]
+        },
+        {
+          "key": "attention_score",
+          "module": "attention",
+          "stage": "attention",
+          "semantic_after": [
+            "q_projection",
+            "k_projection"
+          ],
+          "execution_after": [
+            "v_projection"
+          ],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.04
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 1.4,
+            "memory.shared": 0.35
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.1,
+          "observed_ms": [
+            1.38,
+            1.39
+          ]
+        },
+        {
+          "key": "softmax",
+          "module": "attention",
+          "stage": "attention",
+          "semantic_after": [
+            "attention_score"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.132278,
+            "memory.shared": 0.05
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.72,
+            "memory.shared": 0.18
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.05,
+          "observed_ms": [
+            0.699458,
+            0.71
+          ]
+        },
+        {
+          "key": "attention_value",
+          "module": "attention",
+          "stage": "attention",
+          "semantic_after": [
+            "softmax",
+            "v_projection"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.04
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 1.5,
+            "memory.shared": 0.38
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.1,
+          "observed_ms": [
+            1.47,
+            1.48
+          ]
+        },
+        {
+          "key": "output_projection",
+          "module": "attention",
+          "stage": "attention_output",
+          "semantic_after": [
+            "attention_value"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.153528,
+            "memory.shared": 0.03
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.55,
+            "memory.shared": 0.14
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.04,
+          "observed_ms": [
+            0.54,
+            0.545
+          ]
+        },
+        {
+          "key": "residual_add",
+          "module": "attention",
+          "stage": "attention_output",
+          "semantic_after": [
+            "output_projection",
+            "rms_norm"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.03,
+            "memory.shared": 0.02
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 0.4,
+            "memory.shared": 0.3
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.03,
+          "observed_ms": [
+            0.39,
+            0.395
+          ]
+        },
+        {
+          "key": "mlp_up_gate",
+          "module": "mlp",
+          "stage": "mlp",
+          "semantic_after": [
+            "residual_add"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.8,
+            "memory.shared": 0.11
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 8.2,
+            "memory.shared": 1.8
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.3,
+          "observed_ms": [
+            8.1,
+            8.15
+          ]
+        },
+        {
+          "key": "activation",
+          "module": "mlp",
+          "stage": "mlp",
+          "semantic_after": [
+            "mlp_up_gate"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.05,
+            "memory.shared": 0.04
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 3.0,
+            "memory.shared": 1.2
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.15,
+          "observed_ms": [
+            2.95,
+            2.98
+          ]
+        },
+        {
+          "key": "mlp_down_residual",
+          "module": "mlp",
+          "stage": "mlp_output",
+          "semantic_after": [
+            "activation",
+            "residual_add"
+          ],
+          "execution_after": [],
+          "resource_claim": "cpu.shared",
+          "physical_components_ms": {
+            "compute.fp32": 0.826991,
+            "memory.shared": 0.12
+          },
+          "candidate_components_ms": {
+            "compute.fp32": 9.5,
+            "memory.shared": 2.1
+          },
+          "candidate_overlap_rule": "max",
+          "frontier_uncertainty_ms": 0.35,
+          "observed_ms": [
+            9.4,
+            9.45
+          ]
+        }
+      ],
+      "schedule_candidates": [
+        {
+          "id": "serial_reference",
+          "validated_for_prototype": true,
+          "explicit_transformations": [],
+          "required_overheads_ms": [
+            {
+              "id": "layer_0_dispatch_floor",
+              "duration_ms": 1.2
+            },
+            {
+              "id": "layer_1_dispatch_floor",
+              "duration_ms": 1.2
+            },
+            {
+              "id": "e2e_sync_floor",
+              "duration_ms": 0.8
+            }
+          ]
+        },
+        {
+          "id": "batched_dispatch_counterfactual",
+          "validated_for_prototype": true,
+          "explicit_transformations": [
+            {
+              "kind": "batched_dispatch",
+              "explicit": true,
+              "preserves_operator_frontier": true,
+              "removes_observed_buckets": [
+                "layer_0_dispatch_queue",
+                "layer_1_dispatch_queue"
+              ]
+            }
+          ],
+          "required_overheads_ms": [
+            {
+              "id": "layer_0_batched_dispatch_floor",
+              "duration_ms": 0.4
+            },
+            {
+              "id": "layer_1_batched_dispatch_floor",
+              "duration_ms": 0.4
+            },
+            {
+              "id": "e2e_sync_floor",
+              "duration_ms": 0.8
+            }
+          ]
+        }
+      ],
+      "observed_overheads_ms": [
+        {
+          "id": "layer_0_dispatch_queue",
+          "duration_ms": 6.0,
+          "kind": "schedule_wait",
+          "scope": "layer_0/attention",
+          "explicit_cause": "framework_dispatch_queue"
+        },
+        {
+          "id": "layer_0_resource_contention",
+          "duration_ms": 5.0,
+          "kind": "schedule_wait",
+          "scope": "layer_0/mlp",
+          "explicit_cause": "cpu.shared claim contention"
+        },
+        {
+          "id": "layer_0_framework_integration",
+          "duration_ms": 8.594817,
+          "kind": "integration",
+          "scope": "layer_0/attention",
+          "explicit_cause": "trace residual after aligned operator and wait buckets"
+        },
+        {
+          "id": "layer_1_dispatch_queue",
+          "duration_ms": 6.0,
+          "kind": "schedule_wait",
+          "scope": "layer_1/attention",
+          "explicit_cause": "framework_dispatch_queue"
+        },
+        {
+          "id": "layer_1_resource_contention",
+          "duration_ms": 5.0,
+          "kind": "schedule_wait",
+          "scope": "layer_1/mlp",
+          "explicit_cause": "cpu.shared claim contention"
+        },
+        {
+          "id": "layer_1_framework_integration",
+          "duration_ms": 8.0,
+          "kind": "integration",
+          "scope": "layer_1/attention",
+          "explicit_cause": "trace residual after aligned operator and wait buckets"
+        },
+        {
+          "id": "e2e_framework_residual",
+          "duration_ms": 3.118916,
+          "kind": "integration",
+          "scope": "e2e/runtime",
+          "explicit_cause": "unaligned E2E trace residual"
+        }
+      ],
+      "counterexamples": [
+        {
+          "id": "implicit_fusion",
+          "kind": "fusion",
+          "explicit": false,
+          "expected_reason": "fusion_requires_explicit_group"
+        },
+        {
+          "id": "implicit_concurrency",
+          "kind": "concurrency",
+          "explicit": false,
+          "expected_reason": "concurrency_requires_explicit_execution_semantics"
+        },
+        {
+          "id": "implicit_communication_masking",
+          "kind": "communication_masking",
+          "explicit": false,
+          "expected_reason": "communication_masking_requires_explicit_event_pair"
+        },
+        {
+          "id": "unclaimed_resource_contention",
+          "kind": "resource_contention",
+          "explicit": false,
+          "expected_reason": "contention_requires_explicit_resource_claim"
+        }
+      ]
+    },
+    "expanded_nodes": [
+      {
+        "id": "layer_0/rms_norm",
+        "stable_path": "semantic/model/layer_0/attention/rms_norm",
+        "layer": 0,
+        "module": "attention",
+        "stage": "pre_attention",
+        "semantic_after": [],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.016551,
+          "memory.shared": 0.012
+        },
+        "physical_floor_ms": 0.016551,
+        "candidate_components_ms": {
+          "compute.fp32": 0.066,
+          "memory.shared": 0.045
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.066,
+        "frontier_uncertainty_ms": 0.006,
+        "observed_ms": 0.064,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/q_projection",
+        "stable_path": "semantic/model/layer_0/attention/q_projection",
+        "layer": 0,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_0/rms_norm"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.154288,
+        "observation_source_kind": "published_functional_m4_trace"
+      },
+      {
+        "id": "layer_0/k_projection",
+        "stable_path": "semantic/model/layer_0/attention/k_projection",
+        "layer": 0,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_0/rms_norm"
+        ],
+        "execution_after": [
+          "layer_0/q_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.158,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/v_projection",
+        "stable_path": "semantic/model/layer_0/attention/v_projection",
+        "layer": 0,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_0/rms_norm"
+        ],
+        "execution_after": [
+          "layer_0/k_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.159,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/attention_score",
+        "stable_path": "semantic/model/layer_0/attention/attention_score",
+        "layer": 0,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_0/q_projection",
+          "layer_0/k_projection"
+        ],
+        "execution_after": [
+          "layer_0/v_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 1.4,
+          "memory.shared": 0.35
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 1.4,
+        "frontier_uncertainty_ms": 0.1,
+        "observed_ms": 1.38,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/softmax",
+        "stable_path": "semantic/model/layer_0/attention/softmax",
+        "layer": 0,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_0/attention_score"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.132278,
+          "memory.shared": 0.05
+        },
+        "physical_floor_ms": 0.132278,
+        "candidate_components_ms": {
+          "compute.fp32": 0.72,
+          "memory.shared": 0.18
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.72,
+        "frontier_uncertainty_ms": 0.05,
+        "observed_ms": 0.699458,
+        "observation_source_kind": "published_functional_m4_trace"
+      },
+      {
+        "id": "layer_0/attention_value",
+        "stable_path": "semantic/model/layer_0/attention/attention_value",
+        "layer": 0,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_0/softmax",
+          "layer_0/v_projection"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 1.5,
+          "memory.shared": 0.38
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 1.5,
+        "frontier_uncertainty_ms": 0.1,
+        "observed_ms": 1.47,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/output_projection",
+        "stable_path": "semantic/model/layer_0/attention/output_projection",
+        "layer": 0,
+        "module": "attention",
+        "stage": "attention_output",
+        "semantic_after": [
+          "layer_0/attention_value"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.03
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.55,
+          "memory.shared": 0.14
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.55,
+        "frontier_uncertainty_ms": 0.04,
+        "observed_ms": 0.54,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/residual_add",
+        "stable_path": "semantic/model/layer_0/attention/residual_add",
+        "layer": 0,
+        "module": "attention",
+        "stage": "attention_output",
+        "semantic_after": [
+          "layer_0/output_projection",
+          "layer_0/rms_norm"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.03,
+          "memory.shared": 0.02
+        },
+        "physical_floor_ms": 0.03,
+        "candidate_components_ms": {
+          "compute.fp32": 0.4,
+          "memory.shared": 0.3
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.4,
+        "frontier_uncertainty_ms": 0.03,
+        "observed_ms": 0.39,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/mlp_up_gate",
+        "stable_path": "semantic/model/layer_0/mlp/mlp_up_gate",
+        "layer": 0,
+        "module": "mlp",
+        "stage": "mlp",
+        "semantic_after": [
+          "layer_0/residual_add"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.8,
+          "memory.shared": 0.11
+        },
+        "physical_floor_ms": 0.8,
+        "candidate_components_ms": {
+          "compute.fp32": 8.2,
+          "memory.shared": 1.8
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 8.2,
+        "frontier_uncertainty_ms": 0.3,
+        "observed_ms": 8.1,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/activation",
+        "stable_path": "semantic/model/layer_0/mlp/activation",
+        "layer": 0,
+        "module": "mlp",
+        "stage": "mlp",
+        "semantic_after": [
+          "layer_0/mlp_up_gate"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.05,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.05,
+        "candidate_components_ms": {
+          "compute.fp32": 3.0,
+          "memory.shared": 1.2
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 3.0,
+        "frontier_uncertainty_ms": 0.15,
+        "observed_ms": 2.95,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_0/mlp_down_residual",
+        "stable_path": "semantic/model/layer_0/mlp/mlp_down_residual",
+        "layer": 0,
+        "module": "mlp",
+        "stage": "mlp_output",
+        "semantic_after": [
+          "layer_0/activation",
+          "layer_0/residual_add"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.826991,
+          "memory.shared": 0.12
+        },
+        "physical_floor_ms": 0.826991,
+        "candidate_components_ms": {
+          "compute.fp32": 9.5,
+          "memory.shared": 2.1
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 9.5,
+        "frontier_uncertainty_ms": 0.35,
+        "observed_ms": 9.4,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/rms_norm",
+        "stable_path": "semantic/model/layer_1/attention/rms_norm",
+        "layer": 1,
+        "module": "attention",
+        "stage": "pre_attention",
+        "semantic_after": [
+          "layer_0/mlp_down_residual"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.016551,
+          "memory.shared": 0.012
+        },
+        "physical_floor_ms": 0.016551,
+        "candidate_components_ms": {
+          "compute.fp32": 0.066,
+          "memory.shared": 0.045
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.066,
+        "frontier_uncertainty_ms": 0.006,
+        "observed_ms": 0.065,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/q_projection",
+        "stable_path": "semantic/model/layer_1/attention/q_projection",
+        "layer": 1,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_1/rms_norm"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.156,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/k_projection",
+        "stable_path": "semantic/model/layer_1/attention/k_projection",
+        "layer": 1,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_1/rms_norm"
+        ],
+        "execution_after": [
+          "layer_1/q_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.157,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/v_projection",
+        "stable_path": "semantic/model/layer_1/attention/v_projection",
+        "layer": 1,
+        "module": "attention",
+        "stage": "qkv_projection",
+        "semantic_after": [
+          "layer_1/rms_norm"
+        ],
+        "execution_after": [
+          "layer_1/k_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.024802
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.16,
+          "memory.shared": 0.05
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.16,
+        "frontier_uncertainty_ms": 0.01,
+        "observed_ms": 0.158,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/attention_score",
+        "stable_path": "semantic/model/layer_1/attention/attention_score",
+        "layer": 1,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_1/q_projection",
+          "layer_1/k_projection"
+        ],
+        "execution_after": [
+          "layer_1/v_projection"
+        ],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 1.4,
+          "memory.shared": 0.35
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 1.4,
+        "frontier_uncertainty_ms": 0.1,
+        "observed_ms": 1.39,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/softmax",
+        "stable_path": "semantic/model/layer_1/attention/softmax",
+        "layer": 1,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_1/attention_score"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.132278,
+          "memory.shared": 0.05
+        },
+        "physical_floor_ms": 0.132278,
+        "candidate_components_ms": {
+          "compute.fp32": 0.72,
+          "memory.shared": 0.18
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.72,
+        "frontier_uncertainty_ms": 0.05,
+        "observed_ms": 0.71,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/attention_value",
+        "stable_path": "semantic/model/layer_1/attention/attention_value",
+        "layer": 1,
+        "module": "attention",
+        "stage": "attention",
+        "semantic_after": [
+          "layer_1/softmax",
+          "layer_1/v_projection"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 1.5,
+          "memory.shared": 0.38
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 1.5,
+        "frontier_uncertainty_ms": 0.1,
+        "observed_ms": 1.48,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/output_projection",
+        "stable_path": "semantic/model/layer_1/attention/output_projection",
+        "layer": 1,
+        "module": "attention",
+        "stage": "attention_output",
+        "semantic_after": [
+          "layer_1/attention_value"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.153528,
+          "memory.shared": 0.03
+        },
+        "physical_floor_ms": 0.153528,
+        "candidate_components_ms": {
+          "compute.fp32": 0.55,
+          "memory.shared": 0.14
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.55,
+        "frontier_uncertainty_ms": 0.04,
+        "observed_ms": 0.545,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/residual_add",
+        "stable_path": "semantic/model/layer_1/attention/residual_add",
+        "layer": 1,
+        "module": "attention",
+        "stage": "attention_output",
+        "semantic_after": [
+          "layer_1/output_projection",
+          "layer_1/rms_norm"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.03,
+          "memory.shared": 0.02
+        },
+        "physical_floor_ms": 0.03,
+        "candidate_components_ms": {
+          "compute.fp32": 0.4,
+          "memory.shared": 0.3
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 0.4,
+        "frontier_uncertainty_ms": 0.03,
+        "observed_ms": 0.395,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/mlp_up_gate",
+        "stable_path": "semantic/model/layer_1/mlp/mlp_up_gate",
+        "layer": 1,
+        "module": "mlp",
+        "stage": "mlp",
+        "semantic_after": [
+          "layer_1/residual_add"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.8,
+          "memory.shared": 0.11
+        },
+        "physical_floor_ms": 0.8,
+        "candidate_components_ms": {
+          "compute.fp32": 8.2,
+          "memory.shared": 1.8
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 8.2,
+        "frontier_uncertainty_ms": 0.3,
+        "observed_ms": 8.15,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/activation",
+        "stable_path": "semantic/model/layer_1/mlp/activation",
+        "layer": 1,
+        "module": "mlp",
+        "stage": "mlp",
+        "semantic_after": [
+          "layer_1/mlp_up_gate"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.05,
+          "memory.shared": 0.04
+        },
+        "physical_floor_ms": 0.05,
+        "candidate_components_ms": {
+          "compute.fp32": 3.0,
+          "memory.shared": 1.2
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 3.0,
+        "frontier_uncertainty_ms": 0.15,
+        "observed_ms": 2.98,
+        "observation_source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "layer_1/mlp_down_residual",
+        "stable_path": "semantic/model/layer_1/mlp/mlp_down_residual",
+        "layer": 1,
+        "module": "mlp",
+        "stage": "mlp_output",
+        "semantic_after": [
+          "layer_1/activation",
+          "layer_1/residual_add"
+        ],
+        "execution_after": [],
+        "resource_claim": "cpu.shared",
+        "physical_components_ms": {
+          "compute.fp32": 0.826991,
+          "memory.shared": 0.12
+        },
+        "physical_floor_ms": 0.826991,
+        "candidate_components_ms": {
+          "compute.fp32": 9.5,
+          "memory.shared": 2.1
+        },
+        "candidate_overlap_rule": "max",
+        "operator_frontier_ms": 9.5,
+        "frontier_uncertainty_ms": 0.35,
+        "observed_ms": 9.45,
+        "observation_source_kind": "synthetic_for_prototype"
+      }
+    ]
+  },
+  "environment": {
+    "git_revision": "163d08f74d8cde2edd18f7a491577b432c5f1fb0",
+    "python": "3.11.15 (main, May 10 2026, 19:23:07) [Clang 22.1.3 ]",
+    "platform": "macOS-15.7.4-arm64-arm-64bit",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "boundaries_ms": {
+    "resource_physical_floor": 5.5539760000000005,
+    "operator_achievable_frontier": 51.63199999999999,
+    "schedule_achievable_frontier": 53.23199999999999,
+    "observed_trace_e2e": 92.814479
+  },
+  "critical_paths": {
+    "resource_physical_floor": [
+      "layer_0/rms_norm",
+      "layer_0/q_projection",
+      "layer_0/k_projection",
+      "layer_0/v_projection",
+      "layer_0/attention_score",
+      "layer_0/softmax",
+      "layer_0/attention_value",
+      "layer_0/output_projection",
+      "layer_0/residual_add",
+      "layer_0/mlp_up_gate",
+      "layer_0/activation",
+      "layer_0/mlp_down_residual",
+      "layer_1/rms_norm",
+      "layer_1/q_projection",
+      "layer_1/k_projection",
+      "layer_1/v_projection",
+      "layer_1/attention_score",
+      "layer_1/softmax",
+      "layer_1/attention_value",
+      "layer_1/output_projection",
+      "layer_1/residual_add",
+      "layer_1/mlp_up_gate",
+      "layer_1/activation",
+      "layer_1/mlp_down_residual"
+    ],
+    "operator_achievable_frontier": [
+      "layer_0/rms_norm",
+      "layer_0/q_projection",
+      "layer_0/k_projection",
+      "layer_0/v_projection",
+      "layer_0/attention_score",
+      "layer_0/softmax",
+      "layer_0/attention_value",
+      "layer_0/output_projection",
+      "layer_0/residual_add",
+      "layer_0/mlp_up_gate",
+      "layer_0/activation",
+      "layer_0/mlp_down_residual",
+      "layer_1/rms_norm",
+      "layer_1/q_projection",
+      "layer_1/k_projection",
+      "layer_1/v_projection",
+      "layer_1/attention_score",
+      "layer_1/softmax",
+      "layer_1/attention_value",
+      "layer_1/output_projection",
+      "layer_1/residual_add",
+      "layer_1/mlp_up_gate",
+      "layer_1/activation",
+      "layer_1/mlp_down_residual"
+    ],
+    "schedule_achievable_frontier": [
+      "layer_0/rms_norm",
+      "layer_0/q_projection",
+      "layer_0/k_projection",
+      "layer_0/v_projection",
+      "layer_0/attention_score",
+      "layer_0/softmax",
+      "layer_0/attention_value",
+      "layer_0/output_projection",
+      "layer_0/residual_add",
+      "layer_0/mlp_up_gate",
+      "layer_0/activation",
+      "layer_0/mlp_down_residual",
+      "layer_1/rms_norm",
+      "layer_1/q_projection",
+      "layer_1/k_projection",
+      "layer_1/v_projection",
+      "layer_1/attention_score",
+      "layer_1/softmax",
+      "layer_1/attention_value",
+      "layer_1/output_projection",
+      "layer_1/residual_add",
+      "layer_1/mlp_up_gate",
+      "layer_1/activation",
+      "layer_1/mlp_down_residual"
+    ]
+  },
+  "schedule_candidates": [
+    {
+      "id": "serial_reference",
+      "valid": true,
+      "operator_frontier_preserved": true,
+      "critical_path_operator_ms": 51.63199999999999,
+      "required_overhead_ms": 3.2,
+      "schedule_duration_ms": 54.831999999999994,
+      "critical_path": [
+        "layer_0/rms_norm",
+        "layer_0/q_projection",
+        "layer_0/k_projection",
+        "layer_0/v_projection",
+        "layer_0/attention_score",
+        "layer_0/softmax",
+        "layer_0/attention_value",
+        "layer_0/output_projection",
+        "layer_0/residual_add",
+        "layer_0/mlp_up_gate",
+        "layer_0/activation",
+        "layer_0/mlp_down_residual",
+        "layer_1/rms_norm",
+        "layer_1/q_projection",
+        "layer_1/k_projection",
+        "layer_1/v_projection",
+        "layer_1/attention_score",
+        "layer_1/softmax",
+        "layer_1/attention_value",
+        "layer_1/output_projection",
+        "layer_1/residual_add",
+        "layer_1/mlp_up_gate",
+        "layer_1/activation",
+        "layer_1/mlp_down_residual"
+      ],
+      "explicit_transformations": []
+    },
+    {
+      "id": "batched_dispatch_counterfactual",
+      "valid": true,
+      "operator_frontier_preserved": true,
+      "critical_path_operator_ms": 51.63199999999999,
+      "required_overhead_ms": 1.6,
+      "schedule_duration_ms": 53.23199999999999,
+      "critical_path": [
+        "layer_0/rms_norm",
+        "layer_0/q_projection",
+        "layer_0/k_projection",
+        "layer_0/v_projection",
+        "layer_0/attention_score",
+        "layer_0/softmax",
+        "layer_0/attention_value",
+        "layer_0/output_projection",
+        "layer_0/residual_add",
+        "layer_0/mlp_up_gate",
+        "layer_0/activation",
+        "layer_0/mlp_down_residual",
+        "layer_1/rms_norm",
+        "layer_1/q_projection",
+        "layer_1/k_projection",
+        "layer_1/v_projection",
+        "layer_1/attention_score",
+        "layer_1/softmax",
+        "layer_1/attention_value",
+        "layer_1/output_projection",
+        "layer_1/residual_add",
+        "layer_1/mlp_up_gate",
+        "layer_1/activation",
+        "layer_1/mlp_down_residual"
+      ],
+      "explicit_transformations": [
+        {
+          "kind": "batched_dispatch",
+          "explicit": true,
+          "preserves_operator_frontier": true,
+          "removes_observed_buckets": [
+            "layer_0_dispatch_queue",
+            "layer_1_dispatch_queue"
+          ]
+        }
+      ]
+    }
+  ],
+  "observed_time_ledger": {
+    "rows": [
+      {
+        "id": "trace/layer_0/rms_norm",
+        "duration_ms": 0.064,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/rms_norm",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/q_projection",
+        "duration_ms": 0.154288,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/q_projection",
+        "source_kind": "published_functional_m4_trace"
+      },
+      {
+        "id": "trace/layer_0/k_projection",
+        "duration_ms": 0.158,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/k_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/v_projection",
+        "duration_ms": 0.159,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/v_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/attention_score",
+        "duration_ms": 1.38,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/attention_score",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/softmax",
+        "duration_ms": 0.699458,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/softmax",
+        "source_kind": "published_functional_m4_trace"
+      },
+      {
+        "id": "trace/layer_0/attention_value",
+        "duration_ms": 1.47,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/attention_value",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/output_projection",
+        "duration_ms": 0.54,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/output_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/residual_add",
+        "duration_ms": 0.39,
+        "kind": "operator_execution",
+        "scope": "layer_0/attention",
+        "operator_id": "layer_0/residual_add",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/mlp_up_gate",
+        "duration_ms": 8.1,
+        "kind": "operator_execution",
+        "scope": "layer_0/mlp",
+        "operator_id": "layer_0/mlp_up_gate",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/activation",
+        "duration_ms": 2.95,
+        "kind": "operator_execution",
+        "scope": "layer_0/mlp",
+        "operator_id": "layer_0/activation",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0/mlp_down_residual",
+        "duration_ms": 9.4,
+        "kind": "operator_execution",
+        "scope": "layer_0/mlp",
+        "operator_id": "layer_0/mlp_down_residual",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/rms_norm",
+        "duration_ms": 0.065,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/rms_norm",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/q_projection",
+        "duration_ms": 0.156,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/q_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/k_projection",
+        "duration_ms": 0.157,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/k_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/v_projection",
+        "duration_ms": 0.158,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/v_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/attention_score",
+        "duration_ms": 1.39,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/attention_score",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/softmax",
+        "duration_ms": 0.71,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/softmax",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/attention_value",
+        "duration_ms": 1.48,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/attention_value",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/output_projection",
+        "duration_ms": 0.545,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/output_projection",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/residual_add",
+        "duration_ms": 0.395,
+        "kind": "operator_execution",
+        "scope": "layer_1/attention",
+        "operator_id": "layer_1/residual_add",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/mlp_up_gate",
+        "duration_ms": 8.15,
+        "kind": "operator_execution",
+        "scope": "layer_1/mlp",
+        "operator_id": "layer_1/mlp_up_gate",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/activation",
+        "duration_ms": 2.98,
+        "kind": "operator_execution",
+        "scope": "layer_1/mlp",
+        "operator_id": "layer_1/activation",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1/mlp_down_residual",
+        "duration_ms": 9.45,
+        "kind": "operator_execution",
+        "scope": "layer_1/mlp",
+        "operator_id": "layer_1/mlp_down_residual",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0_dispatch_queue",
+        "duration_ms": 6.0,
+        "kind": "schedule_wait",
+        "scope": "layer_0/attention",
+        "explicit_cause": "framework_dispatch_queue",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0_resource_contention",
+        "duration_ms": 5.0,
+        "kind": "schedule_wait",
+        "scope": "layer_0/mlp",
+        "explicit_cause": "cpu.shared claim contention",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_0_framework_integration",
+        "duration_ms": 8.594817,
+        "kind": "integration",
+        "scope": "layer_0/attention",
+        "explicit_cause": "trace residual after aligned operator and wait buckets",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1_dispatch_queue",
+        "duration_ms": 6.0,
+        "kind": "schedule_wait",
+        "scope": "layer_1/attention",
+        "explicit_cause": "framework_dispatch_queue",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1_resource_contention",
+        "duration_ms": 5.0,
+        "kind": "schedule_wait",
+        "scope": "layer_1/mlp",
+        "explicit_cause": "cpu.shared claim contention",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1_framework_integration",
+        "duration_ms": 8.0,
+        "kind": "integration",
+        "scope": "layer_1/attention",
+        "explicit_cause": "trace residual after aligned operator and wait buckets",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/e2e_framework_residual",
+        "duration_ms": 3.118916,
+        "kind": "integration",
+        "scope": "e2e/runtime",
+        "explicit_cause": "unaligned E2E trace residual",
+        "source_kind": "synthetic_for_prototype"
+      }
+    ],
+    "by_kind_ms": {
+      "integration": 19.713732999999998,
+      "operator_execution": 51.100746,
+      "schedule_wait": 22.0
+    },
+    "by_scope_ms": {
+      "e2e/runtime": 3.118916,
+      "layer_0/attention": 19.609563,
+      "layer_0/mlp": 25.450000000000003,
+      "layer_1/attention": 19.055999999999997,
+      "layer_1/mlp": 25.58
+    },
+    "total_ms": 92.814479,
+    "expected_e2e_ms": 92.814479,
+    "unique_leaf_ids": true,
+    "drilldown_conserved": true,
+    "drilldown": {
+      "id": "e2e",
+      "duration_ms": 92.814479,
+      "stages": [
+        {
+          "id": "layer_0",
+          "duration_ms": 45.059563000000004,
+          "modules": [
+            {
+              "id": "attention",
+              "duration_ms": 19.609563,
+              "leaves": [
+                {
+                  "id": "trace/layer_0/rms_norm",
+                  "duration_ms": 0.064,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/rms_norm",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/q_projection",
+                  "duration_ms": 0.154288,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/q_projection",
+                  "source_kind": "published_functional_m4_trace"
+                },
+                {
+                  "id": "trace/layer_0/k_projection",
+                  "duration_ms": 0.158,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/k_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/v_projection",
+                  "duration_ms": 0.159,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/v_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/attention_score",
+                  "duration_ms": 1.38,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/attention_score",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/softmax",
+                  "duration_ms": 0.699458,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/softmax",
+                  "source_kind": "published_functional_m4_trace"
+                },
+                {
+                  "id": "trace/layer_0/attention_value",
+                  "duration_ms": 1.47,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/attention_value",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/output_projection",
+                  "duration_ms": 0.54,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/output_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/residual_add",
+                  "duration_ms": 0.39,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/attention",
+                  "operator_id": "layer_0/residual_add",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0_dispatch_queue",
+                  "duration_ms": 6.0,
+                  "kind": "schedule_wait",
+                  "scope": "layer_0/attention",
+                  "explicit_cause": "framework_dispatch_queue",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0_framework_integration",
+                  "duration_ms": 8.594817,
+                  "kind": "integration",
+                  "scope": "layer_0/attention",
+                  "explicit_cause": "trace residual after aligned operator and wait buckets",
+                  "source_kind": "synthetic_for_prototype"
+                }
+              ]
+            },
+            {
+              "id": "mlp",
+              "duration_ms": 25.450000000000003,
+              "leaves": [
+                {
+                  "id": "trace/layer_0/mlp_up_gate",
+                  "duration_ms": 8.1,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/mlp",
+                  "operator_id": "layer_0/mlp_up_gate",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/activation",
+                  "duration_ms": 2.95,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/mlp",
+                  "operator_id": "layer_0/activation",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0/mlp_down_residual",
+                  "duration_ms": 9.4,
+                  "kind": "operator_execution",
+                  "scope": "layer_0/mlp",
+                  "operator_id": "layer_0/mlp_down_residual",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_0_resource_contention",
+                  "duration_ms": 5.0,
+                  "kind": "schedule_wait",
+                  "scope": "layer_0/mlp",
+                  "explicit_cause": "cpu.shared claim contention",
+                  "source_kind": "synthetic_for_prototype"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "layer_1",
+          "duration_ms": 44.635999999999996,
+          "modules": [
+            {
+              "id": "attention",
+              "duration_ms": 19.055999999999997,
+              "leaves": [
+                {
+                  "id": "trace/layer_1/rms_norm",
+                  "duration_ms": 0.065,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/rms_norm",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/q_projection",
+                  "duration_ms": 0.156,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/q_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/k_projection",
+                  "duration_ms": 0.157,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/k_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/v_projection",
+                  "duration_ms": 0.158,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/v_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/attention_score",
+                  "duration_ms": 1.39,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/attention_score",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/softmax",
+                  "duration_ms": 0.71,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/softmax",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/attention_value",
+                  "duration_ms": 1.48,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/attention_value",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/output_projection",
+                  "duration_ms": 0.545,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/output_projection",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/residual_add",
+                  "duration_ms": 0.395,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/attention",
+                  "operator_id": "layer_1/residual_add",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1_dispatch_queue",
+                  "duration_ms": 6.0,
+                  "kind": "schedule_wait",
+                  "scope": "layer_1/attention",
+                  "explicit_cause": "framework_dispatch_queue",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1_framework_integration",
+                  "duration_ms": 8.0,
+                  "kind": "integration",
+                  "scope": "layer_1/attention",
+                  "explicit_cause": "trace residual after aligned operator and wait buckets",
+                  "source_kind": "synthetic_for_prototype"
+                }
+              ]
+            },
+            {
+              "id": "mlp",
+              "duration_ms": 25.58,
+              "leaves": [
+                {
+                  "id": "trace/layer_1/mlp_up_gate",
+                  "duration_ms": 8.15,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/mlp",
+                  "operator_id": "layer_1/mlp_up_gate",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/activation",
+                  "duration_ms": 2.98,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/mlp",
+                  "operator_id": "layer_1/activation",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1/mlp_down_residual",
+                  "duration_ms": 9.45,
+                  "kind": "operator_execution",
+                  "scope": "layer_1/mlp",
+                  "operator_id": "layer_1/mlp_down_residual",
+                  "source_kind": "synthetic_for_prototype"
+                },
+                {
+                  "id": "trace/layer_1_resource_contention",
+                  "duration_ms": 5.0,
+                  "kind": "schedule_wait",
+                  "scope": "layer_1/mlp",
+                  "explicit_cause": "cpu.shared claim contention",
+                  "source_kind": "synthetic_for_prototype"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "direct_leaves": [
+        {
+          "id": "trace/e2e_framework_residual",
+          "duration_ms": 3.118916,
+          "kind": "integration",
+          "scope": "e2e/runtime",
+          "explicit_cause": "unaligned E2E trace residual",
+          "source_kind": "synthetic_for_prototype"
+        }
+      ],
+      "leaf_ids": [
+        "trace/layer_0/rms_norm",
+        "trace/layer_0/q_projection",
+        "trace/layer_0/k_projection",
+        "trace/layer_0/v_projection",
+        "trace/layer_0/attention_score",
+        "trace/layer_0/softmax",
+        "trace/layer_0/attention_value",
+        "trace/layer_0/output_projection",
+        "trace/layer_0/residual_add",
+        "trace/layer_0_dispatch_queue",
+        "trace/layer_0_framework_integration",
+        "trace/layer_0/mlp_up_gate",
+        "trace/layer_0/activation",
+        "trace/layer_0/mlp_down_residual",
+        "trace/layer_0_resource_contention",
+        "trace/layer_1/rms_norm",
+        "trace/layer_1/q_projection",
+        "trace/layer_1/k_projection",
+        "trace/layer_1/v_projection",
+        "trace/layer_1/attention_score",
+        "trace/layer_1/softmax",
+        "trace/layer_1/attention_value",
+        "trace/layer_1/output_projection",
+        "trace/layer_1/residual_add",
+        "trace/layer_1_dispatch_queue",
+        "trace/layer_1_framework_integration",
+        "trace/layer_1/mlp_up_gate",
+        "trace/layer_1/activation",
+        "trace/layer_1/mlp_down_residual",
+        "trace/layer_1_resource_contention",
+        "trace/e2e_framework_residual"
+      ]
+    }
+  },
+  "top_10": {
+    "predicted_operator_frontier": [
+      {
+        "rank": 1,
+        "operator_id": "layer_0/mlp_down_residual",
+        "duration_ms": 9.5
+      },
+      {
+        "rank": 2,
+        "operator_id": "layer_1/mlp_down_residual",
+        "duration_ms": 9.5
+      },
+      {
+        "rank": 3,
+        "operator_id": "layer_0/mlp_up_gate",
+        "duration_ms": 8.2
+      },
+      {
+        "rank": 4,
+        "operator_id": "layer_1/mlp_up_gate",
+        "duration_ms": 8.2
+      },
+      {
+        "rank": 5,
+        "operator_id": "layer_0/activation",
+        "duration_ms": 3.0
+      },
+      {
+        "rank": 6,
+        "operator_id": "layer_1/activation",
+        "duration_ms": 3.0
+      },
+      {
+        "rank": 7,
+        "operator_id": "layer_0/attention_value",
+        "duration_ms": 1.5
+      },
+      {
+        "rank": 8,
+        "operator_id": "layer_1/attention_value",
+        "duration_ms": 1.5
+      },
+      {
+        "rank": 9,
+        "operator_id": "layer_0/attention_score",
+        "duration_ms": 1.4
+      },
+      {
+        "rank": 10,
+        "operator_id": "layer_1/attention_score",
+        "duration_ms": 1.4
+      }
+    ],
+    "observed_operator_trace": [
+      {
+        "rank": 1,
+        "operator_id": "layer_1/mlp_down_residual",
+        "duration_ms": 9.45
+      },
+      {
+        "rank": 2,
+        "operator_id": "layer_0/mlp_down_residual",
+        "duration_ms": 9.4
+      },
+      {
+        "rank": 3,
+        "operator_id": "layer_1/mlp_up_gate",
+        "duration_ms": 8.15
+      },
+      {
+        "rank": 4,
+        "operator_id": "layer_0/mlp_up_gate",
+        "duration_ms": 8.1
+      },
+      {
+        "rank": 5,
+        "operator_id": "layer_1/activation",
+        "duration_ms": 2.98
+      },
+      {
+        "rank": 6,
+        "operator_id": "layer_0/activation",
+        "duration_ms": 2.95
+      },
+      {
+        "rank": 7,
+        "operator_id": "layer_1/attention_value",
+        "duration_ms": 1.48
+      },
+      {
+        "rank": 8,
+        "operator_id": "layer_0/attention_value",
+        "duration_ms": 1.47
+      },
+      {
+        "rank": 9,
+        "operator_id": "layer_1/attention_score",
+        "duration_ms": 1.39
+      },
+      {
+        "rank": 10,
+        "operator_id": "layer_0/attention_score",
+        "duration_ms": 1.38
+      }
+    ]
+  },
+  "diagnosis": {
+    "all_operator_observations_in_frontier_band": true,
+    "schedule_frontier_uncertainty_ms": 2.0,
+    "unexplained_above_schedule_frontier_ms": 39.58247900000001,
+    "verdict": "integration_overhead"
+  },
+  "counterfactual": {
+    "id": "batched_dispatch_counterfactual",
+    "explicit_transformations": [
+      {
+        "kind": "batched_dispatch",
+        "explicit": true,
+        "preserves_operator_frontier": true,
+        "removes_observed_buckets": [
+          "layer_0_dispatch_queue",
+          "layer_1_dispatch_queue"
+        ]
+      }
+    ],
+    "removed_rows": [
+      {
+        "id": "trace/layer_0_dispatch_queue",
+        "duration_ms": 6.0,
+        "kind": "schedule_wait",
+        "scope": "layer_0/attention",
+        "explicit_cause": "framework_dispatch_queue",
+        "source_kind": "synthetic_for_prototype"
+      },
+      {
+        "id": "trace/layer_1_dispatch_queue",
+        "duration_ms": 6.0,
+        "kind": "schedule_wait",
+        "scope": "layer_1/attention",
+        "explicit_cause": "framework_dispatch_queue",
+        "source_kind": "synthetic_for_prototype"
+      }
+    ],
+    "before_e2e_ms": 92.814479,
+    "after_e2e_ms": 80.814479,
+    "observed_delta_ms": 12.0,
+    "removed_bucket_total_ms": 12.0,
+    "operator_observed_before_ms": 51.100746,
+    "operator_observed_after_ms": 51.100746,
+    "operator_frontier_changed": false
+  },
+  "counterexamples": [
+    {
+      "id": "implicit_fusion",
+      "kind": "fusion",
+      "explicit": false,
+      "expected_reason": "fusion_requires_explicit_group",
+      "accepted": false,
+      "actual_reason": "fusion_requires_explicit_group",
+      "rejected_as_expected": true
+    },
+    {
+      "id": "implicit_concurrency",
+      "kind": "concurrency",
+      "explicit": false,
+      "expected_reason": "concurrency_requires_explicit_execution_semantics",
+      "accepted": false,
+      "actual_reason": "concurrency_requires_explicit_execution_semantics",
+      "rejected_as_expected": true
+    },
+    {
+      "id": "implicit_communication_masking",
+      "kind": "communication_masking",
+      "explicit": false,
+      "expected_reason": "communication_masking_requires_explicit_event_pair",
+      "accepted": false,
+      "actual_reason": "communication_masking_requires_explicit_event_pair",
+      "rejected_as_expected": true
+    },
+    {
+      "id": "unclaimed_resource_contention",
+      "kind": "resource_contention",
+      "explicit": false,
+      "expected_reason": "contention_requires_explicit_resource_claim",
+      "accepted": false,
+      "actual_reason": "contention_requires_explicit_resource_claim",
+      "rejected_as_expected": true
+    }
+  ],
+  "checks": {
+    "ledger_conserved": true,
+    "critical_path_valid": true,
+    "explicit_semantics_enforced": true,
+    "integration_overhead_detected": true,
+    "counterfactual_explained": true
+  }
+}

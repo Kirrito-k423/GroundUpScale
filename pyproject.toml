@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 groundupscale = "groundupscale.cli:main"
+groundupscale-prototype-schedule-frontier = "groundupscale.benchmark.prototype_issue7_schedule_frontier.__main__:main"
 
 [dependency-groups]
 dev = [
