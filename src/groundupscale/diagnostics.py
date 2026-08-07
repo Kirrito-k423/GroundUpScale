@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -34,6 +35,9 @@ _EVIDENCE_KEYS = (
     "resource_physical_floor",
     "single_node_schedule",
     "policies",
+    "capability_surfaces",
+    "surface_updates",
+    "surface_queries",
 )
 
 
@@ -43,6 +47,25 @@ class DiagnosticBundleError(ValueError):
 
 class DiagnosticBundleIntegrityError(DiagnosticBundleError):
     """A manifest or authored evidence digest did not verify."""
+
+
+@dataclass(frozen=True)
+class _SelectedSurfaceCell:
+    cell: dict[str, Any]
+    anchors: tuple[dict[str, Any], dict[str, Any]]
+    weights: tuple[float, float]
+    exact_anchor: bool
+    effective_rate: float
+
+
+@dataclass(frozen=True)
+class _SurfaceUncertainty:
+    anchor_standard_rate: float
+    interpolation_standard_rate: float
+    instrumentation_standard_rate: float
+    combined_standard_rate: float
+    rate_low: float
+    rate_high: float
 
 
 def _canonical_digest(value: object) -> str:
@@ -506,6 +529,684 @@ def _comparisons(axes: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _surface_summary(
+    surface: dict[str, Any], previous: dict[str, Any] | None
+) -> dict[str, Any]:
+    anchors = surface.get("anchors")
+    cells = surface.get("cells")
+    summary = {
+        "surface_id": surface.get("surface_id"),
+        "version": surface.get("version"),
+        "previous_version": surface.get("previous_version"),
+        "input_digest": surface.get("input_digest"),
+        "cohort_id": surface.get("cohort_id"),
+        "domain": surface.get("domain"),
+        "candidate_family": surface.get("candidate_family"),
+        "anchor_ids": [
+            anchor.get("anchor_id")
+            for anchor in anchors
+            if isinstance(anchor, dict)
+        ]
+        if isinstance(anchors, list)
+        else [],
+        "cell_ids": [
+            cell.get("cell_id")
+            for cell in cells
+            if isinstance(cell, dict)
+        ]
+        if isinstance(cells, list)
+        else [],
+    }
+    if previous is not None:
+        previous_anchors = previous.get("anchors")
+        previous_anchor_ids = {
+            anchor.get("anchor_id")
+            for anchor in previous_anchors
+            if isinstance(anchor, dict)
+        } if isinstance(previous_anchors, list) else set()
+        current_anchor_ids = set(summary["anchor_ids"])
+        summary["transition"] = {
+            "previous_version": previous.get("version"),
+            "previous_input_digest": previous.get("input_digest"),
+            "added_anchor_ids": sorted(current_anchor_ids - previous_anchor_ids),
+            "removed_anchor_ids": sorted(previous_anchor_ids - current_anchor_ids),
+        }
+    return summary
+
+
+def _unknown_surface_query(
+    query: dict[str, Any],
+    surface: dict[str, Any] | None,
+    reason_code: str,
+) -> dict[str, Any]:
+    surface_ref = (
+        {
+            "surface_id": surface.get("surface_id"),
+            "version": surface.get("version"),
+            "input_digest": surface.get("input_digest"),
+        }
+        if isinstance(surface, dict)
+        else {
+            "surface_id": query.get("surface_id"),
+            "version": query.get("surface_version"),
+            "input_digest": None,
+        }
+    )
+    candidate_family = (
+        surface.get("candidate_family")
+        if isinstance(surface, dict)
+        else None
+    )
+    return {
+        "query_id": query.get("query_id"),
+        "status": "unknown",
+        "reason_code": reason_code,
+        "surface": surface_ref,
+        "cohort_id": (
+            surface.get("cohort_id") if isinstance(surface, dict) else None
+        ),
+        "domain": surface.get("domain") if isinstance(surface, dict) else None,
+        "query_shape": query.get("shape"),
+        "candidate_families": (
+            [candidate_family] if _nonempty_string(candidate_family) else []
+        ),
+        "selected_candidate_family": None,
+        "cell_id": None,
+        "anchors": [],
+        "weights": [],
+        "effective_rate": None,
+        "work_rate_latency": None,
+        "uncertainty": None,
+        "evidence_refs": [],
+    }
+
+
+def _eligible_surface_anchor(
+    surface: dict[str, Any], anchor: object, axis: str
+) -> bool:
+    if not isinstance(anchor, dict):
+        return False
+    shape = anchor.get("shape")
+    rate = anchor.get("effective_rate")
+    return (
+        _nonempty_string(anchor.get("anchor_id"))
+        and _nonempty_string(anchor.get("anchor_version"))
+        and isinstance(shape, dict)
+        and set(shape) == {axis}
+        and isinstance(shape[axis], (int, float))
+        and not isinstance(shape[axis], bool)
+        and shape[axis] > 0
+        and isinstance(rate, (int, float))
+        and not isinstance(rate, bool)
+        and rate > 0
+        and anchor.get("rate_unit") == "FLOP/s"
+        and _nonempty_string(anchor.get("candidate_id"))
+        and anchor.get("candidate_family") == surface.get("candidate_family")
+        and anchor.get("cohort_id") == surface.get("cohort_id")
+        and anchor.get("domain") == surface.get("domain")
+        and anchor.get("observation_validity") == "QUALIFIED"
+        and anchor.get("frontier_role") == "ACTIVE"
+        and _nonempty_string(anchor.get("evidence_ref"))
+    )
+
+
+def _surface_policy(surface: dict[str, Any]) -> dict[str, Any] | None:
+    policy = surface.get("uncertainty_policy")
+    if not isinstance(policy, dict):
+        return None
+    target_coverage = policy.get("target_coverage")
+    if not all(
+        _nonempty_string(policy.get(key))
+        for key in (
+            "policy_id",
+            "version",
+            "scope",
+            "change_reason",
+            "revalidation",
+        )
+    ) or policy.get("combination") != "root-sum-of-squares":
+        return None
+    if (
+        not isinstance(target_coverage, (int, float))
+        or isinstance(target_coverage, bool)
+        or not 0 < target_coverage <= 1
+    ):
+        return None
+    return policy
+
+
+def _select_surface_cell(
+    surface: dict[str, Any], axis: str, point: float
+) -> _SelectedSurfaceCell | None:
+    anchors_value = surface.get("anchors")
+    if not isinstance(anchors_value, list):
+        return None
+    eligible_anchors = [
+        anchor
+        for anchor in anchors_value
+        if _eligible_surface_anchor(surface, anchor, axis)
+    ]
+    anchor_by_id = {
+        anchor["anchor_id"]: anchor for anchor in eligible_anchors
+    }
+    cells_value = surface.get("cells")
+    cells = cells_value if isinstance(cells_value, list) else []
+    candidates: list[
+        tuple[
+            float,
+            str,
+            dict[str, Any],
+            tuple[dict[str, Any], dict[str, Any]],
+        ]
+    ] = []
+    for cell in cells:
+        if not isinstance(cell, dict) or cell.get("status") != "retained":
+            continue
+        anchor_ids = cell.get("anchor_ids")
+        if not isinstance(anchor_ids, list) or len(anchor_ids) != 2:
+            continue
+        left_anchor = anchor_by_id.get(anchor_ids[0])
+        right_anchor = anchor_by_id.get(anchor_ids[1])
+        if left_anchor is None or right_anchor is None:
+            continue
+        left = float(left_anchor["shape"][axis])
+        right = float(right_anchor["shape"][axis])
+        if (
+            left >= right
+            or not left <= point <= right
+            or not _nonempty_string(cell.get("cell_id"))
+        ):
+            continue
+        candidates.append(
+            (
+                right - left,
+                str(cell["cell_id"]),
+                cell,
+                (left_anchor, right_anchor),
+            )
+        )
+    if not candidates:
+        return None
+    _, _, cell, anchors = min(candidates, key=lambda item: item[:2])
+    left = float(anchors[0]["shape"][axis])
+    right = float(anchors[1]["shape"][axis])
+    right_weight = (point - left) / (right - left)
+    weights = (1.0 - right_weight, right_weight)
+    effective_rate = sum(
+        weight * float(anchor["effective_rate"])
+        for weight, anchor in zip(weights, anchors, strict=True)
+    )
+    return _SelectedSurfaceCell(
+        cell=cell,
+        anchors=anchors,
+        weights=weights,
+        exact_anchor=any(
+            point == float(anchor["shape"][axis]) for anchor in anchors
+        ),
+        effective_rate=effective_rate,
+    )
+
+
+def _derive_surface_uncertainty(
+    policy: dict[str, Any],
+    all_anchors: list[Any],
+    selected: _SelectedSurfaceCell,
+) -> tuple[_SurfaceUncertainty | None, str | None]:
+    covariance = policy.get("anchor_covariance")
+    if (
+        not isinstance(covariance, list)
+        or len(covariance) != len(all_anchors)
+        or any(
+            not isinstance(row, list) or len(row) != len(all_anchors)
+            for row in covariance
+        )
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_indices = [all_anchors.index(anchor) for anchor in selected.anchors]
+    anchor_variance = 0.0
+    for row_index, row_weight in zip(
+        anchor_indices, selected.weights, strict=True
+    ):
+        for column_index, column_weight in zip(
+            anchor_indices, selected.weights, strict=True
+        ):
+            covariance_value = covariance[row_index][column_index]
+            if (
+                not isinstance(covariance_value, (int, float))
+                or isinstance(covariance_value, bool)
+            ):
+                return None, "insufficient_uncertainty_evidence"
+            anchor_variance += row_weight * column_weight * covariance_value
+    interpolation_standard = (
+        0.0
+        if selected.exact_anchor
+        else selected.cell.get("interpolation_standard_uncertainty_rate")
+    )
+    instrumentation_standard = policy.get(
+        "instrumentation_standard_uncertainty_rate"
+    )
+    if (
+        anchor_variance < 0
+        or not isinstance(interpolation_standard, (int, float))
+        or isinstance(interpolation_standard, bool)
+        or interpolation_standard < 0
+        or not isinstance(instrumentation_standard, (int, float))
+        or isinstance(instrumentation_standard, bool)
+        or instrumentation_standard < 0
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_standard = anchor_variance**0.5
+    combined_standard = (
+        anchor_standard**2
+        + float(interpolation_standard) ** 2
+        + float(instrumentation_standard) ** 2
+    ) ** 0.5
+    rate_low = selected.effective_rate - combined_standard
+    if rate_low <= 0:
+        return None, "invalid_nonpositive_rate_interval"
+    return (
+        _SurfaceUncertainty(
+            anchor_standard_rate=anchor_standard,
+            interpolation_standard_rate=float(interpolation_standard),
+            instrumentation_standard_rate=float(instrumentation_standard),
+            combined_standard_rate=combined_standard,
+            rate_low=rate_low,
+            rate_high=selected.effective_rate + combined_standard,
+        ),
+        None,
+    )
+
+
+def _derive_work_rate_latency(
+    surface: dict[str, Any],
+    point: float,
+    effective_rate: float,
+    uncertainty: _SurfaceUncertainty,
+) -> tuple[dict[str, Any], dict[str, float]] | None:
+    work_formula = surface.get("work_formula")
+    if (
+        not isinstance(work_formula, dict)
+        or work_formula.get("kind") != "square-matmul-2s3"
+        or not _nonempty_string(work_formula.get("version"))
+        or work_formula.get("work_unit") != "FLOP"
+    ):
+        return None
+    declared_work = 2.0 * point**3
+    latency = {
+        "declared_work": declared_work,
+        "work_unit": "FLOP",
+        "value_ns": declared_work / effective_rate * 1_000_000_000,
+    }
+    latency_interval = {
+        "lower_ns": declared_work / uncertainty.rate_high * 1_000_000_000,
+        "upper_ns": declared_work / uncertainty.rate_low * 1_000_000_000,
+    }
+    return latency, latency_interval
+
+
+def _query_capability_surface(
+    query: dict[str, Any], surface: dict[str, Any]
+) -> dict[str, Any]:
+    coordinate = surface.get("coordinate")
+    if (
+        not isinstance(coordinate, dict)
+        or coordinate.get("transform") != "identity"
+        or not _nonempty_string(coordinate.get("transform_version"))
+        or not _nonempty_string(coordinate.get("axis"))
+    ):
+        return _unknown_surface_query(
+            query, surface, "invalid_surface_coordinate_policy"
+        )
+    axis = coordinate["axis"]
+    shape = query.get("shape")
+    if (
+        not isinstance(shape, dict)
+        or set(shape) != {axis}
+        or not isinstance(shape[axis], (int, float))
+        or isinstance(shape[axis], bool)
+        or shape[axis] <= 0
+    ):
+        return _unknown_surface_query(query, surface, "invalid_query_shape")
+    surface_domain = surface.get("domain")
+    query_domain = query.get("domain")
+    if not isinstance(surface_domain, dict) or not isinstance(query_domain, dict):
+        return _unknown_surface_query(query, surface, "incomplete_surface_domain")
+    if surface_domain.get("alignment_validated") is not True:
+        return _unknown_surface_query(
+            query, surface, "alignment_regime_unvalidated"
+        )
+    if surface_domain.get("regime_validated") is not True:
+        return _unknown_surface_query(query, surface, "shape_regime_unvalidated")
+    if query_domain.get("alignment_regime") != surface_domain.get(
+        "alignment_regime"
+    ):
+        return _unknown_surface_query(
+            query, surface, "alignment_regime_unvalidated"
+        )
+    if query_domain != surface_domain:
+        return _unknown_surface_query(query, surface, "shape_regime_unvalidated")
+
+    policy = _surface_policy(surface)
+    if policy is None:
+        return _unknown_surface_query(
+            query, surface, "missing_uncertainty_combination_policy"
+        )
+    calibration_refs = policy.get("calibration_evidence_refs")
+    if (
+        not isinstance(calibration_refs, list)
+        or not calibration_refs
+        or not all(_nonempty_string(reference) for reference in calibration_refs)
+    ):
+        return _unknown_surface_query(
+            query, surface, "insufficient_uncertainty_evidence"
+        )
+
+    anchors_value = surface.get("anchors")
+    if not isinstance(anchors_value, list):
+        return _unknown_surface_query(
+            query, surface, "no_qualified_active_surface_anchor"
+        )
+    point = float(shape[axis])
+    selected = _select_surface_cell(surface, axis, point)
+    if selected is None:
+        return _unknown_surface_query(
+            query, surface, "outside_validated_domain"
+        )
+    confirmation_refs = selected.cell.get("confirmation_evidence_refs")
+    if (
+        not isinstance(confirmation_refs, list)
+        or not confirmation_refs
+        or not all(_nonempty_string(reference) for reference in confirmation_refs)
+    ):
+        return _unknown_surface_query(
+            query, surface, "insufficient_uncertainty_evidence"
+        )
+    uncertainty, uncertainty_reason = _derive_surface_uncertainty(
+        policy, anchors_value, selected
+    )
+    if uncertainty is None:
+        return _unknown_surface_query(
+            query,
+            surface,
+            uncertainty_reason or "insufficient_uncertainty_evidence",
+        )
+    latency_derivation = _derive_work_rate_latency(
+        surface, point, selected.effective_rate, uncertainty
+    )
+    if latency_derivation is None:
+        return _unknown_surface_query(query, surface, "invalid_work_formula")
+    latency, latency_interval = latency_derivation
+    evidence_refs = [
+        *(anchor["evidence_ref"] for anchor in selected.anchors),
+        *confirmation_refs,
+        *calibration_refs,
+        *(
+            surface.get("evidence_refs")
+            if isinstance(surface.get("evidence_refs"), list)
+            else []
+        ),
+    ]
+    return {
+        "query_id": query.get("query_id"),
+        "status": "exact_anchor" if selected.exact_anchor else "interpolated",
+        "reason_code": None,
+        "surface": {
+            "surface_id": surface["surface_id"],
+            "version": surface["version"],
+            "input_digest": surface["input_digest"],
+        },
+        "cohort_id": surface["cohort_id"],
+        "domain": surface_domain,
+        "query_shape": shape,
+        "candidate_families": [surface["candidate_family"]],
+        "selected_candidate_family": surface["candidate_family"],
+        "cell_id": selected.cell["cell_id"],
+        "anchors": [
+            {
+                "anchor_id": anchor["anchor_id"],
+                "anchor_version": anchor["anchor_version"],
+                "shape": anchor["shape"],
+                "effective_rate": anchor["effective_rate"],
+                "evidence_ref": anchor["evidence_ref"],
+            }
+            for anchor in selected.anchors
+        ],
+        "weights": list(selected.weights),
+        "effective_rate": {
+            "value": selected.effective_rate,
+            "unit": "FLOP/s",
+        },
+        "work_rate_latency": latency,
+        "uncertainty": {
+            "components": {
+                "anchor_standard_rate": uncertainty.anchor_standard_rate,
+                "interpolation_standard_rate": (
+                    uncertainty.interpolation_standard_rate
+                ),
+                "instrumentation_standard_rate": (
+                    uncertainty.instrumentation_standard_rate
+                ),
+            },
+            "combined_standard_rate": uncertainty.combined_standard_rate,
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "rate_interval": {
+                "lower": uncertainty.rate_low,
+                "upper": uncertainty.rate_high,
+            },
+            "latency_interval": latency_interval,
+        },
+        "evidence_refs": evidence_refs,
+    }
+
+
+def _validated_surface_lineage(
+    surfaces: list[dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    dict[tuple[str, str], dict[str, Any]],
+]:
+    valid_surfaces: list[dict[str, Any]] = []
+    surface_index: dict[tuple[str, str], dict[str, Any]] = {}
+    pending = list(surfaces)
+    while pending:
+        unresolved: list[dict[str, Any]] = []
+        progress = False
+        for surface in pending:
+            previous_version = surface.get("previous_version")
+            previous = None
+            if previous_version is not None:
+                if not _nonempty_string(previous_version):
+                    continue
+                previous = surface_index.get(
+                    (surface["surface_id"], previous_version)
+                )
+                if previous is None:
+                    unresolved.append(surface)
+                    continue
+                if any(
+                    previous.get(key) != surface.get(key)
+                    for key in ("cohort_id", "domain", "candidate_family")
+                ):
+                    continue
+                previous_anchors = previous.get("anchors")
+                current_anchors = surface.get("anchors")
+                if not isinstance(previous_anchors, list) or not isinstance(
+                    current_anchors, list
+                ):
+                    continue
+                previous_by_id = {
+                    anchor.get("anchor_id"): anchor
+                    for anchor in previous_anchors
+                    if isinstance(anchor, dict)
+                }
+                current_by_id = {
+                    anchor.get("anchor_id"): anchor
+                    for anchor in current_anchors
+                    if isinstance(anchor, dict)
+                }
+                if not previous_by_id.keys() <= current_by_id.keys() or any(
+                    current_by_id[anchor_id] != previous_anchor
+                    for anchor_id, previous_anchor in previous_by_id.items()
+                ):
+                    continue
+            valid_surfaces.append(surface)
+            surface_index[(surface["surface_id"], surface["version"])] = surface
+            progress = True
+        if not progress:
+            break
+        pending = unresolved
+    return valid_surfaces, surface_index
+
+
+def _capability_surface_results(
+    document: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    surfaces_value = document.get("capability_surfaces")
+    queries_value = document.get("surface_queries")
+    if surfaces_value is None and queries_value is None:
+        return [], []
+    surfaces = surfaces_value if isinstance(surfaces_value, list) else []
+    queries = queries_value if isinstance(queries_value, list) else []
+    digest_valid_surfaces: list[dict[str, Any]] = []
+    digest_valid_index: dict[tuple[str, str], dict[str, Any]] = {}
+    for surface in surfaces:
+        if not isinstance(surface, dict):
+            continue
+        surface_id = surface.get("surface_id")
+        version = surface.get("version")
+        expected_digest = surface.get("input_digest")
+        actual_digest = _canonical_digest(
+            {key: value for key, value in surface.items() if key != "input_digest"}
+        )
+        if not _nonempty_string(surface_id) or not _nonempty_string(version):
+            continue
+        if expected_digest != actual_digest:
+            raise DiagnosticBundleIntegrityError(
+                "capability surface input digest mismatch: "
+                f"{surface_id}@{version}"
+            )
+        surface_key = (surface_id, version)
+        if surface_key in digest_valid_index:
+            raise DiagnosticBundleIntegrityError(
+                f"duplicate capability surface version: {surface_id}@{version}"
+            )
+        digest_valid_surfaces.append(surface)
+        digest_valid_index[surface_key] = surface
+    valid_surfaces, surface_index = _validated_surface_lineage(
+        digest_valid_surfaces
+    )
+    updates_value = document.get("surface_updates")
+    updates = updates_value if isinstance(updates_value, list) else []
+    for update in updates:
+        if not isinstance(update, dict):
+            continue
+        surface_id = update.get("surface_id")
+        base_version = update.get("base_version")
+        new_version = update.get("new_version")
+        if not all(
+            _nonempty_string(value)
+            for value in (
+                update.get("update_id"),
+                surface_id,
+                base_version,
+                new_version,
+            )
+        ):
+            continue
+        base = surface_index.get((surface_id, base_version))
+        new_key = (surface_id, new_version)
+        if new_key in digest_valid_index:
+            raise DiagnosticBundleIntegrityError(
+                f"duplicate capability surface version: {surface_id}@{new_version}"
+            )
+        coordinate = base.get("coordinate") if isinstance(base, dict) else None
+        axis = coordinate.get("axis") if isinstance(coordinate, dict) else None
+        anchor = update.get("anchor")
+        base_anchors = base.get("anchors") if isinstance(base, dict) else None
+        cells = update.get("cells")
+        uncertainty_policy = update.get("uncertainty_policy")
+        update_evidence_refs = update.get("evidence_refs")
+        if (
+            not isinstance(base, dict)
+            or not _nonempty_string(axis)
+            or not isinstance(base_anchors, list)
+            or not _eligible_surface_anchor(base, anchor, axis)
+            or not isinstance(cells, list)
+            or not isinstance(uncertainty_policy, dict)
+            or not isinstance(update_evidence_refs, list)
+            or not update_evidence_refs
+            or not all(
+                _nonempty_string(reference)
+                for reference in update_evidence_refs
+            )
+        ):
+            continue
+        anchor_ids = {
+            item.get("anchor_id")
+            for item in base_anchors
+            if isinstance(item, dict)
+        }
+        if anchor["anchor_id"] in anchor_ids:
+            continue
+        base_evidence_refs = base.get("evidence_refs")
+        new_anchors = sorted(
+            [*base_anchors, anchor],
+            key=lambda item: float(item["shape"][axis]),
+        )
+        new_surface = {
+            **base,
+            "version": new_version,
+            "previous_version": base_version,
+            "anchors": new_anchors,
+            "cells": cells,
+            "uncertainty_policy": uncertainty_policy,
+            "evidence_refs": [
+                *(
+                    base_evidence_refs
+                    if isinstance(base_evidence_refs, list)
+                    else []
+                ),
+                *update_evidence_refs,
+            ],
+        }
+        new_surface.pop("input_digest", None)
+        new_surface["input_digest"] = _canonical_digest(new_surface)
+        digest_valid_surfaces.append(new_surface)
+        digest_valid_index[new_key] = new_surface
+        valid_surfaces.append(new_surface)
+        surface_index[new_key] = new_surface
+    results: list[dict[str, Any]] = []
+    for query_value in queries:
+        if not isinstance(query_value, dict):
+            results.append(
+                _unknown_surface_query({}, None, "invalid_surface_query")
+            )
+            continue
+        surface = surface_index.get(
+            (query_value.get("surface_id"), query_value.get("surface_version"))
+        )
+        if surface is None:
+            results.append(
+                _unknown_surface_query(
+                    query_value, None, "surface_version_not_found"
+                )
+            )
+            continue
+        results.append(_query_capability_surface(query_value, surface))
+    summaries = []
+    for surface in valid_surfaces:
+        previous_version = surface.get("previous_version")
+        previous = (
+            surface_index.get((surface["surface_id"], previous_version))
+            if _nonempty_string(previous_version)
+            else None
+        )
+        summaries.append(_surface_summary(surface, previous))
+    return summaries, results
+
+
 def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
     """Derive one deterministic exact-Shape diagnosis from a Run Bundle."""
 
@@ -534,6 +1235,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             )
         }
     comparisons = _comparisons(axes)
+    capability_surfaces, surface_queries = _capability_surface_results(document)
     derivation_basis = {
         "schema": DIAGNOSTIC_RESULT_SCHEMA,
         "run_id": manifest["run_id"],
@@ -541,6 +1243,8 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "axes": axes,
         "comparisons": comparisons,
         "policy_refs": document.get("policies", {}),
+        "capability_surfaces": capability_surfaces,
+        "capability_surface_queries": surface_queries,
     }
     derivation = {
         "derivation_id": _canonical_digest(derivation_basis),
@@ -550,6 +1254,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             "qualify-exact-shape-active-anchor",
             "compose-explicit-single-node-schedule",
             "project-four-independent-axes",
+            "query-versioned-capability-surfaces",
         ],
     }
     return {
@@ -558,10 +1263,15 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "status": (
             "complete"
             if all(axis["status"] == "known" for axis in axes.values())
+            and all(
+                query["status"] != "unknown" for query in surface_queries
+            )
             else "partial"
         ),
         "axes": axes,
         "comparisons": comparisons,
+        "capability_surfaces": capability_surfaces,
+        "capability_surface_queries": surface_queries,
         "evidence": {
             key: document[key]
             for key in (
@@ -604,6 +1314,29 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             lines.append(
                 f"{label}: unknown ({axis['reason_code']})"
             )
+    for query in result.get("capability_surface_queries", []):
+        surface = query["surface"]
+        prefix = (
+            f"Capability Surface {query['query_id']} "
+            f"[{surface['surface_id']}@{surface['version']}]"
+        )
+        if query["status"] == "unknown":
+            lines.append(f"{prefix}: unknown ({query['reason_code']})")
+            continue
+        rate = query["effective_rate"]
+        latency = query["work_rate_latency"]
+        lines.append(
+            f"{prefix}: {query['status']}; "
+            f"cohort={query['cohort_id']}; "
+            f"domain={json.dumps(query['domain'], ensure_ascii=False, separators=(',', ':'), sort_keys=True)}; "
+            f"candidate-family={query['selected_candidate_family']}; "
+            f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
+            f"latency={latency['value_ns']:.6f} ns; "
+            f"cell={query['cell_id']}; "
+            f"anchors={','.join(anchor['anchor_id'] for anchor in query['anchors'])}; "
+            f"weights={json.dumps(query['weights'], separators=(',', ':'))}; "
+            f"uncertainty={json.dumps(query['uncertainty']['components'], separators=(',', ':'), sort_keys=True)}"
+        )
     evidence = result["evidence"]
     hardware_value = evidence.get("hardware")
     hardware = hardware_value if isinstance(hardware_value, dict) else {}
