@@ -10,6 +10,15 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
+from groundupscale.measurement_contract import (
+    CohortPolicy,
+    CompletionBoundary,
+    HardwareValidityIdentity,
+    MeasurementCapabilityManifest,
+    MeasurementContractError,
+    ProfilingOverheadPolicy,
+    TimerEvidence,
+)
 from groundupscale.run_bundle import verify_run_bundle
 
 
@@ -27,19 +36,16 @@ _INPUT_KEYS = (
     "cohort_id",
     "execution_domain",
 )
-_EVIDENCE_KEYS = (
-    "candidate",
-    "correctness",
-    "environment",
-    "baseline_timing_lane",
-    "frontier_anchors",
-    "resource_physical_floor",
-    "single_node_schedule",
-    "policies",
-    "capability_surfaces",
-    "candidate_envelopes",
-    "surface_updates",
-    "surface_queries",
+_TRANSIENT_COHORT_FAILURES = frozenset(
+    {
+        "throttling",
+        "contention",
+        "health",
+        "dispersion",
+        "timer",
+        "device",
+        "collection",
+    }
 )
 
 
@@ -181,6 +187,235 @@ def _versioned_policy(
     return policy
 
 
+def _primary_timer_available(document: dict[str, Any]) -> bool:
+    adapter = document.get("measurement_adapter")
+    if not isinstance(adapter, dict):
+        return False
+    try:
+        manifest = MeasurementCapabilityManifest.from_document(
+            document.get("measurement_capability_manifest"),
+            adapter_id=str(adapter.get("adapter_id", "")),
+            cohort_id=str(document.get("cohort_id", "")),
+        )
+    except MeasurementContractError:
+        return False
+    return manifest.primary_timer_available
+
+
+def _completion_boundary_valid(value: object) -> bool:
+    try:
+        CompletionBoundary.from_document(value)
+    except MeasurementContractError:
+        return False
+    return True
+
+
+def _timer_evidence_valid(timer: object, completion: object) -> bool:
+    try:
+        TimerEvidence.from_documents(timer, completion)
+    except MeasurementContractError:
+        return False
+    return True
+
+
+def _current_cohort_identity(document: dict[str, Any]) -> dict[str, Any]:
+    hardware = document.get("hardware")
+    execution_domain = document.get("execution_domain")
+    baseline = document.get("baseline_timing_lane")
+    adapter = document.get("measurement_adapter")
+    hardware_value = hardware if isinstance(hardware, dict) else {}
+    domain_value = execution_domain if isinstance(execution_domain, dict) else {}
+    baseline_value = baseline if isinstance(baseline, dict) else {}
+    timer = baseline_value.get("timer")
+    timer_value = timer if isinstance(timer, dict) else {}
+    completion = baseline_value.get("completion_boundary")
+    completion_value = completion if isinstance(completion, dict) else {}
+    adapter_value = adapter if isinstance(adapter, dict) else {}
+    return {
+        "device": hardware_value.get("device"),
+        "partition": hardware_value.get("partition"),
+        "topology": hardware_value.get("topology"),
+        "software": hardware_value.get("software"),
+        "power_clock": hardware_value.get("power_clock"),
+        "numeric_execution": {
+            key: domain_value.get(key)
+            for key in (
+                "dtype",
+                "layout",
+                "alignment_bytes",
+                "threads",
+                "execution_mode",
+            )
+        },
+        "timer_protocol": {
+            "source": timer_value.get("source"),
+            "resolution_ns": timer_value.get("resolution_ns"),
+            "monotonic": timer_value.get("monotonic"),
+            "completion_kind": completion_value.get("kind"),
+            "duration_reducer": completion_value.get("duration_reducer"),
+            "adapter_id": adapter_value.get("adapter_id"),
+            "adapter_version": adapter_value.get("adapter_version"),
+            "protocol_id": adapter_value.get("protocol_id"),
+            "protocol_version": adapter_value.get("protocol_version"),
+        },
+        "execution_context": {
+            key: domain_value.get(key)
+            for key in (
+                "affinity",
+                "numa",
+                "context",
+                "stream",
+                "concurrency",
+            )
+        },
+        "communication": document.get("communication_identity"),
+    }
+
+
+def _cohort_state(document: dict[str, Any]) -> dict[str, Any]:
+    evidence = document.get("cohort_evidence")
+    if evidence is None:
+        return {
+            "status": "insufficient_evidence",
+            "reason_code": "invalid-cohort-evidence",
+            "cohort_id": document.get("cohort_id"),
+            "reference_cohort_id": None,
+            "changed_dimensions": [],
+            "retry": {"status": "not_authorized"},
+            "evidence_refs": [],
+        }
+    policy_value = _versioned_policy(document, "cohort")
+    reference_identity = (
+        evidence.get("reference_identity")
+        if isinstance(evidence, dict)
+        else None
+    )
+    current_identity = _current_cohort_identity(document)
+    observed_identity = (
+        evidence.get("observed_identity")
+        if isinstance(evidence, dict)
+        else None
+    )
+    failures = (
+        evidence.get("transient_failures")
+        if isinstance(evidence, dict)
+        else None
+    )
+    try:
+        policy = CohortPolicy.from_document(policy_value)
+        reference = HardwareValidityIdentity.from_document(reference_identity)
+        current = HardwareValidityIdentity.from_document(current_identity)
+        observed = HardwareValidityIdentity.from_document(observed_identity)
+    except MeasurementContractError:
+        policy = None
+        reference = None
+        current = None
+        observed = None
+    if (
+        not isinstance(evidence, dict)
+        or policy is None
+        or not _nonempty_string(evidence.get("reference_cohort_id"))
+        or not _nonempty_string(evidence.get("evidence_ref"))
+        or reference is None
+        or current is None
+        or observed is None
+        or observed.document != current.document
+        or not isinstance(failures, list)
+    ):
+        return {
+            "status": "insufficient_evidence",
+            "reason_code": "invalid-cohort-evidence",
+            "cohort_id": document.get("cohort_id"),
+            "reference_cohort_id": (
+                evidence.get("reference_cohort_id")
+                if isinstance(evidence, dict)
+                else None
+            ),
+            "changed_dimensions": [],
+            "retry": {"status": "not_authorized"},
+            "evidence_refs": [],
+        }
+    changed_dimensions = current.changed_dimensions(reference)
+    if failures:
+        if not all(
+            isinstance(failure, dict)
+            and failure.get("kind") in _TRANSIENT_COHORT_FAILURES
+            and failure.get("retryable") is True
+            and _nonempty_string(failure.get("evidence_ref"))
+            for failure in failures
+        ):
+            return {
+                "status": "insufficient_evidence",
+                "reason_code": "invalid-transient-cohort-failure",
+                "cohort_id": document.get("cohort_id"),
+                "reference_cohort_id": evidence["reference_cohort_id"],
+                "changed_dimensions": changed_dimensions,
+                "retry": {"status": "not_authorized"},
+                "evidence_refs": [evidence["evidence_ref"]],
+            }
+        attempt = evidence.get("retry_attempt")
+        maximum_attempts = policy.maximum_retry_attempts
+        if (
+            not isinstance(attempt, int)
+            or isinstance(attempt, bool)
+            or attempt < 1
+            or not isinstance(maximum_attempts, int)
+            or isinstance(maximum_attempts, bool)
+            or maximum_attempts < attempt
+        ):
+            return {
+                "status": "insufficient_evidence",
+                "reason_code": "invalid-cohort-retry-policy",
+                "cohort_id": document.get("cohort_id"),
+                "reference_cohort_id": evidence["reference_cohort_id"],
+                "changed_dimensions": changed_dimensions,
+                "retry": {"status": "not_authorized"},
+                "evidence_refs": [evidence["evidence_ref"]],
+            }
+        return {
+            "status": "quarantined",
+            "cohort_id": document.get("cohort_id"),
+            "reference_cohort_id": evidence["reference_cohort_id"],
+            "changed_dimensions": changed_dimensions,
+            "transient_failures": [failure["kind"] for failure in failures],
+            "retry": {
+                "status": "required",
+                "attempt": attempt,
+                "maximum_attempts": maximum_attempts,
+                "policy_ref": f"{policy.policy_id}/{policy.version}",
+            },
+            "evidence_refs": [
+                evidence["evidence_ref"],
+                *(failure["evidence_ref"] for failure in failures),
+            ],
+        }
+    cohort_id = document.get("cohort_id")
+    reference_cohort_id = evidence["reference_cohort_id"]
+    if changed_dimensions and cohort_id != reference_cohort_id:
+        status = "split"
+        reason_code = None
+    elif not changed_dimensions and cohort_id == reference_cohort_id:
+        status = "matched"
+        reason_code = None
+    elif changed_dimensions:
+        status = "insufficient_evidence"
+        reason_code = "cohort-change-not-split"
+    else:
+        status = "insufficient_evidence"
+        reason_code = "unsubstantiated-cohort-split"
+    result = {
+        "status": status,
+        "cohort_id": cohort_id,
+        "reference_cohort_id": reference_cohort_id,
+        "changed_dimensions": changed_dimensions,
+        "retry": {"status": "not_required"},
+        "evidence_refs": [evidence["evidence_ref"]],
+    }
+    if reason_code is not None:
+        result["reason_code"] = reason_code
+    return result
+
+
 def _load_evidence(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     verification = verify_run_bundle(root)
     if not verification["passed"]:
@@ -219,7 +454,9 @@ def _verified_document_digests(document: dict[str, Any]) -> dict[str, str]:
 
     inputs = {key: document[key] for key in _INPUT_KEYS}
     evidence = {
-        key: document[key] for key in _EVIDENCE_KEYS if key in document
+        key: value
+        for key, value in document.items()
+        if key not in {*_INPUT_KEYS, "schema", "digests"}
     }
     expected = document.get("digests")
     if not isinstance(expected, dict):
@@ -299,6 +536,7 @@ def _eligible_anchor(
     correctness = document.get("correctness")
     environment = document.get("environment")
     policies = document.get("policies")
+    measurement_adapter = document.get("measurement_adapter")
     if not all(
         isinstance(value, dict)
         for value in (candidate, correctness, environment, policies)
@@ -352,6 +590,7 @@ def _eligible_anchor(
         if isinstance(best_of_correct, dict)
         else None
     )
+    cohort_state = _cohort_state(document)
     return (
         anchor.get("observation_validity") == "QUALIFIED"
         and anchor.get("frontier_role") == "ACTIVE"
@@ -364,20 +603,14 @@ def _eligible_anchor(
         and _nonempty_string(anchor.get("anchor_id"))
         and _nonempty_string(anchor.get("baseline_lane_id"))
         and _nonempty_string(anchor.get("instrumentation_profile"))
-        and isinstance(completion, dict)
-        and _nonempty_string(completion.get("kind"))
-        and completion.get("closed") is True
-        and completion.get("threadpool_joined") is True
-        and isinstance(timer, dict)
-        and _nonempty_string(timer.get("source"))
-        and isinstance(timer.get("resolution_ns"), (int, float))
-        and timer["resolution_ns"] > 0
+        and _completion_boundary_valid(completion)
+        and _timer_evidence_valid(timer, completion)
         and isinstance(warmup, dict)
         and warmup.get("converged") is True
         and isinstance(raw_timing, list)
         and bool(raw_timing)
         and all(
-            isinstance(sample, (int, float)) and sample >= 0
+            _finite_number(sample) and sample >= 0
             for sample in raw_timing
         )
         and isinstance(best_of_correct, dict)
@@ -402,6 +635,11 @@ def _eligible_anchor(
         and _nonempty_string(holdout_evidence_ref)
         and search_evidence_ref != holdout_evidence_ref
         and _nonempty_string(anchor.get("evidence_ref"))
+        and _primary_timer_available(document)
+        and isinstance(measurement_adapter, dict)
+        and _validated_adapter_operations(document, measurement_adapter)
+        is not None
+        and cohort_state.get("status") in {"matched", "split"}
     )
 
 
@@ -484,17 +722,11 @@ def _observation_axis(document: dict[str, Any]) -> dict[str, Any]:
         or not isinstance(samples, list)
         or not samples
         or not all(
-            isinstance(sample, (int, float)) and sample >= 0
+            _finite_number(sample) and sample >= 0
             for sample in samples
         )
-        or not isinstance(completion, dict)
-        or not _nonempty_string(completion.get("kind"))
-        or completion.get("closed") is not True
-        or completion.get("threadpool_joined") is not True
-        or not isinstance(timer, dict)
-        or not _nonempty_string(timer.get("source"))
-        or not isinstance(timer.get("resolution_ns"), (int, float))
-        or timer["resolution_ns"] <= 0
+        or not _completion_boundary_valid(completion)
+        or not _timer_evidence_valid(timer, completion)
         or not isinstance(warmup, dict)
         or warmup.get("converged") is not True
         or not isinstance(correctness, dict)
@@ -544,6 +776,356 @@ def _comparisons(axes: dict[str, dict[str, Any]]) -> dict[str, Any]:
             ),
         },
     }
+
+
+def _profiling_ablation_decision(
+    document: dict[str, Any],
+    baseline: dict[str, Any],
+    diagnostic: dict[str, Any],
+) -> tuple[bool, str | None]:
+    ablation = diagnostic.get("overhead_ablation")
+    if not isinstance(ablation, dict) or ablation.get("status") == (
+        "not_provided"
+    ):
+        return False, "profiling-overhead-ablation-missing"
+    policy_value = _versioned_policy(document, "profiling_overhead")
+    try:
+        policy = ProfilingOverheadPolicy.from_document(policy_value)
+    except MeasurementContractError:
+        return False, "profiling-overhead-ablation-unqualified"
+    selection = ablation.get("selection")
+    holdout = ablation.get("holdout")
+    if (
+        ablation.get("status") != "qualified"
+        or ablation.get("instrumentation_profile")
+        != diagnostic.get("instrumentation_profile")
+        or diagnostic.get("instrumentation_profile")
+        not in policy.instrumentation_profiles
+        or not isinstance(selection, dict)
+        or not isinstance(holdout, dict)
+    ):
+        return False, "profiling-overhead-ablation-unqualified"
+    selection_sessions = selection.get("session_ids")
+    baseline_sessions = holdout.get("baseline_session_ids")
+    diagnostic_sessions = holdout.get("diagnostic_session_ids")
+    baseline_samples = holdout.get("baseline_raw_samples_ns")
+    diagnostic_samples = holdout.get("diagnostic_raw_samples_ns")
+    session_lists = (selection_sessions, baseline_sessions, diagnostic_sessions)
+    if (
+        not all(
+            isinstance(session_ids, list)
+            and all(_nonempty_string(session_id) for session_id in session_ids)
+            and len(set(session_ids)) >= policy.minimum_independent_sessions
+            for session_ids in session_lists
+        )
+        or not set(selection_sessions).isdisjoint(baseline_sessions)
+        or not set(selection_sessions).isdisjoint(diagnostic_sessions)
+        or not set(baseline_sessions).isdisjoint(diagnostic_sessions)
+        or holdout.get("pair_id") != baseline.get("pair_id")
+        or holdout.get("baseline_lane_id") != baseline.get("lane_id")
+        or holdout.get("diagnostic_lane_id") != diagnostic.get("lane_id")
+        or not all(
+            isinstance(samples, list)
+            and samples
+            and all(_finite_number(sample) and sample > 0 for sample in samples)
+            for samples in (baseline_samples, diagnostic_samples)
+        )
+        or not all(
+            _nonempty_string(value)
+            for value in (
+                selection.get("evidence_ref"),
+                holdout.get("evidence_ref"),
+                ablation.get("evidence_ref"),
+            )
+        )
+        or len(
+            {
+                selection["evidence_ref"],
+                holdout["evidence_ref"],
+                ablation["evidence_ref"],
+            }
+        )
+        != 3
+    ):
+        return False, "profiling-overhead-ablation-unqualified"
+    baseline_median = float(median(baseline_samples))
+    diagnostic_median = float(median(diagnostic_samples))
+    observed_overhead_ratio = abs(diagnostic_median - baseline_median) / (
+        baseline_median
+    )
+    if observed_overhead_ratio > policy.maximum_overhead_ratio:
+        return False, "profiling-overhead-error-budget-exceeded"
+    return True, None
+
+
+def _validated_adapter_operations(
+    document: dict[str, Any], adapter: dict[str, Any]
+) -> list[dict[str, str]] | None:
+    expected_operations = [
+        "discover_capabilities",
+        "fingerprint_cohort",
+        "preflight",
+        "build_timing_plan",
+        "collect",
+    ]
+    operation_evidence = adapter.get("operation_evidence")
+    timing_plan = document.get("timing_plan")
+    baseline = document.get("baseline_timing_lane")
+    diagnostic = document.get("diagnostic_profiling_lane")
+    configuration = document.get("resolved_configuration")
+    resolved_ir = document.get("resolved_ir")
+    if (
+        not isinstance(operation_evidence, list)
+        or [
+            item.get("operation") if isinstance(item, dict) else None
+            for item in operation_evidence
+        ]
+        != expected_operations
+        or not all(
+            isinstance(item, dict)
+            and _nonempty_string(item.get("evidence_ref"))
+            for item in operation_evidence
+        )
+        or len({item["evidence_ref"] for item in operation_evidence})
+        != len(operation_evidence)
+        or not isinstance(timing_plan, dict)
+        or not isinstance(baseline, dict)
+        or not isinstance(diagnostic, dict)
+        or not isinstance(configuration, dict)
+        or not isinstance(resolved_ir, dict)
+        or timing_plan.get("case")
+        != {
+            "benchmark_case": configuration.get("benchmark_case"),
+            "semantic_node": resolved_ir.get("semantic_node"),
+            "execution_domain": document.get("execution_domain"),
+        }
+        or timing_plan.get("pair_id") != baseline.get("pair_id")
+        or timing_plan.get("baseline_lane_id") != baseline.get("lane_id")
+        or timing_plan.get("diagnostic_lane_id") != diagnostic.get("lane_id")
+        or timing_plan.get("completion_boundary")
+        != baseline.get("completion_boundary")
+        or not _nonempty_string(timing_plan.get("evidence_ref"))
+    ):
+        return None
+    return [dict(item) for item in operation_evidence]
+
+
+def _adapter_contract(
+    document: dict[str, Any],
+    capability_surfaces: list[dict[str, Any]],
+    operator: dict[str, Any],
+) -> dict[str, Any] | None:
+    adapter = document.get("measurement_adapter")
+    if not isinstance(adapter, dict):
+        return None
+    required_adapter_fields = (
+        "adapter_id",
+        "adapter_version",
+        "protocol_id",
+        "protocol_version",
+        "evidence_ref",
+    )
+    if not all(
+        _nonempty_string(adapter.get(field))
+        for field in required_adapter_fields
+    ):
+        return {
+            "status": "insufficient_evidence",
+            "reason_codes": ["incomplete-measurement-adapter-identity"],
+        }
+
+    try:
+        manifest = MeasurementCapabilityManifest.from_document(
+            document.get("measurement_capability_manifest"),
+            adapter_id=adapter["adapter_id"],
+            cohort_id=str(document.get("cohort_id", "")),
+        )
+    except MeasurementContractError as error:
+        return {
+            "status": "insufficient_evidence",
+            "reason_codes": [str(error)],
+        }
+    observation_fields = [field.to_document() for field in manifest.fields]
+    operation_evidence = _validated_adapter_operations(document, adapter)
+    if operation_evidence is None:
+        return {
+            "status": "insufficient_evidence",
+            "reason_codes": ["invalid-adapter-operation-evidence"],
+        }
+
+    cohort_state = _cohort_state(document)
+    admission_reasons: list[str] = []
+    if not _complete_required_identity(document):
+        admission_reasons.append("incomplete-required-identity")
+    elif not isinstance(document.get("correctness"), dict) or document[
+        "correctness"
+    ].get("passed") is not True:
+        admission_reasons.append("correctness-not-qualified")
+    elif isinstance(cohort_state, dict) and cohort_state.get("status") == (
+        "quarantined"
+    ):
+        admission_reasons.append("cohort-quarantined")
+    elif isinstance(cohort_state, dict) and cohort_state.get("status") == (
+        "insufficient_evidence"
+    ):
+        admission_reasons.append(
+            str(cohort_state.get("reason_code", "invalid-cohort-evidence"))
+        )
+    else:
+        anchors_value = document.get("frontier_anchors")
+        anchors_for_admission = (
+            anchors_value if isinstance(anchors_value, list) else []
+        )
+        completion_boundaries = [
+            anchor.get("completion_boundary")
+            for anchor in anchors_for_admission
+            if isinstance(anchor, dict)
+        ]
+        anchor_timing_pairs = [
+            (anchor.get("timer"), anchor.get("completion_boundary"))
+            for anchor in anchors_for_admission
+            if isinstance(anchor, dict)
+        ]
+        if not any(
+            _completion_boundary_valid(completion)
+            for completion in completion_boundaries
+        ):
+            admission_reasons.append("incomplete-completion-boundary")
+        elif not any(
+            _timer_evidence_valid(timer, completion)
+            for timer, completion in anchor_timing_pairs
+        ):
+            admission_reasons.append("invalid-primary-timer-protocol")
+        elif not _primary_timer_available(document):
+            admission_reasons.append("missing-primary-timer")
+        elif operator.get("status") != "known":
+            admission_reasons.append(
+                str(
+                    operator.get(
+                        "reason_code",
+                        "no-qualified-active-exact-shape-anchor",
+                    )
+                )
+            )
+    anchor_admission = {
+        "status": (
+            "insufficient_evidence" if admission_reasons else "eligible"
+        ),
+        "reason_codes": admission_reasons,
+    }
+
+    baseline = document.get("baseline_timing_lane")
+    diagnostic = document.get("diagnostic_profiling_lane")
+    lanes: dict[str, Any] | None = None
+    if isinstance(diagnostic, dict):
+        pair_id = diagnostic.get("pair_id")
+        if (
+            not isinstance(baseline, dict)
+            or not _nonempty_string(pair_id)
+            or baseline.get("pair_id") != pair_id
+            or diagnostic.get("paired_baseline_lane_id")
+            != baseline.get("lane_id")
+            or diagnostic.get("cohort_id") != document.get("cohort_id")
+            or diagnostic.get("cohort_id") != baseline.get("cohort_id")
+            or diagnostic.get("candidate_id") != baseline.get("candidate_id")
+            or diagnostic.get("execution_domain")
+            != baseline.get("execution_domain")
+            or diagnostic.get("execution_domain")
+            != document.get("execution_domain")
+            or not _nonempty_string(diagnostic.get("lane_id"))
+            or not _nonempty_string(diagnostic.get("instrumentation_profile"))
+            or not _completion_boundary_valid(
+                diagnostic.get("completion_boundary")
+            )
+            or not _timer_evidence_valid(
+                diagnostic.get("timer"),
+                diagnostic.get("completion_boundary"),
+            )
+            or not isinstance(diagnostic.get("raw_samples_ns"), list)
+            or not diagnostic["raw_samples_ns"]
+            or not all(
+                _finite_number(sample) and sample >= 0
+                for sample in diagnostic["raw_samples_ns"]
+            )
+            or not _nonempty_string(diagnostic.get("evidence_ref"))
+        ):
+            lanes = {
+                "pair_id": pair_id,
+                "baseline_lane_id": (
+                    baseline.get("lane_id")
+                    if isinstance(baseline, dict)
+                    else None
+                ),
+                "diagnostic_lane_id": diagnostic.get("lane_id"),
+                "diagnostic_frontier_eligible": False,
+                "reason_code": "invalid-paired-measurement-lanes",
+            }
+        else:
+            (
+                diagnostic_frontier_eligible,
+                diagnostic_frontier_reason,
+            ) = _profiling_ablation_decision(
+                document,
+                baseline,
+                diagnostic,
+            )
+            lanes = {
+                "pair_id": pair_id,
+                "baseline_lane_id": baseline["lane_id"],
+                "diagnostic_lane_id": diagnostic["lane_id"],
+                "diagnostic_frontier_eligible": diagnostic_frontier_eligible,
+                "reason_code": diagnostic_frontier_reason,
+            }
+
+    cohort_id = document.get("cohort_id")
+    anchors_value = document.get("frontier_anchors")
+    anchors = anchors_value if isinstance(anchors_value, list) else []
+    anchor_ids = [
+        anchor["anchor_id"]
+        for anchor in anchors
+        if isinstance(anchor, dict)
+        and _nonempty_string(anchor.get("anchor_id"))
+        and anchor.get("cohort_id") == cohort_id
+    ]
+    surface_refs = [
+        {
+            "surface_id": surface["surface_id"],
+            "version": surface["version"],
+            "input_digest": surface["input_digest"],
+        }
+        for surface in capability_surfaces
+        if surface.get("cohort_id") == cohort_id
+        and _nonempty_string(surface.get("surface_id"))
+        and _nonempty_string(surface.get("version"))
+        and _nonempty_string(surface.get("input_digest"))
+    ]
+    contract_status = (
+        "quarantined"
+        if isinstance(cohort_state, dict)
+        and cohort_state.get("status") == "quarantined"
+        else anchor_admission["status"]
+    )
+    result = {
+        "status": contract_status,
+        "adapter_id": adapter["adapter_id"],
+        "adapter_version": adapter["adapter_version"],
+        "protocol": {
+            "protocol_id": adapter["protocol_id"],
+            "protocol_version": adapter["protocol_version"],
+        },
+        "cohort_id": cohort_id,
+        "anchor_ids": anchor_ids,
+        "surface_refs": surface_refs,
+        "observation_fields": observation_fields,
+        "operation_evidence": operation_evidence,
+        "anchor_admission": anchor_admission,
+        "evidence_refs": [adapter["evidence_ref"], manifest.evidence_ref],
+    }
+    if lanes is not None:
+        result["lanes"] = lanes
+    if cohort_state is not None:
+        result["cohort"] = cohort_state
+    return result
 
 
 def _surface_summary(
@@ -1834,6 +2416,15 @@ def _capability_surface_results(
                         [],
                     )
                 )
+            elif envelope.get("cohort_id") != document.get("cohort_id"):
+                results.append(
+                    _unknown_candidate_envelope_query(
+                        query_value,
+                        envelope,
+                        "surface_cohort_mismatch",
+                        [],
+                    )
+                )
             else:
                 results.append(
                     _query_candidate_envelope(
@@ -1848,6 +2439,13 @@ def _capability_surface_results(
             results.append(
                 _unknown_surface_query(
                     query_value, None, "surface_version_not_found"
+                )
+            )
+            continue
+        if surface.get("cohort_id") != document.get("cohort_id"):
+            results.append(
+                _unknown_surface_query(
+                    query_value, surface, "surface_cohort_mismatch"
                 )
             )
             continue
@@ -1901,6 +2499,9 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         candidate_envelopes,
         surface_queries,
     ) = _capability_surface_results(document)
+    adapter_contract = _adapter_contract(
+        document, capability_surfaces, axes["operator_achievable_frontier"]
+    )
     derivation_basis = {
         "schema": DIAGNOSTIC_RESULT_SCHEMA,
         "run_id": manifest["run_id"],
@@ -1911,6 +2512,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "capability_surfaces": capability_surfaces,
         "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
+        "adapter_contract": adapter_contract,
     }
     derivation = {
         "derivation_id": _canonical_digest(derivation_basis),
@@ -1923,7 +2525,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             "query-versioned-capability-surfaces",
         ],
     }
-    return {
+    result = {
         "schema": DIAGNOSTIC_RESULT_SCHEMA,
         "run_id": manifest["run_id"],
         "status": (
@@ -1931,6 +2533,10 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             if all(axis["status"] == "known" for axis in axes.values())
             and all(
                 query["status"] != "unknown" for query in surface_queries
+            )
+            and (
+                adapter_contract is None
+                or adapter_contract.get("status") == "eligible"
             )
             else "partial"
         ),
@@ -1952,12 +2558,19 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
                 "environment",
                 "baseline_timing_lane",
                 "policies",
+                "measurement_adapter",
+                "measurement_capability_manifest",
+                "diagnostic_profiling_lane",
+                "cohort_evidence",
             )
             if key in document
         },
         "digests": digests,
         "derivation": derivation,
     }
+    if adapter_contract is not None:
+        result["adapter_contract"] = adapter_contract
+    return result
 
 
 def render_diagnostic_report(result: dict[str, Any]) -> str:
@@ -2138,6 +2751,114 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
         "Resource Physical Floor distance is optimization headroom; "
         "not prediction error."
     )
+    diagnostic_lane_value = evidence.get("diagnostic_profiling_lane")
+    measurement_lanes = (
+        ("baseline", lane),
+        (
+            "diagnostic",
+            diagnostic_lane_value
+            if isinstance(diagnostic_lane_value, dict)
+            else {},
+        ),
+    )
+    for lane_label, measurement_lane in measurement_lanes:
+        completion_value = measurement_lane.get("completion_boundary")
+        completion = (
+            completion_value if isinstance(completion_value, dict) else {}
+        )
+        timer_value = measurement_lane.get("timer")
+        timer = timer_value if isinstance(timer_value, dict) else {}
+        completion_parts = [
+            f"kind={completion.get('kind', 'unknown')}",
+            f"timer={timer.get('source', 'unknown')}",
+        ]
+        if completion.get("kind") == "device-event-stream-completion":
+            completion_parts.append(
+                f"stream={completion.get('stream_id', 'unknown')}"
+            )
+            completion_parts.append(
+                f"event={completion.get('device_event_id', 'unknown')}"
+            )
+        elif completion.get("kind") == "distributed-rank-local-duration":
+            completion_parts.append(
+                f"reducer={completion.get('duration_reducer', 'unknown')}"
+            )
+            completion_parts.append(
+                f"clock-domain={timer.get('clock_domain', 'unknown')}"
+            )
+        lines.append(
+            f"{lane_label} completion: " + "; ".join(completion_parts)
+        )
+    adapter_contract = result.get("adapter_contract")
+    if isinstance(adapter_contract, dict):
+        protocol = adapter_contract.get("protocol")
+        if isinstance(protocol, dict) and _nonempty_string(
+            adapter_contract.get("adapter_id")
+        ):
+            lines.append(
+                "measurement adapter: "
+                f"{adapter_contract['adapter_id']}@"
+                f"{adapter_contract.get('adapter_version', 'unknown')}; "
+                f"protocol={protocol.get('protocol_id', 'unknown')}@"
+                f"{protocol.get('protocol_version', 'unknown')}; "
+                f"status={adapter_contract.get('status', 'unknown')}"
+            )
+        cohort = adapter_contract.get("cohort")
+        if isinstance(cohort, dict):
+            changed_dimensions = cohort.get("changed_dimensions")
+            changes = (
+                ",".join(str(item) for item in changed_dimensions)
+                if isinstance(changed_dimensions, list) and changed_dimensions
+                else "none"
+            )
+            retry = cohort.get("retry")
+            retry_status = (
+                retry.get("status", "unknown")
+                if isinstance(retry, dict)
+                else "unknown"
+            )
+            lines.append(
+                "hardware validity cohort: "
+                f"{cohort.get('status', 'unknown')}; "
+                f"current={cohort.get('cohort_id', 'unknown')}; "
+                "reference="
+                f"{cohort.get('reference_cohort_id', 'unknown')}; "
+                f"changes={changes}; retry={retry_status}"
+            )
+        admission = adapter_contract.get("anchor_admission")
+        if isinstance(admission, dict):
+            reasons = admission.get("reason_codes")
+            reason_suffix = (
+                "; reasons=" + ",".join(str(item) for item in reasons)
+                if isinstance(reasons, list) and reasons
+                else ""
+            )
+            lines.append(
+                "anchor admission: "
+                f"{admission.get('status', 'unknown')}{reason_suffix}"
+            )
+        observation_fields = adapter_contract.get("observation_fields")
+        if isinstance(observation_fields, list):
+            field_statuses = sorted(
+                f"{field.get('field', 'unknown')}="
+                f"{field.get('status', 'unknown')}"
+                for field in observation_fields
+                if isinstance(field, dict)
+            )
+            lines.append(
+                "observation field statuses: " + ", ".join(field_statuses)
+            )
+        lanes = adapter_contract.get("lanes")
+        if isinstance(lanes, dict):
+            lines.append(
+                "measurement lanes: "
+                f"pair={lanes['pair_id']}; "
+                f"baseline={lanes['baseline_lane_id']}; "
+                f"diagnostic={lanes['diagnostic_lane_id']}; "
+                "diagnostic-frontier-eligible="
+                f"{str(lanes['diagnostic_frontier_eligible']).lower()}; "
+                f"reason={lanes['reason_code']}"
+            )
     return "\n".join(lines) + "\n"
 
 

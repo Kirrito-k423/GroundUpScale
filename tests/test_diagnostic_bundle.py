@@ -60,6 +60,10 @@ def _write_frozen_m4_bundle(
                 "partition": "host",
                 "topology": "single-socket",
                 "software": "torch-2.13-cpu",
+                "power_clock": {
+                    "power_policy": "balanced",
+                    "clock_policy": "automatic",
+                },
             }
         ),
         "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
@@ -73,6 +77,11 @@ def _write_frozen_m4_bundle(
                 "alignment_bytes": 16,
                 "threads": 10,
                 "execution_mode": "eager",
+                "affinity": "all-performance-cores",
+                "numa": "single-domain",
+                "context": "default",
+                "stream": "not_applicable",
+                "concurrency": 1,
             }
         ),
     }
@@ -107,8 +116,47 @@ def _write_frozen_m4_bundle(
             "eligible": invalid_qualification != "environment",
             "preflight_ref": "artifact://resolved/environment.json",
         },
+        "measurement_adapter": {
+            "adapter_id": "apple-m4-cpu",
+            "adapter_version": "v1",
+            "protocol_id": "exact-shape-diagnostic",
+            "protocol_version": "v1",
+            "evidence_ref": "artifact://adapter/apple-m4-cpu.json",
+        },
+        "measurement_capability_manifest": {
+            "manifest_id": "manifest-apple-m4-cpu-v1",
+            "adapter_id": "apple-m4-cpu",
+            "cohort_id": inputs["cohort_id"],
+            "fields": [
+                {
+                    "field": "timer.primary",
+                    "status": "measured",
+                    "required_for_anchor": True,
+                    "source": "mach-continuous-time",
+                    "scope": "exact-shape-operator",
+                    "attribution": "direct",
+                    "intrusion": "baseline",
+                    "value": 1,
+                },
+                {
+                    "field": "counter.l2_cache_misses",
+                    "status": "not_requested",
+                    "required_for_anchor": False,
+                    "source": "apple-m4-cpu",
+                    "scope": "exact-shape-operator",
+                    "attribution": "direct",
+                    "intrusion": "diagnostic",
+                },
+            ],
+            "evidence_ref": "artifact://adapter/apple-m4-cpu-capabilities.json",
+        },
+        "communication_identity": {"status": "not_applicable"},
         "baseline_timing_lane": {
             "lane_id": "baseline-m4-q-proj-001",
+            "pair_id": "lane-pair-m4-q-proj-001",
+            "cohort_id": inputs["cohort_id"],
+            "candidate_id": candidate_id,
+            "execution_domain": inputs["execution_domain"],
             "instrumentation_profile": "baseline-timing/v1",
             "observation_validity": (
                 "QUARANTINED"
@@ -126,6 +174,7 @@ def _write_frozen_m4_bundle(
                     "" if invalid_observation == "timer" else "mach-continuous-time"
                 ),
                 "resolution_ns": 1,
+                "monotonic": True,
             },
             "warmup": {"iterations": 5, "converged": True},
             "raw_samples_ns": (
@@ -135,6 +184,30 @@ def _write_frozen_m4_bundle(
             ),
             "excluded_samples": [],
             "evidence_ref": "artifact://observation/raw/benchmark.json",
+        },
+        "diagnostic_profiling_lane": {
+            "lane_id": "diagnostic-m4-q-proj-001",
+            "pair_id": "lane-pair-m4-q-proj-001",
+            "paired_baseline_lane_id": "baseline-m4-q-proj-001",
+            "cohort_id": inputs["cohort_id"],
+            "candidate_id": candidate_id,
+            "execution_domain": inputs["execution_domain"],
+            "instrumentation_profile": "diagnostic-counters/v1",
+            "observation_validity": "COLLECTED",
+            "frontier_role": "NONE",
+            "completion_boundary": {
+                "kind": "synchronous-cpu-call-return",
+                "closed": True,
+                "threadpool_joined": True,
+            },
+            "timer": {
+                "source": "mach-continuous-time",
+                "resolution_ns": 1,
+                "monotonic": True,
+            },
+            "raw_samples_ns": [1_700_000, 1_720_000, 1_740_000],
+            "overhead_ablation": {"status": "not_provided"},
+            "evidence_ref": "artifact://observation/raw/diagnostic.json",
         },
         "frontier_anchors": [
             {
@@ -155,7 +228,11 @@ def _write_frozen_m4_bundle(
                 "timer": (
                     None
                     if invalid_qualification == "timer"
-                    else {"source": "mach-continuous-time", "resolution_ns": 1}
+                    else {
+                        "source": "mach-continuous-time",
+                        "resolution_ns": 1,
+                        "monotonic": True,
+                    }
                 ),
                 "warmup": {
                     "iterations": 5,
@@ -243,7 +320,92 @@ def _write_frozen_m4_bundle(
                 "change_reason": "first production exact-Shape slice",
                 "revalidation": "on dependency or overlap change",
             },
+            "cohort": {
+                "policy_id": "hardware-validity-cohort",
+                "version": "v1",
+                "scope": "exact-shape adapter evidence",
+                "change_reason": "make cohort split and retry explicit",
+                "revalidation": "on stable identity or transient health change",
+                "maximum_retry_attempts": 2,
+            },
         },
+    }
+    evidence["cohort_evidence"] = {
+        "reference_cohort_id": inputs["cohort_id"],
+        "reference_identity": {
+            "device": inputs["hardware"].get("device"),
+            "partition": inputs["hardware"].get("partition"),
+            "topology": inputs["hardware"].get("topology"),
+            "software": inputs["hardware"].get("software"),
+            "power_clock": inputs["hardware"].get("power_clock"),
+            "numeric_execution": {
+                key: inputs["execution_domain"].get(key)
+                for key in (
+                    "dtype",
+                    "layout",
+                    "alignment_bytes",
+                    "threads",
+                    "execution_mode",
+                )
+            },
+            "timer_protocol": {
+                "source": "mach-continuous-time",
+                "resolution_ns": 1,
+                "monotonic": True,
+                "completion_kind": "synchronous-cpu-call-return",
+                "duration_reducer": None,
+                "adapter_id": "apple-m4-cpu",
+                "adapter_version": "v1",
+                "protocol_id": "exact-shape-diagnostic",
+                "protocol_version": "v1",
+            },
+            "execution_context": {
+                key: inputs["execution_domain"].get(key)
+                for key in (
+                    "affinity",
+                    "numa",
+                    "context",
+                    "stream",
+                    "concurrency",
+                )
+            },
+            "communication": evidence["communication_identity"],
+        },
+        "transient_failures": [],
+        "retry_attempt": 1,
+        "evidence_ref": "artifact://cohort/apple-m4-cpu.json",
+    }
+    evidence["cohort_evidence"]["observed_identity"] = evidence[
+        "cohort_evidence"
+    ]["reference_identity"]
+    evidence["measurement_adapter"]["operation_evidence"] = [
+        {
+            "operation": operation,
+            "evidence_ref": f"artifact://adapter-operations/{operation}.json",
+        }
+        for operation in (
+            "discover_capabilities",
+            "fingerprint_cohort",
+            "preflight",
+            "build_timing_plan",
+            "collect",
+        )
+    ]
+    evidence["timing_plan"] = {
+        "case": {
+            "benchmark_case": inputs["resolved_configuration"].get(
+                "benchmark_case"
+            ),
+            "semantic_node": inputs["resolved_ir"].get("semantic_node"),
+            "execution_domain": inputs["execution_domain"],
+        },
+        "pair_id": "lane-pair-m4-q-proj-001",
+        "baseline_lane_id": "baseline-m4-q-proj-001",
+        "diagnostic_lane_id": "diagnostic-m4-q-proj-001",
+        "completion_boundary": evidence["baseline_timing_lane"][
+            "completion_boundary"
+        ],
+        "evidence_ref": "artifact://adapter-operations/timing-plan.json",
     }
     if projection_corruption == "configuration-type":
         inputs["resolved_configuration"] = "invalid"
