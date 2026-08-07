@@ -18,6 +18,10 @@ from groundupscale.calibration import (
     write_calibration_yaml,
 )
 from groundupscale.environment import collect_environment_validity
+from groundupscale.diagnostics import (
+    diagnose_run_bundle,
+    render_diagnostic_report,
+)
 from groundupscale.benchmark.hardware_microbenchmark import (
     HardwareMicrobenchmarkRunner,
     aggregate_capability_envelope,
@@ -106,6 +110,12 @@ def _parser() -> argparse.ArgumentParser:
     )
     explain_command.add_argument("run_bundle")
     explain_command.add_argument("--json", action="store_true", dest="as_json")
+    diagnose_command = subparsers.add_parser(
+        "diagnose",
+        help="derive four-axis diagnostics from an evidence-qualified Run Bundle",
+    )
+    diagnose_command.add_argument("run_bundle")
+    diagnose_command.add_argument("--json", action="store_true", dest="as_json")
     fit_command = subparsers.add_parser(
         "fit-calibration", help="fit a candidate profile from declared Run Bundles"
     )
@@ -576,6 +586,15 @@ def _run_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_diagnose(args: argparse.Namespace) -> int:
+    result = diagnose_run_bundle(args.run_bundle)
+    if args.as_json:
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(render_diagnostic_report(result), end="")
+    return 0
+
+
 def _run_fit_calibration(args: argparse.Namespace) -> int:
     profile = fit_calibration(args.run_bundle)
     write_calibration_yaml(args.output, profile)
@@ -661,6 +680,8 @@ def main(
         return _run_verify(args)
     if args.command == "explain":
         return _run_explain(args)
+    if args.command == "diagnose":
+        return _run_diagnose(args)
     if args.command == "fit-calibration":
         return _run_fit_calibration(args)
     if args.command == "validate-calibration":
