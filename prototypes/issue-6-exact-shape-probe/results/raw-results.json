@@ -51,130 +51,178 @@
       "timed_work": "incorrect truncated 256-cube plus partial output copy"
     }
   },
-  "captured_at": "2026-08-07T11:03:34.685241+00:00",
+  "captured_at": "2026-08-07T11:13:59.693732+00:00",
   "decision": {
     "assertions": {
-      "at_least_two_distinct_verdicts": false,
-      "environment_eligible": false,
-      "implementation_headroom_observed": false,
+      "at_least_two_distinct_verdicts": true,
+      "environment_eligible": true,
+      "implementation_headroom_observed": true,
       "insufficient_evidence_counterexample_preserved": true,
-      "integration_overhead_observed": false,
+      "integration_overhead_observed": true,
       "negative_control_rejected_in_every_session": true,
       "three_independent_sessions": true
     },
-    "exit_criteria_passed": false,
+    "exit_criteria_passed": true,
     "scenarios": [
       {
         "best_correct_alternative": {
           "all_sessions_correct": true,
-          "iqr_ns": 248.31145647963785,
-          "iqr_over_median": 0.008148201070708199,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 100.96723946784914,
+          "iqr_over_median": 0.0033306679921552705,
           "measurement_id": "numpy-direct",
-          "median_of_session_medians_ns": 30474.389908256882,
-          "q1_ns": 30366.387789494296,
-          "q3_ns": 30614.699245973934,
+          "median_of_session_medians_ns": 30314.41131498471,
+          "q1_ns": 30257.45793021963,
+          "q3_ns": 30358.425169687478,
           "session_medians_ns": [
-            30755.008583690986,
-            30258.38567073171,
-            30474.389908256882
+            30402.439024390245,
+            30314.41131498471,
+            30200.504545454547
           ]
         },
         "checks": {
           "best_alternative_faster_in_every_session": false,
           "best_recovers_90_percent_of_old_reference": false,
           "correct_alternative_exists": true,
-          "environment_eligible": false,
+          "environment_eligible": true,
           "speedup_exceeds_locked_uncertainty": false,
           "target_correct_in_all_sessions": true
         },
         "failed_checks": [
-          "environment_eligible",
           "best_alternative_faster_in_every_session",
           "speedup_exceeds_locked_uncertainty",
           "best_recovers_90_percent_of_old_reference"
         ],
         "locked_uncertainty_fraction": 0.05,
-        "recovered_rate_flops_per_s": 1114023483397.1733,
-        "recovery_vs_old_256_reference": 0.7986202237886902,
+        "recovered_rate_flops_per_s": 1119902532404.401,
+        "recovery_vs_old_256_reference": 0.8028347915278721,
         "scenario": "257-cube-exact-shape-candidate-search",
-        "speedup_fraction": -0.007145047784128944,
+        "speedup_fraction": -0.0009496291257681255,
         "target": {
           "all_sessions_correct": true,
-          "iqr_ns": 320.58509224515365,
-          "iqr_over_median": 0.010595525397457723,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 156.66787038844268,
+          "iqr_over_median": 0.005173011164508075,
           "measurement_id": "torch-direct",
-          "median_of_session_medians_ns": 30256.64893617021,
-          "q1_ns": 30167.515016865593,
-          "q3_ns": 30488.100109110746,
+          "median_of_session_medians_ns": 30285.623867069487,
+          "q1_ns": 30235.447254635663,
+          "q3_ns": 30392.115125024106,
           "session_medians_ns": [
-            30719.55128205128,
-            30256.64893617021,
-            30078.381097560974
+            30498.606382978724,
+            30185.27064220184,
+            30285.623867069487
           ]
         },
         "verdict": "insufficient_evidence"
       },
       {
-        "ablation_relative_error": 0.024233117267017757,
+        "checks": {
+          "candidate_correct_in_all_sessions": true,
+          "candidate_faster_in_every_session": true,
+          "candidate_output_contiguous_in_all_sessions": true,
+          "environment_eligible": true,
+          "speedup_exceeds_locked_uncertainty": true,
+          "target_correct_in_all_sessions": true,
+          "target_output_contiguous_in_all_sessions": true
+        },
+        "correct_alternative": {
+          "all_sessions_correct": true,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 6058.683333333349,
+          "iqr_over_median": 0.01833637078359448,
+          "measurement_id": "batched-matmul-transpose-contiguous",
+          "median_of_session_medians_ns": 330418.89285714284,
+          "q1_ns": 327876.80476190476,
+          "q3_ns": 333935.4880952381,
+          "session_medians_ns": [
+            337452.0833333334,
+            330418.89285714284,
+            325334.7166666667
+          ]
+        },
+        "failed_checks": [],
+        "locked_uncertainty_fraction": 0.05,
+        "scenario": "context-matmul-legacy-einsum-vs-batched-matmul",
+        "speedup_fraction": 0.06016685962159096,
+        "target": {
+          "all_sessions_correct": true,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 9783.596774193575,
+          "iqr_over_median": 0.027929261303948242,
+          "measurement_id": "legacy-einsum-contiguous",
+          "median_of_session_medians_ns": 350299.16000000003,
+          "q1_ns": 341822.6283870968,
+          "q3_ns": 351606.2251612904,
+          "session_medians_ns": [
+            350299.16000000003,
+            352913.29032258067,
+            333346.0967741936
+          ]
+        },
+        "verdict": "implementation_headroom"
+      },
+      {
+        "ablation_relative_error": 0.06528031386662765,
         "checks": {
           "copy_ablation_explains_excess_within_35_percent": true,
           "e2e_gap_exceeds_locked_uncertainty": true,
-          "environment_eligible": false,
+          "environment_eligible": true,
           "standalone_operator_correct": true,
           "standalone_within_10_percent_of_old_anchor": true,
           "wrapped_e2e_correct": true
         },
-        "copy_ablation_ns": 9097.9375,
+        "copy_ablation_ns": 9097.4375,
         "copy_twice_ablation": {
           "all_sessions_correct": true,
-          "iqr_ns": 44.79149999999936,
-          "iqr_over_median": 0.004923258705613153,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 55.34349999999904,
+          "iqr_over_median": 0.006083416346635967,
           "measurement_id": "copy-twice",
-          "median_of_session_medians_ns": 9097.9375,
-          "q1_ns": 9088.198,
-          "q3_ns": 9132.9895,
+          "median_of_session_medians_ns": 9097.4375,
+          "q1_ns": 9073.60425,
+          "q3_ns": 9128.94775,
           "session_medians_ns": [
-            9168.0415,
-            9078.4585,
-            9097.9375
+            9049.771,
+            9097.4375,
+            9160.457999999999
           ]
         },
-        "e2e_gap_fraction": 0.38448070636053333,
-        "failed_checks": [
-          "environment_eligible"
-        ],
+        "e2e_gap_fraction": 0.40038642127034585,
+        "failed_checks": [],
         "locked_uncertainty_fraction": 0.1,
-        "measured_excess_ns": 9323.884281169689,
+        "measured_excess_ns": 9732.797580880215,
         "operator": {
           "all_sessions_correct": true,
-          "iqr_ns": 40.76502403846462,
-          "iqr_over_median": 0.001680990965188895,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 56.7902683266293,
+          "iqr_over_median": 0.0023362298567628685,
           "measurement_id": "operator",
-          "median_of_session_medians_ns": 24250.590801886792,
-          "q1_ns": 24230.36391055878,
-          "q3_ns": 24271.128934597244,
+          "median_of_session_medians_ns": 24308.51063829787,
+          "q1_ns": 24282.94046065837,
+          "q3_ns": 24339.730728985,
           "session_medians_ns": [
-            24291.667067307695,
-            24250.590801886792,
-            24210.13701923077
+            24370.950819672133,
+            24257.37028301887,
+            24308.51063829787
           ]
         },
-        "operator_rate_flops_per_s": 1383654207607.5662,
-        "operator_reference_delta_fraction": 0.008087127969675034,
+        "operator_rate_flops_per_s": 1380357377680.5254,
+        "operator_reference_delta_fraction": 0.010450556652612297,
         "scenario": "256-cube-standalone-vs-materializing-wrapper",
-        "verdict": "insufficient_evidence",
+        "verdict": "integration_overhead",
         "wrapped_e2e": {
           "all_sessions_correct": true,
-          "iqr_ns": 259.38316628849134,
-          "iqr_over_median": 0.0077256060041692295,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 599.025418022029,
+          "iqr_over_median": 0.01759701519592458,
           "measurement_id": "operator-plus-copy-twice",
-          "median_of_session_medians_ns": 33574.47508305648,
-          "q1_ns": 33450.72226821634,
-          "q3_ns": 33710.10543450483,
+          "median_of_session_medians_ns": 34041.308219178085,
+          "q1_ns": 33460.1532678382,
+          "q3_ns": 34059.17868586023,
           "session_medians_ns": [
-            33845.73578595318,
-            33574.47508305648,
-            33326.96945337621
+            34041.308219178085,
+            34077.04915254237,
+            32878.99831649831
           ]
         }
       },
@@ -186,16 +234,17 @@
         ],
         "retained_observation": {
           "all_sessions_correct": true,
-          "iqr_ns": 320.58509224515365,
-          "iqr_over_median": 0.010595525397457723,
+          "all_sessions_output_contiguous": true,
+          "iqr_ns": 156.66787038844268,
+          "iqr_over_median": 0.005173011164508075,
           "measurement_id": "torch-direct",
-          "median_of_session_medians_ns": 30256.64893617021,
-          "q1_ns": 30167.515016865593,
-          "q3_ns": 30488.100109110746,
+          "median_of_session_medians_ns": 30285.623867069487,
+          "q1_ns": 30235.447254635663,
+          "q3_ns": 30392.115125024106,
           "session_medians_ns": [
-            30719.55128205128,
-            30256.64893617021,
-            30078.381097560974
+            30498.606382978724,
+            30185.27064220184,
+            30285.623867069487
           ]
         },
         "scenario": "257-cube-target-only-counterexample",
@@ -206,8 +255,7 @@
         "prohibited_verdict": "frontier_shift",
         "reason_codes": [
           "c2_or_c3_independent_candidate_families_missing",
-          "neighbourhood_regime_not_validated",
-          "environment_ineligible"
+          "neighbourhood_regime_not_validated"
         ],
         "scenario": "257-cube-frontier-shift-gate",
         "verdict": "insufficient_evidence"
@@ -215,7 +263,7 @@
     ]
   },
   "environment": {
-    "captured_at": "2026-08-07T11:03:26.803685+00:00",
+    "captured_at": "2026-08-07T11:13:53.977855+00:00",
     "checks": [
       {
         "check_id": "trusted-platform",
@@ -231,9 +279,8 @@
       },
       {
         "check_id": "ac-power",
-        "observed": "battery",
-        "passed": false,
-        "reason_code": "not-on-ac-power",
+        "observed": "ac",
+        "passed": true,
         "required": "ac"
       },
       {
@@ -244,7 +291,7 @@
       },
       {
         "check_id": "settled-load",
-        "observed": 0.24501953125,
+        "observed": 0.22734375,
         "passed": true,
         "required": {
           "maximum": 0.25,
@@ -253,9 +300,8 @@
       },
       {
         "check_id": "bounded-total-competing-cpu",
-        "observed": 0.1961,
-        "passed": false,
-        "reason_code": "total-competing-cpu-above-policy",
+        "observed": 0.0945,
+        "passed": true,
         "required": {
           "maximum": 0.1,
           "normalization": "maximum sampled total non-coordinator process CPU percent / (100 * logical CPU count)"
@@ -267,79 +313,79 @@
       "privacy": "allowlisted fields only; no command arguments, environment variables, or unrestricted process paths",
       "version": "v1alpha1"
     },
-    "eligible": false,
+    "eligible": true,
     "interpretation": "Preflight eligibility does not replace per-run benchmark noise gates.",
     "observations": {
       "competitors": {
         "excluded_process_scope": "coordinator process and ancestors",
-        "maximum_single_process_cpu_percent": 83.0,
-        "maximum_total_cpu_percent": 196.1,
-        "normalized_maximum_total_cpu": 0.1961,
+        "maximum_single_process_cpu_percent": 44.8,
+        "maximum_total_cpu_percent": 94.5,
+        "normalized_maximum_total_cpu": 0.0945,
         "sample_count": 3,
         "sample_interval_seconds": 0.2,
         "top": [
           {
-            "cpu_percent": 83.0,
-            "name": "python3.11",
-            "pid": 71091
-          },
-          {
-            "cpu_percent": 39.4,
+            "cpu_percent": 44.8,
             "name": "Codex (Service)",
             "pid": 69345
           },
           {
-            "cpu_percent": 28.1,
-            "name": "python3.11",
-            "pid": 71092
-          },
-          {
-            "cpu_percent": 26.6,
+            "cpu_percent": 23.9,
             "name": "Codex (Renderer)",
             "pid": 69421
           },
           {
-            "cpu_percent": 12.3,
+            "cpu_percent": 14.2,
             "name": "Codex (Renderer)",
             "pid": 69420
           },
           {
-            "cpu_percent": 10.1,
-            "name": "Code Helper",
-            "pid": 6186
+            "cpu_percent": 6.0,
+            "name": "Storage",
+            "pid": 50064
           },
           {
-            "cpu_percent": 6.1,
-            "name": "Code",
-            "pid": 5990
-          },
-          {
-            "cpu_percent": 5.9,
+            "cpu_percent": 4.3,
             "name": "healthmonitor",
             "pid": 5988
           },
           {
-            "cpu_percent": 2.9,
-            "name": "Code Helper (Renderer)",
-            "pid": 35639
+            "cpu_percent": 2.8,
+            "name": "Feishu",
+            "pid": 5986
           },
           {
-            "cpu_percent": 2.6,
-            "name": "Activity Monitor",
-            "pid": 5992
+            "cpu_percent": 2.3,
+            "name": "TokenTrackerBar",
+            "pid": 5993
+          },
+          {
+            "cpu_percent": 1.8,
+            "name": "identityservicesd",
+            "pid": 5862
+          },
+          {
+            "cpu_percent": 0.8,
+            "name": "secd",
+            "pid": 387
+          },
+          {
+            "cpu_percent": 0.8,
+            "name": "UniVPN",
+            "pid": 5998
           }
         ],
         "total_cpu_percent_samples": [
-          129.7,
-          145.2,
-          196.1
+          39.300000000000004,
+          94.5,
+          86.69999999999999
         ]
       },
       "load": {
-        "fifteen_minutes": 2.95361328125,
-        "five_minutes": 2.8115234375,
-        "normalized_one_minute": 0.24501953125,
-        "one_minute": 2.4501953125
+        "fifteen_minutes": 3.08154296875,
+        "five_minutes": 2.93505859375,
+        "normalized_one_minute": 0.22734375,
+        "one_minute": 2.2734375
       },
       "platform": {
         "logical_cpu_count": 10,
@@ -348,8 +394,8 @@
         "system": "Darwin"
       },
       "power": {
-        "battery_percent": 97.0,
-        "source": "battery"
+        "battery_percent": 96.0,
+        "source": "ac"
       },
       "thermal": {
         "performance_warning": false,
@@ -368,11 +414,22 @@
       "required_machine": "arm64",
       "required_system": "Darwin"
     },
-    "reason_codes": [
-      "not-on-ac-power",
-      "total-competing-cpu-above-policy"
-    ],
+    "reason_codes": [],
     "schema": "groundupscale.dev/environment-validity/v1alpha1"
+  },
+  "implementation_headroom_candidate_manifest": {
+    "batched-matmul-transpose-contiguous": {
+      "library": "Accelerate batched MatMul",
+      "provider": "PyTorch",
+      "role": "alternative",
+      "timed_work": "zero-copy values transpose, batched MatMul, output transpose plus contiguous output"
+    },
+    "legacy-einsum-contiguous": {
+      "library": "Accelerate/einsum planner",
+      "provider": "PyTorch",
+      "role": "target",
+      "timed_work": "einsum bhqk,bkhd->bqhd plus contiguous output"
+    }
   },
   "input_source": {
     "aligned_256": {
@@ -474,8 +531,31 @@
       "rtol": 0.0001
     },
     "dtype": "float32",
+    "implementation_headroom_case": {
+      "output_shape": [
+        1,
+        512,
+        8,
+        64
+      ],
+      "probabilities_shape": [
+        1,
+        8,
+        512,
+        512
+      ],
+      "semantic": "bhqk,bkhd->bqhd Context MatMul",
+      "threads": 4,
+      "values_shape": [
+        1,
+        512,
+        8,
+        64
+      ]
+    },
     "layout": "C-contiguous",
     "locked_thresholds": {
+      "context_headroom_minimum_fraction": 0.05,
       "copy_ablation_relative_error_fraction": 0.35,
       "headroom_minimum_fraction": 0.05,
       "headroom_recovery_of_old_reference": 0.9,
@@ -637,39 +717,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 233,
-              "iqr_ns": 964.2339055793964,
-              "iqr_over_median": 0.03135209352829504,
-              "median_ns": 30755.008583690986,
+              "inner_iterations": 328,
+              "iqr_ns": 718.019817073171,
+              "iqr_over_median": 0.023617178098676302,
+              "median_ns": 30402.439024390245,
               "per_call_ns": [
-                34209.05150214592,
-                30739.80686695279,
-                30689.377682403432,
-                31397.5321888412,
-                30770.210300429186,
-                31342.630901287554,
-                30258.227467811157,
-                31547.390557939914,
-                31187.768240343346,
-                30407.188841201718,
-                30051.678111587982,
-                30346.922746781114
+                31200.58231707317,
+                31011.814024390245,
+                30737.551829268294,
+                31075.58231707317,
+                30604.420731707316,
+                30817.454268292684,
+                30200.45731707317,
+                30148.5,
+                30188.26219512195,
+                30146.59756097561,
+                29944.993902439026,
+                30008.384146341465
               ],
-              "q1_ns": 30392.122317596568,
-              "q3_ns": 31356.356223175964,
+              "q1_ns": 30148.024390243903,
+              "q3_ns": 30866.044207317074,
               "raw_window_ns": [
-                7970709,
-                7162375,
-                7150625,
-                7315625,
-                7169459,
-                7302833,
-                7050167,
-                7350542,
-                7266750,
-                7084875,
-                7002041,
-                7070833
+                10233791,
+                10171875,
+                10081917,
+                10192791,
+                10038250,
+                10108125,
+                9905750,
+                9888708,
+                9901750,
+                9888084,
+                9821958,
+                9842750
               ]
             }
           },
@@ -695,39 +775,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 234,
-              "iqr_ns": 602.8760683760665,
-              "iqr_over_median": 0.019625158676334995,
-              "median_ns": 30719.55128205128,
+              "inner_iterations": 329,
+              "iqr_ns": 584.2819148936178,
+              "iqr_over_median": 0.01915765945357115,
+              "median_ns": 30498.606382978724,
               "per_call_ns": [
-                31077.102564102563,
-                31225.96153846154,
-                31118.41452991453,
-                30734.863247863246,
-                30704.239316239316,
-                30487.358974358973,
-                30998.576923076922,
-                30993.76923076923,
-                30199.252136752137,
-                30169.337606837606,
-                30084.40170940171,
-                30637.286324786324
+                30964.161094224924,
+                30479.990881458965,
+                31391.337386018236,
+                30930.34650455927,
+                30905.647416413372,
+                30892.85714285714,
+                30501.392097264437,
+                30233.79027355623,
+                30495.82066869301,
+                29948.83282674772,
+                30333.714285714286,
+                30309.018237082066
               ],
-              "q1_ns": 30415.332264957266,
-              "q3_ns": 31018.208333333332,
+              "q1_ns": 30327.54027355623,
+              "q3_ns": 30911.82218844985,
               "raw_window_ns": [
-                7272042,
-                7306875,
-                7281709,
-                7191958,
-                7184792,
-                7134042,
-                7253667,
-                7252542,
-                7066625,
-                7059625,
-                7039750,
-                7169125
+                10187209,
+                10027917,
+                10327750,
+                10176084,
+                10167958,
+                10163750,
+                10034958,
+                9946917,
+                10033125,
+                9853166,
+                9979792,
+                9971667
               ]
             }
           },
@@ -753,39 +833,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 153,
-              "iqr_ns": 839.5947712418347,
-              "iqr_over_median": 0.017558252315713486,
-              "median_ns": 47817.67320261438,
+              "inner_iterations": 198,
+              "iqr_ns": 889.7840909090955,
+              "iqr_over_median": 0.018679086576500435,
+              "median_ns": 47635.31060606061,
               "per_call_ns": [
-                59876.901960784315,
-                48214.59477124183,
-                49204.248366013075,
-                47774.23529411765,
-                47617.1045751634,
-                49370.098039215685,
-                47861.11111111111,
-                47624.183006535946,
-                47646.790849673205,
-                48211.32679738562,
-                47574.34640522876,
-                46401.143790849674
+                50862.792929292926,
+                48667.08585858586,
+                48110.06060606061,
+                47190.656565656565,
+                48182.868686868685,
+                47483.58585858586,
+                47420.87373737374,
+                47787.03535353536,
+                47843.22222222222,
+                45209.38383838384,
+                46690.232323232325,
+                47254.419191919194
               ],
-              "q1_ns": 47622.41339869281,
-              "q3_ns": 48462.00816993464,
+              "q1_ns": 47238.47853535353,
+              "q3_ns": 48128.26262626263,
               "raw_window_ns": [
-                9161166,
-                7376833,
-                7528250,
-                7309458,
-                7285417,
-                7553625,
-                7322750,
-                7286500,
-                7289959,
-                7376333,
-                7278875,
-                7099375
+                10070833,
+                9636083,
+                9525792,
+                9343750,
+                9540208,
+                9401750,
+                9389333,
+                9461833,
+                9472958,
+                8951458,
+                9244666,
+                9356375
               ]
             }
           },
@@ -811,39 +891,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 153,
-              "iqr_ns": 1053.983660130718,
-              "iqr_over_median": 0.02167545204432498,
-              "median_ns": 48625.683006535946,
+              "inner_iterations": 196,
+              "iqr_ns": 1680.0076530612205,
+              "iqr_over_median": 0.03544083236066471,
+              "median_ns": 47403.16581632653,
               "per_call_ns": [
-                53303.37908496732,
-                48671.02614379085,
-                48903.04575163399,
-                48709.967320261436,
-                49816.17647058824,
-                49254.901960784315,
-                47932.73202614379,
-                46796.8431372549,
-                46727.67320261438,
-                48580.339869281044,
-                47938.45751633987,
-                48100.21568627451
+                51143.2806122449,
+                49017.2193877551,
+                47787.198979591834,
+                47086.73469387755,
+                48391.58163265306,
+                46769.77040816326,
+                48212.586734693876,
+                47509.13775510204,
+                46000.0,
+                44399.02551020408,
+                42846.51530612245,
+                47297.19387755102
               ],
-              "q1_ns": 47937.02614379085,
-              "q3_ns": 48991.009803921566,
+              "q1_ns": 46577.32780612245,
+              "q3_ns": 48257.33545918367,
               "raw_window_ns": [
-                8155417,
-                7446667,
-                7482166,
-                7452625,
-                7621875,
-                7536000,
-                7333708,
-                7159917,
-                7149334,
-                7432792,
-                7334584,
-                7359333
+                10024083,
+                9607375,
+                9366291,
+                9229000,
+                9484750,
+                9166875,
+                9449667,
+                9311791,
+                9016000,
+                8702209,
+                8397917,
+                9270250
               ]
             }
           },
@@ -869,39 +949,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 151,
-              "iqr_ns": 1216.329470198667,
-              "iqr_over_median": 0.022745864778048526,
-              "median_ns": 53474.75165562914,
+              "inner_iterations": 191,
+              "iqr_ns": 577.7709424083805,
+              "iqr_over_median": 0.0108163707773795,
+              "median_ns": 53416.34031413613,
               "per_call_ns": [
-                49704.470198675495,
-                48084.71523178808,
-                54559.046357615895,
-                53496.41721854304,
-                54642.66225165563,
-                53413.90728476821,
-                53363.13907284768,
-                53453.08609271523,
-                54760.76158940397,
-                53307.11920529801,
-                53806.84105960265,
-                54584.71523178808
+                52798.42931937173,
+                54529.66492146597,
+                53631.32984293194,
+                53436.51832460733,
+                53401.397905759164,
+                53286.86910994764,
+                52116.05759162304,
+                51138.523560209425,
+                54076.13089005236,
+                54809.55497382199,
+                53337.91623036649,
+                53431.28272251309
               ],
-              "q1_ns": 53349.13410596027,
-              "q3_ns": 54565.46357615894,
+              "q1_ns": 53164.759162303664,
+              "q3_ns": 53742.530104712045,
               "raw_window_ns": [
-                7505375,
-                7260792,
-                8238416,
-                8077959,
-                8251042,
-                8065500,
-                8057834,
-                8071416,
-                8268875,
-                8049375,
-                8124833,
-                8242292
+                10084500,
+                10415166,
+                10243584,
+                10206375,
+                10199667,
+                10177792,
+                9954167,
+                9767458,
+                10328541,
+                10468625,
+                10187542,
+                10205375
               ]
             }
           },
@@ -927,45 +1007,271 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 251,
-              "iqr_ns": 573.1215139442211,
-              "iqr_over_median": 0.017924134225261013,
-              "median_ns": 31974.850597609562,
+              "inner_iterations": 322,
+              "iqr_ns": 626.9417701863349,
+              "iqr_over_median": 0.020132538005572263,
+              "median_ns": 31140.722049689444,
               "per_call_ns": [
-                29558.764940239045,
-                32018.091633466134,
-                31583.33466135458,
-                31469.45418326693,
-                32260.123505976095,
-                31629.812749003984,
-                32103.749003984063,
-                32254.482071713148,
-                31931.609561752986,
-                32090.474103585657,
-                31399.56972111554,
-                32200.697211155377
+                31590.711180124224,
+                31640.658385093167,
+                32197.593167701863,
+                32254.919254658384,
+                31006.987577639753,
+                31644.021739130436,
+                30842.00310559006,
+                31017.080745341616,
+                31177.92546583851,
+                31024.975155279502,
+                30528.07763975155,
+                31103.518633540374
               ],
-              "q1_ns": 31554.86454183267,
-              "q3_ns": 32127.98605577689,
+              "q1_ns": 31014.55745341615,
+              "q3_ns": 31641.499223602485,
               "raw_window_ns": [
-                7419250,
-                8036541,
-                7927417,
-                7898833,
-                8097291,
-                7939083,
-                8058041,
-                8095875,
-                8014834,
-                8054709,
-                7881292,
-                8082375
+                10172209,
+                10188292,
+                10367625,
+                10386084,
+                9984250,
+                10189375,
+                9931125,
+                9987500,
+                10039292,
+                9990042,
+                9830041,
+                10015333
               ]
             }
           }
         }
       },
-      "captured_at": "2026-08-07T11:03:27.381608+00:00",
+      "captured_at": "2026-08-07T11:13:54.422709+00:00",
+      "implementation_headroom": {
+        "input": {
+          "dtype": "float32",
+          "input_layout": {
+            "probabilities": "C-contiguous",
+            "values_heads": "zero-copy non-contiguous transpose view",
+            "values_sequence": "C-contiguous"
+          },
+          "output_layout": "C-contiguous [1,512,8,64]",
+          "probabilities_sha256": "a0c0fb9206b70bae3007d716c41c844270ee4690026612fb94cfd093163bd317",
+          "probabilities_shape": [
+            1,
+            8,
+            512,
+            512
+          ],
+          "seed": 20260809,
+          "semantic": "bhqk,bkhd->bqhd Context MatMul",
+          "threads": 4,
+          "values_heads_view_shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "values_sequence_sha256": "235b522ca54fc37ab4043a0458dac65acbfa19fddf7e09aa0303ea47fb565c41",
+          "values_sequence_shape": [
+            1,
+            512,
+            8,
+            64
+          ]
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "thread_environment": {
+            "MKL_NUM_THREADS": "4",
+            "NUMEXPR_NUM_THREADS": "4",
+            "OMP_NUM_THREADS": "4",
+            "OPENBLAS_NUM_THREADS": "4",
+            "VECLIB_MAXIMUM_THREADS": "4"
+          },
+          "timer": "time.perf_counter_ns",
+          "torch_num_threads": 4,
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "batched-matmul-transpose-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 30,
+              "iqr_ns": 13180.224999999977,
+              "iqr_over_median": 0.039058063799181295,
+              "median_ns": 337452.0833333334,
+              "per_call_ns": [
+                332547.2,
+                363040.3,
+                344398.63333333336,
+                328336.13333333336,
+                330002.76666666666,
+                335925.0,
+                339898.63333333336,
+                350527.76666666666,
+                326980.5333333333,
+                342222.23333333334,
+                338979.1666666667,
+                327613.9
+              ],
+              "q1_ns": 329586.10833333334,
+              "q3_ns": 342766.3333333333,
+              "raw_window_ns": [
+                9976416,
+                10891209,
+                10331959,
+                9850084,
+                9900083,
+                10077750,
+                10196959,
+                10515833,
+                9809416,
+                10266667,
+                10169375,
+                9828417
+              ]
+            }
+          },
+          "legacy-einsum-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 25,
+              "iqr_ns": 16798.359999999986,
+              "iqr_over_median": 0.04795432566838009,
+              "median_ns": 350299.16000000003,
+              "per_call_ns": [
+                365253.36,
+                345810.0,
+                350320.0,
+                354866.68,
+                353580.0,
+                329726.68,
+                332368.32,
+                337143.36,
+                370650.0,
+                340296.64,
+                350278.32,
+                360626.68
+              ],
+              "q1_ns": 339508.32,
+              "q3_ns": 356306.68,
+              "raw_window_ns": [
+                9131334,
+                8645250,
+                8758000,
+                8871667,
+                8839500,
+                8243167,
+                8309208,
+                8428584,
+                9266250,
+                8507416,
+                8756958,
+                9015667
+              ]
+            }
+          }
+        }
+      },
       "integration": {
         "input": {
           "dtype": "float32",
@@ -1074,38 +1380,38 @@
             },
             "summary": {
               "inner_iterations": 1000,
-              "iqr_ns": 291.3542499999985,
-              "iqr_over_median": 0.03177933367775424,
-              "median_ns": 9168.0415,
+              "iqr_ns": 609.3540000000012,
+              "iqr_over_median": 0.06733363750309275,
+              "median_ns": 9049.771,
               "per_call_ns": [
-                9325.25,
-                9101.125,
-                8555.625,
-                8885.625,
-                8992.708,
-                9067.167,
-                9234.958,
-                9300.916,
-                9254.625,
-                9253.709,
-                8776.916,
-                9265.291
+                8547.167,
+                9018.542,
+                9081.0,
+                9264.083,
+                9174.667,
+                8540.5,
+                7707.583,
+                9015.417,
+                9115.209,
+                8186.458,
+                9148.25,
+                9245.708
               ],
-              "q1_ns": 8965.93725,
-              "q3_ns": 9257.2915,
+              "q1_ns": 8545.50025,
+              "q3_ns": 9154.85425,
               "raw_window_ns": [
-                9325250,
-                9101125,
-                8555625,
-                8885625,
-                8992708,
-                9067167,
-                9234958,
-                9300916,
-                9254625,
-                9253709,
-                8776916,
-                9265291
+                8547167,
+                9018542,
+                9081000,
+                9264083,
+                9174667,
+                8540500,
+                7707583,
+                9015417,
+                9115209,
+                8186458,
+                9148250,
+                9245708
               ]
             }
           },
@@ -1131,39 +1437,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 416,
-              "iqr_ns": 219.92608173077315,
-              "iqr_over_median": 0.009053560676646805,
-              "median_ns": 24291.667067307695,
+              "inner_iterations": 427,
+              "iqr_ns": 231.04508196721508,
+              "iqr_over_median": 0.00948034747092085,
+              "median_ns": 24370.950819672133,
               "per_call_ns": [
-                24373.197115384617,
-                24054.6875,
-                23890.32451923077,
-                24422.978365384617,
-                24301.18028846154,
-                24299.37980769231,
-                24202.72596153846,
-                24216.846153846152,
-                24040.564903846152,
-                24446.3125,
-                24283.954326923078,
-                24505.608173076922
+                24411.885245901638,
+                24463.700234192038,
+                23878.8056206089,
+                24315.086651053865,
+                24266.19906323185,
+                24397.54098360656,
+                24005.46370023419,
+                24567.330210772834,
+                23923.887587822013,
+                24448.674473067917,
+                24344.360655737706,
+                24426.52224824356
               ],
-              "q1_ns": 24165.716346153844,
-              "q3_ns": 24385.642427884617,
+              "q1_ns": 24201.015222482434,
+              "q3_ns": 24432.06030444965,
               "raw_window_ns": [
-                10139250,
-                10006750,
-                9938375,
-                10159959,
-                10109291,
-                10108542,
-                10068334,
-                10074208,
-                10000875,
-                10169666,
-                10102125,
-                10194333
+                10423875,
+                10446000,
+                10196250,
+                10382542,
+                10361667,
+                10417750,
+                10250333,
+                10490250,
+                10215500,
+                10439584,
+                10395042,
+                10430125
               ]
             }
           },
@@ -1189,45 +1495,45 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 299,
-              "iqr_ns": 190.66973244147084,
-              "iqr_over_median": 0.005633493496708189,
-              "median_ns": 33845.73578595318,
+              "inner_iterations": 292,
+              "iqr_ns": 294.6626712328798,
+              "iqr_over_median": 0.008656032527765008,
+              "median_ns": 34041.308219178085,
               "per_call_ns": [
-                33729.09698996656,
-                33687.849498327756,
-                34025.5016722408,
-                33033.30434782609,
-                33909.28093645485,
-                33909.976588628764,
-                33798.49498327759,
-                32921.404682274246,
-                33874.58193979933,
-                34316.33444816054,
-                33835.28428093645,
-                33856.1872909699
+                34063.068493150684,
+                34133.84589041096,
+                33874.42808219178,
+                34337.61643835616,
+                34177.938356164384,
+                34079.767123287675,
+                33398.97260273973,
+                33354.308219178085,
+                34437.07191780822,
+                34019.54794520548,
+                33953.33904109589,
+                33777.54109589041
               ],
-              "q1_ns": 33718.78511705686,
-              "q3_ns": 33909.45484949833,
+              "q1_ns": 33850.206335616436,
+              "q3_ns": 34144.869006849316,
               "raw_window_ns": [
-                10085000,
-                10072667,
-                10173625,
-                9876958,
-                10138875,
-                10139083,
-                10105750,
-                9843500,
-                10128500,
-                10260584,
-                10116750,
-                10123000
+                9946416,
+                9967083,
+                9891333,
+                10026584,
+                9979958,
+                9951292,
+                9752500,
+                9739458,
+                10055625,
+                9933708,
+                9914375,
+                9863042
               ]
             }
           }
         }
       },
-      "process_id": 35371,
+      "process_id": 37175,
       "runtime": {
         "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
         "machine": "arm64",
@@ -1392,39 +1698,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 328,
-              "iqr_ns": 604.165396341461,
-              "iqr_over_median": 0.019966874734029756,
-              "median_ns": 30258.38567073171,
+              "inner_iterations": 327,
+              "iqr_ns": 284.1483180428186,
+              "iqr_over_median": 0.009373374105482342,
+              "median_ns": 30314.41131498471,
               "per_call_ns": [
-                30523.881097560974,
-                30720.274390243903,
-                30391.131097560974,
-                30279.219512195123,
-                93838.67073170732,
-                29887.19512195122,
-                30144.307926829268,
-                29860.009146341465,
-                30237.551829268294,
-                29966.844512195123,
-                30636.939024390245,
-                29891.38719512195
+                30659.278287461773,
+                30512.61467889908,
+                30312.180428134558,
+                30273.318042813455,
+                29992.229357798165,
+                30502.16513761468,
+                30505.605504587154,
+                30366.336391437308,
+                29972.351681957185,
+                30316.642201834864,
+                30222.859327217124,
+                30206.929663608564
               ],
-              "q1_ns": 29947.98018292683,
-              "q3_ns": 30552.14557926829,
+              "q1_ns": 30218.876911314983,
+              "q3_ns": 30503.0252293578,
               "raw_window_ns": [
-                10011833,
-                10076250,
-                9968291,
-                9931584,
-                30779084,
-                9803000,
-                9887333,
-                9794083,
-                9917917,
-                9829125,
-                10048916,
-                9804375
+                10025584,
+                9977625,
+                9912083,
+                9899375,
+                9807459,
+                9974208,
+                9975333,
+                9929792,
+                9800959,
+                9913542,
+                9882875,
+                9877666
               ]
             }
           },
@@ -1450,39 +1756,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 329,
-              "iqr_ns": 137.12537993920705,
-              "iqr_over_median": 0.004532074263362357,
-              "median_ns": 30256.64893617021,
+              "inner_iterations": 327,
+              "iqr_ns": 382.9648318042782,
+              "iqr_over_median": 0.012687142558492005,
+              "median_ns": 30185.27064220184,
               "per_call_ns": [
-                30540.018237082066,
-                30364.23404255319,
-                30559.90273556231,
-                30293.05775075988,
-                29894.504559270517,
-                30247.088145896658,
-                30213.90577507599,
-                30341.81762917933,
-                30245.44072948328,
-                30116.51367781155,
-                30266.20972644377,
-                30199.468085106382
+                30443.681957186545,
+                30511.339449541283,
+                30519.623853211007,
+                30133.409785932723,
+                30025.483180428135,
+                30128.694189602447,
+                30353.467889908257,
+                31196.229357798165,
+                30081.422018348625,
+                30066.25993883792,
+                30237.13149847095,
+                29984.455657492355
               ],
-              "q1_ns": 30210.296352583588,
-              "q3_ns": 30347.421732522795,
+              "q1_ns": 30077.63149847095,
+              "q3_ns": 30460.596330275228,
               "raw_window_ns": [
-                10047666,
-                9989833,
-                10054208,
-                9966416,
-                9835292,
-                9951292,
-                9940375,
-                9982458,
-                9950750,
-                9908333,
-                9957583,
-                9935625
+                9955084,
+                9977208,
+                9979917,
+                9853625,
+                9818333,
+                9852083,
+                9925584,
+                10201167,
+                9836625,
+                9831667,
+                9887542,
+                9804917
               ]
             }
           },
@@ -1508,39 +1814,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 196,
-              "iqr_ns": 4063.0293367346894,
-              "iqr_over_median": 0.09200175395749502,
-              "median_ns": 44162.52040816327,
+              "inner_iterations": 194,
+              "iqr_ns": 2473.0992268041227,
+              "iqr_over_median": 0.0526959513693355,
+              "median_ns": 46931.48453608247,
               "per_call_ns": [
-                51204.7193877551,
-                48667.51530612245,
-                48099.698979591834,
-                41574.4081632653,
-                46377.97448979592,
-                41630.954081632655,
-                42484.69387755102,
-                43624.36224489796,
-                43404.760204081635,
-                42832.27040816326,
-                44700.67857142857,
-                45630.954081632655
+                52076.67525773196,
+                46890.67525773196,
+                47631.87113402062,
+                46972.29381443299,
+                49287.37113402062,
+                49081.40206185567,
+                47027.92268041237,
+                46308.634020618556,
+                45584.19072164949,
+                42042.742268041235,
+                44611.90206185567,
+                45332.04639175258
               ],
-              "q1_ns": 42745.37627551021,
-              "q3_ns": 46808.4056122449,
+              "q1_ns": 45521.154639175256,
+              "q3_ns": 47994.25386597938,
               "raw_window_ns": [
-                10036125,
-                9538833,
-                9427541,
-                8148584,
-                9090083,
-                8159667,
-                8327000,
-                8550375,
-                8507333,
-                8395125,
-                8761333,
-                8943667
+                10102875,
+                9096791,
+                9240583,
+                9112625,
+                9561750,
+                9521792,
+                9123417,
+                8983875,
+                8843333,
+                8156292,
+                8654709,
+                8794417
               ]
             }
           },
@@ -1566,39 +1872,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 197,
-              "iqr_ns": 3208.6015228426404,
-              "iqr_over_median": 0.06883186377858533,
-              "median_ns": 46615.06091370559,
+              "inner_iterations": 198,
+              "iqr_ns": 2512.943181818184,
+              "iqr_over_median": 0.05379783754561431,
+              "median_ns": 46710.85858585859,
               "per_call_ns": [
-                50254.0152284264,
-                48234.350253807104,
-                47672.58883248731,
-                47027.497461928935,
-                44910.10659898477,
-                43687.390862944165,
-                42046.53299492386,
-                46202.62436548223,
-                45212.9847715736,
-                42883.03553299492,
-                47216.58375634518,
-                48522.62944162437
+                48880.257575757576,
+                47118.055555555555,
+                46711.07070707071,
+                46710.64646464647,
+                47945.07575757576,
+                48700.545454545456,
+                43801.13636363636,
+                46768.30808080808,
+                43466.5404040404,
+                43486.11111111111,
+                45148.77777777778,
+                46325.12626262626
               ],
-              "q1_ns": 44604.42766497462,
-              "q3_ns": 47813.02918781726,
+              "q1_ns": 44811.867424242424,
+              "q3_ns": 47324.81060606061,
               "raw_window_ns": [
-                9900041,
-                9502167,
-                9391500,
-                9264417,
-                8847291,
-                8606416,
-                8283167,
-                9101917,
-                8906958,
-                8447958,
-                9301667,
-                9558958
+                9678291,
+                9329375,
+                9248792,
+                9248708,
+                9493125,
+                9642708,
+                8672625,
+                9260125,
+                8606375,
+                8610250,
+                8939458,
+                9172375
               ]
             }
           },
@@ -1624,39 +1930,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 191,
-              "iqr_ns": 3056.5575916230373,
-              "iqr_over_median": 0.05773030490825144,
-              "median_ns": 52945.4607329843,
+              "inner_iterations": 180,
+              "iqr_ns": 913.7166666666672,
+              "iqr_over_median": 0.016981790746762458,
+              "median_ns": 53805.67222222222,
               "per_call_ns": [
-                54003.05759162304,
-                54011.12565445026,
-                53015.92146596859,
-                53110.602094240836,
-                48623.476439790575,
-                50815.01047120419,
-                48832.240837696336,
-                54417.10471204189,
-                49159.68586387434,
-                51138.958115183246,
-                53275.96335078534,
-                52875.0
+                53971.52777777778,
+                53989.583333333336,
+                53262.26666666667,
+                53386.805555555555,
+                54412.27222222222,
+                54934.26111111111,
+                53901.16111111111,
+                54986.57777777778,
+                52939.35555555556,
+                51972.916666666664,
+                53710.183333333334,
+                52884.955555555556
               ],
-              "q1_ns": 50401.17931937173,
-              "q3_ns": 53457.73691099477,
+              "q1_ns": 53181.53888888889,
+              "q3_ns": 54095.25555555556,
               "raw_window_ns": [
-                10314584,
-                10316125,
-                10126041,
-                10144125,
-                9287084,
-                9705667,
-                9326958,
-                10393667,
-                9389500,
-                9767541,
-                10175709,
-                10099125
+                9714875,
+                9718125,
+                9587208,
+                9609625,
+                9794209,
+                9888167,
+                9702209,
+                9897584,
+                9529084,
+                9355125,
+                9667833,
+                9519292
               ]
             }
           },
@@ -1682,45 +1988,271 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 322,
-              "iqr_ns": 766.9503105590084,
-              "iqr_over_median": 0.024954705065049963,
-              "median_ns": 30733.695652173912,
+              "inner_iterations": 318,
+              "iqr_ns": 753.274371069183,
+              "iqr_over_median": 0.02439351315571738,
+              "median_ns": 30880.11006289308,
               "per_call_ns": [
-                31130.17701863354,
-                30918.86645962733,
-                31483.17701863354,
-                31292.44099378882,
-                35976.70807453416,
-                30535.068322981366,
-                30051.760869565216,
-                30448.888198757762,
-                30861.801242236026,
-                30048.009316770185,
-                30268.506211180124,
-                30605.5900621118
+                31062.367924528302,
+                30971.830188679247,
+                31313.415094339623,
+                31328.48427672956,
+                31041.14150943396,
+                30413.12893081761,
+                30207.940251572327,
+                33163.78301886792,
+                30788.389937106916,
+                30152.38679245283,
+                30248.03459119497,
+                30624.738993710693
               ],
-              "q1_ns": 30403.792701863353,
-              "q3_ns": 31170.74301242236,
+              "q1_ns": 30371.85534591195,
+              "q3_ns": 31125.129716981133,
               "raw_window_ns": [
-                10023917,
-                9955875,
-                10137583,
-                10076166,
-                11584500,
-                9832292,
-                9676667,
-                9804542,
-                9937500,
-                9675459,
-                9746459,
-                9855000
+                9877833,
+                9849042,
+                9957666,
+                9962458,
+                9871083,
+                9671375,
+                9606125,
+                10546083,
+                9790708,
+                9588459,
+                9618875,
+                9738667
               ]
             }
           }
         }
       },
-      "captured_at": "2026-08-07T11:03:31.863318+00:00",
+      "captured_at": "2026-08-07T11:13:56.338367+00:00",
+      "implementation_headroom": {
+        "input": {
+          "dtype": "float32",
+          "input_layout": {
+            "probabilities": "C-contiguous",
+            "values_heads": "zero-copy non-contiguous transpose view",
+            "values_sequence": "C-contiguous"
+          },
+          "output_layout": "C-contiguous [1,512,8,64]",
+          "probabilities_sha256": "a0c0fb9206b70bae3007d716c41c844270ee4690026612fb94cfd093163bd317",
+          "probabilities_shape": [
+            1,
+            8,
+            512,
+            512
+          ],
+          "seed": 20260809,
+          "semantic": "bhqk,bkhd->bqhd Context MatMul",
+          "threads": 4,
+          "values_heads_view_shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "values_sequence_sha256": "235b522ca54fc37ab4043a0458dac65acbfa19fddf7e09aa0303ea47fb565c41",
+          "values_sequence_shape": [
+            1,
+            512,
+            8,
+            64
+          ]
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "thread_environment": {
+            "MKL_NUM_THREADS": "4",
+            "NUMEXPR_NUM_THREADS": "4",
+            "OMP_NUM_THREADS": "4",
+            "OPENBLAS_NUM_THREADS": "4",
+            "VECLIB_MAXIMUM_THREADS": "4"
+          },
+          "timer": "time.perf_counter_ns",
+          "torch_num_threads": 4,
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "batched-matmul-transpose-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 28,
+              "iqr_ns": 40106.77678571432,
+              "iqr_over_median": 0.12138160877820794,
+              "median_ns": 330418.89285714284,
+              "per_call_ns": [
+                324998.5,
+                421757.4285714286,
+                400212.78571428574,
+                362793.14285714284,
+                325561.0,
+                323089.28571428574,
+                326040.1785714286,
+                364663.6785714286,
+                334797.60714285716,
+                364616.0714285714,
+                320419.64285714284,
+                319979.14285714284
+              ],
+              "q1_ns": 324521.1964285714,
+              "q3_ns": 364627.97321428574,
+              "raw_window_ns": [
+                9099958,
+                11809208,
+                11205958,
+                10158208,
+                9115708,
+                9046500,
+                9129125,
+                10210583,
+                9374333,
+                10209250,
+                8971750,
+                8959416
+              ]
+            }
+          },
+          "legacy-einsum-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 31,
+              "iqr_ns": 6424.74193548382,
+              "iqr_over_median": 0.018204873864657464,
+              "median_ns": 352913.29032258067,
+              "per_call_ns": [
+                353397.8387096774,
+                347568.5483870968,
+                346745.96774193546,
+                353779.5806451613,
+                353071.22580645164,
+                350362.9032258064,
+                352755.3548387097,
+                360010.77419354836,
+                368342.7419354839,
+                328286.29032258067,
+                353811.8387096774,
+                344784.96774193546
+              ],
+              "q1_ns": 347362.9032258065,
+              "q3_ns": 353787.6451612903,
+              "raw_window_ns": [
+                10955333,
+                10774625,
+                10749125,
+                10967167,
+                10945208,
+                10861250,
+                10935416,
+                11160334,
+                11418625,
+                10176875,
+                10968167,
+                10688334
+              ]
+            }
+          }
+        }
+      },
       "integration": {
         "input": {
           "dtype": "float32",
@@ -1829,38 +2361,38 @@
             },
             "summary": {
               "inner_iterations": 1000,
-              "iqr_ns": 212.92625000000044,
-              "iqr_over_median": 0.023454009290233627,
-              "median_ns": 9078.4585,
+              "iqr_ns": 175.58399999999892,
+              "iqr_over_median": 0.019300379914673656,
+              "median_ns": 9097.4375,
               "per_call_ns": [
-                9008.208,
-                9065.417,
-                9297.208,
-                9091.5,
-                9030.875,
-                9237.541,
-                8226.125,
-                9093.958,
-                9042.417,
-                9053.5,
-                9304.042,
-                9368.625
+                9239.834,
+                9080.958,
+                9075.208,
+                9210.583,
+                9251.333,
+                9324.25,
+                7776.708,
+                9411.875,
+                9042.875,
+                9102.333,
+                9092.542,
+                8576.708
               ],
-              "q1_ns": 9039.5315,
-              "q3_ns": 9252.45775,
+              "q1_ns": 9067.12475,
+              "q3_ns": 9242.70875,
               "raw_window_ns": [
-                9008208,
-                9065417,
-                9297208,
-                9091500,
-                9030875,
-                9237541,
-                8226125,
-                9093958,
-                9042417,
-                9053500,
-                9304042,
-                9368625
+                9239834,
+                9080958,
+                9075208,
+                9210583,
+                9251333,
+                9324250,
+                7776708,
+                9411875,
+                9042875,
+                9102333,
+                9092542,
+                8576708
               ]
             }
           },
@@ -1887,38 +2419,38 @@
             },
             "summary": {
               "inner_iterations": 424,
-              "iqr_ns": 166.76415094339973,
-              "iqr_over_median": 0.006876704666940519,
-              "median_ns": 24250.590801886792,
+              "iqr_ns": 259.7783018867922,
+              "iqr_over_median": 0.010709252439809908,
+              "median_ns": 24257.37028301887,
               "per_call_ns": [
-                24370.283018867925,
-                24104.757075471698,
-                24473.95754716981,
-                24068.985849056604,
-                24209.709905660377,
-                24196.93396226415,
-                24243.021226415094,
-                24297.955188679247,
-                24425.60849056604,
-                24382.271226415094,
-                24254.325471698114,
-                24246.85613207547
+                24581.07311320755,
+                24327.830188679247,
+                24584.80896226415,
+                24092.07783018868,
+                24157.134433962263,
+                24203.32311320755,
+                24194.18396226415,
+                24311.41745283019,
+                24340.507075471698,
+                23999.80188679245,
+                24725.040094339623,
+                24031.349056603773
               ],
-              "q1_ns": 24206.515919811318,
-              "q3_ns": 24373.280070754718,
+              "q1_ns": 24140.870283018867,
+              "q3_ns": 24400.64858490566,
               "raw_window_ns": [
-                10333000,
-                10220417,
-                10376958,
-                10205250,
-                10264917,
-                10259500,
-                10279041,
-                10302333,
-                10356458,
-                10338083,
-                10283834,
-                10280667
+                10422375,
+                10315000,
+                10423959,
+                10215041,
+                10242625,
+                10262209,
+                10258334,
+                10308041,
+                10320375,
+                10175916,
+                10483417,
+                10189292
               ]
             }
           },
@@ -1944,45 +2476,45 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 301,
-              "iqr_ns": 1252.7342192691067,
-              "iqr_over_median": 0.03731210141543821,
-              "median_ns": 33574.47508305648,
+              "inner_iterations": 295,
+              "iqr_ns": 1172.4932203389835,
+              "iqr_over_median": 0.0344071229609829,
+              "median_ns": 34077.04915254237,
               "per_call_ns": [
-                34243.07641196013,
-                33787.23920265781,
-                32898.11627906977,
-                32952.933554817275,
-                34073.36877076412,
-                32610.049833887042,
-                34420.40531561462,
-                32458.88704318937,
-                34120.707641196015,
-                34121.677740863786,
-                33361.71096345515,
-                32778.514950166114
+                34213.41694915254,
+                34124.294915254235,
+                33202.96610169492,
+                34029.80338983051,
+                34514.264406779665,
+                32852.82372881356,
+                34377.96610169492,
+                32501.55593220339,
+                34454.09491525424,
+                34199.01355932203,
+                32962.56949152542,
+                33121.89152542373
               ],
-              "q1_ns": 32868.215946843855,
-              "q3_ns": 34120.95016611296,
+              "q1_ns": 33082.06101694915,
+              "q3_ns": 34254.55423728813,
               "raw_window_ns": [
-                10307166,
-                10169959,
-                9902333,
-                9918833,
-                10256084,
-                9815625,
-                10360542,
-                9770125,
-                10270333,
-                10270625,
-                10041875,
-                9866333
+                10092958,
+                10066667,
+                9794875,
+                10038792,
+                10181708,
+                9691583,
+                10141500,
+                9587959,
+                10163958,
+                10088709,
+                9723958,
+                9770958
               ]
             }
           }
         }
       },
-      "process_id": 35390,
+      "process_id": 37179,
       "runtime": {
         "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
         "machine": "arm64",
@@ -2147,39 +2679,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 327,
-              "iqr_ns": 459.35321100917645,
-              "iqr_over_median": 0.015073417790874856,
-              "median_ns": 30474.389908256882,
+              "inner_iterations": 330,
+              "iqr_ns": 427.61969696969754,
+              "iqr_over_median": 0.01415935605731654,
+              "median_ns": 30200.504545454547,
               "per_call_ns": [
-                30294.34250764526,
-                30059.250764525994,
-                30646.788990825688,
-                30606.269113149847,
-                30609.58103975535,
-                29868.629969418962,
-                29946.10091743119,
-                30177.241590214067,
-                30484.455657492355,
-                30554.406727828748,
-                30464.324159021406,
-                30673.16513761468
+                30968.18181818182,
+                30650.757575757576,
+                29865.275757575757,
+                30097.854545454546,
+                29960.60606060606,
+                30002.77878787879,
+                30323.10606060606,
+                30103.409090909092,
+                30082.70303030303,
+                30436.869696969698,
+                31059.21818181818,
+                30297.6
               ],
-              "q1_ns": 30147.74388379205,
-              "q3_ns": 30607.097094801225,
+              "q1_ns": 30062.72196969697,
+              "q3_ns": 30490.341666666667,
               "raw_window_ns": [
-                9906250,
-                9829375,
-                10021500,
-                10008250,
-                10009333,
-                9767042,
-                9792375,
-                9867958,
-                9968417,
-                9991291,
-                9961834,
-                10030125
+                10219500,
+                10114750,
+                9855541,
+                9932292,
+                9887000,
+                9900917,
+                10006625,
+                9934125,
+                9927292,
+                10044167,
+                10249542,
+                9998208
               ]
             }
           },
@@ -2205,39 +2737,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 328,
-              "iqr_ns": 639.164634146342,
-              "iqr_over_median": 0.021249967944523822,
-              "median_ns": 30078.381097560974,
+              "inner_iterations": 331,
+              "iqr_ns": 499.7477341389713,
+              "iqr_over_median": 0.016501153693662646,
+              "median_ns": 30285.623867069487,
               "per_call_ns": [
-                30199.057926829268,
-                30053.60975609756,
-                29931.911585365855,
-                30047.76524390244,
-                30103.15243902439,
-                30607.850609756097,
-                29969.76524390244,
-                30023.628048780487,
-                30773.756097560974,
-                31090.576219512193,
-                31076.981707317074,
-                29952.618902439026
+                29950.655589123868,
+                30067.47432024169,
+                29889.47432024169,
+                30493.20241691843,
+                30417.924471299095,
+                30231.36858006042,
+                30018.882175226587,
+                30694.737160120847,
+                30003.90332326284,
+                30579.933534743202,
+                30601.332326283988,
+                30339.87915407855
               ],
-              "q1_ns": 30010.162347560974,
-              "q3_ns": 30649.326981707316,
+              "q1_ns": 30015.137462235652,
+              "q3_ns": 30514.885196374624,
               "raw_window_ns": [
-                9905291,
-                9857584,
-                9817667,
-                9855667,
-                9873834,
-                10039375,
-                9830083,
-                9847750,
-                10093792,
-                10197709,
-                10193250,
-                9824459
+                9913667,
+                9952334,
+                9893416,
+                10093250,
+                10068333,
+                10006583,
+                9936250,
+                10159958,
+                9931292,
+                10121958,
+                10129041,
+                10042500
               ]
             }
           },
@@ -2263,39 +2795,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 199,
-              "iqr_ns": 3271.5125628140668,
-              "iqr_over_median": 0.07581698813596323,
-              "median_ns": 43150.125628140704,
+              "inner_iterations": 200,
+              "iqr_ns": 1561.8262499999983,
+              "iqr_over_median": 0.03651108203640184,
+              "median_ns": 42776.7725,
               "per_call_ns": [
-                50337.10050251256,
-                51029.31155778895,
-                45666.668341708544,
-                45611.80904522613,
-                42526.59296482412,
-                41400.753768844224,
-                41836.26633165829,
-                42762.35175879397,
-                43323.281407035174,
-                44243.718592964826,
-                41625.211055276384,
-                42976.969849246234
+                44426.25,
+                44504.375,
+                42819.375,
+                41692.5,
+                42057.5,
+                41761.04,
+                41342.085,
+                42734.17,
+                43643.96,
+                43512.295,
+                42862.085,
+                42079.17
               ],
-              "q1_ns": 42354.011306532666,
-              "q3_ns": 45625.52386934673,
+              "q1_ns": 41983.385,
+              "q3_ns": 43545.21125,
               "raw_window_ns": [
-                10017083,
-                10154833,
-                9087667,
-                9076750,
-                8462792,
-                8238750,
-                8325417,
-                8509708,
-                8621333,
-                8804500,
-                8283417,
-                8552417
+                8885250,
+                8900875,
+                8563875,
+                8338500,
+                8411500,
+                8352208,
+                8268417,
+                8546834,
+                8728792,
+                8702459,
+                8572417,
+                8415834
               ]
             }
           },
@@ -2322,38 +2854,38 @@
             },
             "summary": {
               "inner_iterations": 202,
-              "iqr_ns": 3672.131188118801,
-              "iqr_over_median": 0.08400710815829998,
-              "median_ns": 43712.14851485149,
+              "iqr_ns": 2157.5903465346564,
+              "iqr_over_median": 0.05076880389005217,
+              "median_ns": 42498.349009900994,
               "per_call_ns": [
-                50638.61386138614,
-                48310.232673267325,
-                43075.90594059406,
-                41939.97524752475,
-                45781.148514851484,
-                44209.569306930694,
-                46073.430693069306,
-                43214.72772277228,
-                41558.9900990099,
-                41692.039603960395,
-                42262.792079207924,
-                45225.455445544554
+                49261.96534653466,
+                45865.5099009901,
+                42266.5,
+                41535.27227722772,
+                43969.67821782178,
+                42730.19801980198,
+                41414.80693069307,
+                44918.93564356436,
+                42137.376237623765,
+                41785.4801980198,
+                42169.96534653466,
+                42775.16831683168
               ],
-              "q1_ns": 42182.087871287134,
-              "q3_ns": 45854.219059405936,
+              "q1_ns": 42049.40222772277,
+              "q3_ns": 44206.99257425743,
               "raw_window_ns": [
-                10229000,
-                9758667,
-                8701333,
-                8471875,
-                9247792,
-                8930333,
-                9306833,
-                8729375,
-                8394916,
-                8421792,
-                8537084,
-                9135542
+                9950917,
+                9264833,
+                8537833,
+                8390125,
+                8881875,
+                8631500,
+                8365791,
+                9073625,
+                8511750,
+                8440667,
+                8518333,
+                8640584
               ]
             }
           },
@@ -2379,39 +2911,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 192,
-              "iqr_ns": 2699.1106770833358,
-              "iqr_over_median": 0.05222648163491713,
-              "median_ns": 51680.8828125,
+              "inner_iterations": 190,
+              "iqr_ns": 1771.4907894736825,
+              "iqr_over_median": 0.035613898407092795,
+              "median_ns": 49741.55789473684,
               "per_call_ns": [
-                54794.703125,
-                55299.692708333336,
-                52266.494791666664,
-                53525.609375,
-                51589.84375,
-                50095.270833333336,
-                51771.921875,
-                48477.651041666664,
-                49242.838541666664,
-                50732.421875,
-                48710.067708333336,
-                51847.21875
+                52731.142105263156,
+                53685.084210526315,
+                48974.78421052632,
+                50026.75263157895,
+                48323.46315789474,
+                48371.27368421053,
+                49807.23684210526,
+                49675.87894736842,
+                53046.926315789475,
+                49382.45789473684,
+                49542.76315789474,
+                50492.326315789476
               ],
-              "q1_ns": 49882.162760416664,
-              "q3_ns": 52581.2734375,
+              "q1_ns": 49280.53947368421,
+              "q3_ns": 51052.030263157896,
               "raw_window_ns": [
-                10520583,
-                10617541,
-                10035167,
-                10276917,
-                9905250,
-                9618292,
-                9940209,
-                9307709,
-                9454625,
-                9740625,
-                9352333,
-                9954666
+                10018917,
+                10200166,
+                9305209,
+                9505083,
+                9181458,
+                9190542,
+                9463375,
+                9438417,
+                10078916,
+                9382667,
+                9413125,
+                9593542
               ]
             }
           },
@@ -2437,45 +2969,271 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 324,
-              "iqr_ns": 525.3356481481496,
-              "iqr_over_median": 0.01722303031836182,
-              "median_ns": 30501.92901234568,
+              "inner_iterations": 323,
+              "iqr_ns": 242.58281733746117,
+              "iqr_over_median": 0.007899178081418412,
+              "median_ns": 30709.88080495356,
               "per_call_ns": [
-                30771.864197530864,
-                30268.132716049382,
-                31009.132716049382,
-                29986.11111111111,
-                30931.197530864196,
-                30533.564814814814,
-                30292.438271604937,
-                31078.703703703704,
-                30382.203703703704,
-                30736.11111111111,
-                30123.716049382718,
-                30470.293209876545
+                31893.962848297215,
+                30797.857585139318,
+                30672.730650154797,
+                29978.842105263157,
+                30535.60371517028,
+                30543.730650154797,
+                30730.390092879257,
+                30753.996904024767,
+                30818.628482972137,
+                31429.049535603714,
+                30689.371517027863,
+                30566.046439628484
               ],
-              "q1_ns": 30286.361882716046,
-              "q3_ns": 30811.697530864196,
+              "q1_ns": 30560.467492260064,
+              "q3_ns": 30803.050309597525,
               "raw_window_ns": [
-                9970084,
-                9806875,
-                10046959,
-                9715500,
-                10021708,
-                9892875,
-                9814750,
-                10069500,
-                9843834,
-                9958500,
-                9760084,
-                9872375
+                10301750,
+                9947708,
+                9907292,
+                9683166,
+                9863000,
+                9865625,
+                9925916,
+                9933541,
+                9954417,
+                10151583,
+                9912667,
+                9872833
               ]
             }
           }
         }
       },
-      "captured_at": "2026-08-07T11:03:33.482179+00:00",
+      "captured_at": "2026-08-07T11:13:58.231071+00:00",
+      "implementation_headroom": {
+        "input": {
+          "dtype": "float32",
+          "input_layout": {
+            "probabilities": "C-contiguous",
+            "values_heads": "zero-copy non-contiguous transpose view",
+            "values_sequence": "C-contiguous"
+          },
+          "output_layout": "C-contiguous [1,512,8,64]",
+          "probabilities_sha256": "a0c0fb9206b70bae3007d716c41c844270ee4690026612fb94cfd093163bd317",
+          "probabilities_shape": [
+            1,
+            8,
+            512,
+            512
+          ],
+          "seed": 20260809,
+          "semantic": "bhqk,bkhd->bqhd Context MatMul",
+          "threads": 4,
+          "values_heads_view_shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "values_sequence_sha256": "235b522ca54fc37ab4043a0458dac65acbfa19fddf7e09aa0303ea47fb565c41",
+          "values_sequence_shape": [
+            1,
+            512,
+            8,
+            64
+          ]
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "batched-matmul-transpose-contiguous",
+              "legacy-einsum-contiguous"
+            ],
+            [
+              "legacy-einsum-contiguous",
+              "batched-matmul-transpose-contiguous"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "thread_environment": {
+            "MKL_NUM_THREADS": "4",
+            "NUMEXPR_NUM_THREADS": "4",
+            "OMP_NUM_THREADS": "4",
+            "OPENBLAS_NUM_THREADS": "4",
+            "VECLIB_MAXIMUM_THREADS": "4"
+          },
+          "timer": "time.perf_counter_ns",
+          "torch_num_threads": 4,
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "batched-matmul-transpose-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 30,
+              "iqr_ns": 24946.525000000023,
+              "iqr_over_median": 0.07667956637274552,
+              "median_ns": 325334.7166666667,
+              "per_call_ns": [
+                328479.1666666667,
+                296631.93333333335,
+                316884.7,
+                305851.36666666664,
+                310711.1,
+                335606.93333333335,
+                329740.3,
+                338365.3,
+                310612.5,
+                322190.26666666666,
+                335711.1,
+                350606.93333333335
+              ],
+              "q1_ns": 310686.44999999995,
+              "q3_ns": 335632.975,
+              "raw_window_ns": [
+                9854375,
+                8898958,
+                9506541,
+                9175541,
+                9321333,
+                10068208,
+                9892209,
+                10150959,
+                9318375,
+                9665708,
+                10071333,
+                10518208
+              ]
+            }
+          },
+          "legacy-einsum-contiguous": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 3.0552571766984116e-07,
+              "max_relative_error_with_atol_floor": 0.0007388143222555876,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  1,
+                  512,
+                  8,
+                  64
+                ],
+                "stride": [
+                  262144,
+                  512,
+                  64,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 31,
+              "iqr_ns": 28528.548387096846,
+              "iqr_over_median": 0.08558236818480552,
+              "median_ns": 333346.0967741936,
+              "per_call_ns": [
+                322444.9032258064,
+                357708.32258064515,
+                334137.0967741936,
+                350115.5806451613,
+                332555.0967741936,
+                325866.93548387097,
+                313233.87096774194,
+                373680.0967741936,
+                335721.77419354836,
+                319767.4516129032,
+                350869.6129032258,
+                318346.77419354836
+              ],
+              "q1_ns": 321775.5403225806,
+              "q3_ns": 350304.08870967745,
+              "raw_window_ns": [
+                9995792,
+                11088958,
+                10358250,
+                10853583,
+                10309208,
+                10101875,
+                9710250,
+                11584083,
+                10407375,
+                9912791,
+                10876958,
+                9868750
+              ]
+            }
+          }
+        }
+      },
       "integration": {
         "input": {
           "dtype": "float32",
@@ -2584,38 +3342,38 @@
             },
             "summary": {
               "inner_iterations": 1000,
-              "iqr_ns": 545.8535000000011,
-              "iqr_over_median": 0.059997499433250785,
-              "median_ns": 9097.9375,
+              "iqr_ns": 92.70849999999882,
+              "iqr_over_median": 0.010120509258379748,
+              "median_ns": 9160.457999999999,
               "per_call_ns": [
-                8703.792,
-                8414.417,
-                9200.875,
-                9132.458,
-                8566.042,
-                9067.833,
-                8655.542,
-                9502.917,
-                9255.166,
-                9182.916,
-                9128.042,
-                8599.583
+                9146.0,
+                9245.625,
+                9345.791,
+                9230.167,
+                9351.708,
+                9112.75,
+                9122.833,
+                9172.791,
+                9147.125,
+                9204.917,
+                9127.292,
+                9148.125
               ],
-              "q1_ns": 8641.552249999999,
-              "q3_ns": 9187.40575,
+              "q1_ns": 9141.323,
+              "q3_ns": 9234.0315,
               "raw_window_ns": [
-                8703792,
-                8414417,
-                9200875,
-                9132458,
-                8566042,
-                9067833,
-                8655542,
-                9502917,
-                9255166,
-                9182916,
-                9128042,
-                8599583
+                9146000,
+                9245625,
+                9345791,
+                9230167,
+                9351708,
+                9112750,
+                9122833,
+                9172791,
+                9147125,
+                9204917,
+                9127292,
+                9148125
               ]
             }
           },
@@ -2641,39 +3399,39 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 416,
-              "iqr_ns": 185.34615384615608,
-              "iqr_over_median": 0.007655725107996315,
-              "median_ns": 24210.13701923077,
+              "inner_iterations": 423,
+              "iqr_ns": 220.15425531915025,
+              "iqr_over_median": 0.009056673960612747,
+              "median_ns": 24308.51063829787,
               "per_call_ns": [
-                24145.935096153848,
-                23817.408653846152,
-                24252.403846153848,
-                24215.545673076922,
-                24271.134615384617,
-                24058.09375,
-                24456.028846153848,
-                23729.96875,
-                24117.28846153846,
-                24337.939903846152,
-                24774.939903846152,
-                24204.728365384617
+                24648.836879432623,
+                24281.323877068557,
+                24212.075650118204,
+                24170.607565011822,
+                24457.54609929078,
+                24390.860520094564,
+                24639.676122931443,
+                23689.125295508275,
+                24199.271867612293,
+                24188.63120567376,
+                24335.697399527187,
+                24403.172576832152
               ],
-              "q1_ns": 24102.489783653844,
-              "q3_ns": 24287.8359375,
+              "q1_ns": 24196.61170212766,
+              "q3_ns": 24416.76595744681,
               "raw_window_ns": [
-                10044709,
-                9908042,
-                10089000,
-                10073667,
-                10096792,
-                10008167,
-                10173708,
-                9871667,
-                10032792,
-                10124583,
-                10306375,
-                10069167
+                10426458,
+                10271000,
+                10241708,
+                10224167,
+                10345542,
+                10317334,
+                10422583,
+                10020500,
+                10236292,
+                10231791,
+                10294000,
+                10322542
               ]
             }
           },
@@ -2699,45 +3457,45 @@
               "rtol": 0.0001
             },
             "summary": {
-              "inner_iterations": 311,
-              "iqr_ns": 764.536173633438,
-              "iqr_over_median": 0.022940464919950478,
-              "median_ns": 33326.96945337621,
+              "inner_iterations": 297,
+              "iqr_ns": 862.3375420875454,
+              "iqr_over_median": 0.026227609910330938,
+              "median_ns": 32878.99831649831,
               "per_call_ns": [
-                32192.254019292606,
-                34684.887459807076,
-                33604.771704180064,
-                33579.31511254019,
-                32967.845659163984,
-                34537.112540192924,
-                32665.996784565916,
-                32872.85852090032,
-                33316.45337620579,
-                32230.038585209004,
-                33337.485530546626,
-                33386.2540192926
+                33537.17845117845,
+                33361.952861952865,
+                33246.21212121212,
+                32436.306397306398,
+                32324.074074074073,
+                32651.515151515152,
+                33263.606060606064,
+                32314.956228956227,
+                32635.804713804715,
+                33106.48148148148,
+                34022.868686868685,
+                32394.501683501683
               ],
-              "q1_ns": 32821.14308681672,
-              "q3_ns": 33585.67926045016,
+              "q1_ns": 32425.85521885522,
+              "q3_ns": 33288.192760942766,
               "raw_window_ns": [
-                10011791,
-                10787000,
-                10451084,
-                10443167,
-                10253000,
-                10741042,
-                10159125,
-                10223459,
-                10361417,
-                10023542,
-                10367958,
-                10383125
+                9960542,
+                9908500,
+                9874125,
+                9633583,
+                9600250,
+                9697500,
+                9879291,
+                9597542,
+                9692834,
+                9832625,
+                10104792,
+                9621167
               ]
             }
           }
         }
       },
-      "process_id": 35393,
+      "process_id": 37188,
       "runtime": {
         "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
         "machine": "arm64",
