@@ -1,0 +1,2053 @@
+{
+  "assertions": [
+    {
+      "assertion_id": "exact-knots-share-query-path",
+      "expected": {
+        "cell": "smooth-line-128-512",
+        "statuses": [
+          "exact_anchor",
+          "exact_anchor"
+        ]
+      },
+      "observed": {
+        "cells": [
+          "smooth-line-128-512",
+          "smooth-line-128-512"
+        ],
+        "statuses": [
+          "exact_anchor",
+          "exact_anchor"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "assertion_id": "shape-201-continuous-rate",
+      "expected": 1314062500000.0,
+      "observed": 1314062500000.0,
+      "passed": true
+    },
+    {
+      "assertion_id": "retained-cell-scan-has-no-step",
+      "expected": 1562500000.0,
+      "observed": 1562500000.0,
+      "passed": true
+    },
+    {
+      "assertion_id": "two-dimensional-inside-query",
+      "expected": {
+        "rate": 1550000000000.0,
+        "weights": [
+          0.16666666666666666,
+          0.3333333333333333,
+          0.5
+        ]
+      },
+      "observed": {
+        "rate": 1550000000000.0,
+        "weights": [
+          0.16666666666666666,
+          0.3333333333333333,
+          0.5
+        ]
+      },
+      "passed": true
+    },
+    {
+      "assertion_id": "two-dimensional-box-is-not-domain",
+      "expected": "unknown(outside_validated_domain)",
+      "observed": "unknown(outside_validated_domain)",
+      "passed": true
+    },
+    {
+      "assertion_id": "unvalidated-alignment-is-rejected",
+      "expected": "unknown(alignment_regime_unvalidated)",
+      "observed": "unknown(alignment_regime_unvalidated)",
+      "passed": true
+    },
+    {
+      "assertion_id": "cliff-confirmation-rejects-cell",
+      "expected": "unknown(interpolation_error_exceeds_budget)",
+      "observed": {
+        "authoritative_rate": null,
+        "reason": "interpolation_error_exceeds_budget",
+        "residual_fraction": 1.1538461538461537,
+        "status": "unknown"
+      },
+      "passed": true
+    },
+    {
+      "assertion_id": "ineligible-m4-evidence-is-not-an-anchor",
+      "expected": {
+        "authoritative_rate": null,
+        "frontier_status": "unknown"
+      },
+      "observed": {
+        "authoritative_rate": null,
+        "case_eligible": true,
+        "environment_eligible": false,
+        "frontier_status": "unknown"
+      },
+      "passed": true
+    },
+    {
+      "assertion_id": "query-provenance-is-complete",
+      "expected": [
+        "anchors",
+        "cell_id",
+        "coordinate_transform",
+        "hardware_cohort",
+        "raw_coordinates",
+        "reason",
+        "status",
+        "surface_id",
+        "surface_input_digest",
+        "surface_version",
+        "transformed_coordinates",
+        "uncertainty",
+        "weights"
+      ],
+      "observed": [
+        "anchors",
+        "cell_id",
+        "coordinate_transform",
+        "hardware_cohort",
+        "raw_coordinates",
+        "reason",
+        "status",
+        "surface_id",
+        "surface_input_digest",
+        "surface_version",
+        "transformed_coordinates",
+        "uncertainty",
+        "weights"
+      ],
+      "passed": true
+    },
+    {
+      "assertion_id": "new-anchor-creates-new-immutable-surface-version",
+      "expected": {
+        "different_input_digests": true,
+        "v1": {
+          "rate": 1314062500000.0,
+          "status": "interpolated"
+        },
+        "v2": {
+          "rate": 1280000000000.0,
+          "status": "exact_anchor"
+        }
+      },
+      "observed": {
+        "different_input_digests": true,
+        "v1": {
+          "rate": 1314062500000.0,
+          "status": "interpolated",
+          "version": "v1"
+        },
+        "v2": {
+          "rate": 1280000000000.0,
+          "status": "exact_anchor",
+          "version": "v2"
+        }
+      },
+      "passed": true
+    },
+    {
+      "assertion_id": "identical-input-replay-is-deterministic",
+      "expected": "sha256:38290231f780ecc0c1cfbfa6073a117caab9d114b4cdb945e4ec3155f3b9291c",
+      "observed": "sha256:38290231f780ecc0c1cfbfa6073a117caab9d114b4cdb945e4ec3155f3b9291c",
+      "passed": true
+    }
+  ],
+  "counterexamples": [
+    {
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "aligned-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "aligned-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "aligned-a128",
+              "aligned-a512"
+            ],
+            "cell_id": "aligned-line-128-512",
+            "confirmations": [],
+            "interpolation_standard_uncertainty": 0.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "S"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-aligned-only",
+        "validated_domain": {
+          "alignment": [
+            "aligned"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "query": {
+        "anchors": [],
+        "cell_id": null,
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "alignment": "non_aligned",
+          "dtype": "fp32"
+        },
+        "rate": null,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": "alignment_regime_unvalidated",
+        "status": "unknown",
+        "surface_id": "synthetic-aligned-only",
+        "surface_input_digest": "sha256:ff49d6c605f0bd205f0425a093a37fdf4c75a4e5805bd9f91fd7381a88f7bf03",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": null,
+        "unit": "FLOP/s",
+        "weights": []
+      },
+      "scenario": "alignment_regime_rejection"
+    },
+    {
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "cliff-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "cliff-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "cliff-a128",
+              "cliff-a512"
+            ],
+            "cell_id": "cliff-line-128-512",
+            "confirmations": [
+              {
+                "confirmation_id": "cliff-confirmation-256",
+                "coordinates": [
+                  256.0
+                ],
+                "observed_rate": 650000000000.0
+              }
+            ],
+            "interpolation_standard_uncertainty": 0.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "S"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-contradicted-sparse-cell",
+        "validated_domain": {
+          "alignment": [
+            "mixed_confirmed"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "query": {
+        "anchors": [
+          {
+            "anchor_id": "cliff-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "cliff-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cell_id": "cliff-line-128-512",
+        "cell_validation": {
+          "confirmations": [
+            {
+              "confirmation_id": "cliff-confirmation-256",
+              "coordinates": [
+                256.0
+              ],
+              "observed_rate": 650000000000.0,
+              "predicted_rate": 1400000000000.0,
+              "residual_fraction": 1.1538461538461537,
+              "status": "evaluated"
+            }
+          ],
+          "maximum_allowed_residual_fraction": 0.15,
+          "maximum_observed_residual_fraction": 1.1538461538461537,
+          "passed": false
+        },
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "provisional_rate": 1314062500000.0,
+        "query_domain": {
+          "alignment": "mixed_confirmed",
+          "dtype": "fp32"
+        },
+        "rate": null,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": "interpolation_error_exceeds_budget",
+        "status": "unknown",
+        "surface_id": "synthetic-contradicted-sparse-cell",
+        "surface_input_digest": "sha256:8f5fe98379b3159c43d4e6d3e5fc67d4fc81e3c6ab63a9dd2897c5c11879333a",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": null,
+        "unit": "FLOP/s",
+        "weights": [
+          0.8098958333333334,
+          0.19010416666666666
+        ]
+      },
+      "scenario": "confirmation_probe_rejects_smoothed_cliff"
+    },
+    {
+      "observation": {
+        "authoritative_rate": null,
+        "captured_at": "2026-08-07T03:58:38.750725+00:00",
+        "environment": {
+          "eligible": false,
+          "policy_id": "local-apple-silicon-v2",
+          "reason_codes": [
+            "load-above-policy",
+            "total-competing-cpu-above-policy"
+          ]
+        },
+        "frontier_status": "unknown",
+        "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+        "observation_kind": "resource_microbenchmark_not_operator_frontier_anchor",
+        "reason": "environment_ineligible",
+        "selected_case": {
+          "achieved_rate": 935245728372.951,
+          "case_eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "probe_id": "matrix-fp32-cube",
+          "shape": [
+            128,
+            128,
+            128
+          ],
+          "threads": 4,
+          "unit": "FLOP/s"
+        },
+        "source_path": "goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-microbenchmark-observation-v2.json",
+        "source_sha256": "sha256:221c19f53f5df7442165943b99d097b1287b1fcd47903136ccb1a0251ed69e30"
+      },
+      "scenario": "ineligible_m4_bundle_cannot_supply_frontier_anchor"
+    }
+  ],
+  "decision_digest_before_replay_assertion": "sha256:38290231f780ecc0c1cfbfa6073a117caab9d114b4cdb945e4ec3155f3b9291c",
+  "environment": {
+    "executable": "/Users/Zhuanz/.local/bin/python3.11",
+    "platform": "macOS-15.7.4-arm64-arm-64bit",
+    "python": "3.11.15 (main, May 10 2026, 19:23:07) [Clang 22.1.3 ]",
+    "repository_root": "/private/tmp/groundupscale-issue5.Yz0V6e/worktree"
+  },
+  "hypothesis_verdict": "supported_for_method_contract",
+  "production_disposition": "decision_only_do_not_evolve_or_copy_prototype_code",
+  "prototype_only": true,
+  "question": "Can retained local simplicial cells provide continuous explainable versioned queries and refuse unsupported authority?",
+  "replay_digest": "sha256:38290231f780ecc0c1cfbfa6073a117caab9d114b4cdb945e4ec3155f3b9291c",
+  "run_command": "python3.11 prototypes/issue-5-capability-surface/run.py --batch",
+  "scenarios": [
+    {
+      "continuity_scan": {
+        "coordinates": [
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          194,
+          195,
+          196,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209,
+          210,
+          211,
+          212,
+          213,
+          214,
+          215,
+          216,
+          217,
+          218,
+          219,
+          220,
+          221,
+          222,
+          223,
+          224,
+          225,
+          226,
+          227,
+          228,
+          229,
+          230,
+          231,
+          232,
+          233,
+          234,
+          235,
+          236,
+          237,
+          238,
+          239,
+          240,
+          241,
+          242,
+          243,
+          244,
+          245,
+          246,
+          247,
+          248,
+          249,
+          250,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          261,
+          262,
+          263,
+          264,
+          265,
+          266,
+          267,
+          268,
+          269,
+          270,
+          271,
+          272,
+          273,
+          274,
+          275,
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          295,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          303,
+          304,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          312,
+          313,
+          314,
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          334,
+          335,
+          336,
+          337,
+          338,
+          339,
+          340,
+          341,
+          342,
+          343,
+          344,
+          345,
+          346,
+          347,
+          348,
+          349,
+          350,
+          351,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359,
+          360,
+          361,
+          362,
+          363,
+          364,
+          365,
+          366,
+          367,
+          368,
+          369,
+          370,
+          371,
+          372,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          380,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          391,
+          392,
+          393,
+          394,
+          395,
+          396,
+          397,
+          398,
+          399,
+          400,
+          401,
+          402,
+          403,
+          404,
+          405,
+          406,
+          407,
+          408,
+          409,
+          410,
+          411,
+          412,
+          413,
+          414,
+          415,
+          416,
+          417,
+          418,
+          419,
+          420,
+          421,
+          422,
+          423,
+          424,
+          425,
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          432,
+          433,
+          434,
+          435,
+          436,
+          437,
+          438,
+          439,
+          440,
+          441,
+          442,
+          443,
+          444,
+          445,
+          446,
+          447,
+          448,
+          449,
+          450,
+          451,
+          452,
+          453,
+          454,
+          455,
+          456,
+          457,
+          458,
+          459,
+          460,
+          461,
+          462,
+          463,
+          464,
+          465,
+          466,
+          467,
+          468,
+          469,
+          470,
+          471,
+          472,
+          473,
+          474,
+          475,
+          476,
+          477,
+          478,
+          479,
+          480,
+          481,
+          482,
+          483,
+          484,
+          485,
+          486,
+          487,
+          488,
+          489,
+          490,
+          491,
+          492,
+          493,
+          494,
+          495,
+          496,
+          497,
+          498,
+          499,
+          500,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512
+        ],
+        "maximum_adjacent_delta": 1562500000.0,
+        "minimum_adjacent_delta": 1562500000.0,
+        "rates": [
+          1200000000000.0,
+          1201562500000.0,
+          1203125000000.0,
+          1204687500000.0,
+          1206250000000.0,
+          1207812500000.0,
+          1209375000000.0,
+          1210937500000.0,
+          1212500000000.0,
+          1214062500000.0,
+          1215625000000.0,
+          1217187500000.0,
+          1218750000000.0,
+          1220312500000.0,
+          1221875000000.0,
+          1223437500000.0,
+          1225000000000.0,
+          1226562500000.0,
+          1228125000000.0,
+          1229687500000.0,
+          1231250000000.0,
+          1232812500000.0,
+          1234375000000.0,
+          1235937500000.0,
+          1237500000000.0,
+          1239062500000.0,
+          1240625000000.0,
+          1242187500000.0,
+          1243750000000.0,
+          1245312500000.0,
+          1246875000000.0,
+          1248437500000.0,
+          1250000000000.0,
+          1251562500000.0,
+          1253125000000.0,
+          1254687500000.0,
+          1256250000000.0,
+          1257812500000.0,
+          1259375000000.0,
+          1260937500000.0,
+          1262500000000.0,
+          1264062500000.0,
+          1265625000000.0,
+          1267187500000.0,
+          1268750000000.0,
+          1270312500000.0,
+          1271875000000.0,
+          1273437500000.0,
+          1275000000000.0,
+          1276562500000.0,
+          1278125000000.0,
+          1279687500000.0,
+          1281250000000.0,
+          1282812500000.0,
+          1284375000000.0,
+          1285937500000.0,
+          1287500000000.0,
+          1289062500000.0,
+          1290625000000.0,
+          1292187500000.0,
+          1293750000000.0,
+          1295312500000.0,
+          1296875000000.0,
+          1298437500000.0,
+          1300000000000.0,
+          1301562500000.0,
+          1303125000000.0,
+          1304687500000.0,
+          1306250000000.0,
+          1307812500000.0,
+          1309375000000.0,
+          1310937500000.0,
+          1312500000000.0,
+          1314062500000.0,
+          1315625000000.0,
+          1317187500000.0,
+          1318750000000.0,
+          1320312500000.0,
+          1321875000000.0,
+          1323437500000.0,
+          1325000000000.0,
+          1326562500000.0,
+          1328125000000.0,
+          1329687500000.0,
+          1331250000000.0,
+          1332812500000.0,
+          1334375000000.0,
+          1335937500000.0,
+          1337500000000.0,
+          1339062500000.0,
+          1340625000000.0,
+          1342187500000.0,
+          1343750000000.0,
+          1345312500000.0,
+          1346875000000.0,
+          1348437500000.0,
+          1350000000000.0,
+          1351562500000.0,
+          1353125000000.0,
+          1354687500000.0,
+          1356250000000.0,
+          1357812500000.0,
+          1359375000000.0,
+          1360937500000.0,
+          1362500000000.0,
+          1364062500000.0,
+          1365625000000.0,
+          1367187500000.0,
+          1368750000000.0,
+          1370312500000.0,
+          1371875000000.0,
+          1373437500000.0,
+          1375000000000.0,
+          1376562500000.0,
+          1378125000000.0,
+          1379687500000.0,
+          1381250000000.0,
+          1382812500000.0,
+          1384375000000.0,
+          1385937500000.0,
+          1387500000000.0,
+          1389062500000.0,
+          1390625000000.0,
+          1392187500000.0,
+          1393750000000.0,
+          1395312500000.0,
+          1396875000000.0,
+          1398437500000.0,
+          1400000000000.0,
+          1401562500000.0,
+          1403125000000.0,
+          1404687500000.0,
+          1406250000000.0,
+          1407812500000.0,
+          1409375000000.0,
+          1410937500000.0,
+          1412500000000.0,
+          1414062500000.0,
+          1415625000000.0,
+          1417187500000.0,
+          1418750000000.0,
+          1420312500000.0,
+          1421875000000.0,
+          1423437500000.0,
+          1425000000000.0,
+          1426562500000.0,
+          1428125000000.0,
+          1429687500000.0,
+          1431250000000.0,
+          1432812500000.0,
+          1434375000000.0,
+          1435937500000.0,
+          1437500000000.0,
+          1439062500000.0,
+          1440625000000.0,
+          1442187500000.0,
+          1443750000000.0,
+          1445312500000.0,
+          1446875000000.0,
+          1448437500000.0,
+          1450000000000.0,
+          1451562500000.0,
+          1453125000000.0,
+          1454687500000.0,
+          1456250000000.0,
+          1457812500000.0,
+          1459375000000.0,
+          1460937500000.0,
+          1462500000000.0,
+          1464062500000.0,
+          1465625000000.0,
+          1467187500000.0,
+          1468750000000.0,
+          1470312500000.0,
+          1471875000000.0,
+          1473437500000.0,
+          1475000000000.0,
+          1476562500000.0,
+          1478125000000.0,
+          1479687500000.0,
+          1481250000000.0,
+          1482812500000.0,
+          1484375000000.0,
+          1485937500000.0,
+          1487500000000.0,
+          1489062500000.0,
+          1490625000000.0,
+          1492187500000.0,
+          1493750000000.0,
+          1495312500000.0,
+          1496875000000.0,
+          1498437500000.0,
+          1500000000000.0,
+          1501562500000.0,
+          1503125000000.0,
+          1504687500000.0,
+          1506250000000.0,
+          1507812500000.0,
+          1509375000000.0,
+          1510937500000.0,
+          1512500000000.0,
+          1514062500000.0,
+          1515625000000.0,
+          1517187500000.0,
+          1518750000000.0,
+          1520312500000.0,
+          1521875000000.0,
+          1523437500000.0,
+          1525000000000.0,
+          1526562500000.0,
+          1528125000000.0,
+          1529687500000.0,
+          1531250000000.0,
+          1532812500000.0,
+          1534375000000.0,
+          1535937500000.0,
+          1537500000000.0,
+          1539062500000.0,
+          1540625000000.0,
+          1542187500000.0,
+          1543750000000.0,
+          1545312500000.0,
+          1546875000000.0,
+          1548437500000.0,
+          1550000000000.0,
+          1551562500000.0,
+          1553125000000.0,
+          1554687500000.0,
+          1556250000000.0,
+          1557812500000.0,
+          1559375000000.0,
+          1560937500000.0,
+          1562500000000.0,
+          1564062500000.0,
+          1565625000000.0,
+          1567187500000.0,
+          1568750000000.0,
+          1570312500000.0,
+          1571875000000.0,
+          1573437500000.0,
+          1575000000000.0,
+          1576562500000.0,
+          1578125000000.0,
+          1579687500000.0,
+          1581250000000.0,
+          1582812500000.0,
+          1584375000000.0,
+          1585937500000.0,
+          1587500000000.0,
+          1589062500000.0,
+          1590625000000.0,
+          1592187500000.0,
+          1593750000000.0,
+          1595312500000.0,
+          1596875000000.0,
+          1598437500000.0,
+          1600000000000.0,
+          1601562500000.0,
+          1603125000000.0,
+          1604687500000.0,
+          1606250000000.0,
+          1607812500000.0,
+          1609375000000.0,
+          1610937500000.0,
+          1612500000000.0,
+          1614062500000.0,
+          1615625000000.0,
+          1617187500000.0,
+          1618750000000.0,
+          1620312500000.0,
+          1621875000000.0,
+          1623437500000.0,
+          1625000000000.0,
+          1626562500000.0,
+          1628125000000.0,
+          1629687500000.0,
+          1631250000000.0,
+          1632812500000.0,
+          1634375000000.0,
+          1635937500000.0,
+          1637500000000.0,
+          1639062500000.0,
+          1640625000000.0,
+          1642187500000.0,
+          1643750000000.0,
+          1645312500000.0,
+          1646875000000.0,
+          1648437500000.0,
+          1650000000000.0,
+          1651562500000.0,
+          1653125000000.0,
+          1654687500000.0,
+          1656250000000.0,
+          1657812500000.0,
+          1659375000000.0,
+          1660937500000.0,
+          1662500000000.0,
+          1664062500000.0,
+          1665625000000.0,
+          1667187500000.0,
+          1668750000000.0,
+          1670312500000.0,
+          1671875000000.0,
+          1673437500000.0,
+          1675000000000.0,
+          1676562500000.0,
+          1678125000000.0,
+          1679687500000.0,
+          1681250000000.0,
+          1682812500000.0,
+          1684375000000.0,
+          1685937500000.0,
+          1687500000000.0,
+          1689062500000.0,
+          1690625000000.0,
+          1692187500000.0,
+          1693750000000.0,
+          1695312500000.0,
+          1696875000000.0,
+          1698437500000.0,
+          1700000000000.0,
+          1701562500000.0,
+          1703125000000.0,
+          1704687500000.0,
+          1706250000000.0,
+          1707812500000.0,
+          1709375000000.0,
+          1710937500000.0,
+          1712500000000.0,
+          1714062500000.0,
+          1715625000000.0,
+          1717187500000.0,
+          1718750000000.0,
+          1720312500000.0,
+          1721875000000.0,
+          1723437500000.0,
+          1725000000000.0,
+          1726562500000.0,
+          1728125000000.0,
+          1729687500000.0,
+          1731250000000.0,
+          1732812500000.0,
+          1734375000000.0,
+          1735937500000.0,
+          1737500000000.0,
+          1739062500000.0,
+          1740625000000.0,
+          1742187500000.0,
+          1743750000000.0,
+          1745312500000.0,
+          1746875000000.0,
+          1748437500000.0,
+          1750000000000.0,
+          1751562500000.0,
+          1753125000000.0,
+          1754687500000.0,
+          1756250000000.0,
+          1757812500000.0,
+          1759375000000.0,
+          1760937500000.0,
+          1762500000000.0,
+          1764062500000.0,
+          1765625000000.0,
+          1767187500000.0,
+          1768750000000.0,
+          1770312500000.0,
+          1771875000000.0,
+          1773437500000.0,
+          1775000000000.0,
+          1776562500000.0,
+          1778125000000.0,
+          1779687500000.0,
+          1781250000000.0,
+          1782812500000.0,
+          1784375000000.0,
+          1785937500000.0,
+          1787500000000.0,
+          1789062500000.0,
+          1790625000000.0,
+          1792187500000.0,
+          1793750000000.0,
+          1795312500000.0,
+          1796875000000.0,
+          1798437500000.0,
+          1800000000000.0
+        ]
+      },
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "smooth-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "smooth-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "smooth-a128",
+              "smooth-a512"
+            ],
+            "cell_id": "smooth-line-128-512",
+            "confirmations": [],
+            "interpolation_standard_uncertainty": 40000000000.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "S"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-square-matmul-scale",
+        "validated_domain": {
+          "alignment": [
+            "aligned",
+            "non_aligned"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "queries": {
+        "shape_128": {
+          "anchors": [
+            {
+              "anchor_id": "smooth-a128",
+              "coordinates": [
+                128.0
+              ],
+              "rate": 1200000000000.0,
+              "standard_uncertainty": 20000000000.0
+            },
+            {
+              "anchor_id": "smooth-a512",
+              "coordinates": [
+                512.0
+              ],
+              "rate": 1800000000000.0,
+              "standard_uncertainty": 30000000000.0
+            }
+          ],
+          "cell_id": "smooth-line-128-512",
+          "cell_validation": {
+            "confirmations": [],
+            "maximum_allowed_residual_fraction": 0.15,
+            "maximum_observed_residual_fraction": 0.0,
+            "passed": true
+          },
+          "coordinate_transform": "identity/v1",
+          "hardware_cohort": "synthetic-cohort",
+          "query_domain": {
+            "alignment": "aligned",
+            "dtype": "fp32"
+          },
+          "rate": 1200000000000.0,
+          "raw_coordinates": {
+            "S": 128.0
+          },
+          "reason": null,
+          "status": "exact_anchor",
+          "surface_id": "synthetic-square-matmul-scale",
+          "surface_input_digest": "sha256:dd85c04fbcd126a266a142cd934d956a2b1c9e84ec76e7cdbe1cb6c0a0f50e8b",
+          "surface_version": "v1",
+          "transformed_coordinates": [
+            128.0
+          ],
+          "uncertainty": {
+            "anchor_standard_uncertainty": 20000000000.0,
+            "combined_standard_uncertainty": 20000000000.0,
+            "interpolation_standard_uncertainty": 0.0,
+            "rate_interval": [
+              1180000000000.0,
+              1220000000000.0
+            ]
+          },
+          "unit": "FLOP/s",
+          "weights": [
+            1.0,
+            0.0
+          ]
+        },
+        "shape_201": {
+          "anchors": [
+            {
+              "anchor_id": "smooth-a128",
+              "coordinates": [
+                128.0
+              ],
+              "rate": 1200000000000.0,
+              "standard_uncertainty": 20000000000.0
+            },
+            {
+              "anchor_id": "smooth-a512",
+              "coordinates": [
+                512.0
+              ],
+              "rate": 1800000000000.0,
+              "standard_uncertainty": 30000000000.0
+            }
+          ],
+          "cell_id": "smooth-line-128-512",
+          "cell_validation": {
+            "confirmations": [],
+            "maximum_allowed_residual_fraction": 0.15,
+            "maximum_observed_residual_fraction": 0.0,
+            "passed": true
+          },
+          "coordinate_transform": "identity/v1",
+          "hardware_cohort": "synthetic-cohort",
+          "query_domain": {
+            "alignment": "non_aligned",
+            "dtype": "fp32"
+          },
+          "rate": 1314062500000.0,
+          "raw_coordinates": {
+            "S": 201.0
+          },
+          "reason": null,
+          "status": "interpolated",
+          "surface_id": "synthetic-square-matmul-scale",
+          "surface_input_digest": "sha256:dd85c04fbcd126a266a142cd934d956a2b1c9e84ec76e7cdbe1cb6c0a0f50e8b",
+          "surface_version": "v1",
+          "transformed_coordinates": [
+            201.0
+          ],
+          "uncertainty": {
+            "anchor_standard_uncertainty": 17172598496.031485,
+            "combined_standard_uncertainty": 43530427738.6049,
+            "interpolation_standard_uncertainty": 40000000000.0,
+            "rate_interval": [
+              1270532072261.395,
+              1357592927738.605
+            ]
+          },
+          "unit": "FLOP/s",
+          "weights": [
+            0.8098958333333334,
+            0.19010416666666666
+          ]
+        },
+        "shape_512": {
+          "anchors": [
+            {
+              "anchor_id": "smooth-a128",
+              "coordinates": [
+                128.0
+              ],
+              "rate": 1200000000000.0,
+              "standard_uncertainty": 20000000000.0
+            },
+            {
+              "anchor_id": "smooth-a512",
+              "coordinates": [
+                512.0
+              ],
+              "rate": 1800000000000.0,
+              "standard_uncertainty": 30000000000.0
+            }
+          ],
+          "cell_id": "smooth-line-128-512",
+          "cell_validation": {
+            "confirmations": [],
+            "maximum_allowed_residual_fraction": 0.15,
+            "maximum_observed_residual_fraction": 0.0,
+            "passed": true
+          },
+          "coordinate_transform": "identity/v1",
+          "hardware_cohort": "synthetic-cohort",
+          "query_domain": {
+            "alignment": "aligned",
+            "dtype": "fp32"
+          },
+          "rate": 1800000000000.0,
+          "raw_coordinates": {
+            "S": 512.0
+          },
+          "reason": null,
+          "status": "exact_anchor",
+          "surface_id": "synthetic-square-matmul-scale",
+          "surface_input_digest": "sha256:dd85c04fbcd126a266a142cd934d956a2b1c9e84ec76e7cdbe1cb6c0a0f50e8b",
+          "surface_version": "v1",
+          "transformed_coordinates": [
+            512.0
+          ],
+          "uncertainty": {
+            "anchor_standard_uncertainty": 30000000000.0,
+            "combined_standard_uncertainty": 30000000000.0,
+            "interpolation_standard_uncertainty": 0.0,
+            "rate_interval": [
+              1770000000000.0,
+              1830000000000.0
+            ]
+          },
+          "unit": "FLOP/s",
+          "weights": [
+            0.0,
+            1.0
+          ]
+        }
+      },
+      "scenario": "smooth_1d_exact_and_interpolated"
+    },
+    {
+      "bounding_box_but_outside_query": {
+        "anchors": [],
+        "cell_id": null,
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "K": "256",
+          "alignment": "aligned",
+          "dtype": "fp32"
+        },
+        "rate": null,
+        "raw_coordinates": {
+          "M": 400.0,
+          "N": 400.0
+        },
+        "reason": "outside_validated_domain",
+        "status": "unknown",
+        "surface_id": "synthetic-matmul-mn-k256",
+        "surface_input_digest": "sha256:347257ef9697931dd1c491b72ca283aa715c7b46390a74eff921e55e4fb8cd8c",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          400.0,
+          400.0
+        ],
+        "uncertainty": null,
+        "unit": "FLOP/s",
+        "weights": []
+      },
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "matmul-A",
+            "coordinates": [
+              128.0,
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "matmul-B",
+            "coordinates": [
+              512.0,
+              128.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          },
+          {
+            "anchor_id": "matmul-C",
+            "coordinates": [
+              128.0,
+              512.0
+            ],
+            "rate": 1500000000000.0,
+            "standard_uncertainty": 25000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "matmul-A",
+              "matmul-B",
+              "matmul-C"
+            ],
+            "cell_id": "matmul-triangle-ABC",
+            "confirmations": [],
+            "interpolation_standard_uncertainty": 50000000000.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "M",
+          "N"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-matmul-mn-k256",
+        "validated_domain": {
+          "K": [
+            "256"
+          ],
+          "alignment": [
+            "aligned"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "inside_query": {
+        "anchors": [
+          {
+            "anchor_id": "matmul-A",
+            "coordinates": [
+              128.0,
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "matmul-B",
+            "coordinates": [
+              512.0,
+              128.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          },
+          {
+            "anchor_id": "matmul-C",
+            "coordinates": [
+              128.0,
+              512.0
+            ],
+            "rate": 1500000000000.0,
+            "standard_uncertainty": 25000000000.0
+          }
+        ],
+        "cell_id": "matmul-triangle-ABC",
+        "cell_validation": {
+          "confirmations": [],
+          "maximum_allowed_residual_fraction": 0.15,
+          "maximum_observed_residual_fraction": 0.0,
+          "passed": true
+        },
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "K": "256",
+          "alignment": "aligned",
+          "dtype": "fp32"
+        },
+        "rate": 1550000000000.0,
+        "raw_coordinates": {
+          "M": 256.0,
+          "N": 320.0
+        },
+        "reason": null,
+        "status": "interpolated",
+        "surface_id": "synthetic-matmul-mn-k256",
+        "surface_input_digest": "sha256:347257ef9697931dd1c491b72ca283aa715c7b46390a74eff921e55e4fb8cd8c",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          256.0,
+          320.0
+        ],
+        "uncertainty": {
+          "anchor_standard_uncertainty": 16351180725.290485,
+          "combined_standard_uncertainty": 52605713673.6221,
+          "interpolation_standard_uncertainty": 50000000000.0,
+          "rate_interval": [
+            1497394286326.378,
+            1602605713673.622
+          ]
+        },
+        "unit": "FLOP/s",
+        "weights": [
+          0.16666666666666666,
+          0.3333333333333333,
+          0.5
+        ]
+      },
+      "scenario": "matmul_2d_retained_triangle"
+    },
+    {
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "aligned-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "aligned-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "aligned-a128",
+              "aligned-a512"
+            ],
+            "cell_id": "aligned-line-128-512",
+            "confirmations": [],
+            "interpolation_standard_uncertainty": 0.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "S"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-aligned-only",
+        "validated_domain": {
+          "alignment": [
+            "aligned"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "query": {
+        "anchors": [],
+        "cell_id": null,
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "alignment": "non_aligned",
+          "dtype": "fp32"
+        },
+        "rate": null,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": "alignment_regime_unvalidated",
+        "status": "unknown",
+        "surface_id": "synthetic-aligned-only",
+        "surface_input_digest": "sha256:ff49d6c605f0bd205f0425a093a37fdf4c75a4e5805bd9f91fd7381a88f7bf03",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": null,
+        "unit": "FLOP/s",
+        "weights": []
+      },
+      "scenario": "alignment_regime_rejection"
+    },
+    {
+      "input": {
+        "anchors": [
+          {
+            "anchor_id": "cliff-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "cliff-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cells": [
+          {
+            "anchor_ids": [
+              "cliff-a128",
+              "cliff-a512"
+            ],
+            "cell_id": "cliff-line-128-512",
+            "confirmations": [
+              {
+                "confirmation_id": "cliff-confirmation-256",
+                "coordinates": [
+                  256.0
+                ],
+                "observed_rate": 650000000000.0
+              }
+            ],
+            "interpolation_standard_uncertainty": 0.0,
+            "maximum_confirmation_residual_fraction": 0.15
+          }
+        ],
+        "cohort": "synthetic-cohort",
+        "coordinate_names": [
+          "S"
+        ],
+        "coordinate_transform": "identity/v1",
+        "surface_id": "synthetic-contradicted-sparse-cell",
+        "validated_domain": {
+          "alignment": [
+            "mixed_confirmed"
+          ],
+          "dtype": [
+            "fp32"
+          ]
+        },
+        "version": "v1"
+      },
+      "query": {
+        "anchors": [
+          {
+            "anchor_id": "cliff-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "cliff-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cell_id": "cliff-line-128-512",
+        "cell_validation": {
+          "confirmations": [
+            {
+              "confirmation_id": "cliff-confirmation-256",
+              "coordinates": [
+                256.0
+              ],
+              "observed_rate": 650000000000.0,
+              "predicted_rate": 1400000000000.0,
+              "residual_fraction": 1.1538461538461537,
+              "status": "evaluated"
+            }
+          ],
+          "maximum_allowed_residual_fraction": 0.15,
+          "maximum_observed_residual_fraction": 1.1538461538461537,
+          "passed": false
+        },
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "provisional_rate": 1314062500000.0,
+        "query_domain": {
+          "alignment": "mixed_confirmed",
+          "dtype": "fp32"
+        },
+        "rate": null,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": "interpolation_error_exceeds_budget",
+        "status": "unknown",
+        "surface_id": "synthetic-contradicted-sparse-cell",
+        "surface_input_digest": "sha256:8f5fe98379b3159c43d4e6d3e5fc67d4fc81e3c6ab63a9dd2897c5c11879333a",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": null,
+        "unit": "FLOP/s",
+        "weights": [
+          0.8098958333333334,
+          0.19010416666666666
+        ]
+      },
+      "scenario": "confirmation_probe_rejects_smoothed_cliff"
+    },
+    {
+      "observation": {
+        "authoritative_rate": null,
+        "captured_at": "2026-08-07T03:58:38.750725+00:00",
+        "environment": {
+          "eligible": false,
+          "policy_id": "local-apple-silicon-v2",
+          "reason_codes": [
+            "load-above-policy",
+            "total-competing-cpu-above-policy"
+          ]
+        },
+        "frontier_status": "unknown",
+        "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+        "observation_kind": "resource_microbenchmark_not_operator_frontier_anchor",
+        "reason": "environment_ineligible",
+        "selected_case": {
+          "achieved_rate": 935245728372.951,
+          "case_eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "probe_id": "matrix-fp32-cube",
+          "shape": [
+            128,
+            128,
+            128
+          ],
+          "threads": 4,
+          "unit": "FLOP/s"
+        },
+        "source_path": "goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-microbenchmark-observation-v2.json",
+        "source_sha256": "sha256:221c19f53f5df7442165943b99d097b1287b1fcd47903136ccb1a0251ed69e30"
+      },
+      "scenario": "ineligible_m4_bundle_cannot_supply_frontier_anchor"
+    },
+    {
+      "inputs": {
+        "version_one": {
+          "anchors": [
+            {
+              "anchor_id": "smooth-a128",
+              "coordinates": [
+                128.0
+              ],
+              "rate": 1200000000000.0,
+              "standard_uncertainty": 20000000000.0
+            },
+            {
+              "anchor_id": "smooth-a512",
+              "coordinates": [
+                512.0
+              ],
+              "rate": 1800000000000.0,
+              "standard_uncertainty": 30000000000.0
+            }
+          ],
+          "cells": [
+            {
+              "anchor_ids": [
+                "smooth-a128",
+                "smooth-a512"
+              ],
+              "cell_id": "smooth-line-128-512",
+              "confirmations": [],
+              "interpolation_standard_uncertainty": 40000000000.0,
+              "maximum_confirmation_residual_fraction": 0.15
+            }
+          ],
+          "cohort": "synthetic-cohort",
+          "coordinate_names": [
+            "S"
+          ],
+          "coordinate_transform": "identity/v1",
+          "surface_id": "synthetic-square-matmul-scale",
+          "validated_domain": {
+            "alignment": [
+              "aligned",
+              "non_aligned"
+            ],
+            "dtype": [
+              "fp32"
+            ]
+          },
+          "version": "v1"
+        },
+        "version_two": {
+          "anchors": [
+            {
+              "anchor_id": "smooth-a128",
+              "coordinates": [
+                128.0
+              ],
+              "rate": 1200000000000.0,
+              "standard_uncertainty": 20000000000.0
+            },
+            {
+              "anchor_id": "smooth-a201",
+              "coordinates": [
+                201.0
+              ],
+              "rate": 1280000000000.0,
+              "standard_uncertainty": 18000000000.0
+            },
+            {
+              "anchor_id": "smooth-a512",
+              "coordinates": [
+                512.0
+              ],
+              "rate": 1800000000000.0,
+              "standard_uncertainty": 30000000000.0
+            }
+          ],
+          "cells": [
+            {
+              "anchor_ids": [
+                "smooth-a128",
+                "smooth-a201"
+              ],
+              "cell_id": "smooth-line-128-201",
+              "confirmations": [],
+              "interpolation_standard_uncertainty": 25000000000.0,
+              "maximum_confirmation_residual_fraction": 0.15
+            },
+            {
+              "anchor_ids": [
+                "smooth-a201",
+                "smooth-a512"
+              ],
+              "cell_id": "smooth-line-201-512",
+              "confirmations": [],
+              "interpolation_standard_uncertainty": 35000000000.0,
+              "maximum_confirmation_residual_fraction": 0.15
+            }
+          ],
+          "cohort": "synthetic-cohort",
+          "coordinate_names": [
+            "S"
+          ],
+          "coordinate_transform": "identity/v1",
+          "surface_id": "synthetic-square-matmul-scale",
+          "validated_domain": {
+            "alignment": [
+              "aligned",
+              "non_aligned"
+            ],
+            "dtype": [
+              "fp32"
+            ]
+          },
+          "version": "v2"
+        }
+      },
+      "scenario": "new_anchor_creates_new_immutable_surface_version",
+      "version_one_query": {
+        "anchors": [
+          {
+            "anchor_id": "smooth-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "smooth-a512",
+            "coordinates": [
+              512.0
+            ],
+            "rate": 1800000000000.0,
+            "standard_uncertainty": 30000000000.0
+          }
+        ],
+        "cell_id": "smooth-line-128-512",
+        "cell_validation": {
+          "confirmations": [],
+          "maximum_allowed_residual_fraction": 0.15,
+          "maximum_observed_residual_fraction": 0.0,
+          "passed": true
+        },
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "alignment": "non_aligned",
+          "dtype": "fp32"
+        },
+        "rate": 1314062500000.0,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": null,
+        "status": "interpolated",
+        "surface_id": "synthetic-square-matmul-scale",
+        "surface_input_digest": "sha256:dd85c04fbcd126a266a142cd934d956a2b1c9e84ec76e7cdbe1cb6c0a0f50e8b",
+        "surface_version": "v1",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": {
+          "anchor_standard_uncertainty": 17172598496.031485,
+          "combined_standard_uncertainty": 43530427738.6049,
+          "interpolation_standard_uncertainty": 40000000000.0,
+          "rate_interval": [
+            1270532072261.395,
+            1357592927738.605
+          ]
+        },
+        "unit": "FLOP/s",
+        "weights": [
+          0.8098958333333334,
+          0.19010416666666666
+        ]
+      },
+      "version_two_query": {
+        "anchors": [
+          {
+            "anchor_id": "smooth-a128",
+            "coordinates": [
+              128.0
+            ],
+            "rate": 1200000000000.0,
+            "standard_uncertainty": 20000000000.0
+          },
+          {
+            "anchor_id": "smooth-a201",
+            "coordinates": [
+              201.0
+            ],
+            "rate": 1280000000000.0,
+            "standard_uncertainty": 18000000000.0
+          }
+        ],
+        "cell_id": "smooth-line-128-201",
+        "cell_validation": {
+          "confirmations": [],
+          "maximum_allowed_residual_fraction": 0.15,
+          "maximum_observed_residual_fraction": 0.0,
+          "passed": true
+        },
+        "coordinate_transform": "identity/v1",
+        "hardware_cohort": "synthetic-cohort",
+        "query_domain": {
+          "alignment": "non_aligned",
+          "dtype": "fp32"
+        },
+        "rate": 1280000000000.0,
+        "raw_coordinates": {
+          "S": 201.0
+        },
+        "reason": null,
+        "status": "exact_anchor",
+        "surface_id": "synthetic-square-matmul-scale",
+        "surface_input_digest": "sha256:313f9beec3e2f046627d8df56904aeec8635a39d85696fb6f7524c8ba75fa1e4",
+        "surface_version": "v2",
+        "transformed_coordinates": [
+          201.0
+        ],
+        "uncertainty": {
+          "anchor_standard_uncertainty": 18000000000.0,
+          "combined_standard_uncertainty": 18000000000.0,
+          "interpolation_standard_uncertainty": 0.0,
+          "rate_interval": [
+            1262000000000.0,
+            1298000000000.0
+          ]
+        },
+        "unit": "FLOP/s",
+        "weights": [
+          0.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "schema": "groundupscale.dev/throwaway-capability-surface-prototype/v1"
+}
