@@ -3,7 +3,7 @@
   "prototype_only": true,
   "question_answered": true,
   "input": {
-    "sha256": "613ab1620ff7eb4d2479d0f4c32bd9d79e7b28f64a37390dc306cde7408e17ad",
+    "sha256": "99db01a7029700456bc5557daebf429c3e43c1c9385d5bdf05fdd4af91c232fc",
     "fixture": {
       "schema": "groundupscale.dev/throwaway-schedule-frontier-input/v0",
       "prototype_only": true,
@@ -39,6 +39,87 @@
           "value": 0.699458,
           "source_kind": "published_functional_m4_trace",
           "trusted_calibration": false
+        }
+      },
+      "actual_trace_replay": {
+        "source_kind": "live_development_run",
+        "trusted_calibration": false,
+        "command": "uv run groundupscale run specs/plans/mac-cpu-prefill.yaml --repository-root . --run-id issue7-prototype-source --target-window-ms 20 --windows-per-sample 3 --json",
+        "run_id": "issue7-prototype-source",
+        "captured_at": "2026-08-07T11:28:41.570653+00:00",
+        "environment": {
+          "system": "Darwin",
+          "release": "24.6.0",
+          "machine": "arm64",
+          "device": "cpu",
+          "python": "3.11.15",
+          "torch": "2.13.0",
+          "torch_num_threads": 4,
+          "measurement_preflight": "not-collected:preflight-not-requested"
+        },
+        "artifact_sha256": {
+          "observation.trace.jsonl": "0d8f704430358e67827ced5fe8bcd253518b53e6cb2ea9b65ce29f030dfc9c2f",
+          "benchmark.json": "70e938303a344f29f3500659f50d5645d7c246e9d0cc2fe9ff7fdeafc2f0cd31",
+          "error-attribution.json": "c4588e81f10c0e73d2bce358253d0d26127ba9bbe0312cdc5368f9c826237e1f",
+          "environment.json": "46a25476faa3e3199979d4083244ac99671d6fac2626bac515cee1d7eb58ca8d"
+        },
+        "benchmark": {
+          "e2e_median_ms": 101.2369375,
+          "e2e_iqr_over_median": 0.07750547570643374,
+          "instrumentation_profile": "benchmark"
+        },
+        "trace": {
+          "instrumentation_profile": "trace",
+          "alignment_coverage": 1.0,
+          "event_count": 60,
+          "operation_leaf_count": 52,
+          "module_parent_count": 7,
+          "e2e_parent_count": 1,
+          "e2e_host_ms": 99.592625,
+          "operation_leaf_interval_union_ms": 94.337127,
+          "unattributed_host_ms": 5.255498,
+          "top_10_operations": [
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+              "host_duration_ms": 39.718667
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+              "host_duration_ms": 38.84675
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+              "host_duration_ms": 1.292792
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+              "host_duration_ms": 1.223833
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+              "host_duration_ms": 1.198416
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+              "host_duration_ms": 1.07475
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+              "host_duration_ms": 1.030792
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+              "host_duration_ms": 1.027042
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+              "host_duration_ms": 1.004375
+            },
+            {
+              "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+              "host_duration_ms": 0.971792
+            }
+          ]
         }
       },
       "layers": [
@@ -1119,7 +1200,7 @@
     ]
   },
   "environment": {
-    "git_revision": "163d08f74d8cde2edd18f7a491577b432c5f1fb0",
+    "git_revision": "7ccba69fb8cd75e5c3e731199d82ece2ef415d52",
     "python": "3.11.15 (main, May 10 2026, 19:23:07) [Clang 22.1.3 ]",
     "platform": "macOS-15.7.4-arm64-arm-64bit",
     "machine": "arm64",
@@ -1990,6 +2071,138 @@
         "operator_id": "layer_0/attention_score",
         "duration_ms": 1.38
       }
+    ],
+    "actual_trace_operator": [
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+        "host_duration_ms": 39.718667
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+        "host_duration_ms": 38.84675
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+        "host_duration_ms": 1.292792
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+        "host_duration_ms": 1.223833
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+        "host_duration_ms": 1.198416
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+        "host_duration_ms": 1.07475
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+        "host_duration_ms": 1.030792
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+        "host_duration_ms": 1.027042
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+        "host_duration_ms": 1.004375
+      },
+      {
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+        "host_duration_ms": 0.971792
+      }
+    ]
+  },
+  "actual_trace_replay": {
+    "source_kind": "live_development_run",
+    "trusted_calibration": false,
+    "command": "uv run groundupscale run specs/plans/mac-cpu-prefill.yaml --repository-root . --run-id issue7-prototype-source --target-window-ms 20 --windows-per-sample 3 --json",
+    "run_id": "issue7-prototype-source",
+    "captured_at": "2026-08-07T11:28:41.570653+00:00",
+    "environment": {
+      "system": "Darwin",
+      "release": "24.6.0",
+      "machine": "arm64",
+      "device": "cpu",
+      "python": "3.11.15",
+      "torch": "2.13.0",
+      "torch_num_threads": 4,
+      "measurement_preflight": "not-collected:preflight-not-requested"
+    },
+    "artifact_sha256": {
+      "observation.trace.jsonl": "0d8f704430358e67827ced5fe8bcd253518b53e6cb2ea9b65ce29f030dfc9c2f",
+      "benchmark.json": "70e938303a344f29f3500659f50d5645d7c246e9d0cc2fe9ff7fdeafc2f0cd31",
+      "error-attribution.json": "c4588e81f10c0e73d2bce358253d0d26127ba9bbe0312cdc5368f9c826237e1f",
+      "environment.json": "46a25476faa3e3199979d4083244ac99671d6fac2626bac515cee1d7eb58ca8d"
+    },
+    "benchmark": {
+      "e2e_median_ms": 101.2369375,
+      "e2e_iqr_over_median": 0.07750547570643374,
+      "instrumentation_profile": "benchmark"
+    },
+    "trace": {
+      "instrumentation_profile": "trace",
+      "alignment_coverage": 1.0,
+      "event_count": 60,
+      "operation_leaf_count": 52,
+      "module_parent_count": 7,
+      "e2e_parent_count": 1,
+      "e2e_host_ms": 99.592625,
+      "operation_leaf_interval_union_ms": 94.337127,
+      "unattributed_host_ms": 5.255498,
+      "top_10_operations": [
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+          "host_duration_ms": 39.718667
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+          "host_duration_ms": 38.84675
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "host_duration_ms": 1.292792
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "host_duration_ms": 1.223833
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "host_duration_ms": 1.198416
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "host_duration_ms": 1.07475
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "host_duration_ms": 1.030792
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "host_duration_ms": 1.027042
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "host_duration_ms": 1.004375
+        },
+        {
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "host_duration_ms": 0.971792
+        }
+      ]
+    },
+    "leaf_plus_residual_ms": 99.592625,
+    "ledger_conserved": true,
+    "parents_excluded_from_exclusive_ledger": true,
+    "calibration_eligible": false,
+    "calibration_rejection_reasons": [
+      "measurement_preflight_not_collected",
+      "benchmark_iqr_over_median_exceeds_3_percent",
+      "trace_is_diagnostic_not_benchmark_truth"
     ]
   },
   "diagnosis": {

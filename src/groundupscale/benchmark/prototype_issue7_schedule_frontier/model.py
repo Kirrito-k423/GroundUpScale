@@ -305,6 +305,27 @@ def _counterfactual(
     }
 
 
+def _actual_trace_replay(fixture: dict[str, Any]) -> dict[str, Any]:
+    source = fixture["actual_trace_replay"]
+    trace = source["trace"]
+    leaf_plus_residual_ms = (
+        trace["operation_leaf_interval_union_ms"] + trace["unattributed_host_ms"]
+    )
+    return {
+        **deepcopy(source),
+        "leaf_plus_residual_ms": leaf_plus_residual_ms,
+        "ledger_conserved": abs(leaf_plus_residual_ms - trace["e2e_host_ms"])
+        <= EPSILON_MS,
+        "parents_excluded_from_exclusive_ledger": (
+            trace["module_parent_count"] > 0 and trace["e2e_parent_count"] == 1
+        ),
+        "calibration_eligible": False,
+        "calibration_rejection_reasons": [
+            "measurement_preflight_not_collected",
+            "benchmark_iqr_over_median_exceeds_3_percent",
+            "trace_is_diagnostic_not_benchmark_truth",
+        ],
+    }
 def _top_ten(nodes: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
     return [
         {"rank": rank, "operator_id": node["id"], "duration_ms": node[key]}
@@ -339,6 +360,7 @@ def evaluate() -> dict[str, Any]:
     drilldown = _drilldown(rows)
     operator_total_ms = ledger["by_kind_ms"]["operator_execution"]
     counterfactual = _counterfactual(fixture, rows, operator_total_ms)
+    actual_trace_replay = _actual_trace_replay(fixture)
     semantic_counterexamples = _validate_explicit_semantics(fixture)
 
     expected_e2e_ms = fixture["reference_observations_ms"]["two_layer_prefill"]["value"]
@@ -383,6 +405,8 @@ def evaluate() -> dict[str, Any]:
     checks = {
         "ledger_conserved": unique_ids
         and drilldown_conserved
+        and actual_trace_replay["ledger_conserved"]
+        and actual_trace_replay["parents_excluded_from_exclusive_ledger"]
         and abs(ledger["total_ms"] - expected_e2e_ms) <= EPSILON_MS,
         "critical_path_valid": abs(
             physical_path.duration_ms - declared_physical_floor_ms
@@ -437,7 +461,11 @@ def evaluate() -> dict[str, Any]:
                 nodes, "operator_frontier_ms"
             ),
             "observed_operator_trace": _top_ten(nodes, "observed_ms"),
+            "actual_trace_operator": deepcopy(
+                actual_trace_replay["trace"]["top_10_operations"]
+            ),
         },
+        "actual_trace_replay": actual_trace_replay,
         "diagnosis": {
             "all_operator_observations_in_frontier_band": all_operator_observations_in_band,
             "schedule_frontier_uncertainty_ms": 2.0,

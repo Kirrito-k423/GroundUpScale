@@ -68,6 +68,12 @@ and a deliberately invalid implicit-overlap counterexample.
 - The run output records the fixture SHA-256, git revision, Python/platform
   identity, every raw input row, all derived rows, invariants, Top-10 lists, and
   the rejected implicit-overlap counterexample.
+- A supplementary live development run replays a real 60-event trace. Its
+  command, allowlisted environment, artifact SHA-256 values, benchmark summary,
+  exclusive leaf-union ledger, and actual operation Top 10 are embedded in
+  `input.json`. The artifacts are diagnostic evidence only: preflight was not
+  requested and the E2E benchmark `IQR/median` was `7.75%`, so the run is not
+  calibration evidence and does not alter the prototype Frontier values.
 
 ## Exit check
 
@@ -94,6 +100,10 @@ with Python 3.11.15, all five pre-registered checks passed:
   unchanged Operator Frontier and unchanged operator observation total
 - implicit fusion, concurrency, communication masking, and unclaimed resource
   contention were all rejected with a specific reason
+- supplementary actual-trace replay: `52` operation leaves cover
+  `94.337127 ms`; the exclusive unattributed bucket is `5.255498 ms`; together
+  they reconstruct the `99.592625 ms` E2E trace. Seven nested module spans and
+  the E2E parent span are deliberately excluded from the additive ledger.
 
 The observed answer is therefore “yes, for this deliberately bounded case.” A
 production contract should retain four separate time axes, typed dependency and
