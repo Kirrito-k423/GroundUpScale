@@ -1264,6 +1264,7 @@ def _measurement_lanes_valid(
     *,
     stable_path: object,
     contract: object,
+    integration_verdict_requested: bool = False,
 ) -> bool:
     if not isinstance(value, dict):
         return False
@@ -1301,7 +1302,16 @@ def _measurement_lanes_valid(
         and diagnostic["pair_id"] == baseline["pair_id"]
         and diagnostic["paired_baseline_lane_id"] == baseline["lane_id"]
         and diagnostic["lane_id"] != baseline["lane_id"]
-        and diagnostic.get("timing_used_for_verdict") is False
+        and (
+            (
+                diagnostic.get("timing_used_for_frontier") is False
+                and diagnostic.get("timing_used_for_integration_verdict")
+                is True
+                and "timing_used_for_verdict" not in diagnostic
+            )
+            if integration_verdict_requested
+            else diagnostic.get("timing_used_for_verdict") is False
+        )
         and baseline.get("case") == expected_case
         and diagnostic.get("case") == expected_case
         and baseline.get("execution_domain")
@@ -1766,6 +1776,194 @@ def _frontier_uncertainty_artifacts_valid(
     )
 
 
+def _integration_operator_frontier_valid(
+    value: object,
+    *,
+    stable_path: str,
+    contract: dict[str, Any],
+    verified_artifacts: dict[str, object],
+) -> bool:
+    if not isinstance(value, dict):
+        return False
+    surface = value.get("surface")
+    policy = value.get("uncertainty_policy")
+    records = value.get("uncertainty_records")
+    evidence_ref = value.get("evidence_ref")
+    combined_uncertainty_ns = value.get("combined_uncertainty_ns")
+    if (
+        value.get("schema")
+        != "groundupscale.dev/operator-frontier-evidence/v1alpha1"
+        or value.get("stable_path") != stable_path
+        or value.get("observation_validity") != "QUALIFIED"
+        or value.get("frontier_role") != "ACTIVE"
+        or value.get("cohort_id") != contract.get("cohort_id")
+        or value.get("execution_domain") != contract.get("execution_domain")
+        or not isinstance(surface, dict)
+        or not _resolved_identity_string(surface.get("surface_id"))
+        or not _exact_version_text(surface.get("version"))
+        or not _finite_number(value.get("latency_ns"))
+        or float(value["latency_ns"]) <= 0
+        or not _finite_number(combined_uncertainty_ns)
+        or float(combined_uncertainty_ns) < 0
+        or not _artifact_uri(evidence_ref)
+        or value.get("evidence_refs") != [evidence_ref]
+        or not _uncertainty_policy_structure_valid(policy)
+    ):
+        return False
+    frontier_content = _verified_artifact_content(
+        verified_artifacts,
+        evidence_ref,
+        role="operator-frontier-evidence",
+        schema="groundupscale.dev/operator-frontier-evidence/v1alpha1",
+    )
+    expected_content = {
+        key: item for key, item in value.items() if key != "evidence_ref"
+    }
+    limits = _uncertainty_policy_artifacts_valid(
+        policy,
+        stable_path=stable_path,
+        surface=surface,
+        contract=contract,
+        verified_artifacts=verified_artifacts,
+    )
+    if (
+        frontier_content != expected_content
+        or limits is None
+        or not _uncertainty_records_artifacts_valid(
+            records,
+            limits,
+            verified_artifacts,
+        )
+    ):
+        return False
+    assert isinstance(records, list)
+    if not all(
+        isinstance(record, dict)
+        and _finite_number(record.get("standard_uncertainty_ns"))
+        and float(record["standard_uncertainty_ns"]) >= 0
+        for record in records
+    ):
+        return False
+    component_values = {
+        record["component_id"]: float(record["standard_uncertainty_ns"])
+        for record in records
+    }
+    return (
+        len(records) == 3
+        and set(component_values)
+        == {"anchor", "interpolation", "instrumentation"}
+        and isclose(
+            float(combined_uncertainty_ns),
+            hypot(*component_values.values()),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+    )
+
+
+def _diagnostic_supporting_artifact_matches(
+    verified_artifacts: dict[str, object],
+    artifact_ref: object,
+    payload: dict[str, Any],
+) -> bool:
+    schema = (
+        "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+    )
+    content = _verified_artifact_content(
+        verified_artifacts,
+        artifact_ref,
+        role="diagnostic-supporting-evidence",
+        schema=schema,
+    )
+    return content == {"schema": schema, "payload": payload}
+
+
+def _integration_evidence_artifacts_valid(
+    evidence: object,
+    *,
+    target_candidate: object,
+    measurement_lanes: object,
+    verified_artifacts: dict[str, object],
+) -> bool:
+    if not isinstance(evidence, dict) or not isinstance(
+        target_candidate, dict
+    ) or not isinstance(measurement_lanes, dict):
+        return False
+
+    def direct(value: object) -> bool:
+        return isinstance(value, dict) and (
+            _diagnostic_supporting_artifact_matches(
+                verified_artifacts,
+                value.get("evidence_ref"),
+                {
+                    key: item
+                    for key, item in value.items()
+                    if key != "evidence_ref"
+                },
+            )
+        )
+
+    def plural(value: object) -> bool:
+        if not isinstance(value, dict):
+            return False
+        refs = value.get("evidence_refs")
+        payload = {
+            key: item for key, item in value.items() if key != "evidence_refs"
+        }
+        return (
+            isinstance(refs, list)
+            and bool(refs)
+            and all(
+                _diagnostic_supporting_artifact_matches(
+                    verified_artifacts,
+                    artifact_ref,
+                    payload,
+                )
+                for artifact_ref in refs
+            )
+        )
+
+    def measurement(value: object) -> bool:
+        if not isinstance(value, dict):
+            return True
+        correctness = value.get("correctness")
+        sessions = value.get("sessions")
+        return (
+            direct(value)
+            and (correctness is None or direct(correctness))
+            and (
+                not isinstance(sessions, list)
+                or all(direct(session) for session in sessions)
+            )
+        )
+
+    target_sessions = target_candidate.get("sessions")
+    target_correctness = target_candidate.get("correctness")
+    baseline_lane = measurement_lanes.get("baseline")
+    diagnostic_lane = measurement_lanes.get("diagnostic")
+    wrapped = evidence.get("wrapped_e2e")
+    ablations = evidence.get("ablations")
+    ledger = evidence.get("exclusive_ledger")
+    counterfactual = evidence.get("counterfactual")
+    return (
+        plural(evidence)
+        and direct(target_correctness)
+        and direct(baseline_lane)
+        and direct(diagnostic_lane)
+        and (
+            not isinstance(target_sessions, list)
+            or all(direct(session) for session in target_sessions)
+        )
+        and measurement(wrapped)
+        and (
+            not isinstance(ablations, list)
+            or all(measurement(ablation) for ablation in ablations)
+        )
+        and (ledger is None or plural(ledger))
+        and (counterfactual is None or plural(counterfactual))
+    )
+
+
 def _frontier_shift_evidence_valid(value: object) -> bool:
     if not isinstance(value, dict):
         return False
@@ -1865,6 +2063,119 @@ def _probe_counterexamples_valid(value: object) -> bool:
     )
 
 
+def _normalize_timing_sessions(
+    sessions: object,
+    *,
+    expected_lane_id: str,
+    expected_cohort_id: str,
+    minimum_sessions: int,
+    require_authored_latency: bool,
+) -> dict[str, Any] | None:
+    """Validate one lane/cohort and derive medians from included raw samples."""
+    if not isinstance(sessions, list) or not sessions:
+        return None
+    session_latencies_ns: dict[str, float] = {}
+    session_process_ids: dict[str, int] = {}
+    raw_samples_ns: dict[str, list[object]] = {}
+    included_samples_ns: dict[str, list[float]] = {}
+    session_exclusions: dict[str, list[dict[str, object]]] = {}
+    evidence_refs: list[str] = []
+    for session in sessions:
+        raw_samples = (
+            session.get("raw_samples_ns")
+            if isinstance(session, dict)
+            else None
+        )
+        exclusions = (
+            session.get("excluded_samples")
+            if isinstance(session, dict)
+            else None
+        )
+        if (
+            not isinstance(session, dict)
+            or not _nonempty_string(session.get("session_id"))
+            or session["session_id"] in session_latencies_ns
+            or not isinstance(session.get("process_id"), int)
+            or isinstance(session["process_id"], bool)
+            or session["process_id"] <= 0
+            or session.get("lane_id") != expected_lane_id
+            or session.get("cohort_id") != expected_cohort_id
+            or not isinstance(raw_samples, list)
+            or not raw_samples
+            or not all(
+                _finite_number(sample) and float(sample) > 0
+                for sample in raw_samples
+            )
+            or not isinstance(exclusions, list)
+            or not _nonempty_string(session.get("evidence_ref"))
+        ):
+            return None
+        excluded_indices: set[int] = set()
+        normalized_exclusions: list[dict[str, object]] = []
+        for exclusion in exclusions:
+            if (
+                not isinstance(exclusion, dict)
+                or set(exclusion) != {"index", "reason"}
+                or not isinstance(exclusion.get("index"), int)
+                or isinstance(exclusion["index"], bool)
+                or exclusion["index"] < 0
+                or exclusion["index"] >= len(raw_samples)
+                or exclusion["index"] in excluded_indices
+                or not _resolved_identity_string(exclusion.get("reason"))
+            ):
+                return None
+            excluded_indices.add(exclusion["index"])
+            normalized_exclusions.append(
+                {
+                    "index": exclusion["index"],
+                    "reason": exclusion["reason"],
+                }
+            )
+        included = [
+            float(sample)
+            for index, sample in enumerate(raw_samples)
+            if index not in excluded_indices
+        ]
+        if not included:
+            return None
+        session_latency_ns = float(median(included))
+        if require_authored_latency and (
+            not _finite_number(session.get("latency_ns"))
+            or float(session["latency_ns"]) <= 0
+            or not isclose(
+                float(session["latency_ns"]),
+                session_latency_ns,
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+        ):
+            return None
+        session_id = session["session_id"]
+        session_latencies_ns[session_id] = session_latency_ns
+        session_process_ids[session_id] = session["process_id"]
+        raw_samples_ns[session_id] = list(raw_samples)
+        included_samples_ns[session_id] = included
+        session_exclusions[session_id] = normalized_exclusions
+        evidence_refs.append(session["evidence_ref"])
+    if (
+        len(session_latencies_ns) < minimum_sessions
+        or len(set(session_process_ids.values()))
+        != len(session_process_ids)
+        or len(set(session_process_ids.values())) < minimum_sessions
+    ):
+        return None
+    return {
+        "aggregate_latency_ns": float(median(session_latencies_ns.values())),
+        "session_ids": list(session_latencies_ns),
+        "session_latencies_ns": session_latencies_ns,
+        "session_process_ids": session_process_ids,
+        "raw_samples_ns": raw_samples_ns,
+        "included_samples_ns": included_samples_ns,
+        "session_exclusions": session_exclusions,
+        "evidence_refs": evidence_refs,
+    }
+
+
 def _shape_disambiguation_probes(
     document: dict[str, Any],
     trigger: dict[str, Any] | None,
@@ -1951,6 +2262,9 @@ def _shape_disambiguation_probes(
                 measurement_lanes,
                 stable_path=stable_path,
                 contract=contract,
+                integration_verdict_requested=(
+                    "integration_overhead_evidence" in probe
+                ),
             )
             or (
                 frontier_shift_evidence is not None
@@ -1987,6 +2301,33 @@ def _shape_disambiguation_probes(
                 }
             )
             continue
+        integration_evidence = probe.get("integration_overhead_evidence")
+        integration_targets = [
+            candidate
+            for candidate in candidates
+            if isinstance(candidate, dict) and candidate.get("role") == "target"
+        ]
+        integration_artifacts_verified = (
+            _integration_evidence_artifacts_valid(
+                integration_evidence,
+                target_candidate=integration_targets[0],
+                measurement_lanes=measurement_lanes,
+                verified_artifacts=verified_artifacts,
+            )
+            if isinstance(integration_evidence, dict)
+            and len(integration_targets) == 1
+            else None
+        )
+        integration_frontier_verified = (
+            _integration_operator_frontier_valid(
+                integration_evidence.get("operator_frontier"),
+                stable_path=stable_path,
+                contract=contract,
+                verified_artifacts=verified_artifacts,
+            )
+            if isinstance(integration_evidence, dict)
+            else None
+        )
         locked_candidate_ids = contract["candidate_ids"]
         candidate_ids = [
             candidate.get("candidate_id")
@@ -2130,64 +2471,14 @@ def _shape_disambiguation_probes(
             ):
                 malformed_candidate = True
                 break
-            session_ids = []
-            process_ids = []
-            latencies = []
-            raw_samples_by_session = {}
-            excluded_samples_by_session = {}
-            session_evidence_refs = []
-            for session in sessions:
-                raw_samples = (
-                    session.get("raw_samples_ns")
-                    if isinstance(session, dict)
-                    else None
-                )
-                excluded_samples = (
-                    session.get("excluded_samples")
-                    if isinstance(session, dict)
-                    else None
-                )
-                if (
-                    not isinstance(session, dict)
-                    or not _nonempty_string(session.get("session_id"))
-                    or not isinstance(session.get("process_id"), int)
-                    or isinstance(session["process_id"], bool)
-                    or session["process_id"] <= 0
-                    or session.get("lane_id")
-                    != measurement_lanes["baseline"]["lane_id"]
-                    or session.get("cohort_id") != contract["cohort_id"]
-                    or not _finite_number(session.get("latency_ns"))
-                    or float(session["latency_ns"]) <= 0
-                    or not isinstance(raw_samples, list)
-                    or not raw_samples
-                    or not all(
-                        _finite_number(sample) and float(sample) > 0
-                        for sample in raw_samples
-                    )
-                    or not isclose(
-                        float(session["latency_ns"]),
-                        float(median(raw_samples)),
-                        rel_tol=1e-12,
-                        abs_tol=1e-9,
-                    )
-                    or not isinstance(excluded_samples, list)
-                    or not _nonempty_string(session.get("evidence_ref"))
-                ):
-                    malformed_candidate = True
-                    break
-                session_ids.append(session["session_id"])
-                process_ids.append(session["process_id"])
-                latencies.append(session["latency_ns"])
-                raw_samples_by_session[session["session_id"]] = raw_samples
-                excluded_samples_by_session[
-                    session["session_id"]
-                ] = excluded_samples
-                session_evidence_refs.append(session["evidence_ref"])
-            if (
-                malformed_candidate
-                or len(session_ids) != len(set(session_ids))
-                or len(process_ids) != len(set(process_ids))
-            ):
+            normalized_sessions = _normalize_timing_sessions(
+                sessions,
+                expected_lane_id=measurement_lanes["baseline"]["lane_id"],
+                expected_cohort_id=contract["cohort_id"],
+                minimum_sessions=1,
+                require_authored_latency=True,
+            )
+            if normalized_sessions is None:
                 malformed_candidate = True
                 break
             eligible_for_best = (
@@ -2216,19 +2507,26 @@ def _shape_disambiguation_probes(
                     },
                     "eligible_for_best_of_correct": eligible_for_best,
                     "exclusion_reason": exclusion_reason,
-                    "aggregate_latency_ns": median(latencies),
-                    "session_ids": session_ids,
-                    "session_latencies_ns": dict(
-                        zip(session_ids, latencies, strict=True)
-                    ),
-                    "session_process_ids": dict(
-                        zip(session_ids, process_ids, strict=True)
-                    ),
-                    "raw_samples_ns": raw_samples_by_session,
-                    "excluded_samples": excluded_samples_by_session,
+                    "aggregate_latency_ns": normalized_sessions[
+                        "aggregate_latency_ns"
+                    ],
+                    "session_ids": normalized_sessions["session_ids"],
+                    "session_latencies_ns": normalized_sessions[
+                        "session_latencies_ns"
+                    ],
+                    "session_process_ids": normalized_sessions[
+                        "session_process_ids"
+                    ],
+                    "raw_samples_ns": normalized_sessions["raw_samples_ns"],
+                    "excluded_samples": normalized_sessions[
+                        "session_exclusions"
+                    ],
+                    "session_evidence_refs": normalized_sessions[
+                        "evidence_refs"
+                    ],
                     "evidence_refs": [
                         correctness["evidence_ref"],
-                        *session_evidence_refs,
+                        *normalized_sessions["evidence_refs"],
                     ],
                 }
             )
@@ -2275,6 +2573,16 @@ def _shape_disambiguation_probes(
             },
             "counterexamples": counterexamples,
         }
+        if "integration_overhead_evidence" in probe:
+            complete_probe["integration_overhead_evidence"] = probe[
+                "integration_overhead_evidence"
+            ]
+            complete_probe["integration_operator_frontier_verified"] = (
+                integration_frontier_verified
+            )
+            complete_probe["integration_evidence_artifacts_verified"] = (
+                integration_artifacts_verified
+            )
         if frontier_shift_evidence is not None:
             complete_probe["frontier_shift_evidence"] = (
                 frontier_shift_evidence
@@ -2360,6 +2668,794 @@ def _verdict_policy(document: dict[str, Any]) -> dict[str, Any]:
             "minimum_independent_sessions"
         ],
         "suspected_regression_gate": "undefined",
+    }
+
+
+def _integration_measurement(
+    value: object,
+    *,
+    expected_lane_id: str,
+    expected_cohort_id: str,
+    minimum_sessions: int,
+    correctness_policy: dict[str, Any],
+) -> dict[str, Any] | None:
+    correctness = value.get("correctness") if isinstance(value, dict) else None
+    correctness_passed = (
+        _raw_correctness_passed(
+            correctness.get("records"), correctness.get("tolerance")
+        )
+        if isinstance(correctness, dict)
+        else None
+    )
+    if (
+        not isinstance(value, dict)
+        or not _nonempty_string(value.get("measurement_id"))
+        or value.get("lane_id") != expected_lane_id
+        or not _artifact_uri(value.get("evidence_ref"))
+        or not isinstance(correctness, dict)
+        or correctness_passed is not True
+        or correctness.get("tolerance")
+        != {
+            "atol": correctness_policy.get("atol"),
+            "rtol": correctness_policy.get("rtol"),
+        }
+        or not _artifact_uri(correctness.get("evidence_ref"))
+    ):
+        return None
+    normalized = _normalize_timing_sessions(
+        value.get("sessions"),
+        expected_lane_id=expected_lane_id,
+        expected_cohort_id=expected_cohort_id,
+        minimum_sessions=minimum_sessions,
+        require_authored_latency=False,
+    )
+    if normalized is None:
+        return None
+    return {
+        "measurement_id": value["measurement_id"],
+        "lane_id": value["lane_id"],
+        **normalized,
+        "correctness": {
+            "passed": True,
+            "record_count": len(correctness["records"]),
+            "tolerance": dict(correctness["tolerance"]),
+            "evidence_ref": correctness["evidence_ref"],
+        },
+        "session_evidence_refs": list(normalized["evidence_refs"]),
+        "evidence_refs": list(
+            dict.fromkeys(
+                [
+                    value["evidence_ref"],
+                    correctness["evidence_ref"],
+                    *normalized["evidence_refs"],
+                ]
+            )
+        ),
+    }
+
+
+def _integration_ledger(
+    value: object,
+    *,
+    wrapped_e2e_ns: float,
+    standalone_operator_ns: float,
+) -> dict[str, Any] | None:
+    if (
+        not isinstance(value, dict)
+        or not _resolved_identity_string(value.get("ledger_id"))
+        or not _exact_version_text(value.get("version"))
+        or value.get("leaf_semantics") != "mutually-exclusive"
+        or not _finite_number(value.get("e2e_duration_ns"))
+        or not isclose(
+            float(value["e2e_duration_ns"]),
+            wrapped_e2e_ns,
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+        or not isinstance(value.get("leaves"), list)
+        or not value["leaves"]
+        or not isinstance(value.get("parents"), list)
+        or not value["parents"]
+        or not isinstance(value.get("evidence_refs"), list)
+        or not value["evidence_refs"]
+        or not all(_artifact_uri(ref) for ref in value["evidence_refs"])
+    ):
+        return None
+    leaves: list[dict[str, Any]] = []
+    leaf_by_id: dict[str, dict[str, Any]] = {}
+    for leaf in value["leaves"]:
+        if (
+            not isinstance(leaf, dict)
+            or not _resolved_identity_string(leaf.get("leaf_id"))
+            or leaf["leaf_id"] in leaf_by_id
+            or leaf.get("kind")
+            not in {"operator", "copy", "dispatch", "sync", "wait", "other"}
+            or not _finite_number(leaf.get("duration_ns"))
+            or float(leaf["duration_ns"]) < 0
+            or not isinstance(leaf.get("evidence_refs"), list)
+            or not leaf["evidence_refs"]
+            or not all(_artifact_uri(ref) for ref in leaf["evidence_refs"])
+        ):
+            return None
+        normalized = {
+            "leaf_id": leaf["leaf_id"],
+            "kind": leaf["kind"],
+            "duration_ns": float(leaf["duration_ns"]),
+            "evidence_refs": list(leaf["evidence_refs"]),
+        }
+        leaves.append(normalized)
+        leaf_by_id[leaf["leaf_id"]] = normalized
+    operator_leaves = [leaf for leaf in leaves if leaf["kind"] == "operator"]
+    if (
+        len(operator_leaves) != 1
+        or not isclose(
+            operator_leaves[0]["duration_ns"],
+            standalone_operator_ns,
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+    ):
+        return None
+
+    parents: list[dict[str, Any]] = []
+    parent_by_id: dict[str, dict[str, Any]] = {}
+    assigned_leaf_ids: list[str] = []
+    for parent in value["parents"]:
+        child_parent_ids = (
+            parent.get("child_parent_ids")
+            if isinstance(parent, dict)
+            else None
+        )
+        leaf_ids = parent.get("leaf_ids") if isinstance(parent, dict) else None
+        if (
+            not isinstance(parent, dict)
+            or not _resolved_identity_string(parent.get("span_id"))
+            or parent["span_id"] in parent_by_id
+            or parent.get("kind") not in {"e2e", "module"}
+            or parent.get("additive") is not False
+            or not isinstance(child_parent_ids, list)
+            or not all(_resolved_identity_string(item) for item in child_parent_ids)
+            or not isinstance(leaf_ids, list)
+            or not all(_resolved_identity_string(item) for item in leaf_ids)
+        ):
+            return None
+        normalized_parent = {
+            "span_id": parent["span_id"],
+            "kind": parent["kind"],
+            "additive": False,
+            "child_parent_ids": list(child_parent_ids),
+            "leaf_ids": list(leaf_ids),
+        }
+        parents.append(normalized_parent)
+        parent_by_id[parent["span_id"]] = normalized_parent
+        assigned_leaf_ids.extend(leaf_ids)
+    if (
+        len([parent for parent in parents if parent["kind"] == "e2e"]) != 1
+        or any(
+            child_id not in parent_by_id
+            for parent in parents
+            for child_id in parent["child_parent_ids"]
+        )
+        or len(assigned_leaf_ids) != len(set(assigned_leaf_ids))
+        or set(assigned_leaf_ids) != set(leaf_by_id)
+    ):
+        return None
+    root = next(parent for parent in parents if parent["kind"] == "e2e")
+    visit_state: dict[str, int] = {}
+    stack: list[tuple[str, bool]] = [(root["span_id"], False)]
+    while stack:
+        parent_id, expanded = stack.pop()
+        state = visit_state.get(parent_id, 0)
+        if expanded:
+            visit_state[parent_id] = 2
+            continue
+        if state == 1:
+            return None
+        if state == 2:
+            continue
+        visit_state[parent_id] = 1
+        stack.append((parent_id, True))
+        for child_id in reversed(
+            parent_by_id[parent_id]["child_parent_ids"]
+        ):
+            child_state = visit_state.get(child_id, 0)
+            if child_state == 1:
+                return None
+            if child_state != 2:
+                stack.append((child_id, False))
+    if {
+        parent_id for parent_id, state in visit_state.items() if state == 2
+    } != set(parent_by_id):
+        return None
+    residual = value.get("residual")
+    if (
+        not isinstance(residual, dict)
+        or not _resolved_identity_string(residual.get("residual_id"))
+        or residual.get("kind") != "unattributed"
+        or not _finite_number(residual.get("duration_ns"))
+        or float(residual["duration_ns"]) < 0
+        or not isinstance(residual.get("evidence_refs"), list)
+        or not residual["evidence_refs"]
+        or not all(_artifact_uri(ref) for ref in residual["evidence_refs"])
+    ):
+        return None
+    leaf_total_ns = sum(leaf["duration_ns"] for leaf in leaves)
+    reconciled_total_ns = leaf_total_ns + float(residual["duration_ns"])
+    if not isclose(
+        reconciled_total_ns,
+        wrapped_e2e_ns,
+        rel_tol=1e-12,
+        abs_tol=1e-9,
+    ):
+        return None
+    return {
+        "status": "conserved",
+        "ledger_id": value["ledger_id"],
+        "version": value["version"],
+        "leaf_semantics": "mutually-exclusive",
+        "e2e_duration_ns": wrapped_e2e_ns,
+        "leaves": leaves,
+        "parents": parents,
+        "leaf_total_ns": leaf_total_ns,
+        "residual": {
+            "residual_id": residual["residual_id"],
+            "kind": "unattributed",
+            "duration_ns": float(residual["duration_ns"]),
+            "evidence_refs": list(residual["evidence_refs"]),
+        },
+        "reconciled_total_ns": reconciled_total_ns,
+        "leaf_identity_conservation": {
+            "unique_leaf_count": len(leaves),
+            "duplicate_leaf_ids": [],
+            "unassigned_leaf_ids": [],
+        },
+        "parent_span_total_included_ns": 0,
+        "evidence_refs": list(value["evidence_refs"]),
+    }
+
+
+def _integration_surface_action(
+    evidence: object,
+    *,
+    reason_code: str,
+    authoritative_latency_ns: float | None = None,
+) -> dict[str, Any] | None:
+    frontier = (
+        evidence.get("operator_frontier")
+        if isinstance(evidence, dict)
+        else None
+    )
+    surface = frontier.get("surface") if isinstance(frontier, dict) else None
+    latency_ns = frontier.get("latency_ns") if isinstance(frontier, dict) else None
+    if (
+        not isinstance(surface, dict)
+        or not _resolved_identity_string(surface.get("surface_id"))
+        or not _exact_version_text(surface.get("version"))
+        or not _finite_number(latency_ns)
+        or float(latency_ns) <= 0
+    ):
+        return None
+    preserved_latency_ns = (
+        authoritative_latency_ns
+        if authoritative_latency_ns is not None
+        and _finite_number(authoritative_latency_ns)
+        and authoritative_latency_ns > 0
+        else float(latency_ns)
+    )
+    return {
+        "action": "preserve",
+        "surface": dict(surface),
+        "operator_achievable_frontier_ns": {
+            "before": preserved_latency_ns,
+            "after": preserved_latency_ns,
+        },
+        "reason_code": reason_code,
+    }
+
+
+def _unknown_integration_surface_action(
+    trigger_item: dict[str, Any],
+) -> dict[str, Any]:
+    latency_ns = float(trigger_item["predicted_ns"])
+    return {
+        "action": "preserve",
+        "surface": {
+            "status": "unknown",
+            "reason_code": "integration-surface-identity-unverified",
+        },
+        "operator_achievable_frontier_ns": {
+            "before": latency_ns,
+            "after": latency_ns,
+        },
+        "reason_code": "insufficient-evidence-cannot-lower-surface",
+    }
+
+
+def _integration_overhead_verdict(
+    *,
+    stable_path: str,
+    run_id: str,
+    probe: dict[str, Any],
+    target: dict[str, Any],
+    trigger_item: dict[str, Any],
+) -> dict[str, Any]:
+    evidence = probe.get("integration_overhead_evidence")
+    evidence_refs = (
+        sorted(_artifact_refs(evidence))
+        if isinstance(evidence, dict)
+        else []
+    )
+    bundle_ref = f"run-bundle://{run_id}"
+    surface_action = _unknown_integration_surface_action(trigger_item)
+
+    def fail(gate_id: str, reason_code: str) -> dict[str, Any]:
+        result = _fail_closed_performance_verdict(
+            stable_path=stable_path,
+            run_id=run_id,
+            probe_id=probe["probe_id"],
+            failed_gate_id=gate_id,
+            reason_code=reason_code,
+            evidence_refs=evidence_refs or probe["evidence_refs"],
+            satisfied=[
+                {
+                    "gate_id": "diagnostic-trigger-met",
+                    "evidence_refs": [bundle_ref],
+                }
+            ],
+            not_evaluated=[
+                {
+                    "gate_id": "frontier-shift",
+                    "reason_code": "integration-ablation-prerequisites-failed",
+                    "evidence_refs": evidence_refs,
+                }
+            ],
+        )
+        result["surface_action"] = surface_action
+        return result
+
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("schema")
+        != "groundupscale.dev/integration-overhead-evidence/v1alpha1"
+        or evidence.get("stable_path") != stable_path
+        or evidence.get("cohort_id") != probe["locked_contract"]["cohort_id"]
+        or not isinstance(evidence.get("evidence_refs"), list)
+        or not evidence["evidence_refs"]
+        or not all(_artifact_uri(ref) for ref in evidence["evidence_refs"])
+        or probe.get("integration_evidence_artifacts_verified") is not True
+    ):
+        return fail(
+            "integration-evidence-valid",
+            "integration-overhead-evidence-invalid",
+        )
+    policy = evidence.get("policy")
+    if (
+        not isinstance(policy, dict)
+        or not all(
+            _resolved_identity_string(policy.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+        or not _exact_version_text(policy.get("version"))
+        or not isinstance(policy.get("minimum_independent_sessions"), int)
+        or isinstance(policy["minimum_independent_sessions"], bool)
+        or policy["minimum_independent_sessions"] < 1
+        or not _finite_number(policy.get("maximum_recovery_error_fraction"))
+        or not 0 <= float(policy["maximum_recovery_error_fraction"]) <= 1
+    ):
+        return fail(
+            "integration-policy-valid",
+            "integration-overhead-policy-invalid",
+        )
+    lanes = probe["measurement_lanes"]
+    paired_lanes = evidence.get("paired_lanes")
+    if paired_lanes != {
+        "pair_id": lanes["baseline"]["pair_id"],
+        "baseline_lane_id": lanes["baseline"]["lane_id"],
+        "diagnostic_lane_id": lanes["diagnostic"]["lane_id"],
+    }:
+        return fail(
+            "paired-baseline-diagnostic-lanes",
+            "integration-lane-identity-mismatch",
+        )
+    frontier = evidence.get("operator_frontier")
+    verified_surface_action = _integration_surface_action(
+        evidence,
+        reason_code="insufficient-evidence-cannot-lower-surface",
+        authoritative_latency_ns=float(trigger_item["predicted_ns"]),
+    )
+    if (
+        probe.get("integration_operator_frontier_verified") is not True
+        or verified_surface_action is None
+        or not isinstance(frontier, dict)
+        or not _finite_number(frontier.get("combined_uncertainty_ns"))
+        or float(frontier["combined_uncertainty_ns"]) < 0
+        or not isinstance(frontier.get("evidence_refs"), list)
+        or not frontier["evidence_refs"]
+        or not all(_artifact_uri(ref) for ref in frontier["evidence_refs"])
+    ):
+        return fail(
+            "operator-frontier-evidence-valid",
+            "operator-frontier-evidence-invalid",
+        )
+    standalone_ns = float(target["aggregate_latency_ns"])
+    frontier_ns = float(frontier["latency_ns"])
+    if (
+        not isclose(
+            frontier_ns,
+            float(trigger_item["predicted_ns"]),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+        or not isclose(
+            float(frontier["combined_uncertainty_ns"]),
+            float(trigger_item["combined_uncertainty_ns"]),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+    ):
+        return fail(
+            "operator-frontier-trigger-boundary",
+            "operator-frontier-trigger-boundary-mismatch",
+        )
+    surface_action = verified_surface_action
+    if abs(standalone_ns - frontier_ns) > float(
+        frontier["combined_uncertainty_ns"]
+    ):
+        return fail(
+            "standalone-operator-within-frontier-uncertainty",
+            "standalone-operator-outside-frontier-uncertainty",
+        )
+    minimum_sessions = policy["minimum_independent_sessions"]
+    wrapped = _integration_measurement(
+        evidence.get("wrapped_e2e"),
+        expected_lane_id=lanes["baseline"]["lane_id"],
+        expected_cohort_id=evidence["cohort_id"],
+        minimum_sessions=minimum_sessions,
+        correctness_policy=probe["locked_contract"]["correctness_policy"],
+    )
+    if wrapped is None:
+        return fail(
+            "wrapped-e2e-evidence-valid",
+            "wrapped-e2e-evidence-invalid",
+        )
+    target_sessions = target["session_latencies_ns"]
+    target_processes = target["session_process_ids"]
+    if (
+        set(wrapped["session_latencies_ns"]) != set(target_sessions)
+        or wrapped["session_process_ids"] != target_processes
+    ):
+        return fail(
+            "paired-baseline-sessions",
+            "standalone-wrapper-session-identity-mismatch",
+        )
+    ablation_values = evidence.get("ablations")
+    if not isinstance(ablation_values, list) or not ablation_values:
+        return fail(
+            "integration-ablation-present",
+            "integration-ablation-missing",
+        )
+    ablations = []
+    ablation_ids: set[str] = set()
+    removed_leaf_ids: list[str] = []
+    for value in ablation_values:
+        measurement = _integration_measurement(
+            value,
+            expected_lane_id=lanes["diagnostic"]["lane_id"],
+            expected_cohort_id=evidence["cohort_id"],
+            minimum_sessions=minimum_sessions,
+            correctness_policy=probe["locked_contract"][
+                "correctness_policy"
+            ],
+        )
+        value_removed = (
+            value.get("removed_leaf_ids")
+            if isinstance(value, dict)
+            else None
+        )
+        if (
+            measurement is None
+            or not isinstance(value, dict)
+            or not _resolved_identity_string(value.get("ablation_id"))
+            or value["ablation_id"] in ablation_ids
+            or value.get("kind")
+            not in {"copy", "dispatch", "sync", "wait", "other"}
+            or not isinstance(value_removed, list)
+            or not value_removed
+            or len(value_removed) != len(set(value_removed))
+            or not all(_resolved_identity_string(item) for item in value_removed)
+            or set(measurement["session_latencies_ns"]) != set(target_sessions)
+            or measurement["session_process_ids"] != target_processes
+        ):
+            return fail(
+                "integration-ablation-evidence-valid",
+                "integration-ablation-evidence-invalid",
+            )
+        ablation_ids.add(value["ablation_id"])
+        removed_leaf_ids.extend(value_removed)
+        ablations.append(
+            {
+                **measurement,
+                "ablation_id": value["ablation_id"],
+                "kind": value["kind"],
+                "removed_leaf_ids": list(value_removed),
+            }
+        )
+    if len(removed_leaf_ids) != len(set(removed_leaf_ids)):
+        return fail(
+            "integration-ablation-evidence-valid",
+            "integration-ablation-leaf-overlap",
+        )
+    wrapped_ns = wrapped["aggregate_latency_ns"]
+    ledger = _integration_ledger(
+        evidence.get("exclusive_ledger"),
+        wrapped_e2e_ns=wrapped_ns,
+        standalone_operator_ns=standalone_ns,
+    )
+    if ledger is None:
+        return fail(
+            "exclusive-ledger-conserved",
+            "integration-exclusive-ledger-not-conserved",
+        )
+    leaf_by_id = {leaf["leaf_id"]: leaf for leaf in ledger["leaves"]}
+    if any(
+        leaf_by_id.get(leaf_id, {}).get("kind") != ablation["kind"]
+        for ablation in ablations
+        for leaf_id in ablation["removed_leaf_ids"]
+    ):
+        return fail(
+            "counterfactual-recovers-only-declared-leaves",
+            "integration-counterfactual-kind-mismatch",
+        )
+    counterfactual = evidence.get("counterfactual")
+    if (
+        not isinstance(counterfactual, dict)
+        or not _resolved_identity_string(counterfactual.get("counterfactual_id"))
+        or counterfactual.get("kind") != "declared-component-removal"
+        or counterfactual.get("removed_leaf_ids") != removed_leaf_ids
+        or any(leaf_id not in leaf_by_id for leaf_id in removed_leaf_ids)
+        or any(
+            leaf_by_id[leaf_id]["kind"] == "operator"
+            for leaf_id in removed_leaf_ids
+        )
+        or not _finite_number(counterfactual.get("declared_recovered_ns"))
+        or not isinstance(counterfactual.get("evidence_refs"), list)
+        or not counterfactual["evidence_refs"]
+        or not all(
+            _artifact_uri(ref) for ref in counterfactual["evidence_refs"]
+        )
+    ):
+        return fail(
+            "counterfactual-recovers-only-declared-leaves",
+            "integration-counterfactual-invalid",
+        )
+    recovered_ns = sum(
+        leaf_by_id[leaf_id]["duration_ns"] for leaf_id in removed_leaf_ids
+    )
+    ablation_recovered_ns = sum(
+        ablation["aggregate_latency_ns"] for ablation in ablations
+    )
+    if (
+        not isclose(
+            recovered_ns,
+            float(counterfactual["declared_recovered_ns"]),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+        or not isclose(
+            recovered_ns,
+            ablation_recovered_ns,
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+    ):
+        return fail(
+            "counterfactual-recovers-only-declared-leaves",
+            "integration-counterfactual-recovery-mismatch",
+        )
+    measured_excess_ns = wrapped_ns - standalone_ns
+    if measured_excess_ns <= 0:
+        return fail(
+            "wrapped-e2e-excess-positive",
+            "wrapped-e2e-has-no-positive-excess",
+        )
+    recovery_error_fraction = abs(measured_excess_ns - recovered_ns) / max(
+        measured_excess_ns, recovered_ns
+    )
+    if recovery_error_fraction > float(
+        policy["maximum_recovery_error_fraction"]
+    ):
+        return fail(
+            "integration-ablation-error-budget",
+            "integration-ablation-error-budget-exceeded",
+        )
+    satisfied = [
+        {
+            "gate_id": "diagnostic-trigger-met",
+            "evidence_refs": [bundle_ref],
+        },
+        {
+            "gate_id": "standalone-operator-within-frontier-uncertainty",
+            "evidence_refs": list(frontier["evidence_refs"]),
+        },
+        {
+            "gate_id": "paired-baseline-diagnostic-lanes",
+            "evidence_refs": [
+                lanes["baseline"]["evidence_ref"],
+                lanes["diagnostic"]["evidence_ref"],
+            ],
+        },
+        {
+            "gate_id": "integration-ablation-error-budget",
+            "evidence_refs": [
+                ref for ablation in ablations for ref in ablation["evidence_refs"]
+            ],
+        },
+        {
+            "gate_id": "exclusive-ledger-conserved",
+            "evidence_refs": ledger["evidence_refs"],
+        },
+        {
+            "gate_id": "counterfactual-recovers-only-declared-leaves",
+            "evidence_refs": list(counterfactual["evidence_refs"]),
+        },
+        {
+            "gate_id": "operator-frontier-preserved",
+            "evidence_refs": list(frontier["evidence_refs"]),
+        },
+    ]
+    maximum_recovery_error_fraction = float(
+        policy["maximum_recovery_error_fraction"]
+    )
+    counterfactual_e2e_ns = wrapped_ns - recovered_ns
+    e2e_gap_fraction = measured_excess_ns / standalone_ns
+    metrics = {
+        "operator_frontier_ns": frontier_ns,
+        "operator_frontier_combined_uncertainty_ns": float(
+            frontier["combined_uncertainty_ns"]
+        ),
+        "standalone_operator_ns": standalone_ns,
+        "wrapped_e2e_ns": wrapped_ns,
+        "measured_excess_ns": measured_excess_ns,
+        "recovered_ns": recovered_ns,
+        "counterfactual_e2e_ns": counterfactual_e2e_ns,
+        "e2e_gap_fraction": e2e_gap_fraction,
+        "recovery_error_fraction": recovery_error_fraction,
+        "maximum_recovery_error_fraction": maximum_recovery_error_fraction,
+    }
+    frontier_ref = frontier["evidence_refs"][0]
+    ledger_ref = ledger["evidence_refs"][0]
+    policy_ref = evidence["evidence_refs"][0]
+
+    def inputs(*values: tuple[str, str]) -> list[dict[str, str]]:
+        return [
+            {"artifact_ref": artifact_ref, "field": field}
+            for artifact_ref, field in values
+        ]
+
+    def timing_inputs(refs: list[str]) -> list[dict[str, str]]:
+        return [
+            input_ref
+            for artifact_ref in refs
+            for input_ref in inputs(
+                (artifact_ref, "payload.raw_samples_ns"),
+                (artifact_ref, "payload.excluded_samples"),
+            )
+        ]
+
+    standalone_inputs = timing_inputs(target["session_evidence_refs"])
+    wrapped_inputs = timing_inputs(wrapped["session_evidence_refs"])
+    metric_derivations = {
+        "operator_frontier_ns": {
+            "formula": "operator_frontier.latency_ns",
+            "inputs": inputs((frontier_ref, "latency_ns")),
+        },
+        "operator_frontier_combined_uncertainty_ns": {
+            "formula": "operator_frontier.combined_uncertainty_ns",
+            "inputs": inputs(
+                (
+                    frontier_ref,
+                    "combined_uncertainty_ns",
+                )
+            ),
+        },
+        "standalone_operator_ns": {
+            "formula": "median(session median(included raw samples))",
+            "inputs": standalone_inputs,
+        },
+        "wrapped_e2e_ns": {
+            "formula": "median(session median(included raw samples))",
+            "inputs": wrapped_inputs,
+        },
+        "measured_excess_ns": {
+            "formula": "wrapped_e2e_ns - standalone_operator_ns",
+            "inputs": [*wrapped_inputs, *standalone_inputs],
+        },
+        "recovered_ns": {
+            "formula": "sum(exclusive ledger declared removed leaf durations)",
+            "inputs": inputs(
+                (ledger_ref, "payload.leaves"),
+                (
+                    counterfactual["evidence_refs"][0],
+                    "payload.removed_leaf_ids",
+                ),
+                *(
+                    (ref, "payload.raw_samples_ns")
+                    for ablation in ablations
+                    for ref in ablation["session_evidence_refs"]
+                ),
+            ),
+        },
+        "counterfactual_e2e_ns": {
+            "formula": "wrapped_e2e_ns - recovered_ns",
+            "inputs": [
+                *wrapped_inputs,
+                *inputs((ledger_ref, "payload.leaves")),
+            ],
+        },
+        "e2e_gap_fraction": {
+            "formula": "measured_excess_ns / standalone_operator_ns",
+            "inputs": [*wrapped_inputs, *standalone_inputs],
+        },
+        "recovery_error_fraction": {
+            "formula": (
+                "abs(measured_excess_ns - recovered_ns) / "
+                "max(measured_excess_ns, recovered_ns)"
+            ),
+            "inputs": [
+                *wrapped_inputs,
+                *standalone_inputs,
+                *inputs((ledger_ref, "payload.leaves")),
+            ],
+        },
+        "maximum_recovery_error_fraction": {
+            "formula": "policy.maximum_recovery_error_fraction",
+            "inputs": inputs(
+                (
+                    policy_ref,
+                    "payload.policy.maximum_recovery_error_fraction",
+                )
+            ),
+        },
+    }
+    return {
+        "stable_path": stable_path,
+        "status": "decided",
+        "verdict": "integration_overhead",
+        "probe_id": probe["probe_id"],
+        "metrics": metrics,
+        "metric_derivations": metric_derivations,
+        "wrapped_e2e": wrapped,
+        "ablations": ablations,
+        "ledger": ledger,
+        "gates": {
+            "satisfied": satisfied,
+            "failed": [],
+            "not_evaluated": [
+                {
+                    "gate_id": "frontier-shift",
+                    "reason_code": "integration-overhead-attributed",
+                    "evidence_refs": list(frontier["evidence_refs"]),
+                },
+                {
+                    "gate_id": "suspected-regression",
+                    "reason_code": "policy-undefined",
+                    "evidence_refs": evidence_refs,
+                },
+            ],
+        },
+        "surface_action": _integration_surface_action(
+            evidence,
+            reason_code="integration-overhead-does-not-lower-frontier",
+            authoritative_latency_ns=float(trigger_item["predicted_ns"]),
+        ),
+        "bundle_refs": [bundle_ref, *evidence_refs],
+        "counterexamples": [],
     }
 
 
@@ -2897,6 +3993,55 @@ def _derive_frontier_shift_gates(
     )
 
 
+def _distinct_candidate_implementation(
+    target: dict[str, Any], alternative: dict[str, Any]
+) -> bool:
+    target_implementation = target["implementation_family"]
+    alternative_implementation = alternative["implementation_family"]
+    return all(
+        target_implementation[key] != alternative_implementation[key]
+        for key in (
+            "implementation_ref",
+            "implementation_sha256",
+            "source_identity",
+        )
+    )
+
+
+def _reproducibly_faster_alternative(
+    target: dict[str, Any],
+    alternative: dict[str, Any],
+    *,
+    minimum_sessions: int,
+    best_candidate_id: str,
+) -> bool:
+    target_sessions = target["session_latencies_ns"]
+    alternative_sessions = alternative["session_latencies_ns"]
+    target_processes = target["session_process_ids"]
+    alternative_processes = alternative["session_process_ids"]
+    common_session_ids = set(target_sessions) & set(alternative_sessions)
+    return (
+        _distinct_candidate_implementation(target, alternative)
+        and set(target_sessions) == set(alternative_sessions)
+        and len(common_session_ids) >= minimum_sessions
+        and len(
+            {target_processes[session_id] for session_id in common_session_ids}
+        )
+        >= minimum_sessions
+        and all(
+            target_processes.get(session_id)
+            == alternative_processes.get(session_id)
+            for session_id in common_session_ids
+        )
+        and all(
+            float(alternative_sessions[session_id])
+            < float(target_sessions[session_id])
+            for session_id in common_session_ids
+        )
+        and best_candidate_id == alternative["candidate_id"]
+    )
+
+
 def _performance_diagnosis_verdicts(
     document: dict[str, Any],
     *,
@@ -3017,6 +4162,130 @@ def _performance_diagnosis_verdicts(
                 )
             )
             continue
+        target = targets[0]
+        competing_alternatives = [
+            alternative
+            for alternative in alternatives
+            if _reproducibly_faster_alternative(
+                target,
+                alternative,
+                minimum_sessions=policy["minimum_independent_sessions"],
+                best_candidate_id=probe["best_of_correct"]["candidate_id"],
+            )
+        ]
+        frontier_shift_evidence = probe.get("frontier_shift_evidence")
+        competing_frontier_shift = (
+            isinstance(frontier_shift_evidence, dict)
+            and all(
+                passed
+                for _, passed, _ in _derive_frontier_shift_gates(
+                    frontier_shift_evidence,
+                    candidates=candidates,
+                    contract=probe["locked_contract"],
+                    measurement_lanes=probe["measurement_lanes"],
+                    trigger_item=trigger_items_by_path[stable_path],
+                    minimum_sessions=policy[
+                        "minimum_independent_sessions"
+                    ],
+                )
+            )
+        )
+        integration_result = (
+            _integration_overhead_verdict(
+                stable_path=stable_path,
+                run_id=run_id,
+                probe=probe,
+                target=target,
+                trigger_item=trigger_items_by_path[stable_path],
+            )
+            if "integration_overhead_evidence" in probe
+            else None
+        )
+        integration_satisfied = (
+            isinstance(integration_result, dict)
+            and integration_result.get("verdict") == "integration_overhead"
+        )
+        if integration_satisfied and (
+            competing_alternatives or competing_frontier_shift
+        ):
+            trigger_item = trigger_items_by_path[stable_path]
+            evidence = probe["integration_overhead_evidence"]
+            surface_action = _unknown_integration_surface_action(trigger_item)
+            if (
+                isinstance(evidence, dict)
+                and evidence.get("schema")
+                == (
+                    "groundupscale.dev/"
+                    "integration-overhead-evidence/v1alpha1"
+                )
+                and evidence.get("stable_path") == stable_path
+                and evidence.get("cohort_id")
+                == probe["locked_contract"]["cohort_id"]
+                and probe.get("integration_operator_frontier_verified")
+                is True
+                and probe.get("integration_evidence_artifacts_verified")
+                is True
+            ):
+                verified_action = _integration_surface_action(
+                    evidence,
+                    reason_code=(
+                        "insufficient-evidence-cannot-lower-surface"
+                    ),
+                    authoritative_latency_ns=float(
+                        trigger_item["predicted_ns"]
+                    ),
+                )
+                if verified_action is not None:
+                    surface_action = verified_action
+            precedence_refs = sorted(
+                _artifact_refs(
+                    {
+                        "integration_overhead_evidence": evidence,
+                        "frontier_shift_evidence": probe.get(
+                            "frontier_shift_evidence"
+                        ),
+                        "alternatives": competing_alternatives,
+                    }
+                )
+            )
+            result = _fail_closed_performance_verdict(
+                stable_path=stable_path,
+                run_id=run_id,
+                probe_id=probe["probe_id"],
+                failed_gate_id="multi-verdict-precedence",
+                reason_code="multi-verdict-precedence-undefined",
+                evidence_refs=precedence_refs or probe["evidence_refs"],
+                satisfied=[
+                    {
+                        "gate_id": "diagnostic-trigger-met",
+                        "evidence_refs": [bundle_ref],
+                    },
+                    {
+                        "gate_id": "exact-shape-probe-complete",
+                        "evidence_refs": probe["evidence_refs"],
+                    },
+                ],
+                not_evaluated=[
+                    {
+                        "gate_id": "integration-overhead",
+                        "reason_code": "multi-verdict-precedence-undefined",
+                        "evidence_refs": precedence_refs,
+                    },
+                    {
+                        "gate_id": "frontier-shift",
+                        "reason_code": "multi-verdict-precedence-undefined",
+                        "evidence_refs": precedence_refs,
+                    },
+                ],
+            )
+            result["surface_action"] = surface_action
+            verdicts.append(result)
+            continue
+        if integration_result is not None and (
+            integration_satisfied or not competing_alternatives
+        ):
+            verdicts.append(integration_result)
+            continue
         if not alternatives:
             verdicts.append(
                 _fail_closed_performance_verdict(
@@ -3029,7 +4298,6 @@ def _performance_diagnosis_verdicts(
                 )
             )
             continue
-        target = targets[0]
         alternative = min(
             alternatives,
             key=lambda candidate: (
@@ -3039,13 +4307,9 @@ def _performance_diagnosis_verdicts(
         )
         target_implementation = target["implementation_family"]
         alternative_implementation = alternative["implementation_family"]
-        distinct_implementation = all(
-            target_implementation[key] != alternative_implementation[key]
-            for key in (
-                "implementation_ref",
-                "implementation_sha256",
-                "source_identity",
-            )
+        distinct_implementation = _distinct_candidate_implementation(
+            target,
+            alternative,
         )
         if not distinct_implementation:
             implementation_refs = list(
@@ -3130,15 +4394,11 @@ def _performance_diagnosis_verdicts(
                 for session_id in common_session_ids
             )
         )
-        reproducible_faster = (
-            independent_session_count
-            >= policy["minimum_independent_sessions"]
-            and independent_process_count
-            >= policy["minimum_independent_sessions"]
-            and process_identity_matches
-            and faster_in_every_session
-            and probe["best_of_correct"]["candidate_id"]
-            == alternative["candidate_id"]
+        reproducible_faster = _reproducibly_faster_alternative(
+            target,
+            alternative,
+            minimum_sessions=policy["minimum_independent_sessions"],
+            best_candidate_id=probe["best_of_correct"]["candidate_id"],
         )
         evidence_refs = list(
             dict.fromkeys(
@@ -5413,6 +6673,59 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
         lines.append(
             "counterexamples: " + (rendered_counterexamples or "none")
         )
+        metrics = verdict.get("metrics")
+        if (
+            verdict.get("verdict") == "integration_overhead"
+            and isinstance(metrics, dict)
+        ):
+            lines.append(
+                "integration overhead: "
+                f"standalone={metrics['standalone_operator_ns'] / 1_000_000:.6f} ms; "
+                f"wrapped={metrics['wrapped_e2e_ns'] / 1_000_000:.6f} ms; "
+                f"excess={metrics['measured_excess_ns'] / 1_000_000:.6f} ms; "
+                f"recovered={metrics['recovered_ns'] / 1_000_000:.6f} ms; "
+                f"recovery-error={metrics['recovery_error_fraction']:.2%}"
+            )
+            for ablation in verdict.get("ablations", []):
+                lines.append(
+                    f"ablation {ablation['ablation_id']}({ablation['kind']}): "
+                    f"{ablation['aggregate_latency_ns'] / 1_000_000:.6f} ms; "
+                    "removed=" + ",".join(ablation["removed_leaf_ids"])
+                )
+            ledger = verdict.get("ledger")
+            if isinstance(ledger, dict):
+                lines.append(
+                    "exclusive ledger "
+                    f"{ledger['ledger_id']}@{ledger['version']}: "
+                    f"{ledger['status']}; leaves={len(ledger['leaves'])}; "
+                    f"residual={ledger['residual']['duration_ns'] / 1_000_000:.6f} ms; "
+                    "parents-included="
+                    f"{ledger['parent_span_total_included_ns'] / 1_000_000:.6f} ms"
+                )
+        surface_action = verdict.get("surface_action")
+        if (
+            isinstance(surface_action, dict)
+            and surface_action.get("action") == "preserve"
+            and isinstance(surface_action.get("surface"), dict)
+            and isinstance(
+                surface_action.get("operator_achievable_frontier_ns"),
+                dict,
+            )
+        ):
+            surface = surface_action["surface"]
+            frontier = surface_action["operator_achievable_frontier_ns"]
+            surface_identity = (
+                f"{surface['surface_id']}@{surface['version']}"
+                if _resolved_identity_string(surface.get("surface_id"))
+                and _exact_version_text(surface.get("version"))
+                else "unknown-surface"
+            )
+            lines.append(
+                "Operator Achievable Frontier preserved: "
+                f"{surface_identity}; "
+                f"before={frontier['before'] / 1_000_000:.6f} ms; "
+                f"after={frontier['after'] / 1_000_000:.6f} ms"
+            )
     evidence = result["evidence"]
     hardware_value = evidence.get("hardware")
     hardware = hardware_value if isinstance(hardware_value, dict) else {}

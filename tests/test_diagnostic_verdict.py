@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+from statistics import median
 
 import pytest
 
@@ -131,6 +132,73 @@ def _write_bundle(
             supporting_refs.add(value)
 
     collect_artifact_refs(evidence)
+    diagnostic_artifacts: dict[
+        str, tuple[str, str, dict[str, object]]
+    ] = {}
+
+    def collect_diagnostic_artifacts(value: object) -> None:
+        if isinstance(value, dict):
+            direct_ref = value.get("evidence_ref")
+            if isinstance(direct_ref, str) and direct_ref.startswith(
+                "artifact://"
+            ):
+                payload = {
+                    key: deepcopy(item)
+                    for key, item in value.items()
+                    if key != "evidence_ref"
+                }
+                if value.get("schema") == (
+                    "groundupscale.dev/operator-frontier-evidence/v1alpha1"
+                ):
+                    diagnostic_artifacts[direct_ref] = (
+                        "operator-frontier-evidence",
+                        value["schema"],
+                        payload,
+                    )
+                else:
+                    schema = (
+                        "groundupscale.dev/"
+                        "diagnostic-supporting-evidence/v1alpha1"
+                    )
+                    diagnostic_artifacts[direct_ref] = (
+                        "diagnostic-supporting-evidence",
+                        schema,
+                        {"schema": schema, "payload": payload},
+                    )
+            plural_refs = value.get("evidence_refs")
+            if isinstance(plural_refs, list):
+                schema = (
+                    "groundupscale.dev/"
+                    "diagnostic-supporting-evidence/v1alpha1"
+                )
+                payload = {
+                    "schema": schema,
+                    "payload": {
+                        key: deepcopy(item)
+                        for key, item in value.items()
+                        if key != "evidence_refs"
+                    },
+                }
+                for artifact_ref in plural_refs:
+                    if isinstance(artifact_ref, str) and artifact_ref.startswith(
+                        "artifact://"
+                    ):
+                        diagnostic_artifacts.setdefault(
+                            artifact_ref,
+                            (
+                                "diagnostic-supporting-evidence",
+                                schema,
+                                payload,
+                            ),
+                        )
+            for item in value.values():
+                collect_diagnostic_artifacts(item)
+        elif isinstance(value, list):
+            for item in value:
+                collect_diagnostic_artifacts(item)
+
+    collect_diagnostic_artifacts(evidence)
+
     def implementation_source_identity(
         candidate: dict[str, object],
     ) -> str:
@@ -251,6 +319,12 @@ def _write_bundle(
                 "groundupscale.dev/uncertainty-calibration/v1alpha1"
             )
             artifact_payload = uncertainty_calibrations[artifact_ref]
+        elif artifact_ref in diagnostic_artifacts:
+            (
+                artifact_role,
+                artifact_schema,
+                artifact_payload,
+            ) = diagnostic_artifacts[artifact_ref]
         else:
             artifact_role = "diagnostic-supporting-evidence"
             artifact_schema = "groundupscale.dev/test-evidence/v1alpha1"
@@ -297,6 +371,721 @@ def _write_bundle(
         },
     )
     return run
+
+
+def _artifact_field(run: Path, artifact_ref: str, field: str) -> object:
+    manifest = json.loads(
+        (run / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    matching = [
+        artifact
+        for artifact in manifest["artifacts"]
+        if artifact.get("uri") == artifact_ref
+    ]
+    assert len(matching) == 1
+    value: object = json.loads(
+        (run / matching[0]["path"]).read_text(encoding="utf-8")
+    )
+    for key in field.split("."):
+        assert isinstance(value, dict)
+        assert key in value
+        value = value[key]
+    return value
+
+
+def _rewrite_artifact_field(
+    run: Path,
+    artifact_ref: str,
+    field: str,
+    replacement: object,
+) -> None:
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    matching = [
+        artifact
+        for artifact in manifest["artifacts"]
+        if artifact.get("uri") == artifact_ref
+    ]
+    assert len(matching) == 1
+    artifact_path = run / matching[0]["path"]
+    content = json.loads(artifact_path.read_text(encoding="utf-8"))
+    cursor = content
+    keys = field.split(".")
+    for key in keys[:-1]:
+        cursor = cursor[key]
+    cursor[keys[-1]] = replacement
+    matching[0]["sha256"] = write_json(artifact_path, content)
+    write_json(manifest_path, manifest)
+
+
+def _issue22_probe(fixture: dict[str, object]) -> dict[str, object]:
+    base_fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-context-matmul-headroom.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = deepcopy(base_fixture["shape_disambiguation_probes"][0])
+    contract_fixture = fixture["contract"]
+    stable_path = contract_fixture["stable_path"]
+    candidate_id = contract_fixture["candidate_id"]
+    baseline_lane_id = contract_fixture["baseline_lane_id"]
+    diagnostic_lane_id = contract_fixture["diagnostic_lane_id"]
+    pair_id = contract_fixture["pair_id"]
+    cohort_id = probe["locked_contract"]["cohort_id"]
+
+    probe["probe_id"] = "probe-matmul-256-integration"
+    probe["stable_path"] = stable_path
+    contract = probe["locked_contract"]
+    for key in (
+        "semantic",
+        "shape",
+        "dtype",
+        "layout",
+        "strides",
+        "alignment_bytes",
+        "threads",
+        "execution_domain",
+    ):
+        contract[key] = deepcopy(contract_fixture[key])
+    contract["candidate_ids"] = [candidate_id]
+    contract["cohort_identity"]["numeric_execution"] = {
+        key: contract["execution_domain"][key]
+        for key in (
+            "dtype",
+            "layout",
+            "alignment_bytes",
+            "threads",
+            "execution_mode",
+        )
+    }
+    contract["cohort_identity"]["execution_context"] = {
+        key: contract["execution_domain"][key]
+        for key in (
+            "affinity",
+            "numa",
+            "context",
+            "stream",
+            "concurrency",
+        )
+    }
+
+    lanes = probe["measurement_lanes"]
+    lanes["baseline"].update(
+        {
+            "lane_id": baseline_lane_id,
+            "pair_id": pair_id,
+            "instrumentation_profile": "baseline-timing/v1",
+            "case": {
+                "stable_path": stable_path,
+                "semantic": contract["semantic"],
+            },
+            "execution_domain": deepcopy(contract["execution_domain"]),
+            "candidate_ids": [candidate_id],
+            "cohort_id": cohort_id,
+            "evidence_ref": "artifact://issue-6/integration-baseline-lane",
+        }
+    )
+    lanes["diagnostic"].update(
+        {
+            "lane_id": diagnostic_lane_id,
+            "pair_id": pair_id,
+            "paired_baseline_lane_id": baseline_lane_id,
+            "instrumentation_profile": "paired-component-ablation/v1",
+            "case": {
+                "stable_path": stable_path,
+                "semantic": contract["semantic"],
+            },
+            "execution_domain": deepcopy(contract["execution_domain"]),
+            "candidate_ids": [candidate_id],
+            "cohort_id": cohort_id,
+            "evidence_ref": "artifact://issue-6/integration-diagnostic-lane",
+            "timing_used_for_frontier": False,
+            "timing_used_for_integration_verdict": True,
+        }
+    )
+    lanes["diagnostic"].pop("timing_used_for_verdict", None)
+
+    candidate = probe["candidates"][0]
+    candidate["candidate_id"] = candidate_id
+    candidate["role"] = "target"
+    candidate["implementation_family"].update(
+        {
+            "implementation_ref": (
+                "artifact://issue-6/torch-mm-256-implementation"
+            ),
+            "implementation_sha256": (
+                "9d0894494447bb4264d6df85f6ccc34d04d5115bde810f16d9e61b9bffc54961"
+            ),
+            "manifest_ref": "artifact://issue-6/torch-mm-256-manifest",
+        }
+    )
+    candidate["correctness"]["evidence_ref"] = (
+        "artifact://issue-6/integration-operator-correctness"
+    )
+    candidate["sessions"] = [
+        {
+            **session,
+            "lane_id": baseline_lane_id,
+            "cohort_id": cohort_id,
+            "latency_ns": median(session["raw_samples_ns"]),
+            "excluded_samples": [],
+        }
+        for session in fixture["target_sessions"]
+    ]
+    probe["candidates"] = [candidate]
+    probe["integration_overhead_evidence"] = deepcopy(
+        fixture["integration_overhead_evidence"]
+    )
+    probe["evidence_refs"] = [
+        "artifact://issue-6/integration-overhead-probe"
+    ]
+    return probe
+
+
+def test_issue6_paired_ablation_produces_conserved_integration_overhead(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+
+    result = diagnose_run_bundle(run)
+    verdict = result["performance_diagnosis_verdicts"][0]
+    expected = fixture["fixture_expectation"]
+
+    assert verdict["verdict"] == "integration_overhead"
+    assert verdict["metrics"]["standalone_operator_ns"] == pytest.approx(
+        expected["standalone_operator_ns"]
+    )
+    assert verdict["metrics"]["wrapped_e2e_ns"] == pytest.approx(
+        expected["wrapped_e2e_ns"]
+    )
+    assert verdict["metrics"]["recovered_ns"] == pytest.approx(
+        expected["copy_ablation_ns"]
+    )
+    assert verdict["metrics"]["measured_excess_ns"] == pytest.approx(
+        expected["measured_excess_ns"]
+    )
+    assert verdict["metrics"]["e2e_gap_fraction"] == pytest.approx(
+        expected["e2e_gap_fraction"]
+    )
+    assert verdict["metrics"]["recovery_error_fraction"] == pytest.approx(
+        expected["recovery_error_fraction"]
+    )
+    assert verdict["ledger"]["status"] == "conserved"
+    assert verdict["ledger"]["parent_span_total_included_ns"] == 0
+    assert verdict["ledger"]["reconciled_total_ns"] == pytest.approx(
+        expected["wrapped_e2e_ns"]
+    )
+    assert verdict["ledger"]["residual"]["duration_ns"] == pytest.approx(
+        expected["measured_excess_ns"] - expected["copy_ablation_ns"]
+    )
+    assert verdict["surface_action"] == {
+        "action": "preserve",
+        "surface": {
+            "surface_id": "m4-matmul-fp32",
+            "version": "v1",
+        },
+        "operator_achievable_frontier_ns": {
+            "before": expected["operator_frontier_ns"],
+            "after": expected["operator_frontier_ns"],
+        },
+        "reason_code": "integration-overhead-does-not-lower-frontier",
+    }
+    assert "frontier_shift" not in {
+        item["verdict"] for item in result["performance_diagnosis_verdicts"]
+    }
+    assert {gate["gate_id"] for gate in verdict["gates"]["satisfied"]} >= {
+        "standalone-operator-within-frontier-uncertainty",
+        "paired-baseline-diagnostic-lanes",
+        "integration-ablation-error-budget",
+        "exclusive-ledger-conserved",
+        "counterfactual-recovers-only-declared-leaves",
+        "operator-frontier-preserved",
+    }
+    assert result["shape_disambiguation_probes"][0]["measurement_lanes"][
+        "diagnostic"
+    ]["timing_used_for_frontier"] is False
+    assert result["shape_disambiguation_probes"][0]["measurement_lanes"][
+        "diagnostic"
+    ]["timing_used_for_integration_verdict"] is True
+    assert set(verdict["metric_derivations"]) == set(verdict["metrics"])
+    assert all(
+        derivation["formula"]
+        and derivation["inputs"]
+        and all(
+            input_ref["artifact_ref"].startswith("artifact://")
+            and input_ref["field"]
+            for input_ref in derivation["inputs"]
+        )
+        for derivation in verdict["metric_derivations"].values()
+    )
+    for derivation in verdict["metric_derivations"].values():
+        for input_ref in derivation["inputs"]:
+            _artifact_field(
+                run,
+                input_ref["artifact_ref"],
+                input_ref["field"],
+            )
+
+
+@pytest.mark.parametrize(
+    ("artifact_ref", "field", "replacement"),
+    [
+        (
+            "artifact://issue-6/integration-operator-correctness",
+            "payload.records",
+            [{"expected": 1.0, "observed": 0.0}],
+        ),
+        (
+            "artifact://issue-6/integration-diagnostic-lane",
+            "payload.cohort_id",
+            "different-hardware-cohort",
+        ),
+        (
+            "artifact://issue-6/integration-operator-session-1",
+            "payload.raw_samples_ns",
+            [999_000_000.0, 999_000_001.0],
+        ),
+        (
+            "artifact://issue-6/integration-wrapped-session-1",
+            "payload.raw_samples_ns",
+            [999_000_000.0, 999_000_001.0],
+        ),
+        (
+            "artifact://issue-6/integration-exclusive-ledger",
+            "payload.residual.duration_ns",
+            999_000_000.0,
+        ),
+        (
+            "artifact://issue-6/integration-copy-counterfactual",
+            "payload.declared_recovered_ns",
+            1.0,
+        ),
+        (
+            "artifact://issue-6/integration-overhead-contract",
+            "payload.policy.maximum_recovery_error_fraction",
+            0.99,
+        ),
+    ],
+)
+def test_integration_derivation_artifacts_are_bound_to_evaluated_inputs(
+    tmp_path: Path,
+    artifact_ref: str,
+    field: str,
+    replacement: object,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[_issue22_probe(fixture)],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+    _rewrite_artifact_field(
+        run,
+        artifact_ref,
+        field,
+        replacement,
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert verdict["gates"]["failed"][0]["reason_code"] == (
+        "integration-overhead-evidence-invalid"
+    )
+
+
+@pytest.mark.parametrize(
+    ("failure", "expected_reason"),
+    [
+        ("missing-ablation", "integration-ablation-missing"),
+        ("lane-mismatch", "integration-lane-identity-mismatch"),
+        ("lane-missing", "integration-lane-identity-mismatch"),
+        ("cohort-change", "integration-overhead-evidence-invalid"),
+        ("cohort-missing", "integration-overhead-evidence-invalid"),
+        ("ledger-not-closed", "integration-exclusive-ledger-not-conserved"),
+        ("ledger-parent-cycle", "integration-exclusive-ledger-not-conserved"),
+        ("ledger-missing", "integration-exclusive-ledger-not-conserved"),
+        ("outside-frontier", "standalone-operator-outside-frontier-uncertainty"),
+        ("error-budget", "integration-ablation-error-budget-exceeded"),
+        ("leaf-kind-mismatch", "integration-counterfactual-kind-mismatch"),
+        ("trigger-frontier-mismatch", "operator-frontier-trigger-boundary-mismatch"),
+        ("frontier-unqualified", "operator-frontier-evidence-invalid"),
+        ("frontier-domain-mismatch", "operator-frontier-evidence-invalid"),
+        ("frontier-policy-invalid", "operator-frontier-evidence-invalid"),
+        ("frontier-negative-uncertainty", "operator-frontier-evidence-invalid"),
+        ("session-lane-mismatch", "integration-ablation-evidence-invalid"),
+        ("session-lane-missing", "integration-ablation-evidence-invalid"),
+        ("session-cohort-mismatch", "integration-ablation-evidence-invalid"),
+        ("session-cohort-missing", "integration-ablation-evidence-invalid"),
+        ("correctness-failed", "integration-ablation-evidence-invalid"),
+        ("correctness-missing", "integration-ablation-evidence-invalid"),
+        ("exclusion-index-invalid", "wrapped-e2e-evidence-invalid"),
+        ("exclusion-reason-missing", "wrapped-e2e-evidence-invalid"),
+    ],
+)
+def test_integration_overhead_fails_closed_without_matched_conserved_evidence(
+    tmp_path: Path,
+    failure: str,
+    expected_reason: str,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    evidence = probe["integration_overhead_evidence"]
+    if failure == "missing-ablation":
+        del evidence["ablations"]
+    elif failure == "lane-mismatch":
+        evidence["paired_lanes"]["pair_id"] = "different-pair"
+    elif failure == "lane-missing":
+        del evidence["paired_lanes"]
+    elif failure == "cohort-change":
+        evidence["cohort_id"] = "different-hardware-cohort"
+    elif failure == "cohort-missing":
+        del evidence["cohort_id"]
+    elif failure == "ledger-not-closed":
+        evidence["exclusive_ledger"]["residual"]["duration_ns"] += 1
+    elif failure == "ledger-parent-cycle":
+        evidence["exclusive_ledger"]["parents"][1][
+            "child_parent_ids"
+        ] = ["wrapped-e2e"]
+    elif failure == "ledger-missing":
+        del evidence["exclusive_ledger"]
+    elif failure == "outside-frontier":
+        evidence["operator_frontier"]["combined_uncertainty_ns"] = 1
+        evidence["operator_frontier"]["uncertainty_records"][0][
+            "standard_uncertainty_ns"
+        ] = 0.6
+        evidence["operator_frontier"]["uncertainty_records"][1][
+            "standard_uncertainty_ns"
+        ] = 0.8
+        fixture["diagnostic_items"][0]["combined_uncertainty_ns"] = 1
+    elif failure == "error-budget":
+        evidence["policy"]["maximum_recovery_error_fraction"] = 0.01
+    elif failure == "leaf-kind-mismatch":
+        evidence["exclusive_ledger"]["leaves"][1]["kind"] = "dispatch"
+    elif failure == "trigger-frontier-mismatch":
+        evidence["operator_frontier"]["latency_ns"] += 10
+    elif failure == "frontier-unqualified":
+        evidence["operator_frontier"]["observation_validity"] = "COLLECTED"
+    elif failure == "frontier-domain-mismatch":
+        evidence["operator_frontier"]["execution_domain"]["threads"] = 2
+    elif failure == "frontier-policy-invalid":
+        evidence["operator_frontier"]["uncertainty_policy"][
+            "combination_rule"
+        ] = "sum"
+    elif failure == "frontier-negative-uncertainty":
+        evidence["operator_frontier"]["uncertainty_records"][0][
+            "standard_uncertainty_ns"
+        ] = -180.0
+    elif failure == "session-lane-mismatch":
+        evidence["ablations"][0]["sessions"][0]["lane_id"] = (
+            "different-lane"
+        )
+    elif failure == "session-lane-missing":
+        del evidence["ablations"][0]["sessions"][0]["lane_id"]
+    elif failure == "session-cohort-mismatch":
+        evidence["ablations"][0]["sessions"][0]["cohort_id"] = (
+            "different-hardware-cohort"
+        )
+    elif failure == "session-cohort-missing":
+        del evidence["ablations"][0]["sessions"][0]["cohort_id"]
+    elif failure == "correctness-failed":
+        evidence["ablations"][0]["correctness"]["records"][0][
+            "observed"
+        ] = 0.0
+    elif failure == "correctness-missing":
+        del evidence["ablations"][0]["correctness"]
+    elif failure == "exclusion-index-invalid":
+        evidence["wrapped_e2e"]["sessions"][0]["excluded_samples"] = [
+            {"index": 1000, "reason": "out-of-range"}
+        ]
+    else:
+        evidence["wrapped_e2e"]["sessions"][0]["excluded_samples"] = [
+            {"index": 0}
+        ]
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+
+    result = diagnose_run_bundle(run)
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert [gate["reason_code"] for gate in verdict["gates"]["failed"]] == [
+        expected_reason
+    ]
+    assert verdict["surface_action"]["action"] == "preserve"
+    assert verdict["surface_action"]["operator_achievable_frontier_ns"] == {
+        "before": fixture["fixture_expectation"]["operator_frontier_ns"],
+        "after": fixture["fixture_expectation"]["operator_frontier_ns"],
+    }
+    if failure in {
+        "cohort-change",
+        "cohort-missing",
+        "trigger-frontier-mismatch",
+    }:
+        assert verdict["surface_action"]["surface"] == {
+            "status": "unknown",
+            "reason_code": "integration-surface-identity-unverified",
+        }
+    assert "frontier_shift" not in {
+        item["verdict"] for item in result["performance_diagnosis_verdicts"]
+    }
+
+
+def test_integration_ablation_applies_declared_exclusions_before_median(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    session = probe["integration_overhead_evidence"]["wrapped_e2e"][
+        "sessions"
+    ][0]
+    session["raw_samples_ns"].insert(0, 1_000_000_000.0)
+    session["excluded_samples"] = [
+        {"index": 0, "reason": "declared-outlier-exclusion"}
+    ]
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "integration_overhead"
+    wrapped = verdict["metrics"]["wrapped_e2e_ns"]
+    assert wrapped == pytest.approx(
+        fixture["fixture_expectation"]["wrapped_e2e_ns"]
+    )
+    assert verdict["wrapped_e2e"]["session_exclusions"] == {
+        "session-1": [
+            {"index": 0, "reason": "declared-outlier-exclusion"}
+        ],
+        "session-2": [],
+        "session-3": [],
+    }
+
+
+def test_integration_ledger_handles_deep_parent_indexes_without_recursion(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    ledger = probe["integration_overhead_evidence"]["exclusive_ledger"]
+    parent_count = 1_200
+    leaf_ids = [leaf["leaf_id"] for leaf in ledger["leaves"]]
+    ledger["parents"] = [
+        {
+            "span_id": f"parent-{index}",
+            "kind": "e2e" if index == 0 else "module",
+            "additive": False,
+            "child_parent_ids": (
+                [f"parent-{index + 1}"]
+                if index + 1 < parent_count
+                else []
+            ),
+            "leaf_ids": leaf_ids if index + 1 == parent_count else [],
+        }
+        for index in range(parent_count)
+    ]
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "integration_overhead"
+    assert len(verdict["ledger"]["parents"]) == parent_count
+    assert verdict["ledger"]["parent_span_total_included_ns"] == 0
+
+
+@pytest.mark.parametrize(
+    (
+        "alternative_latency_ns",
+        "integration_error_budget",
+        "expected_verdict",
+    ),
+    [
+        (20_100, 0.35, "insufficient_evidence"),
+        (30_100, 0.35, "integration_overhead"),
+        (20_100, 0.01, "implementation_headroom"),
+    ],
+)
+def test_integration_only_fails_precedence_for_a_competing_headroom_verdict(
+    tmp_path: Path,
+    alternative_latency_ns: int,
+    integration_error_budget: float,
+    expected_verdict: str,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    issue21_fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-context-matmul-headroom.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    probe["integration_overhead_evidence"]["policy"][
+        "maximum_recovery_error_fraction"
+    ] = integration_error_budget
+    alternative = deepcopy(
+        issue21_fixture["shape_disambiguation_probes"][0]["candidates"][1]
+    )
+    for index, session in enumerate(alternative["sessions"], start=1):
+        session.update(
+            {
+                "lane_id": fixture["contract"]["baseline_lane_id"],
+                "cohort_id": probe["locked_contract"]["cohort_id"],
+                "raw_samples_ns": [
+                    alternative_latency_ns - 100 + index,
+                    alternative_latency_ns + index,
+                    alternative_latency_ns + 100 + index,
+                ],
+                "latency_ns": alternative_latency_ns + index,
+                "excluded_samples": [],
+            }
+        )
+    probe["candidates"].append(alternative)
+    probe["locked_contract"]["candidate_ids"].append(
+        alternative["candidate_id"]
+    )
+    for lane in probe["measurement_lanes"].values():
+        lane["candidate_ids"].append(alternative["candidate_id"])
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256",
+            "batched-matmul": "issue-6/a5a04f9c/batched-matmul",
+        },
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == expected_verdict
+    if expected_verdict == "insufficient_evidence":
+        assert verdict["gates"]["failed"] == [
+            {
+                "gate_id": "multi-verdict-precedence",
+                "reason_code": "multi-verdict-precedence-undefined",
+                "evidence_refs": verdict["gates"]["failed"][0][
+                    "evidence_refs"
+                ],
+            }
+        ]
+
+
+def test_integration_overhead_report_projects_frontier_ledger_and_ablations(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue22-256-cube-integration-overhead.json"
+        ).read_text(encoding="utf-8")
+    )
+    probe = _issue22_probe(fixture)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            "torch-mm-256": "issue-6/a5a04f9c/torch-mm-256"
+        },
+    )
+
+    report = render_diagnostic_report(diagnose_run_bundle(run))
+
+    assert (
+        "integration overhead: standalone=0.024309 ms; "
+        "wrapped=0.034041 ms; excess=0.009733 ms; "
+        "recovered=0.009097 ms; recovery-error=6.53%"
+    ) in report
+    assert (
+        "ablation copy-twice(copy): 0.009097 ms; "
+        "removed=copy-first,copy-second"
+    ) in report
+    assert (
+        "exclusive ledger issue-6-256-cube-t5@v1: conserved; "
+        "leaves=3; residual=0.000635 ms; parents-included=0.000000 ms"
+    ) in report
+    assert (
+        "Operator Achievable Frontier preserved: m4-matmul-fp32@v1; "
+        "before=0.024054 ms; after=0.024054 ms"
+    ) in report
 
 
 def test_trigger_uses_independent_top10_union_uncertainty_and_materiality(
