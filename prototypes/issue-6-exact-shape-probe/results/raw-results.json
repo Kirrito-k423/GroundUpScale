@@ -1,0 +1,2761 @@
+{
+  "blas_identity": {
+    "coverage_conclusion": "C1_MULTIPLE_WRAPPERS_SINGLE_ACCELERATE_LIBRARY",
+    "numpy_blas": {
+      "detection method": "system",
+      "found": true,
+      "include directory": "unknown",
+      "lib directory": "unknown",
+      "name": "accelerate",
+      "openblas configuration": "unknown",
+      "pc file directory": "unknown",
+      "version": "unknown"
+    },
+    "torch_blas_info": "accelerate"
+  },
+  "candidate_manifest": {
+    "numpy-direct": {
+      "library": "Accelerate",
+      "provider": "NumPy",
+      "role": "alternative",
+      "timed_work": "preallocated numpy.matmul"
+    },
+    "torch-direct": {
+      "library": "Accelerate",
+      "provider": "PyTorch",
+      "role": "target",
+      "timed_work": "preallocated torch.mm"
+    },
+    "torch-pad-264-slice-copy": {
+      "library": "Accelerate",
+      "provider": "PyTorch",
+      "role": "alternative",
+      "timed_work": "copy exact inputs into zero-padded 264-cube, torch.mm, slice-copy to exact contiguous output"
+    },
+    "torch-pad-272-slice-copy": {
+      "library": "Accelerate",
+      "provider": "PyTorch",
+      "role": "alternative",
+      "timed_work": "copy exact inputs into zero-padded 272-cube, torch.mm, slice-copy to exact contiguous output"
+    },
+    "torch-pad-288-slice-copy": {
+      "library": "Accelerate",
+      "provider": "PyTorch",
+      "role": "alternative",
+      "timed_work": "copy exact inputs into zero-padded 288-cube, torch.mm, slice-copy to exact contiguous output"
+    },
+    "truncated-256-negative-control": {
+      "library": "Accelerate",
+      "provider": "PyTorch",
+      "role": "negative_control",
+      "timed_work": "incorrect truncated 256-cube plus partial output copy"
+    }
+  },
+  "captured_at": "2026-08-07T11:03:34.685241+00:00",
+  "decision": {
+    "assertions": {
+      "at_least_two_distinct_verdicts": false,
+      "environment_eligible": false,
+      "implementation_headroom_observed": false,
+      "insufficient_evidence_counterexample_preserved": true,
+      "integration_overhead_observed": false,
+      "negative_control_rejected_in_every_session": true,
+      "three_independent_sessions": true
+    },
+    "exit_criteria_passed": false,
+    "scenarios": [
+      {
+        "best_correct_alternative": {
+          "all_sessions_correct": true,
+          "iqr_ns": 248.31145647963785,
+          "iqr_over_median": 0.008148201070708199,
+          "measurement_id": "numpy-direct",
+          "median_of_session_medians_ns": 30474.389908256882,
+          "q1_ns": 30366.387789494296,
+          "q3_ns": 30614.699245973934,
+          "session_medians_ns": [
+            30755.008583690986,
+            30258.38567073171,
+            30474.389908256882
+          ]
+        },
+        "checks": {
+          "best_alternative_faster_in_every_session": false,
+          "best_recovers_90_percent_of_old_reference": false,
+          "correct_alternative_exists": true,
+          "environment_eligible": false,
+          "speedup_exceeds_locked_uncertainty": false,
+          "target_correct_in_all_sessions": true
+        },
+        "failed_checks": [
+          "environment_eligible",
+          "best_alternative_faster_in_every_session",
+          "speedup_exceeds_locked_uncertainty",
+          "best_recovers_90_percent_of_old_reference"
+        ],
+        "locked_uncertainty_fraction": 0.05,
+        "recovered_rate_flops_per_s": 1114023483397.1733,
+        "recovery_vs_old_256_reference": 0.7986202237886902,
+        "scenario": "257-cube-exact-shape-candidate-search",
+        "speedup_fraction": -0.007145047784128944,
+        "target": {
+          "all_sessions_correct": true,
+          "iqr_ns": 320.58509224515365,
+          "iqr_over_median": 0.010595525397457723,
+          "measurement_id": "torch-direct",
+          "median_of_session_medians_ns": 30256.64893617021,
+          "q1_ns": 30167.515016865593,
+          "q3_ns": 30488.100109110746,
+          "session_medians_ns": [
+            30719.55128205128,
+            30256.64893617021,
+            30078.381097560974
+          ]
+        },
+        "verdict": "insufficient_evidence"
+      },
+      {
+        "ablation_relative_error": 0.024233117267017757,
+        "checks": {
+          "copy_ablation_explains_excess_within_35_percent": true,
+          "e2e_gap_exceeds_locked_uncertainty": true,
+          "environment_eligible": false,
+          "standalone_operator_correct": true,
+          "standalone_within_10_percent_of_old_anchor": true,
+          "wrapped_e2e_correct": true
+        },
+        "copy_ablation_ns": 9097.9375,
+        "copy_twice_ablation": {
+          "all_sessions_correct": true,
+          "iqr_ns": 44.79149999999936,
+          "iqr_over_median": 0.004923258705613153,
+          "measurement_id": "copy-twice",
+          "median_of_session_medians_ns": 9097.9375,
+          "q1_ns": 9088.198,
+          "q3_ns": 9132.9895,
+          "session_medians_ns": [
+            9168.0415,
+            9078.4585,
+            9097.9375
+          ]
+        },
+        "e2e_gap_fraction": 0.38448070636053333,
+        "failed_checks": [
+          "environment_eligible"
+        ],
+        "locked_uncertainty_fraction": 0.1,
+        "measured_excess_ns": 9323.884281169689,
+        "operator": {
+          "all_sessions_correct": true,
+          "iqr_ns": 40.76502403846462,
+          "iqr_over_median": 0.001680990965188895,
+          "measurement_id": "operator",
+          "median_of_session_medians_ns": 24250.590801886792,
+          "q1_ns": 24230.36391055878,
+          "q3_ns": 24271.128934597244,
+          "session_medians_ns": [
+            24291.667067307695,
+            24250.590801886792,
+            24210.13701923077
+          ]
+        },
+        "operator_rate_flops_per_s": 1383654207607.5662,
+        "operator_reference_delta_fraction": 0.008087127969675034,
+        "scenario": "256-cube-standalone-vs-materializing-wrapper",
+        "verdict": "insufficient_evidence",
+        "wrapped_e2e": {
+          "all_sessions_correct": true,
+          "iqr_ns": 259.38316628849134,
+          "iqr_over_median": 0.0077256060041692295,
+          "measurement_id": "operator-plus-copy-twice",
+          "median_of_session_medians_ns": 33574.47508305648,
+          "q1_ns": 33450.72226821634,
+          "q3_ns": 33710.10543450483,
+          "session_medians_ns": [
+            33845.73578595318,
+            33574.47508305648,
+            33326.96945337621
+          ]
+        }
+      },
+      {
+        "candidate_coverage": "C0_TARGET_ONLY",
+        "reason_codes": [
+          "no_correct_alternative_candidate",
+          "single_slow_measurement_cannot_lower_frontier"
+        ],
+        "retained_observation": {
+          "all_sessions_correct": true,
+          "iqr_ns": 320.58509224515365,
+          "iqr_over_median": 0.010595525397457723,
+          "measurement_id": "torch-direct",
+          "median_of_session_medians_ns": 30256.64893617021,
+          "q1_ns": 30167.515016865593,
+          "q3_ns": 30488.100109110746,
+          "session_medians_ns": [
+            30719.55128205128,
+            30256.64893617021,
+            30078.381097560974
+          ]
+        },
+        "scenario": "257-cube-target-only-counterexample",
+        "verdict": "insufficient_evidence"
+      },
+      {
+        "candidate_coverage": "C1_MULTIPLE_WRAPPERS_SINGLE_ACCELERATE_LIBRARY",
+        "prohibited_verdict": "frontier_shift",
+        "reason_codes": [
+          "c2_or_c3_independent_candidate_families_missing",
+          "neighbourhood_regime_not_validated",
+          "environment_ineligible"
+        ],
+        "scenario": "257-cube-frontier-shift-gate",
+        "verdict": "insufficient_evidence"
+      }
+    ]
+  },
+  "environment": {
+    "captured_at": "2026-08-07T11:03:26.803685+00:00",
+    "checks": [
+      {
+        "check_id": "trusted-platform",
+        "observed": {
+          "machine": "arm64",
+          "system": "Darwin"
+        },
+        "passed": true,
+        "required": {
+          "machine": "arm64",
+          "system": "Darwin"
+        }
+      },
+      {
+        "check_id": "ac-power",
+        "observed": "battery",
+        "passed": false,
+        "reason_code": "not-on-ac-power",
+        "required": "ac"
+      },
+      {
+        "check_id": "thermal-nominal",
+        "observed": "nominal",
+        "passed": true,
+        "required": "nominal"
+      },
+      {
+        "check_id": "settled-load",
+        "observed": 0.24501953125,
+        "passed": true,
+        "required": {
+          "maximum": 0.25,
+          "normalization": "one-minute load / logical CPU count"
+        }
+      },
+      {
+        "check_id": "bounded-total-competing-cpu",
+        "observed": 0.1961,
+        "passed": false,
+        "reason_code": "total-competing-cpu-above-policy",
+        "required": {
+          "maximum": 0.1,
+          "normalization": "maximum sampled total non-coordinator process CPU percent / (100 * logical CPU count)"
+        }
+      }
+    ],
+    "collector": {
+      "name": "groundupscale-local-environment",
+      "privacy": "allowlisted fields only; no command arguments, environment variables, or unrestricted process paths",
+      "version": "v1alpha1"
+    },
+    "eligible": false,
+    "interpretation": "Preflight eligibility does not replace per-run benchmark noise gates.",
+    "observations": {
+      "competitors": {
+        "excluded_process_scope": "coordinator process and ancestors",
+        "maximum_single_process_cpu_percent": 83.0,
+        "maximum_total_cpu_percent": 196.1,
+        "normalized_maximum_total_cpu": 0.1961,
+        "sample_count": 3,
+        "sample_interval_seconds": 0.2,
+        "top": [
+          {
+            "cpu_percent": 83.0,
+            "name": "python3.11",
+            "pid": 71091
+          },
+          {
+            "cpu_percent": 39.4,
+            "name": "Codex (Service)",
+            "pid": 69345
+          },
+          {
+            "cpu_percent": 28.1,
+            "name": "python3.11",
+            "pid": 71092
+          },
+          {
+            "cpu_percent": 26.6,
+            "name": "Codex (Renderer)",
+            "pid": 69421
+          },
+          {
+            "cpu_percent": 12.3,
+            "name": "Codex (Renderer)",
+            "pid": 69420
+          },
+          {
+            "cpu_percent": 10.1,
+            "name": "Code Helper",
+            "pid": 6186
+          },
+          {
+            "cpu_percent": 6.1,
+            "name": "Code",
+            "pid": 5990
+          },
+          {
+            "cpu_percent": 5.9,
+            "name": "healthmonitor",
+            "pid": 5988
+          },
+          {
+            "cpu_percent": 2.9,
+            "name": "Code Helper (Renderer)",
+            "pid": 35639
+          },
+          {
+            "cpu_percent": 2.6,
+            "name": "Activity Monitor",
+            "pid": 5992
+          }
+        ],
+        "total_cpu_percent_samples": [
+          129.7,
+          145.2,
+          196.1
+        ]
+      },
+      "load": {
+        "fifteen_minutes": 2.95361328125,
+        "five_minutes": 2.8115234375,
+        "normalized_one_minute": 0.24501953125,
+        "one_minute": 2.4501953125
+      },
+      "platform": {
+        "logical_cpu_count": 10,
+        "machine": "arm64",
+        "release": "24.6.0",
+        "system": "Darwin"
+      },
+      "power": {
+        "battery_percent": 97.0,
+        "source": "battery"
+      },
+      "thermal": {
+        "performance_warning": false,
+        "speed_limits_percent": {},
+        "status": "nominal",
+        "thermal_warning": false
+      }
+    },
+    "policy": {
+      "allowlist_only": true,
+      "maximum_normalized_one_minute_load": 0.25,
+      "maximum_normalized_total_competing_cpu": 0.1,
+      "policy_id": "local-apple-silicon-v2",
+      "require_ac_power": true,
+      "require_nominal_thermal_status": true,
+      "required_machine": "arm64",
+      "required_system": "Darwin"
+    },
+    "reason_codes": [
+      "not-on-ac-power",
+      "total-competing-cpu-above-policy"
+    ],
+    "schema": "groundupscale.dev/environment-validity/v1alpha1"
+  },
+  "input_source": {
+    "aligned_256": {
+      "achieved_rate": 1394935227300.1501,
+      "assumptions": [
+        "one multiply and one add count as two FLOPs"
+      ],
+      "eligibility": {
+        "maximum_iqr_over_median": 0.1,
+        "reason": null
+      },
+      "eligible": true,
+      "implementation": "pytorch-accelerate-matrix-multiply",
+      "inner_iterations": 205,
+      "iqr_ns": 418.59512195121715,
+      "iqr_over_median": 0.017401965903811312,
+      "median_ns": 24054.473170731708,
+      "q1_ns": 23689.736585365856,
+      "q3_ns": 24108.331707317073,
+      "samples_ns": [
+        24110.160975609757,
+        24187.19512195122,
+        24106.50243902439,
+        24020.936585365853,
+        23358.536585365855,
+        23069.30731707317,
+        24054.473170731708
+      ],
+      "shape": [
+        256,
+        256,
+        256
+      ],
+      "threads": 1,
+      "unit": "FLOP/s",
+      "work": 33554432
+    },
+    "anomaly_257": {
+      "achieved_rate": 1134375620158.4822,
+      "assumptions": [
+        "one multiply and one add count as two FLOPs"
+      ],
+      "eligibility": {
+        "maximum_iqr_over_median": 0.1,
+        "reason": null
+      },
+      "eligible": true,
+      "implementation": "pytorch-accelerate-matrix-multiply",
+      "inner_iterations": 167,
+      "iqr_ns": 13.476047904194274,
+      "iqr_over_median": 0.0004502876799050732,
+      "median_ns": 29927.640718562874,
+      "q1_ns": 29925.398203592813,
+      "q3_ns": 29938.874251497007,
+      "samples_ns": [
+        29925.898203592813,
+        29935.383233532935,
+        29922.155688622755,
+        29942.36526946108,
+        29927.640718562874,
+        30077.59281437126,
+        29924.898203592813
+      ],
+      "shape": [
+        257,
+        257,
+        257
+      ],
+      "threads": 1,
+      "unit": "FLOP/s",
+      "work": 33949186
+    },
+    "environment_eligible": false,
+    "environment_reason_codes": [
+      "load-above-policy",
+      "total-competing-cpu-above-policy"
+    ],
+    "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+    "path": "goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-microbenchmark-observation-v2.json",
+    "rate_drop_fraction": 0.18678975341813697,
+    "sha256": "221c19f53f5df7442165943b99d097b1287b1fcd47903136ccb1a0251ed69e30"
+  },
+  "protocol": {
+    "aligned_control_shape_mkn": [
+      256,
+      256,
+      256
+    ],
+    "aligned_work_flops": 33554432,
+    "anomaly_shape_mkn": [
+      257,
+      257,
+      257
+    ],
+    "anomaly_work_flops": 33949186,
+    "correctness": {
+      "atol": 0.0001,
+      "oracle": "numpy-fp64-matmul",
+      "rtol": 0.0001
+    },
+    "dtype": "float32",
+    "layout": "C-contiguous",
+    "locked_thresholds": {
+      "copy_ablation_relative_error_fraction": 0.35,
+      "headroom_minimum_fraction": 0.05,
+      "headroom_recovery_of_old_reference": 0.9,
+      "integration_minimum_gap_fraction": 0.1,
+      "operator_reference_tolerance_fraction": 0.1
+    },
+    "old_256_reference_rate_flops_per_s": 1394935227300.1501,
+    "sessions": 3,
+    "threads": 1,
+    "warmups": 10,
+    "windows": 12
+  },
+  "prototype_status": "THROWAWAY — MUST NOT BECOME PRODUCTION RUNNER",
+  "run_command": "python3.11 prototypes/issue-6-exact-shape-probe/run.py --batch",
+  "schema": "groundupscale.dev/throwaway-exact-shape-probe/v0",
+  "sessions": [
+    {
+      "anomaly": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "left_sha256": "b7d4be2c7dac5a128028cfd3db0a7e3bb83e052be524fc9842cc49434afb9601",
+          "right_sha256": "4c0e9397a9b09b387d4e2ba333b5c26f0120f6b6e903714bbb1f393793635b5a",
+          "seed": 20260807,
+          "semantic": "C = A @ B",
+          "shape_mkn": [
+            257,
+            257,
+            257
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "torch-pad-264-slice-copy",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-direct",
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-direct"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "numpy-direct",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "numpy-direct",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy",
+              "torch-direct"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "numpy-direct"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "numpy-direct"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "numpy-direct",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-pad-264-slice-copy",
+              "numpy-direct"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "truncated-256-negative-control",
+              "numpy-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "numpy-direct",
+              "torch-pad-288-slice-copy"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "numpy-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "strides_bytes": [
+                  1028,
+                  4
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 233,
+              "iqr_ns": 964.2339055793964,
+              "iqr_over_median": 0.03135209352829504,
+              "median_ns": 30755.008583690986,
+              "per_call_ns": [
+                34209.05150214592,
+                30739.80686695279,
+                30689.377682403432,
+                31397.5321888412,
+                30770.210300429186,
+                31342.630901287554,
+                30258.227467811157,
+                31547.390557939914,
+                31187.768240343346,
+                30407.188841201718,
+                30051.678111587982,
+                30346.922746781114
+              ],
+              "q1_ns": 30392.122317596568,
+              "q3_ns": 31356.356223175964,
+              "raw_window_ns": [
+                7970709,
+                7162375,
+                7150625,
+                7315625,
+                7169459,
+                7302833,
+                7050167,
+                7350542,
+                7266750,
+                7084875,
+                7002041,
+                7070833
+              ]
+            }
+          },
+          "torch-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 234,
+              "iqr_ns": 602.8760683760665,
+              "iqr_over_median": 0.019625158676334995,
+              "median_ns": 30719.55128205128,
+              "per_call_ns": [
+                31077.102564102563,
+                31225.96153846154,
+                31118.41452991453,
+                30734.863247863246,
+                30704.239316239316,
+                30487.358974358973,
+                30998.576923076922,
+                30993.76923076923,
+                30199.252136752137,
+                30169.337606837606,
+                30084.40170940171,
+                30637.286324786324
+              ],
+              "q1_ns": 30415.332264957266,
+              "q3_ns": 31018.208333333332,
+              "raw_window_ns": [
+                7272042,
+                7306875,
+                7281709,
+                7191958,
+                7184792,
+                7134042,
+                7253667,
+                7252542,
+                7066625,
+                7059625,
+                7039750,
+                7169125
+              ]
+            }
+          },
+          "torch-pad-264-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 153,
+              "iqr_ns": 839.5947712418347,
+              "iqr_over_median": 0.017558252315713486,
+              "median_ns": 47817.67320261438,
+              "per_call_ns": [
+                59876.901960784315,
+                48214.59477124183,
+                49204.248366013075,
+                47774.23529411765,
+                47617.1045751634,
+                49370.098039215685,
+                47861.11111111111,
+                47624.183006535946,
+                47646.790849673205,
+                48211.32679738562,
+                47574.34640522876,
+                46401.143790849674
+              ],
+              "q1_ns": 47622.41339869281,
+              "q3_ns": 48462.00816993464,
+              "raw_window_ns": [
+                9161166,
+                7376833,
+                7528250,
+                7309458,
+                7285417,
+                7553625,
+                7322750,
+                7286500,
+                7289959,
+                7376333,
+                7278875,
+                7099375
+              ]
+            }
+          },
+          "torch-pad-272-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 153,
+              "iqr_ns": 1053.983660130718,
+              "iqr_over_median": 0.02167545204432498,
+              "median_ns": 48625.683006535946,
+              "per_call_ns": [
+                53303.37908496732,
+                48671.02614379085,
+                48903.04575163399,
+                48709.967320261436,
+                49816.17647058824,
+                49254.901960784315,
+                47932.73202614379,
+                46796.8431372549,
+                46727.67320261438,
+                48580.339869281044,
+                47938.45751633987,
+                48100.21568627451
+              ],
+              "q1_ns": 47937.02614379085,
+              "q3_ns": 48991.009803921566,
+              "raw_window_ns": [
+                8155417,
+                7446667,
+                7482166,
+                7452625,
+                7621875,
+                7536000,
+                7333708,
+                7159917,
+                7149334,
+                7432792,
+                7334584,
+                7359333
+              ]
+            }
+          },
+          "torch-pad-288-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 151,
+              "iqr_ns": 1216.329470198667,
+              "iqr_over_median": 0.022745864778048526,
+              "median_ns": 53474.75165562914,
+              "per_call_ns": [
+                49704.470198675495,
+                48084.71523178808,
+                54559.046357615895,
+                53496.41721854304,
+                54642.66225165563,
+                53413.90728476821,
+                53363.13907284768,
+                53453.08609271523,
+                54760.76158940397,
+                53307.11920529801,
+                53806.84105960265,
+                54584.71523178808
+              ],
+              "q1_ns": 53349.13410596027,
+              "q3_ns": 54565.46357615894,
+              "raw_window_ns": [
+                7505375,
+                7260792,
+                8238416,
+                8077959,
+                8251042,
+                8065500,
+                8057834,
+                8071416,
+                8268875,
+                8049375,
+                8124833,
+                8242292
+              ]
+            }
+          },
+          "truncated-256-negative-control": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 52.73291862838637,
+              "max_relative_error_with_atol_floor": 2216.703732095742,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": false,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 251,
+              "iqr_ns": 573.1215139442211,
+              "iqr_over_median": 0.017924134225261013,
+              "median_ns": 31974.850597609562,
+              "per_call_ns": [
+                29558.764940239045,
+                32018.091633466134,
+                31583.33466135458,
+                31469.45418326693,
+                32260.123505976095,
+                31629.812749003984,
+                32103.749003984063,
+                32254.482071713148,
+                31931.609561752986,
+                32090.474103585657,
+                31399.56972111554,
+                32200.697211155377
+              ],
+              "q1_ns": 31554.86454183267,
+              "q3_ns": 32127.98605577689,
+              "raw_window_ns": [
+                7419250,
+                8036541,
+                7927417,
+                7898833,
+                8097291,
+                7939083,
+                8058041,
+                8095875,
+                8014834,
+                8054709,
+                7881292,
+                8082375
+              ]
+            }
+          }
+        }
+      },
+      "captured_at": "2026-08-07T11:03:27.381608+00:00",
+      "integration": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "seed": 20260808,
+          "semantic": "standalone C=A@B versus wrapper C=copy(copy(A@B))",
+          "shape_mkn": [
+            256,
+            256,
+            256
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "operator",
+              "copy-twice"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "operator",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "oracle_interpretation": "copy ablation preserves a previously computed output",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 1000,
+              "iqr_ns": 291.3542499999985,
+              "iqr_over_median": 0.03177933367775424,
+              "median_ns": 9168.0415,
+              "per_call_ns": [
+                9325.25,
+                9101.125,
+                8555.625,
+                8885.625,
+                8992.708,
+                9067.167,
+                9234.958,
+                9300.916,
+                9254.625,
+                9253.709,
+                8776.916,
+                9265.291
+              ],
+              "q1_ns": 8965.93725,
+              "q3_ns": 9257.2915,
+              "raw_window_ns": [
+                9325250,
+                9101125,
+                8555625,
+                8885625,
+                8992708,
+                9067167,
+                9234958,
+                9300916,
+                9254625,
+                9253709,
+                8776916,
+                9265291
+              ]
+            }
+          },
+          "operator": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 416,
+              "iqr_ns": 219.92608173077315,
+              "iqr_over_median": 0.009053560676646805,
+              "median_ns": 24291.667067307695,
+              "per_call_ns": [
+                24373.197115384617,
+                24054.6875,
+                23890.32451923077,
+                24422.978365384617,
+                24301.18028846154,
+                24299.37980769231,
+                24202.72596153846,
+                24216.846153846152,
+                24040.564903846152,
+                24446.3125,
+                24283.954326923078,
+                24505.608173076922
+              ],
+              "q1_ns": 24165.716346153844,
+              "q3_ns": 24385.642427884617,
+              "raw_window_ns": [
+                10139250,
+                10006750,
+                9938375,
+                10159959,
+                10109291,
+                10108542,
+                10068334,
+                10074208,
+                10000875,
+                10169666,
+                10102125,
+                10194333
+              ]
+            }
+          },
+          "operator-plus-copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 299,
+              "iqr_ns": 190.66973244147084,
+              "iqr_over_median": 0.005633493496708189,
+              "median_ns": 33845.73578595318,
+              "per_call_ns": [
+                33729.09698996656,
+                33687.849498327756,
+                34025.5016722408,
+                33033.30434782609,
+                33909.28093645485,
+                33909.976588628764,
+                33798.49498327759,
+                32921.404682274246,
+                33874.58193979933,
+                34316.33444816054,
+                33835.28428093645,
+                33856.1872909699
+              ],
+              "q1_ns": 33718.78511705686,
+              "q3_ns": 33909.45484949833,
+              "raw_window_ns": [
+                10085000,
+                10072667,
+                10173625,
+                9876958,
+                10138875,
+                10139083,
+                10105750,
+                9843500,
+                10128500,
+                10260584,
+                10116750,
+                10123000
+              ]
+            }
+          }
+        }
+      },
+      "process_id": 35371,
+      "runtime": {
+        "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
+        "machine": "arm64",
+        "numpy": "2.4.6",
+        "platform": "macOS-15.7.4-arm64-arm-64bit",
+        "python": "3.11.15",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "VECLIB_MAXIMUM_THREADS": "1"
+        },
+        "torch": "2.13.0",
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "session_id": 1
+    },
+    {
+      "anomaly": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "left_sha256": "b7d4be2c7dac5a128028cfd3db0a7e3bb83e052be524fc9842cc49434afb9601",
+          "right_sha256": "4c0e9397a9b09b387d4e2ba333b5c26f0120f6b6e903714bbb1f393793635b5a",
+          "seed": 20260807,
+          "semantic": "C = A @ B",
+          "shape_mkn": [
+            257,
+            257,
+            257
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "torch-pad-264-slice-copy",
+              "numpy-direct",
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "torch-direct"
+            ],
+            [
+              "torch-pad-264-slice-copy",
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "numpy-direct"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "truncated-256-negative-control",
+              "numpy-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "numpy-direct"
+            ],
+            [
+              "numpy-direct",
+              "torch-pad-272-slice-copy",
+              "torch-direct",
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy"
+            ],
+            [
+              "numpy-direct",
+              "torch-pad-264-slice-copy",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control",
+              "torch-direct"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "numpy-direct",
+              "torch-pad-272-slice-copy",
+              "torch-direct"
+            ],
+            [
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-288-slice-copy"
+            ],
+            [
+              "torch-pad-272-slice-copy",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "numpy-direct",
+              "truncated-256-negative-control"
+            ],
+            [
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy",
+              "torch-direct",
+              "numpy-direct",
+              "truncated-256-negative-control"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "numpy-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "strides_bytes": [
+                  1028,
+                  4
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 328,
+              "iqr_ns": 604.165396341461,
+              "iqr_over_median": 0.019966874734029756,
+              "median_ns": 30258.38567073171,
+              "per_call_ns": [
+                30523.881097560974,
+                30720.274390243903,
+                30391.131097560974,
+                30279.219512195123,
+                93838.67073170732,
+                29887.19512195122,
+                30144.307926829268,
+                29860.009146341465,
+                30237.551829268294,
+                29966.844512195123,
+                30636.939024390245,
+                29891.38719512195
+              ],
+              "q1_ns": 29947.98018292683,
+              "q3_ns": 30552.14557926829,
+              "raw_window_ns": [
+                10011833,
+                10076250,
+                9968291,
+                9931584,
+                30779084,
+                9803000,
+                9887333,
+                9794083,
+                9917917,
+                9829125,
+                10048916,
+                9804375
+              ]
+            }
+          },
+          "torch-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 329,
+              "iqr_ns": 137.12537993920705,
+              "iqr_over_median": 0.004532074263362357,
+              "median_ns": 30256.64893617021,
+              "per_call_ns": [
+                30540.018237082066,
+                30364.23404255319,
+                30559.90273556231,
+                30293.05775075988,
+                29894.504559270517,
+                30247.088145896658,
+                30213.90577507599,
+                30341.81762917933,
+                30245.44072948328,
+                30116.51367781155,
+                30266.20972644377,
+                30199.468085106382
+              ],
+              "q1_ns": 30210.296352583588,
+              "q3_ns": 30347.421732522795,
+              "raw_window_ns": [
+                10047666,
+                9989833,
+                10054208,
+                9966416,
+                9835292,
+                9951292,
+                9940375,
+                9982458,
+                9950750,
+                9908333,
+                9957583,
+                9935625
+              ]
+            }
+          },
+          "torch-pad-264-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 196,
+              "iqr_ns": 4063.0293367346894,
+              "iqr_over_median": 0.09200175395749502,
+              "median_ns": 44162.52040816327,
+              "per_call_ns": [
+                51204.7193877551,
+                48667.51530612245,
+                48099.698979591834,
+                41574.4081632653,
+                46377.97448979592,
+                41630.954081632655,
+                42484.69387755102,
+                43624.36224489796,
+                43404.760204081635,
+                42832.27040816326,
+                44700.67857142857,
+                45630.954081632655
+              ],
+              "q1_ns": 42745.37627551021,
+              "q3_ns": 46808.4056122449,
+              "raw_window_ns": [
+                10036125,
+                9538833,
+                9427541,
+                8148584,
+                9090083,
+                8159667,
+                8327000,
+                8550375,
+                8507333,
+                8395125,
+                8761333,
+                8943667
+              ]
+            }
+          },
+          "torch-pad-272-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 197,
+              "iqr_ns": 3208.6015228426404,
+              "iqr_over_median": 0.06883186377858533,
+              "median_ns": 46615.06091370559,
+              "per_call_ns": [
+                50254.0152284264,
+                48234.350253807104,
+                47672.58883248731,
+                47027.497461928935,
+                44910.10659898477,
+                43687.390862944165,
+                42046.53299492386,
+                46202.62436548223,
+                45212.9847715736,
+                42883.03553299492,
+                47216.58375634518,
+                48522.62944162437
+              ],
+              "q1_ns": 44604.42766497462,
+              "q3_ns": 47813.02918781726,
+              "raw_window_ns": [
+                9900041,
+                9502167,
+                9391500,
+                9264417,
+                8847291,
+                8606416,
+                8283167,
+                9101917,
+                8906958,
+                8447958,
+                9301667,
+                9558958
+              ]
+            }
+          },
+          "torch-pad-288-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 191,
+              "iqr_ns": 3056.5575916230373,
+              "iqr_over_median": 0.05773030490825144,
+              "median_ns": 52945.4607329843,
+              "per_call_ns": [
+                54003.05759162304,
+                54011.12565445026,
+                53015.92146596859,
+                53110.602094240836,
+                48623.476439790575,
+                50815.01047120419,
+                48832.240837696336,
+                54417.10471204189,
+                49159.68586387434,
+                51138.958115183246,
+                53275.96335078534,
+                52875.0
+              ],
+              "q1_ns": 50401.17931937173,
+              "q3_ns": 53457.73691099477,
+              "raw_window_ns": [
+                10314584,
+                10316125,
+                10126041,
+                10144125,
+                9287084,
+                9705667,
+                9326958,
+                10393667,
+                9389500,
+                9767541,
+                10175709,
+                10099125
+              ]
+            }
+          },
+          "truncated-256-negative-control": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 52.73291862838637,
+              "max_relative_error_with_atol_floor": 2216.703732095742,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": false,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 322,
+              "iqr_ns": 766.9503105590084,
+              "iqr_over_median": 0.024954705065049963,
+              "median_ns": 30733.695652173912,
+              "per_call_ns": [
+                31130.17701863354,
+                30918.86645962733,
+                31483.17701863354,
+                31292.44099378882,
+                35976.70807453416,
+                30535.068322981366,
+                30051.760869565216,
+                30448.888198757762,
+                30861.801242236026,
+                30048.009316770185,
+                30268.506211180124,
+                30605.5900621118
+              ],
+              "q1_ns": 30403.792701863353,
+              "q3_ns": 31170.74301242236,
+              "raw_window_ns": [
+                10023917,
+                9955875,
+                10137583,
+                10076166,
+                11584500,
+                9832292,
+                9676667,
+                9804542,
+                9937500,
+                9675459,
+                9746459,
+                9855000
+              ]
+            }
+          }
+        }
+      },
+      "captured_at": "2026-08-07T11:03:31.863318+00:00",
+      "integration": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "seed": 20260808,
+          "semantic": "standalone C=A@B versus wrapper C=copy(copy(A@B))",
+          "shape_mkn": [
+            256,
+            256,
+            256
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "operator",
+              "copy-twice"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "operator",
+              "copy-twice"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator",
+              "operator-plus-copy-twice"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "oracle_interpretation": "copy ablation preserves a previously computed output",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 1000,
+              "iqr_ns": 212.92625000000044,
+              "iqr_over_median": 0.023454009290233627,
+              "median_ns": 9078.4585,
+              "per_call_ns": [
+                9008.208,
+                9065.417,
+                9297.208,
+                9091.5,
+                9030.875,
+                9237.541,
+                8226.125,
+                9093.958,
+                9042.417,
+                9053.5,
+                9304.042,
+                9368.625
+              ],
+              "q1_ns": 9039.5315,
+              "q3_ns": 9252.45775,
+              "raw_window_ns": [
+                9008208,
+                9065417,
+                9297208,
+                9091500,
+                9030875,
+                9237541,
+                8226125,
+                9093958,
+                9042417,
+                9053500,
+                9304042,
+                9368625
+              ]
+            }
+          },
+          "operator": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 424,
+              "iqr_ns": 166.76415094339973,
+              "iqr_over_median": 0.006876704666940519,
+              "median_ns": 24250.590801886792,
+              "per_call_ns": [
+                24370.283018867925,
+                24104.757075471698,
+                24473.95754716981,
+                24068.985849056604,
+                24209.709905660377,
+                24196.93396226415,
+                24243.021226415094,
+                24297.955188679247,
+                24425.60849056604,
+                24382.271226415094,
+                24254.325471698114,
+                24246.85613207547
+              ],
+              "q1_ns": 24206.515919811318,
+              "q3_ns": 24373.280070754718,
+              "raw_window_ns": [
+                10333000,
+                10220417,
+                10376958,
+                10205250,
+                10264917,
+                10259500,
+                10279041,
+                10302333,
+                10356458,
+                10338083,
+                10283834,
+                10280667
+              ]
+            }
+          },
+          "operator-plus-copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 301,
+              "iqr_ns": 1252.7342192691067,
+              "iqr_over_median": 0.03731210141543821,
+              "median_ns": 33574.47508305648,
+              "per_call_ns": [
+                34243.07641196013,
+                33787.23920265781,
+                32898.11627906977,
+                32952.933554817275,
+                34073.36877076412,
+                32610.049833887042,
+                34420.40531561462,
+                32458.88704318937,
+                34120.707641196015,
+                34121.677740863786,
+                33361.71096345515,
+                32778.514950166114
+              ],
+              "q1_ns": 32868.215946843855,
+              "q3_ns": 34120.95016611296,
+              "raw_window_ns": [
+                10307166,
+                10169959,
+                9902333,
+                9918833,
+                10256084,
+                9815625,
+                10360542,
+                9770125,
+                10270333,
+                10270625,
+                10041875,
+                9866333
+              ]
+            }
+          }
+        }
+      },
+      "process_id": 35390,
+      "runtime": {
+        "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
+        "machine": "arm64",
+        "numpy": "2.4.6",
+        "platform": "macOS-15.7.4-arm64-arm-64bit",
+        "python": "3.11.15",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "VECLIB_MAXIMUM_THREADS": "1"
+        },
+        "torch": "2.13.0",
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "session_id": 2
+    },
+    {
+      "anomaly": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "left_sha256": "b7d4be2c7dac5a128028cfd3db0a7e3bb83e052be524fc9842cc49434afb9601",
+          "right_sha256": "4c0e9397a9b09b387d4e2ba333b5c26f0120f6b6e903714bbb1f393793635b5a",
+          "seed": 20260807,
+          "semantic": "C = A @ B",
+          "shape_mkn": [
+            257,
+            257,
+            257
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "numpy-direct",
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-direct"
+            ],
+            [
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "numpy-direct",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-pad-264-slice-copy",
+              "torch-direct"
+            ],
+            [
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy",
+              "torch-direct",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-pad-288-slice-copy",
+              "torch-direct",
+              "truncated-256-negative-control",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "truncated-256-negative-control",
+              "numpy-direct",
+              "torch-direct",
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "torch-pad-272-slice-copy"
+            ],
+            [
+              "torch-pad-264-slice-copy",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-288-slice-copy",
+              "numpy-direct"
+            ],
+            [
+              "torch-pad-264-slice-copy",
+              "torch-pad-288-slice-copy",
+              "truncated-256-negative-control",
+              "torch-pad-272-slice-copy",
+              "numpy-direct",
+              "torch-direct"
+            ],
+            [
+              "torch-pad-288-slice-copy",
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-direct",
+              "torch-pad-272-slice-copy",
+              "torch-pad-264-slice-copy"
+            ],
+            [
+              "numpy-direct",
+              "truncated-256-negative-control",
+              "torch-pad-288-slice-copy",
+              "torch-pad-264-slice-copy",
+              "torch-pad-272-slice-copy",
+              "torch-direct"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "numpy-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "strides_bytes": [
+                  1028,
+                  4
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 327,
+              "iqr_ns": 459.35321100917645,
+              "iqr_over_median": 0.015073417790874856,
+              "median_ns": 30474.389908256882,
+              "per_call_ns": [
+                30294.34250764526,
+                30059.250764525994,
+                30646.788990825688,
+                30606.269113149847,
+                30609.58103975535,
+                29868.629969418962,
+                29946.10091743119,
+                30177.241590214067,
+                30484.455657492355,
+                30554.406727828748,
+                30464.324159021406,
+                30673.16513761468
+              ],
+              "q1_ns": 30147.74388379205,
+              "q3_ns": 30607.097094801225,
+              "raw_window_ns": [
+                9906250,
+                9829375,
+                10021500,
+                10008250,
+                10009333,
+                9767042,
+                9792375,
+                9867958,
+                9968417,
+                9991291,
+                9961834,
+                10030125
+              ]
+            }
+          },
+          "torch-direct": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 328,
+              "iqr_ns": 639.164634146342,
+              "iqr_over_median": 0.021249967944523822,
+              "median_ns": 30078.381097560974,
+              "per_call_ns": [
+                30199.057926829268,
+                30053.60975609756,
+                29931.911585365855,
+                30047.76524390244,
+                30103.15243902439,
+                30607.850609756097,
+                29969.76524390244,
+                30023.628048780487,
+                30773.756097560974,
+                31090.576219512193,
+                31076.981707317074,
+                29952.618902439026
+              ],
+              "q1_ns": 30010.162347560974,
+              "q3_ns": 30649.326981707316,
+              "raw_window_ns": [
+                9905291,
+                9857584,
+                9817667,
+                9855667,
+                9873834,
+                10039375,
+                9830083,
+                9847750,
+                10093792,
+                10197709,
+                10193250,
+                9824459
+              ]
+            }
+          },
+          "torch-pad-264-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 199,
+              "iqr_ns": 3271.5125628140668,
+              "iqr_over_median": 0.07581698813596323,
+              "median_ns": 43150.125628140704,
+              "per_call_ns": [
+                50337.10050251256,
+                51029.31155778895,
+                45666.668341708544,
+                45611.80904522613,
+                42526.59296482412,
+                41400.753768844224,
+                41836.26633165829,
+                42762.35175879397,
+                43323.281407035174,
+                44243.718592964826,
+                41625.211055276384,
+                42976.969849246234
+              ],
+              "q1_ns": 42354.011306532666,
+              "q3_ns": 45625.52386934673,
+              "raw_window_ns": [
+                10017083,
+                10154833,
+                9087667,
+                9076750,
+                8462792,
+                8238750,
+                8325417,
+                8509708,
+                8621333,
+                8804500,
+                8283417,
+                8552417
+              ]
+            }
+          },
+          "torch-pad-272-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 202,
+              "iqr_ns": 3672.131188118801,
+              "iqr_over_median": 0.08400710815829998,
+              "median_ns": 43712.14851485149,
+              "per_call_ns": [
+                50638.61386138614,
+                48310.232673267325,
+                43075.90594059406,
+                41939.97524752475,
+                45781.148514851484,
+                44209.569306930694,
+                46073.430693069306,
+                43214.72772277228,
+                41558.9900990099,
+                41692.039603960395,
+                42262.792079207924,
+                45225.455445544554
+              ],
+              "q1_ns": 42182.087871287134,
+              "q3_ns": 45854.219059405936,
+              "raw_window_ns": [
+                10229000,
+                9758667,
+                8701333,
+                8471875,
+                9247792,
+                8930333,
+                9306833,
+                8729375,
+                8394916,
+                8421792,
+                8537084,
+                9135542
+              ]
+            }
+          },
+          "torch-pad-288-slice-copy": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.748448942848427e-05,
+              "max_relative_error_with_atol_floor": 0.00598221193865041,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 192,
+              "iqr_ns": 2699.1106770833358,
+              "iqr_over_median": 0.05222648163491713,
+              "median_ns": 51680.8828125,
+              "per_call_ns": [
+                54794.703125,
+                55299.692708333336,
+                52266.494791666664,
+                53525.609375,
+                51589.84375,
+                50095.270833333336,
+                51771.921875,
+                48477.651041666664,
+                49242.838541666664,
+                50732.421875,
+                48710.067708333336,
+                51847.21875
+              ],
+              "q1_ns": 49882.162760416664,
+              "q3_ns": 52581.2734375,
+              "raw_window_ns": [
+                10520583,
+                10617541,
+                10035167,
+                10276917,
+                9905250,
+                9618292,
+                9940209,
+                9307709,
+                9454625,
+                9740625,
+                9352333,
+                9954666
+              ]
+            }
+          },
+          "truncated-256-negative-control": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 52.73291862838637,
+              "max_relative_error_with_atol_floor": 2216.703732095742,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  257,
+                  257
+                ],
+                "stride": [
+                  257,
+                  1
+                ]
+              },
+              "passed": false,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 324,
+              "iqr_ns": 525.3356481481496,
+              "iqr_over_median": 0.01722303031836182,
+              "median_ns": 30501.92901234568,
+              "per_call_ns": [
+                30771.864197530864,
+                30268.132716049382,
+                31009.132716049382,
+                29986.11111111111,
+                30931.197530864196,
+                30533.564814814814,
+                30292.438271604937,
+                31078.703703703704,
+                30382.203703703704,
+                30736.11111111111,
+                30123.716049382718,
+                30470.293209876545
+              ],
+              "q1_ns": 30286.361882716046,
+              "q3_ns": 30811.697530864196,
+              "raw_window_ns": [
+                9970084,
+                9806875,
+                10046959,
+                9715500,
+                10021708,
+                9892875,
+                9814750,
+                10069500,
+                9843834,
+                9958500,
+                9760084,
+                9872375
+              ]
+            }
+          }
+        }
+      },
+      "captured_at": "2026-08-07T11:03:33.482179+00:00",
+      "integration": {
+        "input": {
+          "dtype": "float32",
+          "layout": "C-contiguous inputs and output",
+          "seed": 20260808,
+          "semantic": "standalone C=A@B versus wrapper C=copy(copy(A@B))",
+          "shape_mkn": [
+            256,
+            256,
+            256
+          ],
+          "threads": 1
+        },
+        "measurement_contract": {
+          "candidate_order": [
+            [
+              "operator-plus-copy-twice",
+              "copy-twice",
+              "operator"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "copy-twice",
+              "operator-plus-copy-twice",
+              "operator"
+            ],
+            [
+              "copy-twice",
+              "operator",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "operator-plus-copy-twice",
+              "copy-twice"
+            ],
+            [
+              "copy-twice",
+              "operator",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator",
+              "copy-twice",
+              "operator-plus-copy-twice"
+            ],
+            [
+              "operator-plus-copy-twice",
+              "operator",
+              "copy-twice"
+            ]
+          ],
+          "completion_boundary": "CPU call return; synchronous completion",
+          "instrumentation": "baseline timing lane; no profiler in timed region",
+          "target_window_ns": 10000000,
+          "timer": "time.perf_counter_ns",
+          "warmup_iterations": 10,
+          "windows": 12
+        },
+        "measurements": {
+          "copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "oracle_interpretation": "copy ablation preserves a previously computed output",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 1000,
+              "iqr_ns": 545.8535000000011,
+              "iqr_over_median": 0.059997499433250785,
+              "median_ns": 9097.9375,
+              "per_call_ns": [
+                8703.792,
+                8414.417,
+                9200.875,
+                9132.458,
+                8566.042,
+                9067.833,
+                8655.542,
+                9502.917,
+                9255.166,
+                9182.916,
+                9128.042,
+                8599.583
+              ],
+              "q1_ns": 8641.552249999999,
+              "q3_ns": 9187.40575,
+              "raw_window_ns": [
+                8703792,
+                8414417,
+                9200875,
+                9132458,
+                8566042,
+                9067833,
+                8655542,
+                9502917,
+                9255166,
+                9182916,
+                9128042,
+                8599583
+              ]
+            }
+          },
+          "operator": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 416,
+              "iqr_ns": 185.34615384615608,
+              "iqr_over_median": 0.007655725107996315,
+              "median_ns": 24210.13701923077,
+              "per_call_ns": [
+                24145.935096153848,
+                23817.408653846152,
+                24252.403846153848,
+                24215.545673076922,
+                24271.134615384617,
+                24058.09375,
+                24456.028846153848,
+                23729.96875,
+                24117.28846153846,
+                24337.939903846152,
+                24774.939903846152,
+                24204.728365384617
+              ],
+              "q1_ns": 24102.489783653844,
+              "q3_ns": 24287.8359375,
+              "raw_window_ns": [
+                10044709,
+                9908042,
+                10089000,
+                10073667,
+                10096792,
+                10008167,
+                10173708,
+                9871667,
+                10032792,
+                10124583,
+                10306375,
+                10069167
+              ]
+            }
+          },
+          "operator-plus-copy-twice": {
+            "correctness": {
+              "atol": 0.0001,
+              "max_abs_error": 4.574374800370151e-05,
+              "max_relative_error_with_atol_floor": 0.006716521892505708,
+              "oracle": "numpy-fp64-matmul",
+              "output_layout": {
+                "contiguous": true,
+                "dtype": "torch.float32",
+                "shape": [
+                  256,
+                  256
+                ],
+                "stride": [
+                  256,
+                  1
+                ]
+              },
+              "passed": true,
+              "rtol": 0.0001
+            },
+            "summary": {
+              "inner_iterations": 311,
+              "iqr_ns": 764.536173633438,
+              "iqr_over_median": 0.022940464919950478,
+              "median_ns": 33326.96945337621,
+              "per_call_ns": [
+                32192.254019292606,
+                34684.887459807076,
+                33604.771704180064,
+                33579.31511254019,
+                32967.845659163984,
+                34537.112540192924,
+                32665.996784565916,
+                32872.85852090032,
+                33316.45337620579,
+                32230.038585209004,
+                33337.485530546626,
+                33386.2540192926
+              ],
+              "q1_ns": 32821.14308681672,
+              "q3_ns": 33585.67926045016,
+              "raw_window_ns": [
+                10011791,
+                10787000,
+                10451084,
+                10443167,
+                10253000,
+                10741042,
+                10159125,
+                10223459,
+                10361417,
+                10023542,
+                10367958,
+                10383125
+              ]
+            }
+          }
+        }
+      },
+      "process_id": 35393,
+      "runtime": {
+        "executable": "/Users/Zhuanz/work/github/GroundUpScale/.venv/bin/python",
+        "machine": "arm64",
+        "numpy": "2.4.6",
+        "platform": "macOS-15.7.4-arm64-arm-64bit",
+        "python": "3.11.15",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "VECLIB_MAXIMUM_THREADS": "1"
+        },
+        "torch": "2.13.0",
+        "torch_num_interop_threads": 1,
+        "torch_num_threads": 1
+      },
+      "session_id": 3
+    }
+  ]
+}
