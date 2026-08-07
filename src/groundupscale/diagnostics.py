@@ -39,6 +39,12 @@ PERFORMANCE_DIAGNOSIS_VERDICTS = (
     "confirmed_bug",
 )
 _FRONTIER_MINIMUM_INDEPENDENT_SESSIONS = 3
+_DIRECT_DEFECT_GATE_IDS = {
+    "correctness_oracle_violation": "direct-correctness-violation",
+    "execution_contract_violation": (
+        "direct-execution-contract-violation"
+    ),
+}
 
 _INPUT_KEYS = (
     "resolved_configuration",
@@ -1878,6 +1884,218 @@ def _diagnostic_supporting_artifact_matches(
     return content == {"schema": schema, "payload": payload}
 
 
+def _direct_diagnostic_artifact_matches(
+    verified_artifacts: dict[str, object], value: object
+) -> bool:
+    return isinstance(value, dict) and (
+        _diagnostic_supporting_artifact_matches(
+            verified_artifacts,
+            value.get("evidence_ref"),
+            {
+                key: item
+                for key, item in value.items()
+                if key != "evidence_ref"
+            },
+        )
+    )
+
+
+def _direct_defect_evidence(
+    value: object,
+    *,
+    candidates: list[dict[str, Any]],
+    contract: dict[str, Any],
+    verified_artifacts: dict[str, object],
+) -> dict[str, Any] | None:
+    """Qualify direct, replayable evidence independently of performance."""
+    if not isinstance(value, dict):
+        return None
+    input_summary = value.get("input_summary")
+    identity = value.get("candidate_identity")
+    environment = value.get("environment")
+    failure = value.get("failure")
+    repetitions = value.get("repetitions")
+    supporting_refs = value.get("supporting_evidence_refs")
+    targets = [
+        candidate
+        for candidate in candidates
+        if candidate.get("candidate_id") == value.get("target_candidate_id")
+        and candidate.get("role") == "target"
+    ]
+    if len(targets) != 1:
+        return None
+    target = targets[0]
+    implementation = target["implementation_family"]
+
+    input_sha256 = (
+        input_summary.get("input_sha256")
+        if isinstance(input_summary, dict)
+        else None
+    )
+    target_sessions = target["session_process_ids"]
+    kind = value.get("defect_kind")
+    common_valid = (
+        value.get("schema")
+        == "groundupscale.dev/direct-defect-evidence/v1alpha1"
+        and kind
+        in _DIRECT_DEFECT_GATE_IDS
+        and _artifact_uri(value.get("evidence_ref"))
+        and _diagnostic_supporting_artifact_matches(
+            verified_artifacts,
+            value.get("evidence_ref"),
+            {
+                key: nested
+                for key, nested in value.items()
+                if key != "evidence_ref"
+            },
+        )
+        and isinstance(supporting_refs, list)
+        and bool(supporting_refs)
+        and all(_artifact_uri(ref) for ref in supporting_refs)
+        and isinstance(input_summary, dict)
+        and isinstance(input_sha256, str)
+        and fullmatch(r"[0-9a-f]{64}", input_sha256) is not None
+        and input_summary.get("shape") == contract["shape"]
+        and input_summary.get("dtype") == contract["dtype"]
+        and input_summary.get("layout") == contract["layout"]
+        and input_summary.get("strides") == contract["strides"]
+        and input_summary.get("alignment_bytes")
+        == contract["alignment_bytes"]
+        and _direct_diagnostic_artifact_matches(
+            verified_artifacts, input_summary
+        )
+        and identity
+        == {
+            "candidate_id": target["candidate_id"],
+            "family_id": implementation["family_id"],
+            "family_version": implementation["version"],
+            "implementation_ref": implementation["implementation_ref"],
+            "implementation_sha256": implementation[
+                "implementation_sha256"
+            ],
+            "source_identity": implementation["source_identity"],
+        }
+        and environment
+        == {
+            "cohort_id": contract["cohort_id"],
+            "cohort_identity": contract["cohort_identity"],
+            "preflight": contract["environment"],
+        }
+        and isinstance(failure, dict)
+        and _direct_diagnostic_artifact_matches(verified_artifacts, failure)
+        and isinstance(repetitions, list)
+        and len(repetitions) >= _FRONTIER_MINIMUM_INDEPENDENT_SESSIONS
+        and len(repetitions) == len(target_sessions)
+        and all(
+            _direct_diagnostic_artifact_matches(
+                verified_artifacts, repetition
+            )
+            for repetition in repetitions
+        )
+    )
+    if not common_valid:
+        return None
+
+    expected_sha256 = failure.get("expected_sha256")
+    observed_sha256 = failure.get("observed_sha256")
+    correctness_failure_valid = (
+        kind == "correctness_oracle_violation"
+        and supporting_refs == [target["correctness"]["evidence_ref"]]
+        and target["correctness"]["passed"] is False
+        and failure.get("failure_kind") == "correctness_difference"
+        and failure.get("oracle")
+        == contract["correctness_policy"]["oracle"]
+        and isinstance(expected_sha256, str)
+        and fullmatch(r"[0-9a-f]{64}", expected_sha256) is not None
+        and isinstance(observed_sha256, str)
+        and fullmatch(r"[0-9a-f]{64}", observed_sha256) is not None
+        and expected_sha256 != observed_sha256
+        and _finite_number(failure.get("max_abs_difference"))
+        and float(failure["max_abs_difference"]) > 0
+        and isinstance(failure.get("mismatched_elements"), int)
+        and not isinstance(failure["mismatched_elements"], bool)
+        and failure["mismatched_elements"] > 0
+    )
+
+    contract_field = failure.get("contract_field")
+    allowed_contract_fields = {
+        "threads",
+        "alignment_bytes",
+        "dtype",
+        "layout",
+        "completion_boundary.kind",
+        "completion_boundary.closed",
+        "completion_boundary.threadpool_joined",
+        "execution_domain.execution_mode",
+        "execution_domain.affinity",
+        "execution_domain.numa",
+        "execution_domain.context",
+        "execution_domain.stream",
+        "execution_domain.concurrency",
+    }
+    expected_contract_value: object = contract
+    if isinstance(contract_field, str):
+        for segment in contract_field.split("."):
+            expected_contract_value = (
+                expected_contract_value.get(segment)
+                if isinstance(expected_contract_value, dict)
+                else None
+            )
+    contract_failure_valid = (
+        kind == "execution_contract_violation"
+        and supporting_refs == [failure["evidence_ref"]]
+        and failure.get("failure_kind") == "execution_contract_violation"
+        and contract_field in allowed_contract_fields
+        and failure.get("expected") == expected_contract_value
+        and failure.get("observed") != expected_contract_value
+    )
+    if not correctness_failure_valid and not contract_failure_valid:
+        return None
+    repeated_sessions = {
+        repetition.get("session_id"): repetition
+        for repetition in repetitions
+        if isinstance(repetition, dict)
+    }
+    if (
+        len(repeated_sessions) != len(repetitions)
+        or set(repeated_sessions) != set(target_sessions)
+        or len(
+            {
+                repetition.get("process_id")
+                for repetition in repetitions
+                if isinstance(repetition, dict)
+            }
+        )
+        < _FRONTIER_MINIMUM_INDEPENDENT_SESSIONS
+        or not all(
+            repetition.get("process_id")
+            == target_sessions[repetition.get("session_id")]
+            and repetition.get("input_sha256") == input_sha256
+            and repetition.get("outcome") == "violation"
+            for repetition in repetitions
+            if isinstance(repetition, dict)
+        )
+    ):
+        return None
+    return {
+        **value,
+        "evidence_refs": list(
+            dict.fromkeys(
+                [
+                    value["evidence_ref"],
+                    *supporting_refs,
+                    input_summary["evidence_ref"],
+                    failure["evidence_ref"],
+                    *[
+                        repetition["evidence_ref"]
+                        for repetition in repetitions
+                    ],
+                ]
+            )
+        ),
+    }
+
+
 def _integration_evidence_artifacts_valid(
     evidence: object,
     *,
@@ -1889,19 +2107,6 @@ def _integration_evidence_artifacts_valid(
         target_candidate, dict
     ) or not isinstance(measurement_lanes, dict):
         return False
-
-    def direct(value: object) -> bool:
-        return isinstance(value, dict) and (
-            _diagnostic_supporting_artifact_matches(
-                verified_artifacts,
-                value.get("evidence_ref"),
-                {
-                    key: item
-                    for key, item in value.items()
-                    if key != "evidence_ref"
-                },
-            )
-        )
 
     def plural(value: object) -> bool:
         if not isinstance(value, dict):
@@ -1929,11 +2134,21 @@ def _integration_evidence_artifacts_valid(
         correctness = value.get("correctness")
         sessions = value.get("sessions")
         return (
-            direct(value)
-            and (correctness is None or direct(correctness))
+            _direct_diagnostic_artifact_matches(verified_artifacts, value)
+            and (
+                correctness is None
+                or _direct_diagnostic_artifact_matches(
+                    verified_artifacts, correctness
+                )
+            )
             and (
                 not isinstance(sessions, list)
-                or all(direct(session) for session in sessions)
+                or all(
+                    _direct_diagnostic_artifact_matches(
+                        verified_artifacts, session
+                    )
+                    for session in sessions
+                )
             )
         )
 
@@ -1947,12 +2162,23 @@ def _integration_evidence_artifacts_valid(
     counterfactual = evidence.get("counterfactual")
     return (
         plural(evidence)
-        and direct(target_correctness)
-        and direct(baseline_lane)
-        and direct(diagnostic_lane)
+        and _direct_diagnostic_artifact_matches(
+            verified_artifacts, target_correctness
+        )
+        and _direct_diagnostic_artifact_matches(
+            verified_artifacts, baseline_lane
+        )
+        and _direct_diagnostic_artifact_matches(
+            verified_artifacts, diagnostic_lane
+        )
         and (
             not isinstance(target_sessions, list)
-            or all(direct(session) for session in target_sessions)
+            or all(
+                _direct_diagnostic_artifact_matches(
+                    verified_artifacts, session
+                )
+                for session in target_sessions
+            )
         )
         and measurement(wrapped)
         and (
@@ -2506,6 +2732,16 @@ def _shape_disambiguation_probes(
                         "evidence_ref": correctness["evidence_ref"],
                     },
                     "eligible_for_best_of_correct": eligible_for_best,
+                    "excluded_evidence_roles": (
+                        []
+                        if eligible_for_best
+                        else [
+                            "best_of_correct",
+                            "frontier_anchor",
+                            "surface_winner",
+                            "headroom_evidence",
+                        ]
+                    ),
                     "exclusion_reason": exclusion_reason,
                     "aggregate_latency_ns": normalized_sessions[
                         "aggregate_latency_ns"
@@ -2530,12 +2766,37 @@ def _shape_disambiguation_probes(
                     ],
                 }
             )
+        direct_defect_value = probe.get("direct_defect_evidence")
+        direct_defect = _direct_defect_evidence(
+            direct_defect_value,
+            candidates=candidate_evaluations,
+            contract=contract,
+            verified_artifacts=verified_artifacts,
+        )
+        if direct_defect is not None:
+            defective_target = next(
+                candidate
+                for candidate in candidate_evaluations
+                if candidate["candidate_id"]
+                == direct_defect["target_candidate_id"]
+            )
+            defective_target["eligible_for_best_of_correct"] = False
+            defective_target["excluded_evidence_roles"] = [
+                "best_of_correct",
+                "frontier_anchor",
+                "surface_winner",
+                "headroom_evidence",
+            ]
+            if defective_target["exclusion_reason"] is None:
+                defective_target["exclusion_reason"] = (
+                    "execution-contract-failed"
+                )
         eligible = [
             candidate
             for candidate in candidate_evaluations
             if candidate["eligible_for_best_of_correct"]
         ]
-        if malformed_candidate or not eligible:
+        if malformed_candidate or (not eligible and direct_defect is None):
             results.append(
                 {
                     **result_prefix,
@@ -2548,12 +2809,16 @@ def _shape_disambiguation_probes(
                 }
             )
             continue
-        winner = min(
-            eligible,
-            key=lambda candidate: (
-                float(candidate["aggregate_latency_ns"]),
-                candidate["candidate_id"],
-            ),
+        winner = (
+            min(
+                eligible,
+                key=lambda candidate: (
+                    float(candidate["aggregate_latency_ns"]),
+                    candidate["candidate_id"],
+                ),
+            )
+            if eligible
+            else None
         )
         complete_probe = {
             **result_prefix,
@@ -2566,13 +2831,14 @@ def _shape_disambiguation_probes(
             ],
             "candidate_evaluations": candidate_evaluations,
             "measurement_lanes": measurement_lanes,
-            "best_of_correct": {
+            "counterexamples": counterexamples,
+        }
+        if winner is not None:
+            complete_probe["best_of_correct"] = {
                 "candidate_id": winner["candidate_id"],
                 "aggregate_latency_ns": winner["aggregate_latency_ns"],
                 "session_ids": winner["session_ids"],
-            },
-            "counterexamples": counterexamples,
-        }
+            }
         if "integration_overhead_evidence" in probe:
             complete_probe["integration_overhead_evidence"] = probe[
                 "integration_overhead_evidence"
@@ -2587,6 +2853,13 @@ def _shape_disambiguation_probes(
             complete_probe["frontier_shift_evidence"] = (
                 frontier_shift_evidence
             )
+        if direct_defect is not None:
+            complete_probe["direct_defect_evidence"] = direct_defect
+        elif direct_defect_value is not None:
+            complete_probe["direct_defect_rejection"] = {
+                "reason_code": "invalid-or-nonqualifying-direct-evidence",
+                "evidence_refs": sorted(_artifact_refs(direct_defect_value)),
+            }
         results.append(complete_probe)
     represented_paths = {
         result["stable_path"]
@@ -3508,6 +3781,52 @@ def _fail_closed_performance_verdict(
     }
 
 
+def _with_direct_defect_gate_context(
+    result: dict[str, Any],
+    *,
+    probe: dict[str, Any],
+    candidates: list[dict[str, Any]],
+) -> dict[str, Any]:
+    rejection = probe.get("direct_defect_rejection")
+    if isinstance(rejection, dict):
+        result["gates"]["failed"].append(
+            {
+                "gate_id": "direct-defect-evidence-qualified",
+                "reason_code": rejection["reason_code"],
+                "evidence_refs": rejection["evidence_refs"],
+            }
+        )
+        reason_code = "direct-defect-prerequisites-failed"
+        evidence_refs = rejection["evidence_refs"]
+    else:
+        reason_code = "direct-defect-evidence-not-provided"
+        evidence_refs = []
+    result["gates"]["not_evaluated"].insert(
+        max(len(result["gates"]["not_evaluated"]) - 1, 0),
+        {
+            "gate_id": "confirmed-bug",
+            "reason_code": reason_code,
+            "evidence_refs": evidence_refs,
+        },
+    )
+    known_candidates = {
+        counterexample.get("candidate_id")
+        for counterexample in result["counterexamples"]
+        if isinstance(counterexample, dict)
+    }
+    result["counterexamples"].extend(
+        {
+            "candidate_id": candidate["candidate_id"],
+            "reason_code": candidate["exclusion_reason"],
+            "evidence_refs": candidate["evidence_refs"],
+        }
+        for candidate in candidates
+        if candidate["exclusion_reason"] is not None
+        and candidate["candidate_id"] not in known_candidates
+    )
+    return result
+
+
 def _derive_frontier_shift_gates(
     frontier_evidence: dict[str, Any],
     *,
@@ -4150,15 +4469,115 @@ def _performance_diagnosis_verdicts(
             if candidate["role"] == "alternative"
             and candidate["eligible_for_best_of_correct"]
         ]
+        direct_defect = probe.get("direct_defect_evidence")
+        if isinstance(direct_defect, dict):
+            target = next(
+                candidate
+                for candidate in candidates
+                if candidate["candidate_id"]
+                == direct_defect["target_candidate_id"]
+            )
+            direct_refs = direct_defect["evidence_refs"]
+            verdicts.append(
+                {
+                    "stable_path": stable_path,
+                    "status": "decided",
+                    "verdict": "confirmed_bug",
+                    "probe_id": probe["probe_id"],
+                    "direct_defect_evidence": direct_defect,
+                    "gates": {
+                        "satisfied": [
+                            {
+                                "gate_id": "diagnostic-trigger-met",
+                                "evidence_refs": [bundle_ref],
+                            },
+                            {
+                                "gate_id": "exact-shape-contract-locked",
+                                "evidence_refs": probe["evidence_refs"],
+                            },
+                            {
+                                "gate_id": _DIRECT_DEFECT_GATE_IDS[
+                                    direct_defect["defect_kind"]
+                                ],
+                                "evidence_refs": direct_refs,
+                            },
+                            {
+                                "gate_id": "defect-reproduced-independently",
+                                "evidence_refs": [
+                                    repetition["evidence_ref"]
+                                    for repetition in direct_defect[
+                                        "repetitions"
+                                    ]
+                                ],
+                            },
+                            {
+                                "gate_id": (
+                                    "defective-target-excluded-from-"
+                                    "best-of-correct"
+                                ),
+                                "evidence_refs": target["evidence_refs"],
+                            },
+                        ],
+                        "failed": [],
+                        "not_evaluated": [
+                            {
+                                "gate_id": "implementation-headroom",
+                                "reason_code": "confirmed-direct-defect",
+                                "evidence_refs": direct_refs,
+                            },
+                            {
+                                "gate_id": "integration-overhead",
+                                "reason_code": "confirmed-direct-defect",
+                                "evidence_refs": direct_refs,
+                            },
+                            {
+                                "gate_id": "frontier-shift",
+                                "reason_code": "confirmed-direct-defect",
+                                "evidence_refs": direct_refs,
+                            },
+                            {
+                                "gate_id": "suspected-regression",
+                                "reason_code": "policy-undefined",
+                                "evidence_refs": [bundle_ref],
+                            },
+                        ],
+                    },
+                    "bundle_refs": list(
+                        dict.fromkeys(
+                            [
+                                bundle_ref,
+                                *probe["evidence_refs"],
+                                *direct_refs,
+                            ]
+                        )
+                    ),
+                    "counterexamples": [
+                        {
+                            "candidate_id": candidate["candidate_id"],
+                            "reason_code": candidate["exclusion_reason"],
+                            "evidence_refs": candidate["evidence_refs"],
+                        }
+                        for candidate in candidates
+                        if candidate["exclusion_reason"] is not None
+                    ],
+                }
+            )
+            continue
         if len(targets) != 1:
             verdicts.append(
-                _fail_closed_performance_verdict(
-                    stable_path=stable_path,
-                    run_id=run_id,
-                    probe_id=probe["probe_id"],
-                    failed_gate_id="single-correct-eligible-target",
-                    reason_code="expected-exactly-one-correct-eligible-target",
-                    evidence_refs=probe["evidence_refs"],
+                _with_direct_defect_gate_context(
+                    _fail_closed_performance_verdict(
+                        stable_path=stable_path,
+                        run_id=run_id,
+                        probe_id=probe["probe_id"],
+                        failed_gate_id="single-correct-eligible-target",
+                        reason_code=(
+                            "expected-exactly-one-correct-eligible-target"
+                        ),
+                        evidence_refs=probe["evidence_refs"],
+                    ),
+                    probe=probe,
+                    candidates=candidates,
                 )
             )
             continue
@@ -4288,13 +4707,19 @@ def _performance_diagnosis_verdicts(
             continue
         if not alternatives:
             verdicts.append(
-                _fail_closed_performance_verdict(
-                    stable_path=stable_path,
-                    run_id=run_id,
-                    probe_id=probe["probe_id"],
-                    failed_gate_id="correct-eligible-alternative-present",
-                    reason_code="no-correct-eligible-alternative",
-                    evidence_refs=probe["evidence_refs"],
+                _with_direct_defect_gate_context(
+                    _fail_closed_performance_verdict(
+                        stable_path=stable_path,
+                        run_id=run_id,
+                        probe_id=probe["probe_id"],
+                        failed_gate_id=(
+                            "correct-eligible-alternative-present"
+                        ),
+                        reason_code="no-correct-eligible-alternative",
+                        evidence_refs=probe["evidence_refs"],
+                    ),
+                    probe=probe,
+                    candidates=candidates,
                 )
             )
             continue
@@ -4451,6 +4876,15 @@ def _performance_diagnosis_verdicts(
             },
         ]
         failed = []
+        direct_rejection = probe.get("direct_defect_rejection")
+        if isinstance(direct_rejection, dict):
+            failed.append(
+                {
+                    "gate_id": "direct-defect-evidence-qualified",
+                    "reason_code": direct_rejection["reason_code"],
+                    "evidence_refs": direct_rejection["evidence_refs"],
+                }
+            )
         if reproducible_faster:
             satisfied.append(
                 {
@@ -4528,7 +4962,21 @@ def _performance_diagnosis_verdicts(
             for candidate in candidates
             if candidate["exclusion_reason"] is not None
         ]
-        not_evaluated = []
+        not_evaluated = [
+            {
+                "gate_id": "confirmed-bug",
+                "reason_code": (
+                    "direct-defect-prerequisites-failed"
+                    if isinstance(direct_rejection, dict)
+                    else "direct-defect-evidence-not-provided"
+                ),
+                "evidence_refs": (
+                    direct_rejection["evidence_refs"]
+                    if isinstance(direct_rejection, dict)
+                    else []
+                ),
+            }
+        ]
         if frontier_gate_failed:
             not_evaluated.append(
                 {
@@ -6673,6 +7121,32 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
         lines.append(
             "counterexamples: " + (rendered_counterexamples or "none")
         )
+        direct_defect = verdict.get("direct_defect_evidence")
+        if isinstance(direct_defect, dict):
+            input_summary = direct_defect["input_summary"]
+            candidate_identity = direct_defect["candidate_identity"]
+            failure = direct_defect["failure"]
+            lines.append(
+                f"direct defect: {direct_defect['defect_kind']}; "
+                f"candidate={candidate_identity['candidate_id']}; "
+                f"input-sha256={input_summary['input_sha256']}"
+            )
+            lines.append(
+                f"direct failure: {failure['failure_kind']}; "
+                f"evidence={failure['evidence_ref']}"
+            )
+            lines.append(
+                "direct environment: cohort="
+                f"{direct_defect['environment']['cohort_id']}"
+            )
+            lines.append(
+                "direct repetitions: "
+                + ", ".join(
+                    f"{repetition['session_id']}@{repetition['process_id']}="
+                    f"{repetition['outcome']}"
+                    for repetition in direct_defect["repetitions"]
+                )
+            )
         metrics = verdict.get("metrics")
         if (
             verdict.get("verdict") == "integration_overhead"

@@ -418,6 +418,86 @@ def _rewrite_artifact_field(
     write_json(manifest_path, manifest)
 
 
+def _issue21_headroom_fixture() -> dict[str, object]:
+    return json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-context-matmul-headroom.json"
+        ).read_text(encoding="utf-8")
+    )
+
+
+def _issue23_correctness_bug_probe(
+    fixture: dict[str, object],
+) -> dict[str, object]:
+    probe = deepcopy(fixture["shape_disambiguation_probes"][0])
+    target = probe["candidates"][0]
+    target["correctness"]["passed"] = False
+    target["correctness"]["records"] = [
+        {"expected": 1.0, "observed": 1.25}
+    ]
+    contract = probe["locked_contract"]
+    implementation = target["implementation_family"]
+    input_sha256 = "a" * 64
+    probe["direct_defect_evidence"] = {
+        "schema": "groundupscale.dev/direct-defect-evidence/v1alpha1",
+        "defect_kind": "correctness_oracle_violation",
+        "target_candidate_id": target["candidate_id"],
+        "input_summary": {
+            "input_sha256": input_sha256,
+            "shape": deepcopy(contract["shape"]),
+            "dtype": contract["dtype"],
+            "layout": contract["layout"],
+            "strides": deepcopy(contract["strides"]),
+            "alignment_bytes": contract["alignment_bytes"],
+            "evidence_ref": "artifact://issue-23/input-summary",
+        },
+        "candidate_identity": {
+            "candidate_id": target["candidate_id"],
+            "family_id": implementation["family_id"],
+            "family_version": implementation["version"],
+            "implementation_ref": implementation["implementation_ref"],
+            "implementation_sha256": implementation["implementation_sha256"],
+            "source_identity": (
+                f"issue-6/a5a04f9c/{target['candidate_id']}"
+            ),
+        },
+        "environment": {
+            "cohort_id": contract["cohort_id"],
+            "cohort_identity": deepcopy(contract["cohort_identity"]),
+            "preflight": deepcopy(contract["environment"]),
+        },
+        "failure": {
+            "failure_kind": "correctness_difference",
+            "oracle": contract["correctness_policy"]["oracle"],
+            "expected_sha256": "b" * 64,
+            "observed_sha256": "c" * 64,
+            "max_abs_difference": 0.25,
+            "mismatched_elements": 1,
+            "evidence_ref": "artifact://issue-23/correctness-difference",
+        },
+        "repetitions": [
+            {
+                "session_id": session["session_id"],
+                "process_id": session["process_id"],
+                "input_sha256": input_sha256,
+                "outcome": "violation",
+                "evidence_ref": (
+                    "artifact://issue-23/correctness-repeat-"
+                    f"{index}"
+                ),
+            }
+            for index, session in enumerate(target["sessions"], start=1)
+        ],
+        "evidence_ref": "artifact://issue-23/direct-defect",
+        "supporting_evidence_refs": [
+            target["correctness"]["evidence_ref"],
+        ],
+    }
+    return probe
+
+
 def _issue22_probe(fixture: dict[str, object]) -> dict[str, object]:
     base_fixture = json.loads(
         (
@@ -542,6 +622,330 @@ def _issue22_probe(fixture: dict[str, object]) -> dict[str, object]:
         "artifact://issue-6/integration-overhead-probe"
     ]
     return probe
+
+
+def test_reproducible_direct_correctness_violation_confirms_bug(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+    evaluated_probe = result["shape_disambiguation_probes"][0]
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "confirmed_bug"
+    assert verdict["status"] == "decided"
+    assert evaluated_probe["best_of_correct"]["candidate_id"] == (
+        "batched-matmul"
+    )
+    target = next(
+        candidate
+        for candidate in evaluated_probe["candidate_evaluations"]
+        if candidate["candidate_id"] == "legacy-einsum"
+    )
+    assert target["eligible_for_best_of_correct"] is False
+    assert target["excluded_evidence_roles"] == [
+        "best_of_correct",
+        "frontier_anchor",
+        "surface_winner",
+        "headroom_evidence",
+    ]
+    assert target["exclusion_reason"] == "correctness-failed"
+    direct = verdict["direct_defect_evidence"]
+    assert direct["defect_kind"] == "correctness_oracle_violation"
+    assert direct["input_summary"]["input_sha256"] == "a" * 64
+    assert direct["failure"]["evidence_ref"] == (
+        "artifact://issue-23/correctness-difference"
+    )
+    assert direct["candidate_identity"]["candidate_id"] == "legacy-einsum"
+    assert direct["environment"]["cohort_id"] == (
+        probe["locked_contract"]["cohort_id"]
+    )
+    assert [item["outcome"] for item in direct["repetitions"]] == [
+        "violation",
+        "violation",
+        "violation",
+    ]
+
+
+def test_reproducible_explicit_execution_contract_violation_confirms_bug(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    probe["candidates"][0]["correctness"] = deepcopy(
+        fixture["shape_disambiguation_probes"][0]["candidates"][0][
+            "correctness"
+        ]
+    )
+    direct = probe["direct_defect_evidence"]
+    direct["defect_kind"] = "execution_contract_violation"
+    direct["supporting_evidence_refs"] = [
+        "artifact://issue-23/completion-boundary-violation"
+    ]
+    direct["failure"] = {
+        "failure_kind": "execution_contract_violation",
+        "contract_field": "completion_boundary.threadpool_joined",
+        "expected": True,
+        "observed": False,
+        "evidence_ref": (
+            "artifact://issue-23/completion-boundary-violation"
+        ),
+    }
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+    evaluated_probe = result["shape_disambiguation_probes"][0]
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "confirmed_bug"
+    assert verdict["direct_defect_evidence"]["failure"] == direct["failure"]
+    assert evaluated_probe["best_of_correct"]["candidate_id"] == (
+        "batched-matmul"
+    )
+    evaluated_target = next(
+        candidate
+        for candidate in evaluated_probe["candidate_evaluations"]
+        if candidate["candidate_id"] == direct["target_candidate_id"]
+    )
+    assert evaluated_target["eligible_for_best_of_correct"] is False
+    assert evaluated_target["exclusion_reason"] == (
+        "execution-contract-failed"
+    )
+    assert "direct-execution-contract-violation" in {
+        gate["gate_id"] for gate in verdict["gates"]["satisfied"]
+    }
+
+
+def test_only_reproducibly_defective_target_still_confirms_bug(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    target = probe["candidates"][0]
+    probe["candidates"] = [target]
+    probe["locked_contract"]["candidate_ids"] = [target["candidate_id"]]
+    probe["measurement_lanes"]["baseline"]["candidate_ids"] = [
+        target["candidate_id"]
+    ]
+    probe["measurement_lanes"]["diagnostic"]["candidate_ids"] = [
+        target["candidate_id"]
+    ]
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+    evaluated_probe = result["shape_disambiguation_probes"][0]
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert evaluated_probe["status"] == "complete"
+    assert "best_of_correct" not in evaluated_probe
+    assert verdict["verdict"] == "confirmed_bug"
+
+
+@pytest.mark.parametrize(
+    ("non_defect_kind", "expected_gate_state"),
+    [
+        (None, "not_evaluated"),
+        ("proxy_anomaly", "failed"),
+        ("trace_residual", "failed"),
+    ],
+)
+def test_performance_only_signals_never_confirm_bug(
+    tmp_path: Path,
+    non_defect_kind: str | None,
+    expected_gate_state: str,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    if non_defect_kind is None:
+        probe = deepcopy(fixture["shape_disambiguation_probes"][0])
+    else:
+        probe = _issue23_correctness_bug_probe(fixture)
+        probe["candidates"][0]["correctness"] = deepcopy(
+            fixture["shape_disambiguation_probes"][0]["candidates"][0][
+                "correctness"
+            ]
+        )
+        probe["direct_defect_evidence"]["defect_kind"] = non_defect_kind
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "implementation_headroom"
+    assert verdict["verdict"] != "confirmed_bug"
+    if expected_gate_state == "failed":
+        assert "direct-defect-evidence-qualified" in {
+            gate["gate_id"] for gate in verdict["gates"]["failed"]
+        }
+    else:
+        assert {
+            "gate_id": "confirmed-bug",
+            "reason_code": "direct-defect-evidence-not-provided",
+            "evidence_refs": [],
+        } in verdict["gates"]["not_evaluated"]
+
+
+def test_single_direct_failure_observation_cannot_confirm_bug(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    probe["direct_defect_evidence"]["repetitions"] = [
+        probe["direct_defect_evidence"]["repetitions"][0]
+    ]
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert "direct-defect-evidence-qualified" in {
+        gate["gate_id"] for gate in verdict["gates"]["failed"]
+    }
+    assert result["shape_disambiguation_probes"][0][
+        "direct_defect_rejection"
+    ]["reason_code"] == "invalid-or-nonqualifying-direct-evidence"
+
+
+def test_incorrect_faster_alternative_is_not_best_or_headroom_evidence(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = deepcopy(fixture["shape_disambiguation_probes"][0])
+    target = probe["candidates"][0]
+    incorrect = probe["candidates"][2]
+    incorrect["role"] = "alternative"
+    probe["candidates"] = [target, incorrect]
+    candidate_ids = [target["candidate_id"], incorrect["candidate_id"]]
+    probe["locked_contract"]["candidate_ids"] = candidate_ids
+    probe["measurement_lanes"]["baseline"]["candidate_ids"] = candidate_ids
+    probe["measurement_lanes"]["diagnostic"]["candidate_ids"] = candidate_ids
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+    evaluated_probe = result["shape_disambiguation_probes"][0]
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert evaluated_probe["best_of_correct"]["candidate_id"] == (
+        target["candidate_id"]
+    )
+    evaluated_incorrect = next(
+        candidate
+        for candidate in evaluated_probe["candidate_evaluations"]
+        if candidate["candidate_id"] == incorrect["candidate_id"]
+    )
+    assert evaluated_incorrect["eligible_for_best_of_correct"] is False
+    assert evaluated_incorrect["excluded_evidence_roles"] == [
+        "best_of_correct",
+        "frontier_anchor",
+        "surface_winner",
+        "headroom_evidence",
+    ]
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert verdict["metrics"] == {}
+    assert {
+        "candidate_id": incorrect["candidate_id"],
+        "reason_code": "correctness-failed",
+        "evidence_refs": [
+            incorrect["correctness"]["evidence_ref"],
+            incorrect["sessions"][0]["evidence_ref"],
+        ],
+    } in verdict["counterexamples"]
+    assert {
+        "gate_id": "confirmed-bug",
+        "reason_code": "direct-defect-evidence-not-provided",
+        "evidence_refs": [],
+    } in verdict["gates"]["not_evaluated"]
+
+
+def test_confirmed_bug_report_drills_down_to_direct_evidence_and_gates(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    report = render_diagnostic_report(diagnose_run_bundle(run))
+
+    assert "confirmed_bug" in report
+    assert (
+        "direct defect: correctness_oracle_violation; "
+        "candidate=legacy-einsum; input-sha256=" + "a" * 64
+    ) in report
+    assert (
+        "direct failure: correctness_difference; "
+        "evidence=artifact://issue-23/correctness-difference"
+    ) in report
+    assert (
+        "direct repetitions: session-1@37175=violation, "
+        "session-2@37179=violation, session-3@37188=violation"
+    ) in report
+    assert "satisfied gates: " in report
+    assert "failed gates: none" in report
+    assert "not_evaluated gates: " in report
+
+
+def test_tampered_direct_failure_artifact_cannot_confirm_bug(
+    tmp_path: Path,
+) -> None:
+    fixture = _issue21_headroom_fixture()
+    probe = _issue23_correctness_bug_probe(fixture)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=[probe],
+        verdict_policy=fixture["verdict_policy"],
+    )
+    _rewrite_artifact_field(
+        run,
+        "artifact://issue-23/correctness-difference",
+        "payload.max_abs_difference",
+        0.0,
+    )
+
+    result = diagnose_run_bundle(run)
+    verdict = result["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert "direct-defect-evidence-qualified" in {
+        gate["gate_id"] for gate in verdict["gates"]["failed"]
+    }
 
 
 def test_issue6_paired_ablation_produces_conserved_integration_overhead(
@@ -1431,6 +1835,11 @@ def test_issue6_257_cube_c1_and_neighbourhood_gap_is_insufficient_evidence(
     ]
     assert verdict["gates"]["not_evaluated"] == [
         {
+            "gate_id": "confirmed-bug",
+            "reason_code": "direct-defect-evidence-not-provided",
+            "evidence_refs": [],
+        },
+        {
             "gate_id": "frontier-shift",
             "reason_code": "prerequisites-failed",
                 "evidence_refs": [
@@ -1509,7 +1918,11 @@ def test_report_projects_trigger_probe_verdict_gates_refs_and_counterexamples(
     ) in report
     assert "satisfied gates:" in report
     assert "failed gates: none" in report
-    assert "not_evaluated gates: suspected-regression(policy-undefined)" in report
+    assert (
+        "not_evaluated gates: "
+        "confirmed-bug(direct-defect-evidence-not-provided), "
+        "suspected-regression(policy-undefined)"
+    ) in report
     assert (
         "bundle refs: run-bundle://issue-21-diagnostic, "
         "artifact://issue-6/context-matmul-probe"
