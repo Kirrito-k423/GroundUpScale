@@ -1,0 +1,3538 @@
+{
+  "schema": "groundupscale.dev/schedule-frontier-input/v1alpha1",
+  "fixture": {
+    "source_issue": "#7",
+    "classification": [
+      "aggregated",
+      "prototype-only",
+      "untrusted"
+    ],
+    "promotion_eligible": false,
+    "real_hardware_claim": null
+  },
+  "qualification": {
+    "baseline_timing_lane": "not-provided",
+    "preflight": "not-provided",
+    "operator_frontier_anchors": "not-provided"
+  },
+  "axes": {
+    "resource_physical_floor": {
+      "fixture_duration_ns": 5553976,
+      "evidence_refs": [
+        "fixture://issue-7/resource-floor"
+      ]
+    },
+    "operator_achievable_frontier": {
+      "fixture_duration_ns": 51632000,
+      "aggregation": {
+        "kind": "aggregate-critical-path",
+        "node_count": 24
+      },
+      "evidence_refs": [
+        "fixture://issue-7/operator-aggregate"
+      ]
+    },
+    "schedule_achievable_frontier": {
+      "fixture_duration_ns": 53232000,
+      "evidence_refs": [
+        "fixture://issue-7/schedule"
+      ]
+    },
+    "observation": {
+      "fixture_duration_ns": 92814479,
+      "evidence_refs": [
+        "fixture://issue-7/observation"
+      ]
+    }
+  },
+  "schedule_policy": {
+    "policy_id": "fixture://issue-20/explicit-schedule-policy",
+    "version": "1",
+    "schedule": "dependency-only"
+  },
+  "schedule_frontier": {
+    "frontier_id": "fixture://issue-20/two-layer-transformer-frontier",
+    "version": "1",
+    "uncertainty": {
+      "status": "unknown",
+      "reason_code": "prototype-only-untrusted-fixture",
+      "evidence_refs": [
+        "fixture://issue-7/uncertainty-unavailable"
+      ]
+    },
+    "evidence_refs": [
+      "fixture://issue-7/schedule-frontier-input"
+    ]
+  },
+  "implementation_candidates": [
+    {
+      "candidate_id": "dispatch-1",
+      "role": "schedule-overhead",
+      "resource_claims": [
+        {
+          "claim_id": "dispatch-1-host",
+          "resource_id": "host.dispatch",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 800000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "host.dispatch"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/dispatch-1-host"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "dispatch-1-host"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/dispatch-1"
+      ]
+    },
+    {
+      "candidate_id": "op-01",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-01-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-01-compute"
+            ]
+          }
+        },
+        {
+          "claim_id": "op-01-memory",
+          "resource_id": "memory.dram",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 1000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "memory.dram"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-01-memory"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "explicit-overlap",
+        "claim_ids": [
+          "op-01-compute",
+          "op-01-memory"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-01"
+      ]
+    },
+    {
+      "candidate_id": "op-02",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-02-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-02-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-02-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-02"
+      ]
+    },
+    {
+      "candidate_id": "op-03",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-03-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-03-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-03-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-03"
+      ]
+    },
+    {
+      "candidate_id": "op-04",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-04-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-04-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-04-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-04"
+      ]
+    },
+    {
+      "candidate_id": "op-05",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-05-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-05-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-05-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-05"
+      ]
+    },
+    {
+      "candidate_id": "op-06",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-06-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-06-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-06-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-06"
+      ]
+    },
+    {
+      "candidate_id": "op-07",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-07-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-07-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-07-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-07"
+      ]
+    },
+    {
+      "candidate_id": "op-08",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-08-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-08-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-08-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-08"
+      ]
+    },
+    {
+      "candidate_id": "op-09",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-09-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-09-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-09-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-09"
+      ]
+    },
+    {
+      "candidate_id": "op-10",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-10-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-10-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-10-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-10"
+      ]
+    },
+    {
+      "candidate_id": "op-11",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-11-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-11-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-11-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-11"
+      ]
+    },
+    {
+      "candidate_id": "op-12",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-12-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-12-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-12-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-12"
+      ]
+    },
+    {
+      "candidate_id": "dispatch-2",
+      "role": "schedule-overhead",
+      "resource_claims": [
+        {
+          "claim_id": "dispatch-2-host",
+          "resource_id": "host.dispatch",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 800000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "host.dispatch"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/dispatch-2-host"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "dispatch-2-host"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/dispatch-2"
+      ]
+    },
+    {
+      "candidate_id": "op-13",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-13-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-13-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-13-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-13"
+      ]
+    },
+    {
+      "candidate_id": "op-14",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-14-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-14-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-14-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-14"
+      ]
+    },
+    {
+      "candidate_id": "op-15",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-15-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-15-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-15-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-15"
+      ]
+    },
+    {
+      "candidate_id": "op-16",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-16-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-16-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-16-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-16"
+      ]
+    },
+    {
+      "candidate_id": "op-17",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-17-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-17-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-17-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-17"
+      ]
+    },
+    {
+      "candidate_id": "op-18",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-18-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-18-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-18-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-18"
+      ]
+    },
+    {
+      "candidate_id": "op-19",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-19-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-19-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-19-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-19"
+      ]
+    },
+    {
+      "candidate_id": "op-20",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-20-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-20-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-20-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-20"
+      ]
+    },
+    {
+      "candidate_id": "op-21",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-21-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-21-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-21-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-21"
+      ]
+    },
+    {
+      "candidate_id": "op-22",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-22-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-22-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-22-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-22"
+      ]
+    },
+    {
+      "candidate_id": "op-23",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-23-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-23-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-23-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-23"
+      ]
+    },
+    {
+      "candidate_id": "op-24",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-24-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 5632000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-24-compute"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "identity",
+        "claim_ids": [
+          "op-24-compute"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-24"
+      ]
+    },
+    {
+      "candidate_id": "op-01-alternative",
+      "role": "operator",
+      "resource_claims": [
+        {
+          "claim_id": "op-01-alternative-compute",
+          "resource_id": "compute.fp32",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 2000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "compute.fp32"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-01-alternative-claim"
+            ]
+          }
+        },
+        {
+          "claim_id": "op-01-alternative-memory",
+          "resource_id": "memory.dram",
+          "kind": "throughput",
+          "work_or_amount": {
+            "value": 1,
+            "unit": "synthetic-work-unit"
+          },
+          "duration_ns": 1000000,
+          "allocation_bounds": {
+            "minimum": 1.0,
+            "maximum": 1.0,
+            "unit": "normalized-share"
+          },
+          "sharing": "declared-shared-throughput",
+          "lifetime": {
+            "start": "event-start",
+            "end": "event-end"
+          },
+          "affinity": {
+            "kind": "resource-id",
+            "value": "memory.dram"
+          },
+          "provenance": {
+            "evidence_refs": [
+              "fixture://issue-7/op-01-alternative-claim"
+            ]
+          }
+        }
+      ],
+      "resource_composition": {
+        "kind": "explicit-overlap",
+        "claim_ids": [
+          "op-01-alternative-compute",
+          "op-01-alternative-memory"
+        ]
+      },
+      "evidence_refs": [
+        "fixture://issue-7/op-01-alternative"
+      ]
+    }
+  ],
+  "execution_ir": {
+    "execution_ir_id": "fixture://issue-20/two-layer-transformer-execution-ir",
+    "schema": "groundupscale.dev/execution-ir/v1alpha1",
+    "state": "unscheduled",
+    "evidence_refs": [
+      "fixture://issue-7/planner-selection"
+    ],
+    "physical_events": [
+      {
+        "event_id": "dispatch-1",
+        "candidate": {
+          "candidate_id": "dispatch-1",
+          "role": "schedule-overhead",
+          "resource_claims": [
+            {
+              "claim_id": "dispatch-1-host",
+              "resource_id": "host.dispatch",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 800000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "host.dispatch"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/dispatch-1-host"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "dispatch-1-host"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/dispatch-1"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/dispatch-1-selection"
+        ]
+      },
+      {
+        "event_id": "op-01",
+        "candidate": {
+          "candidate_id": "op-01",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-01-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-01-compute"
+                ]
+              }
+            },
+            {
+              "claim_id": "op-01-memory",
+              "resource_id": "memory.dram",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 1000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "memory.dram"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-01-memory"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "explicit-overlap",
+            "claim_ids": [
+              "op-01-compute",
+              "op-01-memory"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-01"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-01-selection"
+        ]
+      },
+      {
+        "event_id": "op-02",
+        "candidate": {
+          "candidate_id": "op-02",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-02-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-02-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-02-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-02"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-02-selection"
+        ]
+      },
+      {
+        "event_id": "op-03",
+        "candidate": {
+          "candidate_id": "op-03",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-03-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-03-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-03-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-03"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-03-selection"
+        ]
+      },
+      {
+        "event_id": "op-04",
+        "candidate": {
+          "candidate_id": "op-04",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-04-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-04-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-04-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-04"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-04-selection"
+        ]
+      },
+      {
+        "event_id": "op-05",
+        "candidate": {
+          "candidate_id": "op-05",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-05-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-05-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-05-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-05"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-05-selection"
+        ]
+      },
+      {
+        "event_id": "op-06",
+        "candidate": {
+          "candidate_id": "op-06",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-06-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-06-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-06-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-06"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-06-selection"
+        ]
+      },
+      {
+        "event_id": "op-07",
+        "candidate": {
+          "candidate_id": "op-07",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-07-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-07-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-07-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-07"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-07-selection"
+        ]
+      },
+      {
+        "event_id": "op-08",
+        "candidate": {
+          "candidate_id": "op-08",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-08-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-08-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-08-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-08"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-08-selection"
+        ]
+      },
+      {
+        "event_id": "op-09",
+        "candidate": {
+          "candidate_id": "op-09",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-09-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-09-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-09-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-09"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-09-selection"
+        ]
+      },
+      {
+        "event_id": "op-10",
+        "candidate": {
+          "candidate_id": "op-10",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-10-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-10-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-10-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-10"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-10-selection"
+        ]
+      },
+      {
+        "event_id": "op-11",
+        "candidate": {
+          "candidate_id": "op-11",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-11-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-11-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-11-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-11"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-11-selection"
+        ]
+      },
+      {
+        "event_id": "op-12",
+        "candidate": {
+          "candidate_id": "op-12",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-12-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-12-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-12-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-12"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-12-selection"
+        ]
+      },
+      {
+        "event_id": "dispatch-2",
+        "candidate": {
+          "candidate_id": "dispatch-2",
+          "role": "schedule-overhead",
+          "resource_claims": [
+            {
+              "claim_id": "dispatch-2-host",
+              "resource_id": "host.dispatch",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 800000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "host.dispatch"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/dispatch-2-host"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "dispatch-2-host"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/dispatch-2"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/dispatch-2-selection"
+        ]
+      },
+      {
+        "event_id": "op-13",
+        "candidate": {
+          "candidate_id": "op-13",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-13-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-13-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-13-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-13"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-13-selection"
+        ]
+      },
+      {
+        "event_id": "op-14",
+        "candidate": {
+          "candidate_id": "op-14",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-14-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-14-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-14-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-14"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-14-selection"
+        ]
+      },
+      {
+        "event_id": "op-15",
+        "candidate": {
+          "candidate_id": "op-15",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-15-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-15-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-15-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-15"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-15-selection"
+        ]
+      },
+      {
+        "event_id": "op-16",
+        "candidate": {
+          "candidate_id": "op-16",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-16-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-16-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-16-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-16"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-16-selection"
+        ]
+      },
+      {
+        "event_id": "op-17",
+        "candidate": {
+          "candidate_id": "op-17",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-17-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-17-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-17-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-17"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-17-selection"
+        ]
+      },
+      {
+        "event_id": "op-18",
+        "candidate": {
+          "candidate_id": "op-18",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-18-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-18-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-18-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-18"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-18-selection"
+        ]
+      },
+      {
+        "event_id": "op-19",
+        "candidate": {
+          "candidate_id": "op-19",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-19-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-19-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-19-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-19"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-19-selection"
+        ]
+      },
+      {
+        "event_id": "op-20",
+        "candidate": {
+          "candidate_id": "op-20",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-20-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-20-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-20-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-20"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-20-selection"
+        ]
+      },
+      {
+        "event_id": "op-21",
+        "candidate": {
+          "candidate_id": "op-21",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-21-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-21-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-21-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-21"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-21-selection"
+        ]
+      },
+      {
+        "event_id": "op-22",
+        "candidate": {
+          "candidate_id": "op-22",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-22-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-22-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-22-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-22"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-22-selection"
+        ]
+      },
+      {
+        "event_id": "op-23",
+        "candidate": {
+          "candidate_id": "op-23",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-23-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 2000000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-23-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-23-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-23"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-23-selection"
+        ]
+      },
+      {
+        "event_id": "op-24",
+        "candidate": {
+          "candidate_id": "op-24",
+          "role": "operator",
+          "resource_claims": [
+            {
+              "claim_id": "op-24-compute",
+              "resource_id": "compute.fp32",
+              "kind": "throughput",
+              "work_or_amount": {
+                "value": 1,
+                "unit": "synthetic-work-unit"
+              },
+              "duration_ns": 5632000,
+              "allocation_bounds": {
+                "minimum": 1.0,
+                "maximum": 1.0,
+                "unit": "normalized-share"
+              },
+              "sharing": "declared-shared-throughput",
+              "lifetime": {
+                "start": "event-start",
+                "end": "event-end"
+              },
+              "affinity": {
+                "kind": "resource-id",
+                "value": "compute.fp32"
+              },
+              "provenance": {
+                "evidence_refs": [
+                  "fixture://issue-7/op-24-compute"
+                ]
+              }
+            }
+          ],
+          "resource_composition": {
+            "kind": "identity",
+            "claim_ids": [
+              "op-24-compute"
+            ]
+          },
+          "evidence_refs": [
+            "fixture://issue-7/op-24"
+          ]
+        },
+        "duration_model": {
+          "kind": "candidate-local-resource-composition"
+        },
+        "evidence_refs": [
+          "fixture://issue-7/op-24-selection"
+        ]
+      }
+    ],
+    "rejected_candidates": [
+      {
+        "candidate_id": "op-01-alternative",
+        "reason_code": "not-selected-by-planner",
+        "evidence_refs": [
+          "fixture://issue-7/op-01-alternative-rejection"
+        ]
+      }
+    ],
+    "semantic_dependencies": [
+      {
+        "edge_id": "semantic-op-01-op-02",
+        "source": "op-01",
+        "target": "op-02",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-01-op-02"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-02-op-03",
+        "source": "op-02",
+        "target": "op-03",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-02-op-03"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-03-op-04",
+        "source": "op-03",
+        "target": "op-04",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-03-op-04"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-04-op-05",
+        "source": "op-04",
+        "target": "op-05",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-04-op-05"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-05-op-06",
+        "source": "op-05",
+        "target": "op-06",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-05-op-06"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-07-op-08",
+        "source": "op-07",
+        "target": "op-08",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-07-op-08"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-08-op-09",
+        "source": "op-08",
+        "target": "op-09",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-08-op-09"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-09-op-10",
+        "source": "op-09",
+        "target": "op-10",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-09-op-10"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-10-op-11",
+        "source": "op-10",
+        "target": "op-11",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-10-op-11"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-11-op-12",
+        "source": "op-11",
+        "target": "op-12",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-11-op-12"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-13-op-14",
+        "source": "op-13",
+        "target": "op-14",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-13-op-14"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-14-op-15",
+        "source": "op-14",
+        "target": "op-15",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-14-op-15"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-15-op-16",
+        "source": "op-15",
+        "target": "op-16",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-15-op-16"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-16-op-17",
+        "source": "op-16",
+        "target": "op-17",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-16-op-17"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-17-op-18",
+        "source": "op-17",
+        "target": "op-18",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-17-op-18"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-18-op-19",
+        "source": "op-18",
+        "target": "op-19",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-18-op-19"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-19-op-20",
+        "source": "op-19",
+        "target": "op-20",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-19-op-20"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-20-op-21",
+        "source": "op-20",
+        "target": "op-21",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-20-op-21"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-21-op-22",
+        "source": "op-21",
+        "target": "op-22",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-21-op-22"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-22-op-23",
+        "source": "op-22",
+        "target": "op-23",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-22-op-23"
+        ]
+      },
+      {
+        "edge_id": "semantic-op-23-op-24",
+        "source": "op-23",
+        "target": "op-24",
+        "kind": "semantic-data",
+        "evidence_refs": [
+          "fixture://issue-7/semantic-op-23-op-24"
+        ]
+      }
+    ],
+    "execution_dependencies": [
+      {
+        "edge_id": "order-dispatch-1-op-01",
+        "source": "dispatch-1",
+        "target": "op-01",
+        "kind": "execution-order",
+        "evidence_refs": [
+          "fixture://issue-7/order-dispatch-1-op-01"
+        ]
+      },
+      {
+        "edge_id": "order-op-12-dispatch-2",
+        "source": "op-12",
+        "target": "dispatch-2",
+        "kind": "execution-order",
+        "evidence_refs": [
+          "fixture://issue-7/order-op-12-dispatch-2"
+        ]
+      },
+      {
+        "edge_id": "order-dispatch-2-op-13",
+        "source": "dispatch-2",
+        "target": "op-13",
+        "kind": "execution-order",
+        "evidence_refs": [
+          "fixture://issue-7/order-dispatch-2-op-13"
+        ]
+      },
+      {
+        "edge_id": "resource-dispatch-1-dispatch-2",
+        "source": "dispatch-1",
+        "target": "dispatch-2",
+        "kind": "execution-resource",
+        "resource_id": "host.dispatch",
+        "evidence_refs": [
+          "fixture://issue-7/resource-dispatch-1-dispatch-2"
+        ]
+      },
+      {
+        "edge_id": "resource-op-01-op-02",
+        "source": "op-01",
+        "target": "op-02",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-01-op-02"
+        ]
+      },
+      {
+        "edge_id": "resource-op-02-op-03",
+        "source": "op-02",
+        "target": "op-03",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-02-op-03"
+        ]
+      },
+      {
+        "edge_id": "resource-op-03-op-04",
+        "source": "op-03",
+        "target": "op-04",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-03-op-04"
+        ]
+      },
+      {
+        "edge_id": "resource-op-04-op-05",
+        "source": "op-04",
+        "target": "op-05",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-04-op-05"
+        ]
+      },
+      {
+        "edge_id": "resource-op-05-op-06",
+        "source": "op-05",
+        "target": "op-06",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-05-op-06"
+        ]
+      },
+      {
+        "edge_id": "resource-op-06-op-07",
+        "source": "op-06",
+        "target": "op-07",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-06-op-07"
+        ]
+      },
+      {
+        "edge_id": "resource-op-07-op-08",
+        "source": "op-07",
+        "target": "op-08",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-07-op-08"
+        ]
+      },
+      {
+        "edge_id": "resource-op-08-op-09",
+        "source": "op-08",
+        "target": "op-09",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-08-op-09"
+        ]
+      },
+      {
+        "edge_id": "resource-op-09-op-10",
+        "source": "op-09",
+        "target": "op-10",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-09-op-10"
+        ]
+      },
+      {
+        "edge_id": "resource-op-10-op-11",
+        "source": "op-10",
+        "target": "op-11",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-10-op-11"
+        ]
+      },
+      {
+        "edge_id": "resource-op-11-op-12",
+        "source": "op-11",
+        "target": "op-12",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-11-op-12"
+        ]
+      },
+      {
+        "edge_id": "resource-op-12-op-13",
+        "source": "op-12",
+        "target": "op-13",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-12-op-13"
+        ]
+      },
+      {
+        "edge_id": "resource-op-13-op-14",
+        "source": "op-13",
+        "target": "op-14",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-13-op-14"
+        ]
+      },
+      {
+        "edge_id": "resource-op-14-op-15",
+        "source": "op-14",
+        "target": "op-15",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-14-op-15"
+        ]
+      },
+      {
+        "edge_id": "resource-op-15-op-16",
+        "source": "op-15",
+        "target": "op-16",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-15-op-16"
+        ]
+      },
+      {
+        "edge_id": "resource-op-16-op-17",
+        "source": "op-16",
+        "target": "op-17",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-16-op-17"
+        ]
+      },
+      {
+        "edge_id": "resource-op-17-op-18",
+        "source": "op-17",
+        "target": "op-18",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-17-op-18"
+        ]
+      },
+      {
+        "edge_id": "resource-op-18-op-19",
+        "source": "op-18",
+        "target": "op-19",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-18-op-19"
+        ]
+      },
+      {
+        "edge_id": "resource-op-19-op-20",
+        "source": "op-19",
+        "target": "op-20",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-19-op-20"
+        ]
+      },
+      {
+        "edge_id": "resource-op-20-op-21",
+        "source": "op-20",
+        "target": "op-21",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-20-op-21"
+        ]
+      },
+      {
+        "edge_id": "resource-op-21-op-22",
+        "source": "op-21",
+        "target": "op-22",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-21-op-22"
+        ]
+      },
+      {
+        "edge_id": "resource-op-22-op-23",
+        "source": "op-22",
+        "target": "op-23",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-22-op-23"
+        ]
+      },
+      {
+        "edge_id": "resource-op-23-op-24",
+        "source": "op-23",
+        "target": "op-24",
+        "kind": "execution-resource",
+        "resource_id": "compute.fp32",
+        "evidence_refs": [
+          "fixture://issue-7/resource-op-23-op-24"
+        ]
+      }
+    ],
+    "concurrency_groups": []
+  },
+  "ledger": {
+    "e2e_duration_ns": 92814479,
+    "leaf_semantics": "mutually-exclusive",
+    "parents": [
+      {
+        "span_id": "e2e",
+        "kind": "e2e",
+        "additive": false,
+        "child_parent_ids": [
+          "layer-1",
+          "layer-2"
+        ],
+        "leaf_ids": []
+      },
+      {
+        "span_id": "layer-1",
+        "kind": "module",
+        "additive": false,
+        "child_parent_ids": [],
+        "leaf_ids": [
+          "dispatch-leaf-1",
+          "op-leaf-01",
+          "op-leaf-02",
+          "op-leaf-03",
+          "op-leaf-04",
+          "op-leaf-05",
+          "op-leaf-06",
+          "op-leaf-07",
+          "op-leaf-08",
+          "op-leaf-09",
+          "op-leaf-10",
+          "op-leaf-11",
+          "op-leaf-12",
+          "wait-leaf-1"
+        ]
+      },
+      {
+        "span_id": "layer-2",
+        "kind": "module",
+        "additive": false,
+        "child_parent_ids": [],
+        "leaf_ids": [
+          "dispatch-leaf-2",
+          "op-leaf-13",
+          "op-leaf-14",
+          "op-leaf-15",
+          "op-leaf-16",
+          "op-leaf-17",
+          "op-leaf-18",
+          "op-leaf-19",
+          "op-leaf-20",
+          "op-leaf-21",
+          "op-leaf-22",
+          "op-leaf-23",
+          "op-leaf-24",
+          "wait-leaf-2"
+        ]
+      }
+    ],
+    "leaves": [
+      {
+        "leaf_id": "dispatch-leaf-1",
+        "kind": "dispatch",
+        "duration_ns": 6000000,
+        "evidence_refs": [
+          "fixture://issue-7/dispatch-leaf-1"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-01",
+        "kind": "operation",
+        "candidate_id": "op-01",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-01"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-02",
+        "kind": "operation",
+        "candidate_id": "op-02",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-02"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-03",
+        "kind": "operation",
+        "candidate_id": "op-03",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-03"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-04",
+        "kind": "operation",
+        "candidate_id": "op-04",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-04"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-05",
+        "kind": "operation",
+        "candidate_id": "op-05",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-05"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-06",
+        "kind": "operation",
+        "candidate_id": "op-06",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-06"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-07",
+        "kind": "operation",
+        "candidate_id": "op-07",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-07"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-08",
+        "kind": "operation",
+        "candidate_id": "op-08",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-08"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-09",
+        "kind": "operation",
+        "candidate_id": "op-09",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-09"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-10",
+        "kind": "operation",
+        "candidate_id": "op-10",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-10"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-11",
+        "kind": "operation",
+        "candidate_id": "op-11",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-11"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-12",
+        "kind": "operation",
+        "candidate_id": "op-12",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-12"
+        ]
+      },
+      {
+        "leaf_id": "wait-leaf-1",
+        "kind": "schedule-wait",
+        "duration_ns": 5000000,
+        "evidence_refs": [
+          "fixture://issue-7/wait-leaf-1"
+        ]
+      },
+      {
+        "leaf_id": "dispatch-leaf-2",
+        "kind": "dispatch",
+        "duration_ns": 6000000,
+        "evidence_refs": [
+          "fixture://issue-7/dispatch-leaf-2"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-13",
+        "kind": "operation",
+        "candidate_id": "op-13",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-13"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-14",
+        "kind": "operation",
+        "candidate_id": "op-14",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-14"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-15",
+        "kind": "operation",
+        "candidate_id": "op-15",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-15"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-16",
+        "kind": "operation",
+        "candidate_id": "op-16",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-16"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-17",
+        "kind": "operation",
+        "candidate_id": "op-17",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-17"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-18",
+        "kind": "operation",
+        "candidate_id": "op-18",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-18"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-19",
+        "kind": "operation",
+        "candidate_id": "op-19",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-19"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-20",
+        "kind": "operation",
+        "candidate_id": "op-20",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-20"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-21",
+        "kind": "operation",
+        "candidate_id": "op-21",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-21"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-22",
+        "kind": "operation",
+        "candidate_id": "op-22",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-22"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-23",
+        "kind": "operation",
+        "candidate_id": "op-23",
+        "duration_ns": 2000000,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-23"
+        ]
+      },
+      {
+        "leaf_id": "op-leaf-24",
+        "kind": "operation",
+        "candidate_id": "op-24",
+        "duration_ns": 5100746,
+        "evidence_refs": [
+          "fixture://issue-7/op-leaf-24"
+        ]
+      },
+      {
+        "leaf_id": "wait-leaf-2",
+        "kind": "schedule-wait",
+        "duration_ns": 5000000,
+        "evidence_refs": [
+          "fixture://issue-7/wait-leaf-2"
+        ]
+      }
+    ],
+    "residual": {
+      "residual_id": "unattributed-residual",
+      "kind": "unattributed",
+      "duration_ns": 19713733,
+      "evidence_refs": [
+        "fixture://issue-7/unattributed-residual"
+      ]
+    }
+  },
+  "transformations": [
+    {
+      "transformation_id": "batched-dispatch-counterfactual",
+      "kind": "batched-dispatch",
+      "version": "1",
+      "removed_leaf_ids": [
+        "dispatch-leaf-1",
+        "dispatch-leaf-2"
+      ],
+      "declared_recovered_ns": 12000000,
+      "evidence_refs": [
+        "fixture://issue-7/batched-dispatch-counterfactual"
+      ]
+    }
+  ]
+}
