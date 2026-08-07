@@ -5,10 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
-from math import hypot, isfinite
+from math import hypot, isclose, isfinite
 from pathlib import Path
+from re import fullmatch
 from statistics import median
 from typing import Any
+from unicodedata import normalize
 
 from groundupscale.measurement_contract import (
     CohortPolicy,
@@ -28,6 +30,15 @@ DIAGNOSTIC_EVIDENCE_SCHEMA = (
 DIAGNOSTIC_RESULT_SCHEMA = (
     "groundupscale.dev/diagnostic-result/v1alpha1"
 )
+PERFORMANCE_DIAGNOSIS_VERDICTS = (
+    "frontier_shift",
+    "implementation_headroom",
+    "integration_overhead",
+    "suspected_regression",
+    "insufficient_evidence",
+    "confirmed_bug",
+)
+_FRONTIER_MINIMUM_INDEPENDENT_SESSIONS = 3
 
 _INPUT_KEYS = (
     "resolved_configuration",
@@ -92,6 +103,69 @@ def _canonical_digest(value: object) -> str:
     return sha256(payload).hexdigest()
 
 
+def _exact_versioned_identity(
+    value: object,
+    *,
+    allow_not_applicable: bool = False,
+) -> bool:
+    """Reject cohort identities that cannot be reproduced exactly."""
+    return (
+        isinstance(value, dict)
+        and _resolved_identity_string(value.get("name"))
+        and _resolved_identity_string(value.get("version"))
+        and (
+            value.get("status") == "resolved"
+            or (
+                allow_not_applicable
+                and value.get("status") == "not_applicable"
+            )
+        )
+        and fullmatch(
+            r"v?\d+(?:[._+-][0-9A-Za-z]+)*", value["version"]
+        )
+        is not None
+    )
+
+
+def _exact_version_text(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and not any(
+            token in value.casefold()
+            for token in ("unknown", "unspecified", "latest", "unversioned")
+        )
+        and fullmatch(r"v?\d+(?:[._+-][0-9A-Za-z]+)*", value) is not None
+    )
+
+
+def _raw_correctness_passed(
+    records: object, tolerance: object
+) -> bool | None:
+    if (
+        not isinstance(records, list)
+        or not records
+        or not isinstance(tolerance, dict)
+        or not _finite_number(tolerance.get("atol"))
+        or not _finite_number(tolerance.get("rtol"))
+        or float(tolerance["atol"]) < 0
+        or float(tolerance["rtol"]) < 0
+    ):
+        return None
+    if not all(
+        isinstance(record, dict)
+        and _finite_number(record.get("expected"))
+        and _finite_number(record.get("observed"))
+        for record in records
+    ):
+        return None
+    return all(
+        abs(float(record["observed"]) - float(record["expected"]))
+        <= float(tolerance["atol"])
+        + float(tolerance["rtol"]) * abs(float(record["expected"]))
+        for record in records
+    )
+
+
 def _unknown(reason_code: str) -> dict[str, Any]:
     return {
         "status": "unknown",
@@ -101,7 +175,55 @@ def _unknown(reason_code: str) -> dict[str, Any]:
 
 
 def _nonempty_string(value: object) -> bool:
-    return isinstance(value, str) and bool(value)
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and value == value.strip()
+        and value == normalize("NFC", value)
+        and all(character.isprintable() for character in value)
+    )
+
+
+def _known_identity_string(value: object) -> bool:
+    return (
+        _nonempty_string(value)
+        and not any(
+            token in value.casefold()
+            for token in ("unknown", "unspecified", "unversioned", "latest")
+        )
+        and all(
+            segment not in {"", ".", ".."}
+            for segment in value.split("/")
+        )
+    )
+
+
+def _canonical_identifier(value: object) -> bool:
+    return (
+        _resolved_identity_string(value)
+        and fullmatch(r"[a-z0-9][a-z0-9._+-]*", value) is not None
+        and value not in {".", ".."}
+    )
+
+
+def _canonical_source_identity(value: object) -> bool:
+    if not _known_identity_string(value) or value != value.casefold():
+        return False
+    segments = value.split("/")
+    return len(segments) >= 2 and all(
+        _canonical_identifier(segment) for segment in segments
+    )
+
+
+def _canonical_stable_path(value: object) -> bool:
+    return _canonical_source_identity(value)
+
+
+def _resolved_identity_string(value: object) -> bool:
+    return (
+        _known_identity_string(value)
+        and value.casefold() not in {"n/a", "na", "none", "not_applicable"}
+    )
 
 
 def _finite_number(value: object) -> bool:
@@ -174,7 +296,7 @@ def _versioned_policy(
     if not isinstance(policy, dict):
         return None
     if not all(
-        _nonempty_string(policy.get(key))
+        _resolved_identity_string(policy.get(key))
         for key in (
             "policy_id",
             "version",
@@ -776,6 +898,2441 @@ def _comparisons(axes: dict[str, dict[str, Any]]) -> dict[str, Any]:
             ),
         },
     }
+
+
+def _diagnostic_trigger(document: dict[str, Any]) -> dict[str, Any] | None:
+    trigger_input = document.get("diagnostic_trigger_input")
+    if not isinstance(trigger_input, dict):
+        return None
+    policy = trigger_input.get("policy")
+    e2e_observation_ns = trigger_input.get("e2e_observation_ns")
+    items = trigger_input.get("items")
+    if (
+        not isinstance(policy, dict)
+        or not all(
+            _resolved_identity_string(policy.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+        or not _exact_version_text(policy.get("version"))
+        or not _finite_number(e2e_observation_ns)
+        or float(e2e_observation_ns) <= 0
+        or not isinstance(items, list)
+    ):
+        return _unknown("invalid-diagnostic-trigger-input")
+
+    normalized: list[dict[str, Any]] = []
+    paths: set[str] = set()
+    for item in items:
+        if not isinstance(item, dict):
+            return _unknown("invalid-diagnostic-trigger-item")
+        stable_path = item.get("stable_path")
+        values = (
+            item.get("predicted_ns"),
+            item.get("observed_ns"),
+            item.get("combined_uncertainty_ns"),
+        )
+        if (
+            not _canonical_stable_path(stable_path)
+            or stable_path in paths
+            or not all(_finite_number(value) for value in values)
+            or any(float(value) < 0 for value in values)
+        ):
+            return _unknown("invalid-diagnostic-trigger-item")
+        paths.add(stable_path)
+        normalized.append(
+            {
+                "stable_path": stable_path,
+                "predicted_ns": item["predicted_ns"],
+                "observed_ns": item["observed_ns"],
+                "combined_uncertainty_ns": item[
+                    "combined_uncertainty_ns"
+                ],
+            }
+        )
+
+    def ranked(metric: str) -> list[dict[str, Any]]:
+        return [
+            {
+                "stable_path": item["stable_path"],
+                "value_ns": item[metric],
+                "rank": rank,
+            }
+            for rank, item in enumerate(
+                sorted(
+                    normalized,
+                    key=lambda item: (
+                        -float(item[metric]),
+                        item["stable_path"],
+                    ),
+                )[:10],
+                start=1,
+            )
+        ]
+
+    predicted_top10 = ranked("predicted_ns")
+    observed_top10 = ranked("observed_ns")
+    predicted_paths = {item["stable_path"] for item in predicted_top10}
+    observed_paths = {item["stable_path"] for item in observed_top10}
+    union_paths = predicted_paths | observed_paths
+    top10_union = [
+        {
+            "stable_path": item["stable_path"],
+            "predicted_top10": item["stable_path"] in predicted_paths,
+            "observed_top10": item["stable_path"] in observed_paths,
+        }
+        for item in normalized
+        if item["stable_path"] in union_paths
+    ]
+    e2e_tenth_ns = float(e2e_observation_ns) / 10.0
+    evaluated = []
+    for item in normalized:
+        gap_ns = abs(
+            float(item["observed_ns"]) - float(item["predicted_ns"])
+        )
+        uncertainty_exceeded = gap_ns > float(
+            item["combined_uncertainty_ns"]
+        )
+        materiality = {
+            "predicted_top10": item["stable_path"] in predicted_paths,
+            "observed_top10": item["stable_path"] in observed_paths,
+            "gap_exceeds_e2e_tenth": gap_ns > e2e_tenth_ns,
+        }
+        triggered = uncertainty_exceeded and any(materiality.values())
+        reason_code = "triggered"
+        if not uncertainty_exceeded:
+            reason_code = "gap-within-combined-uncertainty"
+        elif not any(materiality.values()):
+            reason_code = "gap-not-material"
+        evaluated.append(
+            {
+                **item,
+                "absolute_gap_ns": gap_ns,
+                "uncertainty_exceeded": uncertainty_exceeded,
+                "materiality": materiality,
+                "triggered": triggered,
+                "reason_code": reason_code,
+            }
+        )
+    return {
+        "status": "evaluated",
+        "policy": {
+            key: policy[key]
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        },
+        "e2e_observation_ns": e2e_observation_ns,
+        "e2e_tenth_ns": e2e_tenth_ns,
+        "predicted_top10": predicted_top10,
+        "observed_top10": observed_top10,
+        "top10_union": top10_union,
+        "evaluated": evaluated,
+        "triggered": [item for item in evaluated if item["triggered"]],
+    }
+
+
+def _locked_probe_contract_valid(
+    contract: object,
+    *,
+    cohort_id: object,
+    hardware: object,
+    execution_domain: object,
+) -> bool:
+    if not isinstance(contract, dict):
+        return False
+    shape = contract.get("shape")
+    strides = contract.get("strides")
+    candidate_ids = contract.get("candidate_ids")
+    environment = contract.get("environment")
+    correctness_policy = contract.get("correctness_policy")
+    cohort_identity = contract.get("cohort_identity")
+    hardware_value = hardware if isinstance(hardware, dict) else {}
+    domain_value = (
+        execution_domain if isinstance(execution_domain, dict) else {}
+    )
+    numeric_execution = (
+        cohort_identity.get("numeric_execution")
+        if isinstance(cohort_identity, dict)
+        else None
+    )
+    execution_context = (
+        cohort_identity.get("execution_context")
+        if isinstance(cohort_identity, dict)
+        else None
+    )
+    timer_protocol = (
+        cohort_identity.get("timer_protocol")
+        if isinstance(cohort_identity, dict)
+        else None
+    )
+    communication = (
+        cohort_identity.get("communication")
+        if isinstance(cohort_identity, dict)
+        else None
+    )
+    return (
+        all(
+            _resolved_identity_string(contract.get(key))
+            for key in ("semantic", "dtype", "layout", "cohort_id")
+        )
+        and contract.get("cohort_id") == cohort_id
+        and contract.get("execution_domain") == domain_value
+        and all(
+            contract.get(key) == domain_value.get(key)
+            for key in (
+                "dtype",
+                "layout",
+                "alignment_bytes",
+                "threads",
+            )
+        )
+        and isinstance(environment, dict)
+        and environment.get("eligible") is True
+        and _nonempty_string(environment.get("evidence_ref"))
+        and isinstance(correctness_policy, dict)
+        and all(
+            _resolved_identity_string(correctness_policy.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+                "oracle",
+            )
+        )
+        and _exact_version_text(correctness_policy.get("version"))
+        and _finite_number(correctness_policy.get("atol"))
+        and _finite_number(correctness_policy.get("rtol"))
+        and float(correctness_policy["atol"]) >= 0
+        and float(correctness_policy["rtol"]) >= 0
+        and isinstance(cohort_identity, dict)
+        and all(
+            cohort_identity.get(key) == hardware_value.get(key)
+            and _resolved_identity_string(cohort_identity.get(key))
+            for key in (
+                "device",
+                "partition",
+                "topology",
+                "software",
+            )
+        )
+        and all(
+            cohort_identity.get(key) == hardware_value.get(key)
+            and _exact_versioned_identity(cohort_identity.get(key))
+            for key in (
+                "os",
+                "kernel",
+                "driver",
+                "runtime",
+                "framework",
+                "compiler",
+                "operator_library",
+            )
+        )
+        and all(
+            cohort_identity.get(key) == hardware_value.get(key)
+            and _exact_versioned_identity(
+                cohort_identity.get(key), allow_not_applicable=True
+            )
+            for key in ("firmware", "communication_library")
+        )
+        and isinstance(cohort_identity.get("power_clock"), dict)
+        and bool(cohort_identity["power_clock"])
+        and cohort_identity["power_clock"] == hardware_value.get("power_clock")
+        and all(
+            _resolved_identity_string(cohort_identity["power_clock"].get(key))
+            for key in ("power_policy", "clock_policy")
+        )
+        and isinstance(numeric_execution, dict)
+        and _resolved_identity_string(numeric_execution.get("dtype"))
+        and _resolved_identity_string(numeric_execution.get("layout"))
+        and numeric_execution.get("dtype") == contract.get("dtype")
+        and numeric_execution.get("layout") == contract.get("layout")
+        and numeric_execution.get("alignment_bytes")
+        == contract.get("alignment_bytes")
+        and numeric_execution.get("threads") == contract.get("threads")
+        and _resolved_identity_string(
+            numeric_execution.get("execution_mode")
+        )
+        and numeric_execution.get("execution_mode")
+        == domain_value.get("execution_mode")
+        and isinstance(execution_context, dict)
+        and all(
+            _resolved_identity_string(execution_context.get(key))
+            for key in ("affinity", "numa", "context")
+        )
+        and _known_identity_string(execution_context.get("stream"))
+        and isinstance(execution_context.get("concurrency"), int)
+        and not isinstance(execution_context["concurrency"], bool)
+        and execution_context["concurrency"] > 0
+        and all(
+            execution_context.get(key) == domain_value.get(key)
+            for key in (
+                "affinity",
+                "numa",
+                "context",
+                "stream",
+                "concurrency",
+            )
+        )
+        and isinstance(timer_protocol, dict)
+        and _resolved_identity_string(timer_protocol.get("source"))
+        and isinstance(timer_protocol.get("resolution_ns"), int)
+        and not isinstance(timer_protocol["resolution_ns"], bool)
+        and timer_protocol["resolution_ns"] > 0
+        and timer_protocol.get("completion_kind")
+        == (
+            contract.get("completion_boundary", {}).get("kind")
+            if isinstance(contract.get("completion_boundary"), dict)
+            else None
+        )
+        and all(
+            _resolved_identity_string(timer_protocol.get(key))
+            for key in (
+                "adapter_id",
+                "adapter_version",
+                "protocol_id",
+                "protocol_version",
+            )
+        )
+        and _exact_version_text(timer_protocol.get("adapter_version"))
+        and _exact_version_text(timer_protocol.get("protocol_version"))
+        and isinstance(communication, dict)
+        and communication.get("status") in {"available", "not_applicable"}
+        and communication.get("status")
+        == (
+            "not_applicable"
+            if cohort_identity["communication_library"]["status"]
+            == "not_applicable"
+            else "available"
+        )
+        and _nonempty_string(cohort_identity.get("evidence_ref"))
+        and isinstance(shape, dict)
+        and bool(shape)
+        and all(
+            _nonempty_string(name)
+            and isinstance(dimensions, list)
+            and bool(dimensions)
+            and all(
+                isinstance(dimension, int)
+                and not isinstance(dimension, bool)
+                and dimension > 0
+                for dimension in dimensions
+            )
+            for name, dimensions in shape.items()
+        )
+        and isinstance(strides, dict)
+        and set(strides) == set(shape)
+        and all(
+            isinstance(values, list)
+            and len(values) == len(shape[name])
+            and all(
+                isinstance(value, int)
+                and not isinstance(value, bool)
+                and value > 0
+                for value in values
+            )
+            for name, values in strides.items()
+        )
+        and isinstance(contract.get("alignment_bytes"), int)
+        and not isinstance(contract["alignment_bytes"], bool)
+        and contract["alignment_bytes"] > 0
+        and isinstance(contract.get("threads"), int)
+        and not isinstance(contract["threads"], bool)
+        and contract["threads"] > 0
+        and isinstance(candidate_ids, list)
+        and bool(candidate_ids)
+        and all(_nonempty_string(candidate_id) for candidate_id in candidate_ids)
+        and len(candidate_ids) == len(set(candidate_ids))
+        and _completion_boundary_valid(contract.get("completion_boundary"))
+    )
+
+
+def _measurement_lanes_valid(
+    value: object,
+    *,
+    stable_path: object,
+    contract: object,
+) -> bool:
+    if not isinstance(value, dict):
+        return False
+    if not isinstance(contract, dict):
+        return False
+    baseline = value.get("baseline")
+    diagnostic = value.get("diagnostic")
+    expected_case = {
+        "stable_path": stable_path,
+        "semantic": contract.get("semantic"),
+    }
+    return (
+        isinstance(baseline, dict)
+        and isinstance(diagnostic, dict)
+        and all(
+            _nonempty_string(baseline.get(key))
+            for key in (
+                "lane_id",
+                "pair_id",
+                "instrumentation_profile",
+                "timer_source",
+                "evidence_ref",
+            )
+        )
+        and all(
+            _nonempty_string(diagnostic.get(key))
+            for key in (
+                "lane_id",
+                "pair_id",
+                "paired_baseline_lane_id",
+                "instrumentation_profile",
+                "evidence_ref",
+            )
+        )
+        and diagnostic["pair_id"] == baseline["pair_id"]
+        and diagnostic["paired_baseline_lane_id"] == baseline["lane_id"]
+        and diagnostic["lane_id"] != baseline["lane_id"]
+        and diagnostic.get("timing_used_for_verdict") is False
+        and baseline.get("case") == expected_case
+        and diagnostic.get("case") == expected_case
+        and baseline.get("execution_domain")
+        == contract.get("execution_domain")
+        and diagnostic.get("execution_domain")
+        == contract.get("execution_domain")
+        and baseline.get("candidate_ids") == contract.get("candidate_ids")
+        and diagnostic.get("candidate_ids") == contract.get("candidate_ids")
+        and baseline.get("cohort_id") == contract.get("cohort_id")
+        and diagnostic.get("cohort_id") == contract.get("cohort_id")
+        and baseline.get("completion_boundary")
+        == contract.get("completion_boundary")
+        and diagnostic.get("completion_boundary")
+        == contract.get("completion_boundary")
+        and baseline.get("timer_source")
+        == contract.get("cohort_identity", {})
+        .get("timer_protocol", {})
+        .get("source")
+        and diagnostic.get("timer_source") == baseline.get("timer_source")
+    )
+
+
+def _artifact_refs(value: object) -> set[str]:
+    refs: set[str] = set()
+    if isinstance(value, dict):
+        for item in value.values():
+            refs.update(_artifact_refs(item))
+    elif isinstance(value, list):
+        for item in value:
+            refs.update(_artifact_refs(item))
+    elif isinstance(value, str) and value.startswith("artifact://"):
+        refs.add(value)
+    return refs
+
+
+def _artifact_uri(value: object) -> bool:
+    if (
+        not _nonempty_string(value)
+        or fullmatch(r"artifact://[A-Za-z0-9][A-Za-z0-9._/-]*", value)
+        is None
+    ):
+        return False
+    return all(
+        segment not in {"", ".", ".."}
+        for segment in value.removeprefix("artifact://").split("/")
+    )
+
+
+def _probe_references_valid(value: object) -> bool:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key.endswith("_ref"):
+                if not _artifact_uri(item):
+                    return False
+            elif key.endswith("_refs"):
+                if not isinstance(item, list) or not all(
+                    _artifact_uri(ref) for ref in item
+                ):
+                    return False
+            elif not _probe_references_valid(item):
+                return False
+    elif isinstance(value, list):
+        return all(_probe_references_valid(item) for item in value)
+    return True
+
+
+def _verified_bundle_artifacts(
+    root: Path, manifest: dict[str, Any]
+) -> dict[str, object]:
+    by_uri: dict[str, list[dict[str, Any]]] = {}
+    for artifact in manifest.get("artifacts", []):
+        if not isinstance(artifact, dict):
+            continue
+        uri = artifact.get("uri")
+        if _artifact_uri(uri):
+            by_uri.setdefault(uri, []).append(artifact)
+    verified: dict[str, object] = {}
+    for uri, artifacts in by_uri.items():
+        if len(artifacts) != 1:
+            continue
+        artifact = artifacts[0]
+        artifact_path = (root / artifact["path"]).resolve()
+        if root not in artifact_path.parents:
+            continue
+        content: object = None
+        if artifact.get("media_type") == "application/json":
+            try:
+                content = json.loads(artifact_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                content = None
+        verified[uri] = {"manifest": artifact, "content": content}
+    return verified
+
+
+def _uncertainty_policy_structure_valid(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    target = value.get("target_coverage")
+    calibration = value.get("calibration")
+    calibration_records = (
+        calibration.get("records")
+        if isinstance(calibration, dict)
+        else None
+    )
+    estimator = (
+        calibration.get("estimator")
+        if isinstance(calibration, dict)
+        else None
+    )
+    calibration_target_ids = (
+        target.get("required_calibration_target_ids")
+        if isinstance(target, dict)
+        else None
+    )
+    validation_target_ids = (
+        target.get("required_validation_target_ids")
+        if isinstance(target, dict)
+        else None
+    )
+    return (
+        all(
+            _resolved_identity_string(value.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+        and _exact_version_text(value.get("version"))
+        and value.get("combination_rule") == "root-sum-square"
+        and isinstance(target, dict)
+        and _canonical_stable_path(target.get("stable_path"))
+        and isinstance(target.get("surface"), dict)
+        and all(
+            _nonempty_string(target["surface"].get(key))
+            for key in ("surface_id", "version")
+        )
+        and isinstance(target.get("execution_domain_sha256"), str)
+        and fullmatch(r"[0-9a-f]{64}", target["execution_domain_sha256"])
+        is not None
+        and _nonempty_string(target.get("cohort_id"))
+        and target.get("coverage_method")
+        == "independent-validation-absolute-residual-within-limit"
+        and _finite_number(target.get("minimum_fraction"))
+        and 0 < float(target["minimum_fraction"]) <= 1
+        and isinstance(target.get("minimum_calibration_records"), int)
+        and not isinstance(target["minimum_calibration_records"], bool)
+        and target["minimum_calibration_records"] >= 3
+        and isinstance(target.get("minimum_validation_records"), int)
+        and not isinstance(target["minimum_validation_records"], bool)
+        and target["minimum_validation_records"] >= 3
+        and isinstance(calibration_target_ids, list)
+        and bool(calibration_target_ids)
+        and all(
+            _canonical_identifier(target_id)
+            for target_id in calibration_target_ids
+        )
+        and len(calibration_target_ids) == len(set(calibration_target_ids))
+        and isinstance(validation_target_ids, list)
+        and bool(validation_target_ids)
+        and all(
+            _canonical_identifier(target_id)
+            for target_id in validation_target_ids
+        )
+        and len(validation_target_ids) == len(set(validation_target_ids))
+        and set(calibration_target_ids).isdisjoint(validation_target_ids)
+        and _artifact_uri(target.get("evidence_ref"))
+        and isinstance(calibration, dict)
+        and isinstance(estimator, dict)
+        and all(
+            _resolved_identity_string(estimator.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+        and _exact_version_text(estimator.get("version"))
+        and estimator.get("method") == "max-absolute-residual"
+        and _artifact_uri(calibration.get("evidence_ref"))
+        and isinstance(calibration_records, list)
+        and bool(calibration_records)
+        and all(
+            isinstance(record, dict)
+            and _canonical_identifier(record.get("target_id"))
+            and record.get("partition") in {"calibration", "validation"}
+            and _known_identity_string(record.get("session_id"))
+            and isinstance(record.get("process_id"), int)
+            and not isinstance(record["process_id"], bool)
+            and record["process_id"] > 0
+            and record.get("component_id")
+            in {"anchor", "interpolation", "instrumentation"}
+            and _finite_number(record.get("predicted_ns"))
+            and isinstance(record.get("observed_samples_ns"), list)
+            and bool(record["observed_samples_ns"])
+            and all(
+                _finite_number(sample)
+                for sample in record["observed_samples_ns"]
+            )
+            for record in calibration_records
+        )
+    )
+
+
+def _verified_artifact_content(
+    verified_artifacts: dict[str, object],
+    ref: str,
+    *,
+    role: str,
+    schema: str,
+) -> dict[str, Any] | None:
+    artifact = verified_artifacts.get(ref)
+    if not isinstance(artifact, dict):
+        return None
+    manifest_entry = artifact.get("manifest")
+    content = artifact.get("content")
+    if (
+        not isinstance(manifest_entry, dict)
+        or manifest_entry.get("role") != role
+        or manifest_entry.get("schema") != schema
+        or manifest_entry.get("media_type") != "application/json"
+        or not isinstance(content, dict)
+    ):
+        return None
+    return content
+
+
+def _uncertainty_policy_artifacts_valid(
+    policy: dict[str, Any],
+    *,
+    stable_path: str,
+    surface: dict[str, Any],
+    contract: dict[str, Any],
+    verified_artifacts: dict[str, object],
+) -> dict[str, float] | None:
+    target = policy["target_coverage"]
+    expected_target = {
+        "stable_path": stable_path,
+        "surface": surface,
+        "execution_domain_sha256": _canonical_digest(
+            contract["execution_domain"]
+        ),
+        "cohort_id": contract["cohort_id"],
+        "coverage_method": target["coverage_method"],
+        "minimum_fraction": target["minimum_fraction"],
+        "minimum_calibration_records": target[
+            "minimum_calibration_records"
+        ],
+        "minimum_validation_records": target[
+            "minimum_validation_records"
+        ],
+        "required_calibration_target_ids": target[
+            "required_calibration_target_ids"
+        ],
+        "required_validation_target_ids": target[
+            "required_validation_target_ids"
+        ],
+    }
+    target_content = _verified_artifact_content(
+        verified_artifacts,
+        target["evidence_ref"],
+        role="uncertainty-target-coverage",
+        schema="groundupscale.dev/uncertainty-target-coverage/v1alpha1",
+    )
+    calibration = policy["calibration"]
+    calibration_content = _verified_artifact_content(
+        verified_artifacts,
+        calibration["evidence_ref"],
+        role="uncertainty-calibration",
+        schema="groundupscale.dev/uncertainty-calibration/v1alpha1",
+    )
+    expected_calibration = {
+        "schema": "groundupscale.dev/uncertainty-calibration/v1alpha1",
+        "policy_id": policy["policy_id"],
+        "version": policy["version"],
+        "target_coverage": expected_target,
+        "estimator": calibration["estimator"],
+        "records": calibration["records"],
+    }
+    metadata_valid = (
+        {
+            key: item for key, item in target.items() if key != "evidence_ref"
+        }
+        == expected_target
+        and target_content
+        == {
+            "schema": "groundupscale.dev/uncertainty-target-coverage/v1alpha1",
+            **expected_target,
+        }
+        and calibration_content
+        == expected_calibration
+    )
+    if not metadata_valid:
+        return None
+    records = calibration_content["records"]
+    calibration_records = [
+        record for record in records if record["partition"] == "calibration"
+    ]
+    validation_records = [
+        record for record in records if record["partition"] == "validation"
+    ]
+    required_calibration_targets = set(
+        target["required_calibration_target_ids"]
+    )
+    required_validation_targets = set(
+        target["required_validation_target_ids"]
+    )
+    calibration_targets = {
+        record["target_id"] for record in calibration_records
+    }
+    validation_targets = {
+        record["target_id"] for record in validation_records
+    }
+    calibration_sessions = {
+        record["session_id"] for record in calibration_records
+    }
+    validation_sessions = {
+        record["session_id"] for record in validation_records
+    }
+    calibration_processes = {
+        record["process_id"] for record in calibration_records
+    }
+    validation_processes = {
+        record["process_id"] for record in validation_records
+    }
+    if (
+        len(calibration_records) < target["minimum_calibration_records"]
+        or len(validation_records) < target["minimum_validation_records"]
+        or calibration_targets != required_calibration_targets
+        or validation_targets != required_validation_targets
+        or len(calibration_targets) != len(calibration_records)
+        or len(validation_targets) != len(validation_records)
+        or len(calibration_sessions) != len(calibration_records)
+        or len(validation_sessions) != len(validation_records)
+        or len(calibration_processes) != len(calibration_records)
+        or len(validation_processes) != len(validation_records)
+        or not calibration_sessions.isdisjoint(validation_sessions)
+        or not calibration_processes.isdisjoint(validation_processes)
+    ):
+        return None
+    limits: dict[str, float] = {}
+    for record in calibration_records:
+        component_id = record["component_id"]
+        residual_limit = max(
+            abs(float(sample) - float(record["predicted_ns"]))
+            for sample in record["observed_samples_ns"]
+        )
+        limits[component_id] = max(
+            limits.get(component_id, 0.0), residual_limit
+        )
+    if set(limits) != {"anchor", "interpolation", "instrumentation"}:
+        return None
+    validation_components = {
+        record["component_id"] for record in validation_records
+    }
+    validation_residuals = [
+        (
+            record["component_id"],
+            abs(float(sample) - float(record["predicted_ns"])),
+        )
+        for record in validation_records
+        for sample in record["observed_samples_ns"]
+    ]
+    if (
+        validation_components
+        != {"anchor", "interpolation", "instrumentation"}
+        or not validation_residuals
+        or sum(
+            residual <= limits[component_id]
+            for component_id, residual in validation_residuals
+        )
+        / len(validation_residuals)
+        < float(target["minimum_fraction"])
+    ):
+        return None
+    return limits
+
+
+def _uncertainty_records_artifacts_valid(
+    records: object,
+    limits: dict[str, float],
+    verified_artifacts: dict[str, object],
+) -> bool:
+    if not isinstance(records, list):
+        return False
+    for record in records:
+        if not isinstance(record, dict):
+            return False
+        component_id = record.get("component_id")
+        value = record.get("standard_uncertainty_ns")
+        content = _verified_artifact_content(
+            verified_artifacts,
+            record.get("evidence_ref"),
+            role="uncertainty-component",
+            schema="groundupscale.dev/uncertainty-component/v1alpha1",
+        )
+        if (
+            component_id not in limits
+            or not _finite_number(value)
+            or float(value) > float(limits[component_id])
+            or content
+            != {
+                "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
+                "component_id": component_id,
+                "standard_uncertainty_ns": value,
+            }
+        ):
+            return False
+    return True
+
+
+def _frontier_uncertainty_artifacts_valid(
+    frontier: dict[str, Any],
+    *,
+    stable_path: str,
+    contract: dict[str, Any],
+    verified_artifacts: dict[str, object],
+) -> bool:
+    surface = frontier["surface"]
+    old_policy = frontier["old_surface_uncertainty_policy"]
+    neighbourhood = frontier["neighbourhood"]
+    neighbourhood_policy = neighbourhood["qualification_policy"]
+    old_limits = _uncertainty_policy_artifacts_valid(
+        old_policy,
+        stable_path=stable_path,
+        surface=surface,
+        contract=contract,
+        verified_artifacts=verified_artifacts,
+    )
+    neighbourhood_limits = _uncertainty_policy_artifacts_valid(
+        neighbourhood_policy,
+        stable_path=stable_path,
+        surface=surface,
+        contract=contract,
+        verified_artifacts=verified_artifacts,
+    )
+    return (
+        old_limits is not None
+        and neighbourhood_limits is not None
+        and _uncertainty_records_artifacts_valid(
+            frontier["old_surface_uncertainty_records"],
+            old_limits,
+            verified_artifacts,
+        )
+        and all(
+            _uncertainty_records_artifacts_valid(
+                record.get("uncertainty_records"),
+                neighbourhood_limits,
+                verified_artifacts,
+            )
+            for record in [
+                *neighbourhood["anchor_records"],
+                *neighbourhood["local_probe_records"],
+                *neighbourhood["refit_records"],
+            ]
+            if isinstance(record, dict)
+        )
+    )
+
+
+def _frontier_shift_evidence_valid(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    surface = value.get("surface")
+    surface_reference = value.get("old_surface_reference")
+    uncertainty_records = value.get("old_surface_uncertainty_records")
+    uncertainty_policy = value.get("old_surface_uncertainty_policy")
+    holdout = value.get("holdout")
+    neighbourhood = value.get("neighbourhood")
+    evidence_refs = value.get("evidence_refs")
+    return (
+        isinstance(surface, dict)
+        and all(
+            _nonempty_string(surface.get(key))
+            for key in ("surface_id", "version")
+        )
+        and _exact_version_text(surface.get("version"))
+        and isinstance(surface_reference, dict)
+        and surface_reference.get("surface_id") == surface.get("surface_id")
+        and surface_reference.get("version") == surface.get("version")
+        and _finite_number(surface_reference.get("predicted_ns"))
+        and float(surface_reference["predicted_ns"]) > 0
+        and isinstance(surface_reference.get("execution_domain"), dict)
+        and _nonempty_string(surface_reference.get("cohort_id"))
+        and _nonempty_string(surface_reference.get("evidence_ref"))
+        and isinstance(uncertainty_records, list)
+        and {
+            record.get("component_id")
+            for record in uncertainty_records
+            if isinstance(record, dict)
+        }
+        == {"anchor", "interpolation", "instrumentation"}
+        and len(uncertainty_records) == 3
+        and all(
+            isinstance(record, dict)
+            and _finite_number(record.get("standard_uncertainty_ns"))
+            and float(record["standard_uncertainty_ns"]) >= 0
+            and _nonempty_string(record.get("evidence_ref"))
+            for record in uncertainty_records
+        )
+        and _uncertainty_policy_structure_valid(uncertainty_policy)
+        and isinstance(holdout, dict)
+        and isinstance(holdout.get("selection_session_ids"), list)
+        and all(
+            _nonempty_string(session_id)
+            for session_id in holdout["selection_session_ids"]
+        )
+        and len(holdout["selection_session_ids"])
+        == len(set(holdout["selection_session_ids"]))
+        and isinstance(holdout.get("sessions"), list)
+        and isinstance(holdout.get("candidate_results"), list)
+        and _nonempty_string(holdout.get("evidence_ref"))
+        and isinstance(neighbourhood, dict)
+        and _nonempty_string(neighbourhood.get("regime_id"))
+        and isinstance(neighbourhood.get("qualification_policy"), dict)
+        and _uncertainty_policy_structure_valid(
+            neighbourhood["qualification_policy"]
+        )
+        and all(
+            isinstance(neighbourhood["qualification_policy"].get(key), int)
+            and not isinstance(
+                neighbourhood["qualification_policy"][key], bool
+            )
+            and neighbourhood["qualification_policy"][key] > 0
+            for key in (
+                "minimum_stable_anchor_records",
+                "minimum_refit_records",
+                "local_shape_radius",
+            )
+        )
+        and isinstance(neighbourhood.get("anchor_records"), list)
+        and isinstance(neighbourhood.get("local_probe_records"), list)
+        and isinstance(neighbourhood.get("refit_records"), list)
+        and isinstance(evidence_refs, list)
+        and bool(evidence_refs)
+        and all(_nonempty_string(ref) for ref in evidence_refs)
+    )
+
+
+def _probe_counterexamples_valid(value: object) -> bool:
+    return isinstance(value, list) and all(
+        isinstance(counterexample, dict)
+        and _nonempty_string(counterexample.get("counterexample_id"))
+        and isinstance(counterexample.get("reason_codes"), list)
+        and bool(counterexample["reason_codes"])
+        and all(
+            _nonempty_string(reason)
+            for reason in counterexample["reason_codes"]
+        )
+        and isinstance(counterexample.get("evidence_refs"), list)
+        and bool(counterexample["evidence_refs"])
+        and all(
+            _nonempty_string(ref)
+            for ref in counterexample["evidence_refs"]
+        )
+        for counterexample in value
+    )
+
+
+def _shape_disambiguation_probes(
+    document: dict[str, Any],
+    trigger: dict[str, Any] | None,
+    verified_artifacts: dict[str, object],
+) -> list[dict[str, Any]]:
+    probe_value = document.get("shape_disambiguation_probes")
+    probes = probe_value if isinstance(probe_value, list) else []
+    triggered_paths = (
+        {
+            item["stable_path"]
+            for item in trigger.get("triggered", [])
+            if isinstance(item, dict)
+            and _nonempty_string(item.get("stable_path"))
+        }
+        if isinstance(trigger, dict)
+        else set()
+    )
+    results = []
+    for probe in probes:
+        if not isinstance(probe, dict):
+            results.append(
+                {
+                    "status": "insufficient_evidence",
+                    "reason_code": "invalid-shape-probe",
+                    "evidence_refs": [],
+                }
+            )
+            continue
+        probe_id = probe.get("probe_id")
+        stable_path = probe.get("stable_path")
+        evidence_refs = probe.get("evidence_refs")
+        result_prefix = {
+            "probe_id": probe_id,
+            "stable_path": stable_path,
+            "evidence_refs": (
+                list(evidence_refs)
+                if isinstance(evidence_refs, list)
+                and all(_nonempty_string(ref) for ref in evidence_refs)
+                else []
+            ),
+        }
+        if stable_path not in triggered_paths:
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "not_evaluated",
+                    "reason_code": "diagnostic-trigger-not-met",
+                }
+            )
+            continue
+        contract = probe.get("locked_contract")
+        candidates = probe.get("candidates")
+        measurement_lanes = probe.get("measurement_lanes")
+        frontier_shift_evidence = probe.get("frontier_shift_evidence")
+        counterexamples = probe.get("counterexamples", [])
+        environment = (
+            contract.get("environment")
+            if isinstance(contract, dict)
+            else None
+        )
+        if (
+            isinstance(environment, dict)
+            and environment.get("eligible") is not True
+        ):
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "insufficient_evidence",
+                    "reason_code": "ineligible-probe-environment",
+                }
+            )
+            continue
+        if (
+            not _nonempty_string(probe_id)
+            or not _canonical_stable_path(stable_path)
+            or not _locked_probe_contract_valid(
+                contract,
+                cohort_id=document.get("cohort_id"),
+                hardware=document.get("hardware"),
+                execution_domain=document.get("execution_domain"),
+            )
+            or not isinstance(candidates, list)
+            or not _measurement_lanes_valid(
+                measurement_lanes,
+                stable_path=stable_path,
+                contract=contract,
+            )
+            or (
+                frontier_shift_evidence is not None
+                and not _frontier_shift_evidence_valid(
+                    frontier_shift_evidence
+                )
+            )
+            or (
+                isinstance(frontier_shift_evidence, dict)
+                and not _frontier_uncertainty_artifacts_valid(
+                    frontier_shift_evidence,
+                    stable_path=stable_path,
+                    contract=contract,
+                    verified_artifacts=verified_artifacts,
+                )
+            )
+            or not _probe_counterexamples_valid(counterexamples)
+            or not _probe_references_valid(probe)
+        ):
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "insufficient_evidence",
+                    "reason_code": "invalid-shape-probe",
+                }
+            )
+            continue
+        if not _artifact_refs(probe).issubset(verified_artifacts):
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "insufficient_evidence",
+                    "reason_code": "unresolved-probe-evidence-ref",
+                }
+            )
+            continue
+        locked_candidate_ids = contract["candidate_ids"]
+        candidate_ids = [
+            candidate.get("candidate_id")
+            for candidate in candidates
+            if isinstance(candidate, dict)
+        ]
+        if (
+            len(candidate_ids) != len(candidates)
+            or len(candidate_ids) != len(set(candidate_ids))
+            or set(candidate_ids) != set(locked_candidate_ids)
+        ):
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "insufficient_evidence",
+                    "reason_code": "candidate-set-does-not-match-lock",
+                }
+            )
+            continue
+
+        candidate_evaluations = []
+        malformed_candidate = False
+        for candidate in candidates:
+            correctness = candidate.get("correctness")
+            implementation_family = candidate.get("implementation_family")
+            family_artifact = (
+                verified_artifacts.get(
+                    implementation_family.get("manifest_ref")
+                )
+                if isinstance(implementation_family, dict)
+                else None
+            )
+            family_manifest = (
+                family_artifact.get("content")
+                if isinstance(family_artifact, dict)
+                else None
+            )
+            implementation_artifact = (
+                verified_artifacts.get(
+                    implementation_family.get("implementation_ref")
+                )
+                if isinstance(implementation_family, dict)
+                else None
+            )
+            implementation_manifest_entry = (
+                implementation_artifact.get("manifest")
+                if isinstance(implementation_artifact, dict)
+                else None
+            )
+            implementation_content = (
+                implementation_artifact.get("content")
+                if isinstance(implementation_artifact, dict)
+                else None
+            )
+            sessions = candidate.get("sessions")
+            correctness_passed = (
+                _raw_correctness_passed(
+                    correctness.get("records"), correctness.get("tolerance")
+                )
+                if isinstance(correctness, dict)
+                else None
+            )
+            if (
+                not _nonempty_string(candidate.get("role"))
+                or not isinstance(candidate.get("eligible"), bool)
+                or not isinstance(implementation_family, dict)
+                or not _canonical_identifier(
+                    implementation_family.get("family_id")
+                )
+                or not _exact_version_text(
+                    implementation_family.get("version")
+                )
+                or not _nonempty_string(
+                    implementation_family.get("manifest_ref")
+                )
+                or not _artifact_uri(
+                    implementation_family.get("implementation_ref")
+                )
+                or not isinstance(
+                    implementation_family.get("implementation_sha256"), str
+                )
+                or fullmatch(
+                    r"[0-9a-f]{64}",
+                    implementation_family["implementation_sha256"],
+                )
+                is None
+                or not isinstance(family_artifact, dict)
+                or not isinstance(family_artifact.get("manifest"), dict)
+                or family_artifact["manifest"].get("role")
+                != "implementation-family-manifest"
+                or family_artifact["manifest"].get("schema")
+                != "groundupscale.dev/implementation-family-manifest/v1alpha1"
+                or family_artifact["manifest"].get("media_type")
+                != "application/json"
+                or not isinstance(family_manifest, dict)
+                or family_manifest.get("schema")
+                != "groundupscale.dev/implementation-family-manifest/v1alpha1"
+                or family_manifest.get("family_id")
+                != implementation_family.get("family_id")
+                or family_manifest.get("version")
+                != implementation_family.get("version")
+                or family_manifest.get("implementation_sha256")
+                != implementation_family.get("implementation_sha256")
+                or family_manifest.get("implementation_ref")
+                != implementation_family.get("implementation_ref")
+                or not isinstance(implementation_manifest_entry, dict)
+                or implementation_manifest_entry.get("role")
+                != "candidate-implementation"
+                or implementation_manifest_entry.get("schema")
+                != "groundupscale.dev/candidate-implementation/v1alpha1"
+                or implementation_manifest_entry.get("media_type")
+                != "application/json"
+                or implementation_manifest_entry.get("sha256")
+                != implementation_family.get("implementation_sha256")
+                or not isinstance(implementation_content, dict)
+                or not _canonical_source_identity(
+                    implementation_content.get("source_identity")
+                )
+                or implementation_content
+                != {
+                    "schema": (
+                        "groundupscale.dev/"
+                        "candidate-implementation/v1alpha1"
+                    ),
+                    "source_identity": implementation_content.get(
+                        "source_identity"
+                    ),
+                }
+                or family_manifest.get("source_identity")
+                != implementation_content.get("source_identity")
+                or not isinstance(correctness, dict)
+                or correctness_passed is None
+                or correctness.get("tolerance")
+                != {
+                    "atol": contract["correctness_policy"]["atol"],
+                    "rtol": contract["correctness_policy"]["rtol"],
+                }
+                or not _nonempty_string(correctness.get("evidence_ref"))
+                or not isinstance(sessions, list)
+                or not sessions
+            ):
+                malformed_candidate = True
+                break
+            session_ids = []
+            process_ids = []
+            latencies = []
+            raw_samples_by_session = {}
+            excluded_samples_by_session = {}
+            session_evidence_refs = []
+            for session in sessions:
+                raw_samples = (
+                    session.get("raw_samples_ns")
+                    if isinstance(session, dict)
+                    else None
+                )
+                excluded_samples = (
+                    session.get("excluded_samples")
+                    if isinstance(session, dict)
+                    else None
+                )
+                if (
+                    not isinstance(session, dict)
+                    or not _nonempty_string(session.get("session_id"))
+                    or not isinstance(session.get("process_id"), int)
+                    or isinstance(session["process_id"], bool)
+                    or session["process_id"] <= 0
+                    or session.get("lane_id")
+                    != measurement_lanes["baseline"]["lane_id"]
+                    or session.get("cohort_id") != contract["cohort_id"]
+                    or not _finite_number(session.get("latency_ns"))
+                    or float(session["latency_ns"]) <= 0
+                    or not isinstance(raw_samples, list)
+                    or not raw_samples
+                    or not all(
+                        _finite_number(sample) and float(sample) > 0
+                        for sample in raw_samples
+                    )
+                    or not isclose(
+                        float(session["latency_ns"]),
+                        float(median(raw_samples)),
+                        rel_tol=1e-12,
+                        abs_tol=1e-9,
+                    )
+                    or not isinstance(excluded_samples, list)
+                    or not _nonempty_string(session.get("evidence_ref"))
+                ):
+                    malformed_candidate = True
+                    break
+                session_ids.append(session["session_id"])
+                process_ids.append(session["process_id"])
+                latencies.append(session["latency_ns"])
+                raw_samples_by_session[session["session_id"]] = raw_samples
+                excluded_samples_by_session[
+                    session["session_id"]
+                ] = excluded_samples
+                session_evidence_refs.append(session["evidence_ref"])
+            if (
+                malformed_candidate
+                or len(session_ids) != len(set(session_ids))
+                or len(process_ids) != len(set(process_ids))
+            ):
+                malformed_candidate = True
+                break
+            eligible_for_best = (
+                candidate["eligible"] and correctness_passed
+            )
+            exclusion_reason = None
+            if not candidate["eligible"]:
+                exclusion_reason = "candidate-ineligible"
+            elif not correctness_passed:
+                exclusion_reason = "correctness-failed"
+            candidate_evaluations.append(
+                {
+                    "candidate_id": candidate["candidate_id"],
+                    "role": candidate["role"],
+                    "implementation_family": {
+                        **implementation_family,
+                        "source_identity": implementation_content[
+                            "source_identity"
+                        ],
+                    },
+                    "correctness": {
+                        "passed": correctness_passed,
+                        "record_count": len(correctness["records"]),
+                        "tolerance": dict(correctness["tolerance"]),
+                        "evidence_ref": correctness["evidence_ref"],
+                    },
+                    "eligible_for_best_of_correct": eligible_for_best,
+                    "exclusion_reason": exclusion_reason,
+                    "aggregate_latency_ns": median(latencies),
+                    "session_ids": session_ids,
+                    "session_latencies_ns": dict(
+                        zip(session_ids, latencies, strict=True)
+                    ),
+                    "session_process_ids": dict(
+                        zip(session_ids, process_ids, strict=True)
+                    ),
+                    "raw_samples_ns": raw_samples_by_session,
+                    "excluded_samples": excluded_samples_by_session,
+                    "evidence_refs": [
+                        correctness["evidence_ref"],
+                        *session_evidence_refs,
+                    ],
+                }
+            )
+        eligible = [
+            candidate
+            for candidate in candidate_evaluations
+            if candidate["eligible_for_best_of_correct"]
+        ]
+        if malformed_candidate or not eligible:
+            results.append(
+                {
+                    **result_prefix,
+                    "status": "insufficient_evidence",
+                    "reason_code": (
+                        "invalid-candidate-evidence"
+                        if malformed_candidate
+                        else "no-correct-eligible-candidate"
+                    ),
+                }
+            )
+            continue
+        winner = min(
+            eligible,
+            key=lambda candidate: (
+                float(candidate["aggregate_latency_ns"]),
+                candidate["candidate_id"],
+            ),
+        )
+        complete_probe = {
+            **result_prefix,
+            "status": "complete",
+            "locked_contract": contract,
+            "evaluation_order": [
+                "lock-exact-shape-contract",
+                "validate-correctness",
+                "select-best-of-correct",
+            ],
+            "candidate_evaluations": candidate_evaluations,
+            "measurement_lanes": measurement_lanes,
+            "best_of_correct": {
+                "candidate_id": winner["candidate_id"],
+                "aggregate_latency_ns": winner["aggregate_latency_ns"],
+                "session_ids": winner["session_ids"],
+            },
+            "counterexamples": counterexamples,
+        }
+        if frontier_shift_evidence is not None:
+            complete_probe["frontier_shift_evidence"] = (
+                frontier_shift_evidence
+            )
+        results.append(complete_probe)
+    represented_paths = {
+        result["stable_path"]
+        for result in results
+        if _nonempty_string(result.get("stable_path"))
+    }
+    for stable_path in sorted(triggered_paths - represented_paths):
+        results.append(
+            {
+                "probe_id": f"probe-request:{stable_path}",
+                "stable_path": stable_path,
+                "status": "requested",
+                "reason_code": "exact-shape-probe-evidence-not-provided",
+                "required_lock_fields": [
+                    "semantic",
+                    "shape",
+                    "dtype",
+                    "layout",
+                    "strides",
+                    "alignment_bytes",
+                    "threads",
+                    "execution_domain",
+                    "cohort_id",
+                    "cohort_identity",
+                    "environment",
+                    "correctness_policy",
+                    "candidate_ids",
+                    "completion_boundary",
+                    "measurement_lanes",
+                ],
+                "evidence_refs": [],
+            }
+        )
+    return results
+
+
+def _verdict_policy(document: dict[str, Any]) -> dict[str, Any]:
+    policy = document.get("verdict_policy")
+    if policy is None:
+        return {
+            "status": "unknown",
+            "reason_code": "verdict-policy-missing",
+        }
+    if (
+        not isinstance(policy, dict)
+        or not all(
+            _resolved_identity_string(policy.get(key))
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+        or not _exact_version_text(policy.get("version"))
+        or not isinstance(policy.get("minimum_independent_sessions"), int)
+        or isinstance(policy["minimum_independent_sessions"], bool)
+        or policy["minimum_independent_sessions"] < 3
+        or policy.get("suspected_regression_gate") != "undefined"
+    ):
+        return {
+            "status": "unknown",
+            "reason_code": "verdict-policy-invalid",
+        }
+    return {
+        "status": "valid",
+        **{
+            key: policy[key]
+            for key in (
+                "policy_id",
+                "version",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        },
+        "minimum_independent_sessions": policy[
+            "minimum_independent_sessions"
+        ],
+        "suspected_regression_gate": "undefined",
+    }
+
+
+def _fail_closed_performance_verdict(
+    *,
+    stable_path: str,
+    run_id: str,
+    probe_id: object,
+    failed_gate_id: str,
+    reason_code: str,
+    evidence_refs: list[str],
+    satisfied: list[dict[str, Any]] | None = None,
+    not_evaluated: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    bundle_ref = f"run-bundle://{run_id}"
+    bundle_refs = list(dict.fromkeys([bundle_ref, *evidence_refs]))
+    unevaluated = list(not_evaluated or [])
+    unevaluated.append(
+        {
+            "gate_id": "suspected-regression",
+            "reason_code": "policy-undefined",
+            "evidence_refs": [bundle_ref],
+        }
+    )
+    return {
+        "stable_path": stable_path,
+        "status": "decided",
+        "verdict": "insufficient_evidence",
+        "probe_id": probe_id,
+        "metrics": {},
+        "gates": {
+            "satisfied": list(satisfied or []),
+            "failed": [
+                {
+                    "gate_id": failed_gate_id,
+                    "reason_code": reason_code,
+                    "evidence_refs": evidence_refs,
+                }
+            ],
+            "not_evaluated": unevaluated,
+        },
+        "bundle_refs": bundle_refs,
+        "counterexamples": [
+            {
+                "counterexample_id": failed_gate_id,
+                "reason_codes": [reason_code],
+                "evidence_refs": bundle_refs,
+            }
+        ],
+    }
+
+
+def _derive_frontier_shift_gates(
+    frontier_evidence: dict[str, Any],
+    *,
+    candidates: list[dict[str, Any]],
+    contract: dict[str, Any],
+    measurement_lanes: dict[str, Any],
+    trigger_item: dict[str, Any],
+    minimum_sessions: int,
+) -> tuple[tuple[str, bool, str], ...]:
+    eligible = [
+        candidate
+        for candidate in candidates
+        if candidate["eligible_for_best_of_correct"]
+    ]
+    family_ids = {
+        candidate["implementation_family"]["family_id"]
+        for candidate in eligible
+    }
+    family_manifest_refs = {
+        candidate["implementation_family"]["manifest_ref"]
+        for candidate in eligible
+    }
+    implementation_digests = {
+        candidate["implementation_family"]["implementation_sha256"]
+        for candidate in eligible
+    }
+    implementation_refs = {
+        candidate["implementation_family"]["implementation_ref"]
+        for candidate in eligible
+    }
+    source_identities = {
+        candidate["implementation_family"]["source_identity"]
+        for candidate in eligible
+    }
+    independent_candidate_coverage = (
+        len(family_ids) >= 2
+        and len(family_manifest_refs) >= 2
+        and len(implementation_digests) >= 2
+        and len(implementation_refs) >= 2
+        and len(source_identities) >= 2
+        and all(
+            len(
+                {
+                    candidate["implementation_family"]["version"]
+                    for candidate in eligible
+                    if candidate["implementation_family"]["family_id"]
+                    == family_id
+                }
+            )
+            == 1
+            for family_id in family_ids
+        )
+    )
+    search_session_sets = [
+        set(candidate["session_ids"]) for candidate in eligible
+    ]
+    common_search_sessions = (
+        set.intersection(*search_session_sets)
+        if search_session_sets
+        else set()
+    )
+    search_process_ids: set[int] = set()
+    process_identity_matches = bool(eligible)
+    for session_id in common_search_sessions:
+        process_ids = {
+            candidate["session_process_ids"].get(session_id)
+            for candidate in eligible
+        }
+        if len(process_ids) != 1 or None in process_ids:
+            process_identity_matches = False
+            continue
+        search_process_ids.update(process_ids)
+    minimum_search_sessions_met = (
+        bool(eligible)
+        and all(sessions == common_search_sessions for sessions in search_session_sets)
+        and len(common_search_sessions) >= minimum_sessions
+        and len(search_process_ids) >= minimum_sessions
+        and process_identity_matches
+    )
+
+    required_sessions = max(
+        _FRONTIER_MINIMUM_INDEPENDENT_SESSIONS, minimum_sessions
+    )
+    minimum_search_sessions_met = (
+        minimum_search_sessions_met
+        and len(common_search_sessions) >= required_sessions
+        and len(search_process_ids) >= required_sessions
+    )
+
+    holdout = frontier_evidence["holdout"]
+    baseline_lane_id = measurement_lanes["baseline"]["lane_id"]
+    selection_session_ids = holdout["selection_session_ids"]
+    holdout_sessions = holdout["sessions"]
+    holdout_session_ids: list[str] = []
+    holdout_process_ids: list[int] = []
+    holdout_cohorts: list[str] = []
+    holdout_by_id: dict[str, dict[str, Any]] = {}
+    holdout_sessions_valid = True
+    for session in holdout_sessions:
+        if (
+            not isinstance(session, dict)
+            or not _nonempty_string(session.get("session_id"))
+            or not isinstance(session.get("process_id"), int)
+            or isinstance(session["process_id"], bool)
+            or session["process_id"] <= 0
+            or not _nonempty_string(session.get("lane_id"))
+            or not _nonempty_string(session.get("cohort_id"))
+            or not _nonempty_string(session.get("evidence_ref"))
+        ):
+            holdout_sessions_valid = False
+            break
+        holdout_session_ids.append(session["session_id"])
+        holdout_process_ids.append(session["process_id"])
+        holdout_cohorts.append(session["cohort_id"])
+        holdout_by_id[session["session_id"]] = session
+    independent_holdout = (
+        holdout_sessions_valid
+        and all(
+            session.get("lane_id") == baseline_lane_id
+            for session in holdout_sessions
+        )
+        and set(selection_session_ids) == common_search_sessions
+        and set(selection_session_ids).isdisjoint(holdout_session_ids)
+        and search_process_ids.isdisjoint(holdout_process_ids)
+        and len(holdout_session_ids) >= required_sessions
+        and len(set(holdout_session_ids)) == len(holdout_session_ids)
+        and len(holdout_by_id) == len(holdout_session_ids)
+        and len(set(holdout_process_ids)) == len(holdout_process_ids)
+        and len(holdout_process_ids) >= required_sessions
+    )
+    same_cohort = independent_holdout and all(
+        cohort_id == contract["cohort_id"] for cohort_id in holdout_cohorts
+    )
+
+    eligible_by_id = {
+        candidate["candidate_id"]: candidate for candidate in eligible
+    }
+    eligible_ids = set(eligible_by_id)
+    candidate_results = holdout["candidate_results"]
+    result_ids = {
+        result.get("candidate_id")
+        for result in candidate_results
+        if isinstance(result, dict)
+    }
+    holdout_session_set = set(holdout_session_ids)
+    surface_reference = frontier_evidence["old_surface_reference"]
+    surface_reference_valid = (
+        surface_reference["execution_domain"]
+        == contract["execution_domain"]
+        and surface_reference["cohort_id"] == contract["cohort_id"]
+        and {
+            "surface_id": surface_reference["surface_id"],
+            "version": surface_reference["version"],
+        }
+        == frontier_evidence["surface"]
+        and isclose(
+            float(surface_reference["predicted_ns"]),
+            float(trigger_item["predicted_ns"]),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+    )
+    combined_surface_uncertainty_ns = hypot(
+        *[
+            float(record["standard_uncertainty_ns"])
+            for record in frontier_evidence[
+                "old_surface_uncertainty_records"
+            ]
+        ]
+    )
+    surface_reference_valid = surface_reference_valid and isclose(
+        combined_surface_uncertainty_ns,
+        float(trigger_item["combined_uncertainty_ns"]),
+        rel_tol=1e-12,
+        abs_tol=1e-9,
+    )
+    band_upper_ns = (
+        float(surface_reference["predicted_ns"])
+        + combined_surface_uncertainty_ns
+    )
+
+    def candidate_result_below_band(result: object) -> bool:
+        if not isinstance(result, dict):
+            return False
+        candidate = eligible_by_id.get(result.get("candidate_id"))
+        records = result.get("correctness_records")
+        tolerance = result.get("correctness_tolerance")
+        sessions = result.get("sessions")
+        if (
+            candidate is None
+            or not isinstance(records, list)
+            or not records
+            or not isinstance(tolerance, dict)
+            or not _finite_number(tolerance.get("atol"))
+            or not _finite_number(tolerance.get("rtol"))
+            or float(tolerance["atol"]) < 0
+            or float(tolerance["rtol"]) < 0
+            or tolerance
+            != {
+                "atol": contract["correctness_policy"]["atol"],
+                "rtol": contract["correctness_policy"]["rtol"],
+            }
+            or result.get("correctness_evidence_ref")
+            != candidate["correctness"]["evidence_ref"]
+            or not isinstance(sessions, list)
+            or len(sessions) != len(holdout_session_set)
+        ):
+            return False
+        correctness_passed = all(
+            isinstance(record, dict)
+            and _finite_number(record.get("expected"))
+            and _finite_number(record.get("observed"))
+            and abs(float(record["observed"]) - float(record["expected"]))
+            <= float(tolerance["atol"])
+            + float(tolerance["rtol"]) * abs(float(record["expected"]))
+            for record in records
+        )
+        session_latencies: list[float] = []
+        result_session_ids: list[str] = []
+        records_valid = True
+        for session in sessions:
+            if not isinstance(session, dict):
+                records_valid = False
+                break
+            session_id = session.get("session_id")
+            master = holdout_by_id.get(session_id)
+            raw_samples = session.get("raw_samples_ns")
+            excluded_samples = session.get("excluded_samples")
+            if (
+                master is None
+                or session.get("process_id") != master["process_id"]
+                or session.get("lane_id") != baseline_lane_id
+                or session.get("lane_id") != master["lane_id"]
+                or session.get("cohort_id") != contract["cohort_id"]
+                or session.get("cohort_id") != master["cohort_id"]
+                or not isinstance(raw_samples, list)
+                or not raw_samples
+                or not all(
+                    _finite_number(sample) and float(sample) > 0
+                    for sample in raw_samples
+                )
+                or not isinstance(excluded_samples, list)
+                or not all(
+                    _finite_number(sample) and float(sample) > 0
+                    for sample in excluded_samples
+                )
+                or not _nonempty_string(session.get("evidence_ref"))
+            ):
+                records_valid = False
+                break
+            result_session_ids.append(session_id)
+            session_latencies.append(float(median(raw_samples)))
+        return (
+            correctness_passed
+            and records_valid
+            and set(result_session_ids) == holdout_session_set
+            and len(result_session_ids) == len(set(result_session_ids))
+            and all(latency > band_upper_ns for latency in session_latencies)
+            and float(median(session_latencies)) > band_upper_ns
+        )
+
+    all_candidates_below_band = (
+        independent_holdout
+        and same_cohort
+        and surface_reference_valid
+        and result_ids == eligible_ids
+        and len(candidate_results) == len(eligible_ids)
+        and all(
+            candidate_result_below_band(result)
+            for result in candidate_results
+        )
+    )
+
+    neighbourhood = frontier_evidence["neighbourhood"]
+    regime_id = neighbourhood["regime_id"]
+    qualification_policy = neighbourhood["qualification_policy"]
+    domain_shape = contract.get("execution_domain", {}).get("shape", {})
+
+    def neighbourhood_record_valid(record: object) -> bool:
+        if not isinstance(record, dict):
+            return False
+        correctness_passed = _raw_correctness_passed(
+            record.get("correctness_records"),
+            record.get("correctness_tolerance"),
+        )
+        sessions = record.get("holdout_sessions")
+        uncertainty_records = record.get("uncertainty_records")
+        if not isinstance(sessions, list):
+            return False
+        if (
+            not isinstance(uncertainty_records, list)
+            or len(uncertainty_records) != 3
+            or {
+                item.get("component_id")
+                for item in uncertainty_records
+                if isinstance(item, dict)
+            }
+            != {"anchor", "interpolation", "instrumentation"}
+            or not all(
+                isinstance(item, dict)
+                and _finite_number(item.get("standard_uncertainty_ns"))
+                and float(item["standard_uncertainty_ns"]) >= 0
+                and _artifact_uri(item.get("evidence_ref"))
+                for item in uncertainty_records
+            )
+        ):
+            return False
+        if record.get("correctness_tolerance") != {
+            "atol": contract["correctness_policy"]["atol"],
+            "rtol": contract["correctness_policy"]["rtol"],
+        }:
+            return False
+        session_ids: list[str] = []
+        process_ids: list[int] = []
+        session_latencies: list[float] = []
+        for session in sessions:
+            raw_samples = (
+                session.get("raw_samples_ns")
+                if isinstance(session, dict)
+                else None
+            )
+            excluded_samples = (
+                session.get("excluded_samples")
+                if isinstance(session, dict)
+                else None
+            )
+            if (
+                not isinstance(session, dict)
+                or not _nonempty_string(session.get("session_id"))
+                or not isinstance(session.get("process_id"), int)
+                or isinstance(session["process_id"], bool)
+                or session["process_id"] <= 0
+                or session.get("lane_id") != baseline_lane_id
+                or session.get("cohort_id") != contract["cohort_id"]
+                or not isinstance(raw_samples, list)
+                or not raw_samples
+                or not all(
+                    _finite_number(sample) and float(sample) > 0
+                    for sample in raw_samples
+                )
+                or not isinstance(excluded_samples, list)
+                or not all(
+                    _finite_number(sample) and float(sample) > 0
+                    for sample in excluded_samples
+                )
+                or not _nonempty_string(session.get("evidence_ref"))
+            ):
+                return False
+            session_ids.append(session["session_id"])
+            process_ids.append(session["process_id"])
+            session_latencies.append(float(median(raw_samples)))
+        return (
+            correctness_passed is True
+            and record.get("observation_validity") == "QUALIFIED"
+            and record.get("frontier_role") == "ACTIVE"
+            and record.get("surface") == frontier_evidence["surface"]
+            and record.get("cohort_id") == contract["cohort_id"]
+            and record.get("regime_id") == regime_id
+            and isinstance(record.get("shape"), dict)
+            and set(record["shape"]) == set(domain_shape)
+            and all(
+                isinstance(dimension, int)
+                and not isinstance(dimension, bool)
+                and dimension > 0
+                for dimension in record["shape"].values()
+            )
+            and _finite_number(record.get("predicted_ns"))
+            and float(record["predicted_ns"]) > 0
+            and _finite_number(record.get("observed_ns"))
+            and float(record["observed_ns"]) > 0
+            and len(session_ids) >= required_sessions
+            and len(session_ids) == len(set(session_ids))
+            and len(process_ids) == len(set(process_ids))
+            and search_process_ids.isdisjoint(process_ids)
+            and isclose(
+                float(record["observed_ns"]),
+                float(median(session_latencies)),
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+            and _nonempty_string(record.get("evidence_ref"))
+        )
+
+    def record_stable(record: object) -> bool:
+        combined_uncertainty_ns = (
+            hypot(
+                *[
+                    float(item["standard_uncertainty_ns"])
+                    for item in record["uncertainty_records"]
+                ]
+            )
+            if isinstance(record, dict)
+            and isinstance(record.get("uncertainty_records"), list)
+            else -1.0
+        )
+        return (
+            neighbourhood_record_valid(record)
+            and abs(float(record["observed_ns"]) - float(record["predicted_ns"]))
+            <= combined_uncertainty_ns
+        )
+
+    expected_local_shapes: set[tuple[tuple[str, int], ...]] = set()
+    local_shape_radius = qualification_policy["local_shape_radius"]
+    if isinstance(domain_shape, dict) and all(
+        isinstance(value, int)
+        and not isinstance(value, bool)
+        and value > local_shape_radius
+        for value in domain_shape.values()
+    ):
+        for name in sorted(domain_shape):
+            for delta in (-local_shape_radius, local_shape_radius):
+                shape = dict(domain_shape)
+                shape[name] += delta
+                expected_local_shapes.add(tuple(sorted(shape.items())))
+    anchors = neighbourhood["anchor_records"]
+    anchor_shapes = {
+        tuple(sorted(record["shape"].items()))
+        for record in anchors
+        if record_stable(record)
+    }
+    stable_anchors = (
+        len(anchors)
+        >= qualification_policy["minimum_stable_anchor_records"]
+        and len(anchor_shapes) == len(anchors)
+        and anchor_shapes.issubset(expected_local_shapes)
+    )
+    local_probes = neighbourhood["local_probe_records"]
+    actual_local_shapes = {
+        tuple(sorted(record["shape"].items()))
+        for record in local_probes
+        if record_stable(record)
+    }
+    dense_local_shapes = (
+        bool(expected_local_shapes)
+        and len(actual_local_shapes) == len(local_probes)
+        and expected_local_shapes.issubset(actual_local_shapes)
+    )
+    refit_records = neighbourhood["refit_records"]
+    refit_shapes = {
+        tuple(sorted(record["shape"].items()))
+        for record in refit_records
+        if record_stable(record)
+    }
+    same_regime_refit = (
+        len(refit_records) >= qualification_policy["minimum_refit_records"]
+        and len(refit_shapes) == len(refit_records)
+        and refit_shapes.issubset(expected_local_shapes)
+    )
+    neighbourhood_met = (
+        stable_anchors and dense_local_shapes and same_regime_refit
+    )
+    return (
+        (
+            "frontier-shift-independent-candidate-coverage",
+            independent_candidate_coverage,
+            "c2-or-c3-independent-candidate-families-missing",
+        ),
+        (
+            "frontier-shift-independent-holdout",
+            independent_holdout,
+            "independent-holdout-missing",
+        ),
+        (
+            "frontier-shift-minimum-independent-sessions",
+            minimum_search_sessions_met,
+            "minimum-independent-sessions-not-met",
+        ),
+        (
+            "frontier-shift-same-hardware-validity-cohort",
+            same_cohort,
+            "hardware-validity-cohort-unstable",
+        ),
+        (
+            "frontier-shift-all-eligible-candidates-below-surface-band",
+            all_candidates_below_band,
+            "eligible-candidates-not-confirmed-below-surface-band",
+        ),
+        (
+            "frontier-shift-validated-neighbourhood",
+            neighbourhood_met,
+            "neighbourhood-regime-not-validated",
+        ),
+    )
+
+
+def _performance_diagnosis_verdicts(
+    document: dict[str, Any],
+    *,
+    run_id: str,
+    trigger: dict[str, Any] | None,
+    probes: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    if trigger is None:
+        return None, []
+    policy = _verdict_policy(document)
+    triggered_paths = (
+        {
+            item["stable_path"]
+            for item in trigger.get("triggered", [])
+            if isinstance(item, dict)
+            and _nonempty_string(item.get("stable_path"))
+        }
+        if isinstance(trigger, dict)
+        else set()
+    )
+    trigger_items_by_path = {
+        item["stable_path"]: item
+        for item in trigger.get("triggered", [])
+        if isinstance(item, dict)
+        and _nonempty_string(item.get("stable_path"))
+    }
+    probe_by_path = {
+        probe["stable_path"]: probe
+        for probe in probes
+        if _nonempty_string(probe.get("stable_path"))
+    }
+    verdicts = []
+    for stable_path in sorted(triggered_paths):
+        probe = probe_by_path.get(stable_path)
+        bundle_ref = f"run-bundle://{run_id}"
+        if policy["status"] != "valid":
+            verdicts.append(
+                _fail_closed_performance_verdict(
+                    stable_path=stable_path,
+                    run_id=run_id,
+                    probe_id=(
+                        probe.get("probe_id")
+                        if isinstance(probe, dict)
+                        else None
+                    ),
+                    failed_gate_id="verdict-policy-valid",
+                    reason_code=policy["reason_code"],
+                    evidence_refs=[bundle_ref],
+                )
+            )
+            continue
+        if not isinstance(probe, dict) or probe.get("status") != "complete":
+            reason_code = (
+                probe.get("reason_code", "exact-shape-probe-evidence-missing")
+                if isinstance(probe, dict)
+                else "exact-shape-probe-evidence-missing"
+            )
+            probe_refs = (
+                probe.get("evidence_refs", [])
+                if isinstance(probe, dict)
+                else []
+            )
+            verdicts.append(
+                _fail_closed_performance_verdict(
+                    stable_path=stable_path,
+                    run_id=run_id,
+                    probe_id=(
+                        probe.get("probe_id")
+                        if isinstance(probe, dict)
+                        else None
+                    ),
+                    failed_gate_id="exact-shape-probe-complete",
+                    reason_code=reason_code,
+                    evidence_refs=probe_refs,
+                    satisfied=[
+                        {
+                            "gate_id": "diagnostic-trigger-met",
+                            "evidence_refs": [bundle_ref],
+                        }
+                    ],
+                    not_evaluated=[
+                        {
+                            "gate_id": "correctness-before-best-of-correct",
+                            "reason_code": "probe-incomplete",
+                            "evidence_refs": probe_refs,
+                        },
+                        {
+                            "gate_id": "frontier-shift",
+                            "reason_code": "probe-incomplete",
+                            "evidence_refs": probe_refs,
+                        },
+                    ],
+                )
+            )
+            continue
+        candidates = probe["candidate_evaluations"]
+        targets = [
+            candidate
+            for candidate in candidates
+            if candidate["role"] == "target"
+            and candidate["eligible_for_best_of_correct"]
+        ]
+        alternatives = [
+            candidate
+            for candidate in candidates
+            if candidate["role"] == "alternative"
+            and candidate["eligible_for_best_of_correct"]
+        ]
+        if len(targets) != 1:
+            verdicts.append(
+                _fail_closed_performance_verdict(
+                    stable_path=stable_path,
+                    run_id=run_id,
+                    probe_id=probe["probe_id"],
+                    failed_gate_id="single-correct-eligible-target",
+                    reason_code="expected-exactly-one-correct-eligible-target",
+                    evidence_refs=probe["evidence_refs"],
+                )
+            )
+            continue
+        if not alternatives:
+            verdicts.append(
+                _fail_closed_performance_verdict(
+                    stable_path=stable_path,
+                    run_id=run_id,
+                    probe_id=probe["probe_id"],
+                    failed_gate_id="correct-eligible-alternative-present",
+                    reason_code="no-correct-eligible-alternative",
+                    evidence_refs=probe["evidence_refs"],
+                )
+            )
+            continue
+        target = targets[0]
+        alternative = min(
+            alternatives,
+            key=lambda candidate: (
+                float(candidate["aggregate_latency_ns"]),
+                candidate["candidate_id"],
+            ),
+        )
+        target_implementation = target["implementation_family"]
+        alternative_implementation = alternative["implementation_family"]
+        distinct_implementation = all(
+            target_implementation[key] != alternative_implementation[key]
+            for key in (
+                "implementation_ref",
+                "implementation_sha256",
+                "source_identity",
+            )
+        )
+        if not distinct_implementation:
+            implementation_refs = list(
+                dict.fromkeys(
+                    [
+                        *probe["evidence_refs"],
+                        target_implementation["manifest_ref"],
+                        target_implementation["implementation_ref"],
+                        alternative_implementation["manifest_ref"],
+                        alternative_implementation["implementation_ref"],
+                    ]
+                )
+            )
+            verdicts.append(
+                _fail_closed_performance_verdict(
+                    stable_path=stable_path,
+                    run_id=run_id,
+                    probe_id=probe["probe_id"],
+                    failed_gate_id=(
+                        "distinct-target-alternative-implementation"
+                    ),
+                    reason_code=(
+                        "target-alternative-implementation-identity-collides"
+                    ),
+                    evidence_refs=implementation_refs,
+                    satisfied=[
+                        {
+                            "gate_id": "diagnostic-trigger-met",
+                            "evidence_refs": [bundle_ref],
+                        },
+                        {
+                            "gate_id": "exact-shape-contract-locked",
+                            "evidence_refs": probe["evidence_refs"],
+                        },
+                        {
+                            "gate_id": "correctness-before-best-of-correct",
+                            "evidence_refs": [
+                                *target["evidence_refs"],
+                                *alternative["evidence_refs"],
+                            ],
+                        },
+                    ],
+                    not_evaluated=[
+                        {
+                            "gate_id": "reproducible-faster-alternative",
+                            "reason_code": "implementation-identity-collides",
+                            "evidence_refs": implementation_refs,
+                        },
+                        {
+                            "gate_id": "frontier-shift",
+                            "reason_code": "implementation-identity-collides",
+                            "evidence_refs": implementation_refs,
+                        },
+                    ],
+                )
+            )
+            continue
+        target_sessions = target["session_latencies_ns"]
+        alternative_sessions = alternative["session_latencies_ns"]
+        target_processes = target["session_process_ids"]
+        alternative_processes = alternative["session_process_ids"]
+        common_session_ids = sorted(
+            set(target_sessions) & set(alternative_sessions)
+        )
+        independent_session_count = len(common_session_ids)
+        process_identity_matches = all(
+            target_processes.get(session_id)
+            == alternative_processes.get(session_id)
+            for session_id in common_session_ids
+        )
+        independent_process_count = len(
+            {
+                target_processes[session_id]
+                for session_id in common_session_ids
+            }
+        )
+        faster_in_every_session = (
+            set(target_sessions) == set(alternative_sessions)
+            and all(
+                float(alternative_sessions[session_id])
+                < float(target_sessions[session_id])
+                for session_id in common_session_ids
+            )
+        )
+        reproducible_faster = (
+            independent_session_count
+            >= policy["minimum_independent_sessions"]
+            and independent_process_count
+            >= policy["minimum_independent_sessions"]
+            and process_identity_matches
+            and faster_in_every_session
+            and probe["best_of_correct"]["candidate_id"]
+            == alternative["candidate_id"]
+        )
+        evidence_refs = list(
+            dict.fromkeys(
+                [
+                    *probe["evidence_refs"],
+                    *target["evidence_refs"],
+                    *alternative["evidence_refs"],
+                ]
+            )
+        )
+        contract = probe["locked_contract"]
+        lanes = probe["measurement_lanes"]
+        cohort_evidence_refs = [
+            contract["cohort_identity"]["evidence_ref"],
+            *target["evidence_refs"],
+            *alternative["evidence_refs"],
+        ]
+        satisfied = [
+            {
+                "gate_id": "diagnostic-trigger-met",
+                "evidence_refs": evidence_refs,
+            },
+            {
+                "gate_id": "exact-shape-contract-locked",
+                "evidence_refs": [
+                    contract["cohort_identity"]["evidence_ref"],
+                    contract["environment"]["evidence_ref"],
+                ],
+            },
+            {
+                "gate_id": "correctness-before-best-of-correct",
+                "evidence_refs": evidence_refs,
+            },
+            {
+                "gate_id": "eligible-probe-environment",
+                "evidence_refs": [
+                    contract["environment"]["evidence_ref"]
+                ],
+            },
+            {
+                "gate_id": "paired-baseline-diagnostic-lanes",
+                "evidence_refs": [
+                    lanes["baseline"]["evidence_ref"],
+                    lanes["diagnostic"]["evidence_ref"],
+                ],
+            },
+            {
+                "gate_id": "same-hardware-validity-cohort",
+                "evidence_refs": cohort_evidence_refs,
+            },
+        ]
+        failed = []
+        if reproducible_faster:
+            satisfied.append(
+                {
+                    "gate_id": "reproducible-faster-alternative",
+                    "evidence_refs": evidence_refs,
+                }
+            )
+        else:
+            failed.append(
+                {
+                    "gate_id": "reproducible-faster-alternative",
+                    "reason_code": "alternative-not-faster-in-required-sessions",
+                    "evidence_refs": evidence_refs,
+                }
+            )
+        frontier_shift_evidence = probe.get("frontier_shift_evidence")
+        frontier_gate_failed = False
+        if isinstance(frontier_shift_evidence, dict):
+            frontier_evidence_refs = list(
+                dict.fromkeys(
+                    [
+                        *frontier_shift_evidence["evidence_refs"],
+                        frontier_shift_evidence["holdout"]["evidence_ref"],
+                        *sorted(_artifact_refs(frontier_shift_evidence)),
+                        *sorted(
+                            {
+                                candidate["implementation_family"][
+                                    "manifest_ref"
+                                ]
+                                for candidate in candidates
+                                if candidate[
+                                    "eligible_for_best_of_correct"
+                                ]
+                            }
+                        ),
+                        *sorted(
+                            {
+                                candidate["implementation_family"][
+                                    "implementation_ref"
+                                ]
+                                for candidate in candidates
+                                if candidate[
+                                    "eligible_for_best_of_correct"
+                                ]
+                            }
+                        ),
+                    ]
+                )
+            )
+            frontier_gates = _derive_frontier_shift_gates(
+                frontier_shift_evidence,
+                candidates=candidates,
+                contract=contract,
+                measurement_lanes=lanes,
+                trigger_item=trigger_items_by_path[stable_path],
+                minimum_sessions=policy["minimum_independent_sessions"],
+            )
+            for gate_id, passed, reason_code in frontier_gates:
+                gate = {
+                    "gate_id": gate_id,
+                    "evidence_refs": frontier_evidence_refs,
+                }
+                if passed:
+                    satisfied.append(gate)
+                else:
+                    gate["reason_code"] = reason_code
+                    failed.append(gate)
+                    frontier_gate_failed = True
+        candidate_counterexamples = [
+            {
+                "candidate_id": candidate["candidate_id"],
+                "reason_code": candidate["exclusion_reason"],
+                "evidence_refs": candidate["evidence_refs"],
+            }
+            for candidate in candidates
+            if candidate["exclusion_reason"] is not None
+        ]
+        not_evaluated = []
+        if frontier_gate_failed:
+            not_evaluated.append(
+                {
+                    "gate_id": "frontier-shift",
+                    "reason_code": "prerequisites-failed",
+                    "evidence_refs": frontier_evidence_refs,
+                }
+            )
+        not_evaluated.append(
+            {
+                "gate_id": "suspected-regression",
+                "reason_code": "policy-undefined",
+                "evidence_refs": evidence_refs,
+            }
+        )
+        verdict_result = {
+            "stable_path": stable_path,
+            "status": "decided",
+            "verdict": (
+                "implementation_headroom"
+                if reproducible_faster
+                else "insufficient_evidence"
+            ),
+            "probe_id": probe["probe_id"],
+            "metrics": {
+                "target_candidate_id": target["candidate_id"],
+                "alternative_candidate_id": alternative["candidate_id"],
+                "target_aggregate_latency_ns": target[
+                    "aggregate_latency_ns"
+                ],
+                "alternative_aggregate_latency_ns": alternative[
+                    "aggregate_latency_ns"
+                ],
+                "speedup_fraction": (
+                    float(target["aggregate_latency_ns"])
+                    / float(alternative["aggregate_latency_ns"])
+                    - 1.0
+                ),
+                "faster_in_every_session": faster_in_every_session,
+                "independent_session_count": independent_session_count,
+                "independent_process_count": independent_process_count,
+            },
+            "gates": {
+                "satisfied": satisfied,
+                "failed": failed,
+                "not_evaluated": not_evaluated,
+            },
+            "bundle_refs": [
+                f"run-bundle://{run_id}",
+                *probe["evidence_refs"],
+            ],
+            "counterexamples": [
+                *probe.get("counterexamples", []),
+                *candidate_counterexamples,
+            ],
+        }
+        if isinstance(frontier_shift_evidence, dict):
+            verdict_result["surface_action"] = {
+                "action": "preserve",
+                "surface": frontier_shift_evidence["surface"],
+                "reason_code": "insufficient-evidence-cannot-lower-surface",
+            }
+        verdicts.append(verdict_result)
+    return policy, verdicts
 
 
 def _profiling_ablation_decision(
@@ -2494,6 +5051,19 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             )
         }
     comparisons = _comparisons(axes)
+    diagnostic_trigger = _diagnostic_trigger(document)
+    verified_artifacts = _verified_bundle_artifacts(root, manifest)
+    shape_probes = _shape_disambiguation_probes(
+        document,
+        diagnostic_trigger,
+        verified_artifacts,
+    )
+    verdict_policy, performance_verdicts = _performance_diagnosis_verdicts(
+        document,
+        run_id=manifest["run_id"],
+        trigger=diagnostic_trigger,
+        probes=shape_probes,
+    )
     (
         capability_surfaces,
         candidate_envelopes,
@@ -2514,6 +5084,15 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "capability_surface_queries": surface_queries,
         "adapter_contract": adapter_contract,
     }
+    if diagnostic_trigger is not None:
+        derivation_basis["diagnostic_trigger"] = diagnostic_trigger
+    if shape_probes:
+        derivation_basis["shape_disambiguation_probes"] = shape_probes
+    if verdict_policy is not None:
+        derivation_basis["verdict_policy"] = verdict_policy
+        derivation_basis[
+            "performance_diagnosis_verdicts"
+        ] = performance_verdicts
     derivation = {
         "derivation_id": _canonical_digest(derivation_basis),
         "inputs": ["diagnostic-evidence"],
@@ -2525,6 +5104,12 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             "query-versioned-capability-surfaces",
         ],
     }
+    if diagnostic_trigger is not None:
+        derivation["steps"].append("evaluate-diagnostic-trigger")
+    if shape_probes:
+        derivation["steps"].append("evaluate-exact-shape-probes")
+    if verdict_policy is not None:
+        derivation["steps"].append("evaluate-performance-verdicts")
     result = {
         "schema": DIAGNOSTIC_RESULT_SCHEMA,
         "run_id": manifest["run_id"],
@@ -2568,6 +5153,16 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "digests": digests,
         "derivation": derivation,
     }
+    if diagnostic_trigger is not None:
+        result["diagnostic_trigger"] = diagnostic_trigger
+    if shape_probes:
+        result["shape_disambiguation_probes"] = shape_probes
+    if verdict_policy is not None:
+        result["verdict_policy"] = verdict_policy
+        result["verdict_vocabulary"] = list(
+            PERFORMANCE_DIAGNOSIS_VERDICTS
+        )
+        result["performance_diagnosis_verdicts"] = performance_verdicts
     if adapter_contract is not None:
         result["adapter_contract"] = adapter_contract
     return result
@@ -2699,6 +5294,124 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"anchors={','.join(anchor['anchor_id'] for anchor in query['anchors'])}; "
             f"weights={json.dumps(query['weights'], separators=(',', ':'))}; "
             f"uncertainty={json.dumps(query['uncertainty']['components'], separators=(',', ':'), sort_keys=True)}"
+        )
+    trigger = result.get("diagnostic_trigger")
+    if isinstance(trigger, dict):
+        if trigger.get("status") == "evaluated":
+            policy = trigger["policy"]
+            lines.extend(
+                [
+                    "Diagnostic Trigger "
+                    f"[{policy['policy_id']}/{policy['version']}]: evaluated",
+                    "predicted Top 10: "
+                    + ", ".join(
+                        item["stable_path"]
+                        for item in trigger["predicted_top10"]
+                    ),
+                    "observed Top 10: "
+                    + ", ".join(
+                        item["stable_path"]
+                        for item in trigger["observed_top10"]
+                    ),
+                    "triggered: "
+                    + (
+                        ", ".join(
+                            item["stable_path"]
+                            for item in trigger["triggered"]
+                        )
+                        or "none"
+                    ),
+                ]
+            )
+        else:
+            lines.append(
+                "Diagnostic Trigger: unknown "
+                f"({trigger.get('reason_code', 'unknown')})"
+            )
+    for probe in result.get("shape_disambiguation_probes", []):
+        lines.append(
+            "Shape Disambiguation Probe "
+            f"{probe.get('probe_id', 'unknown')}: "
+            f"{probe.get('status', 'unknown')}"
+        )
+        contract = probe.get("locked_contract")
+        if isinstance(contract, dict):
+            lines.append(
+                "locked contract: "
+                f"semantic={contract['semantic']}; "
+                "shape="
+                + json.dumps(
+                    contract["shape"],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+                + f"; dtype={contract['dtype']}; layout={contract['layout']}; "
+                "strides="
+                + json.dumps(
+                    contract["strides"],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+                + f"; alignment={contract['alignment_bytes']}; "
+                f"threads={contract['threads']}; "
+                f"cohort={contract['cohort_id']}; "
+                "candidates="
+                + ",".join(contract["candidate_ids"])
+                + "; completion="
+                + json.dumps(
+                    contract["completion_boundary"],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+            )
+        best = probe.get("best_of_correct")
+        if isinstance(best, dict):
+            lines.append(
+                "correctness -> best-of-correct: "
+                f"{best['candidate_id']}"
+            )
+    for verdict in result.get("performance_diagnosis_verdicts", []):
+        lines.append(
+            "Performance Diagnosis Verdict "
+            f"{verdict['stable_path']}: {verdict['verdict']}"
+        )
+        gates = verdict["gates"]
+        for state in ("satisfied", "failed", "not_evaluated"):
+            values = gates[state]
+            rendered = ", ".join(
+                gate["gate_id"]
+                + (
+                    f"({gate['reason_code']})"
+                    if gate.get("reason_code") is not None
+                    else ""
+                )
+                for gate in values
+            )
+            lines.append(f"{state} gates: {rendered or 'none'}")
+        lines.append("bundle refs: " + ", ".join(verdict["bundle_refs"]))
+        counterexamples = verdict["counterexamples"]
+        rendered_counterexamples = ", ".join(
+            str(
+                counterexample.get(
+                    "candidate_id",
+                    counterexample.get("counterexample_id", "unknown"),
+                )
+            )
+            + "("
+            + str(
+                counterexample.get(
+                    "reason_code",
+                    ",".join(counterexample.get("reason_codes", [])),
+                )
+            )
+            + ")"
+            for counterexample in counterexamples
+        )
+        lines.append(
+            "counterexamples: " + (rendered_counterexamples or "none")
         )
     evidence = result["evidence"]
     hardware_value = evidence.get("hardware")

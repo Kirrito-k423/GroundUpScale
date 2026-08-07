@@ -1,0 +1,331 @@
+{
+  "source": {
+    "issue": "#6",
+    "raw_results_sha256": "669a037ac66207342c472cfbdb1204198ac190e814af9389668b9538faca1fd2"
+  },
+  "fixture_expectation": {
+    "classification": "implementation_headroom",
+    "speedup_fraction": 0.06016685962159096
+  },
+  "diagnostic_items": [
+    {
+      "stable_path": "semantic/context-matmul",
+      "predicted_ns": 350299.16,
+      "observed_ns": 330418.89285714284,
+      "combined_uncertainty_ns": 10000
+    }
+  ],
+  "verdict_policy": {
+    "policy_id": "exact-shape-verdict",
+    "version": "v1",
+    "scope": "exact-shape-performance-diagnosis",
+    "change_reason": "issue-21 normative verdict gates",
+    "revalidation": "on verdict gate or evidence policy change",
+    "minimum_independent_sessions": 3,
+    "suspected_regression_gate": "undefined"
+  },
+  "shape_disambiguation_probes": [
+    {
+      "probe_id": "probe-context-matmul",
+      "stable_path": "semantic/context-matmul",
+      "locked_contract": {
+        "semantic": "bhqk,bkhd->bqhd Context MatMul",
+        "shape": {
+          "probabilities": [1, 8, 512, 512],
+          "values": [1, 512, 8, 64],
+          "output": [1, 512, 8, 64]
+        },
+        "dtype": "float32",
+        "layout": "C-contiguous",
+        "strides": {
+          "probabilities": [2097152, 262144, 512, 1],
+          "values": [2097152, 4096, 64, 1],
+          "output": [262144, 512, 64, 1]
+        },
+        "alignment_bytes": 16,
+        "threads": 4,
+        "execution_domain": {
+          "shape": {
+            "batch": 1,
+            "heads": 8,
+            "query": 512,
+            "key": 512,
+            "head_dim": 64
+          },
+          "dtype": "float32",
+          "layout": "C-contiguous",
+          "alignment_bytes": 16,
+          "threads": 4,
+          "execution_mode": "eager",
+          "affinity": "all-performance-cores",
+          "numa": "single-domain",
+          "context": "default",
+          "stream": "not_applicable",
+          "concurrency": 1
+        },
+        "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+        "cohort_identity": {
+          "device": "Apple M4 CPU",
+          "partition": "host",
+          "topology": "single-socket",
+          "software": "torch-2.13-cpu",
+          "os": {"name": "macOS", "version": "15.7.4-arm64", "status": "resolved"},
+          "kernel": {"name": "Darwin", "version": "24.6.0", "status": "resolved"},
+          "driver": {"name": "darwin-integrated-cpu-stack", "version": "24.6.0", "status": "resolved"},
+          "firmware": {"name": "cpu-userspace-firmware", "version": "v1", "status": "not_applicable"},
+          "runtime": {"name": "CPython", "version": "3.11.15", "status": "resolved"},
+          "framework": {"name": "PyTorch+NumPy", "version": "2.13.0+2.4.6", "status": "resolved"},
+          "compiler": {"name": "CPython-bytecode", "version": "3.11.15", "status": "resolved"},
+          "operator_library": {"name": "Accelerate", "version": "24.6.0", "status": "resolved"},
+          "communication_library": {"name": "single-host", "version": "v1", "status": "not_applicable"},
+          "power_clock": {
+            "power_policy": "AC",
+            "clock_policy": "automatic"
+          },
+          "numeric_execution": {
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 4,
+            "execution_mode": "eager"
+          },
+          "execution_context": {
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "timer_protocol": {
+            "source": "time.perf_counter_ns",
+            "resolution_ns": 1,
+            "completion_kind": "synchronous-cpu-call-return",
+            "adapter_id": "apple-m4-cpu",
+            "adapter_version": "v1",
+            "protocol_id": "exact-shape-diagnostic",
+            "protocol_version": "v1"
+          },
+          "communication": {
+            "status": "not_applicable"
+          },
+          "evidence_ref": "artifact://issue-6/context-cohort"
+        },
+        "environment": {
+          "eligible": true,
+          "evidence_ref": "artifact://issue-6/context-environment-preflight"
+        },
+        "correctness_policy": {
+          "policy_id": "fp64-reference-correctness",
+          "version": "v1",
+          "scope": "exact-shape-candidate-correctness",
+          "change_reason": "issue-6 locked FP64 oracle",
+          "revalidation": "on oracle or tolerance change",
+          "oracle": "numpy-fp64-reference",
+          "atol": 0.0001,
+          "rtol": 0.0001
+        },
+        "candidate_ids": [
+          "legacy-einsum",
+          "batched-matmul",
+          "truncated-negative-control"
+        ],
+        "completion_boundary": {
+          "kind": "synchronous-cpu-call-return",
+          "closed": true,
+          "threadpool_joined": true
+        }
+      },
+      "measurement_lanes": {
+        "baseline": {
+          "lane_id": "context-baseline",
+          "pair_id": "context-lane-pair",
+          "instrumentation_profile": "baseline-timing/v1",
+          "timer_source": "time.perf_counter_ns",
+          "case": {
+            "stable_path": "semantic/context-matmul",
+            "semantic": "bhqk,bkhd->bqhd Context MatMul"
+          },
+          "execution_domain": {
+            "shape": {"batch": 1, "heads": 8, "query": 512, "key": 512, "head_dim": 64},
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 4,
+            "execution_mode": "eager",
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "candidate_ids": ["legacy-einsum", "batched-matmul", "truncated-negative-control"],
+          "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+          "completion_boundary": {"kind": "synchronous-cpu-call-return", "closed": true, "threadpool_joined": true},
+          "evidence_ref": "artifact://issue-6/context-baseline-lane"
+        },
+        "diagnostic": {
+          "lane_id": "context-diagnostic",
+          "pair_id": "context-lane-pair",
+          "paired_baseline_lane_id": "context-baseline",
+          "instrumentation_profile": "diagnostic-not-collected/v1",
+          "timer_source": "time.perf_counter_ns",
+          "timing_used_for_verdict": false,
+          "case": {
+            "stable_path": "semantic/context-matmul",
+            "semantic": "bhqk,bkhd->bqhd Context MatMul"
+          },
+          "execution_domain": {
+            "shape": {"batch": 1, "heads": 8, "query": 512, "key": 512, "head_dim": 64},
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 4,
+            "execution_mode": "eager",
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "candidate_ids": ["legacy-einsum", "batched-matmul", "truncated-negative-control"],
+          "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+          "completion_boundary": {"kind": "synchronous-cpu-call-return", "closed": true, "threadpool_joined": true},
+          "evidence_ref": "artifact://issue-6/context-diagnostic-lane"
+        }
+      },
+      "candidates": [
+        {
+          "candidate_id": "legacy-einsum",
+          "role": "target",
+          "eligible": true,
+          "implementation_family": {
+            "family_id": "accelerate-matmul",
+            "version": "24.6.0",
+            "implementation_ref": "artifact://issue-6/legacy-einsum-implementation",
+          "implementation_sha256": "e514180bec69a61ea46da4d8590c4cd67bb37d28820fb1d6a0baec15d5a765a5",
+            "manifest_ref": "artifact://issue-6/legacy-einsum-manifest"
+          },
+          "correctness": {
+            "passed": true,
+            "records": [{"expected": 1.0, "observed": 1.0}],
+            "tolerance": {"atol": 0.0001, "rtol": 0.0001},
+            "evidence_ref": "artifact://issue-6/legacy-correctness"
+          },
+          "sessions": [
+            {
+              "session_id": "session-1",
+              "process_id": 37175,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 350299.16000000003,
+              "raw_samples_ns": [365253.36, 345810.0, 350320.0, 354866.68, 353580.0, 329726.68, 332368.32, 337143.36, 370650.0, 340296.64, 350278.32, 360626.68],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/legacy-session-1"
+            },
+            {
+              "session_id": "session-2",
+              "process_id": 37179,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 352913.29032258067,
+              "raw_samples_ns": [353397.8387096774, 347568.5483870968, 346745.96774193546, 353779.5806451613, 353071.22580645164, 350362.9032258064, 352755.3548387097, 360010.77419354836, 368342.7419354839, 328286.29032258067, 353811.8387096774, 344784.96774193546],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/legacy-session-2"
+            },
+            {
+              "session_id": "session-3",
+              "process_id": 37188,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 333346.0967741936,
+              "raw_samples_ns": [322444.9032258064, 357708.32258064515, 334137.0967741936, 350115.5806451613, 332555.0967741936, 325866.93548387097, 313233.87096774194, 373680.0967741936, 335721.77419354836, 319767.4516129032, 350869.6129032258, 318346.77419354836],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/legacy-session-3"
+            }
+          ]
+        },
+        {
+          "candidate_id": "batched-matmul",
+          "role": "alternative",
+          "eligible": true,
+          "implementation_family": {
+            "family_id": "accelerate-matmul",
+            "version": "24.6.0",
+            "implementation_ref": "artifact://issue-6/batched-matmul-implementation",
+          "implementation_sha256": "793ee33e9aff9e1c1fd139f2abb98129744bfd50ae1385cb6410e4db828a6abc",
+            "manifest_ref": "artifact://issue-6/batched-matmul-manifest"
+          },
+          "correctness": {
+            "passed": true,
+            "records": [{"expected": 1.0, "observed": 1.0}],
+            "tolerance": {"atol": 0.0001, "rtol": 0.0001},
+            "evidence_ref": "artifact://issue-6/batched-correctness"
+          },
+          "sessions": [
+            {
+              "session_id": "session-1",
+              "process_id": 37175,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 337452.0833333334,
+              "raw_samples_ns": [332547.2, 363040.3, 344398.63333333336, 328336.13333333336, 330002.76666666666, 335925.0, 339898.63333333336, 350527.76666666666, 326980.5333333333, 342222.23333333334, 338979.1666666667, 327613.9],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/batched-session-1"
+            },
+            {
+              "session_id": "session-2",
+              "process_id": 37179,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 330418.89285714284,
+              "raw_samples_ns": [324998.5, 421757.4285714286, 400212.78571428574, 362793.14285714284, 325561.0, 323089.28571428574, 326040.1785714286, 364663.6785714286, 334797.60714285716, 364616.0714285714, 320419.64285714284, 319979.14285714284],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/batched-session-2"
+            },
+            {
+              "session_id": "session-3",
+              "process_id": 37188,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 325334.7166666667,
+              "raw_samples_ns": [328479.1666666667, 296631.93333333335, 316884.7, 305851.36666666664, 310711.1, 335606.93333333335, 329740.3, 338365.3, 310612.5, 322190.26666666666, 335711.1, 350606.93333333335],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/batched-session-3"
+            }
+          ]
+        },
+        {
+          "candidate_id": "truncated-negative-control",
+          "role": "negative_control",
+          "eligible": true,
+          "implementation_family": {
+            "family_id": "truncated-negative-control",
+            "version": "v1",
+            "implementation_ref": "artifact://issue-6/truncated-implementation",
+          "implementation_sha256": "1a5853b8bde8da16428996bcccf7af39da3bd38113898db9c43631721c147e6c",
+            "manifest_ref": "artifact://issue-6/truncated-manifest"
+          },
+          "correctness": {
+            "passed": false,
+            "records": [{"expected": 1.0, "observed": 0.0}],
+            "tolerance": {"atol": 0.0001, "rtol": 0.0001},
+            "evidence_ref": "artifact://issue-6/truncated-correctness"
+          },
+          "sessions": [
+            {
+              "session_id": "session-1",
+              "process_id": 37175,
+              "lane_id": "context-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 1,
+              "raw_samples_ns": [1],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/truncated-session-1"
+            }
+          ]
+        }
+      ],
+      "evidence_refs": ["artifact://issue-6/context-matmul-probe"]
+    }
+  ]
+}

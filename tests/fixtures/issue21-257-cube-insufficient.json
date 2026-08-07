@@ -1,0 +1,428 @@
+{
+  "source": {
+    "issue": "#6",
+    "raw_results_sha256": "669a037ac66207342c472cfbdb1204198ac190e814af9389668b9538faca1fd2"
+  },
+  "fixture_expectation": {
+    "classification": "insufficient_evidence",
+    "prohibited_classification": "frontier_shift"
+  },
+  "diagnostic_items": [
+    {
+      "stable_path": "semantic/matmul-257-cube",
+      "predicted_ns": 24308.51,
+      "observed_ns": 30285.623867069487,
+      "combined_uncertainty_ns": 1000
+    }
+  ],
+  "verdict_policy": {
+    "policy_id": "exact-shape-verdict",
+    "version": "v1",
+    "scope": "exact-shape-performance-diagnosis",
+    "change_reason": "issue-21 normative verdict gates",
+    "revalidation": "on verdict gate or evidence policy change",
+    "minimum_independent_sessions": 3,
+    "suspected_regression_gate": "undefined"
+  },
+  "shape_disambiguation_probes": [
+    {
+      "probe_id": "probe-257-cube",
+      "stable_path": "semantic/matmul-257-cube",
+      "locked_contract": {
+        "semantic": "matrix multiplication C=A@B",
+        "shape": {
+          "a": [257, 257],
+          "b": [257, 257],
+          "output": [257, 257]
+        },
+        "dtype": "float32",
+        "layout": "C-contiguous",
+        "strides": {
+          "a": [257, 1],
+          "b": [257, 1],
+          "output": [257, 1]
+        },
+        "alignment_bytes": 16,
+        "threads": 1,
+        "execution_domain": {
+          "shape": {"m": 257, "k": 257, "n": 257},
+          "dtype": "float32",
+          "layout": "C-contiguous",
+          "alignment_bytes": 16,
+          "threads": 1,
+          "execution_mode": "eager",
+          "affinity": "all-performance-cores",
+          "numa": "single-domain",
+          "context": "default",
+          "stream": "not_applicable",
+          "concurrency": 1
+        },
+        "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+        "cohort_identity": {
+          "device": "Apple M4 CPU",
+          "partition": "host",
+          "topology": "single-socket",
+          "software": "torch-2.13-cpu",
+          "os": {"name": "macOS", "version": "15.7.4-arm64", "status": "resolved"},
+          "kernel": {"name": "Darwin", "version": "24.6.0", "status": "resolved"},
+          "driver": {"name": "darwin-integrated-cpu-stack", "version": "24.6.0", "status": "resolved"},
+          "firmware": {"name": "cpu-userspace-firmware", "version": "v1", "status": "not_applicable"},
+          "runtime": {"name": "CPython", "version": "3.11.15", "status": "resolved"},
+          "framework": {"name": "PyTorch+NumPy", "version": "2.13.0+2.4.6", "status": "resolved"},
+          "compiler": {"name": "CPython-bytecode", "version": "3.11.15", "status": "resolved"},
+          "operator_library": {"name": "Accelerate", "version": "24.6.0", "status": "resolved"},
+          "communication_library": {"name": "single-host", "version": "v1", "status": "not_applicable"},
+          "power_clock": {
+            "power_policy": "AC",
+            "clock_policy": "automatic"
+          },
+          "numeric_execution": {
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 1,
+            "execution_mode": "eager"
+          },
+          "execution_context": {
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "timer_protocol": {
+            "source": "time.perf_counter_ns",
+            "resolution_ns": 1,
+            "completion_kind": "synchronous-cpu-call-return",
+            "adapter_id": "apple-m4-cpu",
+            "adapter_version": "v1",
+            "protocol_id": "exact-shape-diagnostic",
+            "protocol_version": "v1"
+          },
+          "communication": {
+            "status": "not_applicable"
+          },
+          "evidence_ref": "artifact://issue-6/257-cohort"
+        },
+        "environment": {
+          "eligible": true,
+          "evidence_ref": "artifact://issue-6/257-environment-preflight"
+        },
+        "correctness_policy": {
+          "policy_id": "fp64-reference-correctness",
+          "version": "v1",
+          "scope": "exact-shape-candidate-correctness",
+          "change_reason": "issue-6 locked FP64 oracle",
+          "revalidation": "on oracle or tolerance change",
+          "oracle": "numpy-fp64-reference",
+          "atol": 0.0001,
+          "rtol": 0.0001
+        },
+        "candidate_ids": ["torch-direct", "numpy-direct"],
+        "completion_boundary": {
+          "kind": "synchronous-cpu-call-return",
+          "closed": true,
+          "threadpool_joined": true
+        }
+      },
+      "measurement_lanes": {
+        "baseline": {
+          "lane_id": "matmul-257-baseline",
+          "pair_id": "matmul-257-lane-pair",
+          "instrumentation_profile": "baseline-timing/v1",
+          "timer_source": "time.perf_counter_ns",
+          "case": {
+            "stable_path": "semantic/matmul-257-cube",
+            "semantic": "matrix multiplication C=A@B"
+          },
+          "execution_domain": {
+            "shape": {"m": 257, "k": 257, "n": 257},
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 1,
+            "execution_mode": "eager",
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "candidate_ids": ["torch-direct", "numpy-direct"],
+          "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+          "completion_boundary": {"kind": "synchronous-cpu-call-return", "closed": true, "threadpool_joined": true},
+          "evidence_ref": "artifact://issue-6/257-baseline-lane"
+        },
+        "diagnostic": {
+          "lane_id": "matmul-257-diagnostic",
+          "pair_id": "matmul-257-lane-pair",
+          "paired_baseline_lane_id": "matmul-257-baseline",
+          "instrumentation_profile": "diagnostic-not-collected/v1",
+          "timer_source": "time.perf_counter_ns",
+          "timing_used_for_verdict": false,
+          "case": {
+            "stable_path": "semantic/matmul-257-cube",
+            "semantic": "matrix multiplication C=A@B"
+          },
+          "execution_domain": {
+            "shape": {"m": 257, "k": 257, "n": 257},
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 1,
+            "execution_mode": "eager",
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "candidate_ids": ["torch-direct", "numpy-direct"],
+          "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+          "completion_boundary": {"kind": "synchronous-cpu-call-return", "closed": true, "threadpool_joined": true},
+          "evidence_ref": "artifact://issue-6/257-diagnostic-lane"
+        }
+      },
+      "candidates": [
+        {
+          "candidate_id": "torch-direct",
+          "role": "target",
+          "eligible": true,
+          "implementation_family": {
+            "family_id": "accelerate-matmul",
+            "version": "24.6.0",
+            "implementation_ref": "artifact://issue-6/torch-direct-implementation",
+          "implementation_sha256": "6ea002526a357dd0a695d90a53c61c054fbe6a3e87f0e9e5d2944062e634d5d6",
+            "manifest_ref": "artifact://issue-6/torch-direct-manifest"
+          },
+          "correctness": {
+            "passed": true,
+            "records": [{"expected": 1.0, "observed": 1.0}],
+            "tolerance": {"atol": 0.0001, "rtol": 0.0001},
+            "evidence_ref": "artifact://issue-6/torch-correctness"
+          },
+          "sessions": [
+            {
+              "session_id": "session-1",
+              "process_id": 37175,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30498.606382978724,
+              "raw_samples_ns": [30964.161094224924, 30479.990881458965, 31391.337386018236, 30930.34650455927, 30905.647416413372, 30892.85714285714, 30501.392097264437, 30233.79027355623, 30495.82066869301, 29948.83282674772, 30333.714285714286, 30309.018237082066],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/torch-session-1"
+            },
+            {
+              "session_id": "session-2",
+              "process_id": 37179,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30185.27064220184,
+              "raw_samples_ns": [30443.681957186545, 30511.339449541283, 30519.623853211007, 30133.409785932723, 30025.483180428135, 30128.694189602447, 30353.467889908257, 31196.229357798165, 30081.422018348625, 30066.25993883792, 30237.13149847095, 29984.455657492355],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/torch-session-2"
+            },
+            {
+              "session_id": "session-3",
+              "process_id": 37188,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30285.623867069487,
+              "raw_samples_ns": [29950.655589123868, 30067.47432024169, 29889.47432024169, 30493.20241691843, 30417.924471299095, 30231.36858006042, 30018.882175226587, 30694.737160120847, 30003.90332326284, 30579.933534743202, 30601.332326283988, 30339.87915407855],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/torch-session-3"
+            }
+          ]
+        },
+        {
+          "candidate_id": "numpy-direct",
+          "role": "alternative",
+          "eligible": true,
+          "implementation_family": {
+            "family_id": "accelerate-matmul",
+            "version": "24.6.0",
+            "implementation_ref": "artifact://issue-6/numpy-direct-implementation",
+          "implementation_sha256": "e3170d79cb82efac7800a771f0d40e900f7e874ad824ff1d0075898f4afd2102",
+            "manifest_ref": "artifact://issue-6/numpy-direct-manifest"
+          },
+          "correctness": {
+            "passed": true,
+            "records": [{"expected": 1.0, "observed": 1.0}],
+            "tolerance": {"atol": 0.0001, "rtol": 0.0001},
+            "evidence_ref": "artifact://issue-6/numpy-correctness"
+          },
+          "sessions": [
+            {
+              "session_id": "session-1",
+              "process_id": 37175,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30402.439024390245,
+              "raw_samples_ns": [31200.58231707317, 31011.814024390245, 30737.551829268294, 31075.58231707317, 30604.420731707316, 30817.454268292684, 30200.45731707317, 30148.5, 30188.26219512195, 30146.59756097561, 29944.993902439026, 30008.384146341465],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/numpy-session-1"
+            },
+            {
+              "session_id": "session-2",
+              "process_id": 37179,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30314.41131498471,
+              "raw_samples_ns": [30659.278287461773, 30512.61467889908, 30312.180428134558, 30273.318042813455, 29992.229357798165, 30502.16513761468, 30505.605504587154, 30366.336391437308, 29972.351681957185, 30316.642201834864, 30222.859327217124, 30206.929663608564],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/numpy-session-2"
+            },
+            {
+              "session_id": "session-3",
+              "process_id": 37188,
+              "lane_id": "matmul-257-baseline",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "latency_ns": 30200.504545454547,
+              "raw_samples_ns": [30968.18181818182, 30650.757575757576, 29865.275757575757, 30097.854545454546, 29960.60606060606, 30002.77878787879, 30323.10606060606, 30103.409090909092, 30082.70303030303, 30436.869696969698, 31059.21818181818, 30297.6],
+              "excluded_samples": [],
+              "evidence_ref": "artifact://issue-6/numpy-session-3"
+            }
+          ]
+        }
+      ],
+      "frontier_shift_evidence": {
+        "neighbourhood": {
+          "qualification_policy": {
+            "policy_id": "frontier-neighbourhood-qualification",
+            "version": "v1",
+            "scope": "exact-shape-frontier-shift",
+            "change_reason": "issue-21 normative neighbourhood gates",
+            "revalidation": "on surface, regime, or qualification policy change",
+            "minimum_stable_anchor_records": 2,
+            "minimum_refit_records": 3,
+            "local_shape_radius": 1,
+            "combination_rule": "root-sum-square",
+            "target_coverage": {
+              "stable_path": "semantic/matmul-257-cube",
+              "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+              "execution_domain_sha256": "bab08fb81f4e6e2aa11205292e2d6bf06e8a555bc4aec98027ed341f8145735d",
+              "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+              "coverage_method": "independent-validation-absolute-residual-within-limit",
+              "minimum_fraction": 1.0,
+              "minimum_calibration_records": 3,
+              "minimum_validation_records": 3,
+              "required_calibration_target_ids": ["anchor-calibration", "interpolation-calibration", "instrumentation-calibration"],
+              "required_validation_target_ids": ["anchor-validation", "interpolation-validation", "instrumentation-validation"],
+              "evidence_ref": "artifact://issue-6/257-neighbourhood-target-coverage"
+            },
+            "calibration": {
+              "estimator": {
+                "policy_id": "component-max-absolute-residual",
+                "version": "v1",
+                "scope": "independent-neighbourhood-uncertainty-calibration",
+                "change_reason": "issue-21 calibrated neighbourhood qualification",
+                "revalidation": "on calibration, validation, or estimator change",
+                "method": "max-absolute-residual"
+              },
+              "records": [
+                {"target_id": "anchor-calibration", "partition": "calibration", "session_id": "neighbourhood-calibration-anchor", "process_id": 6101, "component_id": "anchor", "predicted_ns": 1000, "observed_samples_ns": [1100, 880]},
+                {"target_id": "interpolation-calibration", "partition": "calibration", "session_id": "neighbourhood-calibration-interpolation", "process_id": 6102, "component_id": "interpolation", "predicted_ns": 1000, "observed_samples_ns": [1140, 840]},
+                {"target_id": "instrumentation-calibration", "partition": "calibration", "session_id": "neighbourhood-calibration-instrumentation", "process_id": 6103, "component_id": "instrumentation", "predicted_ns": 1000, "observed_samples_ns": [1000, 1000]},
+                {"target_id": "anchor-validation", "partition": "validation", "session_id": "neighbourhood-validation-anchor", "process_id": 6201, "component_id": "anchor", "predicted_ns": 1000, "observed_samples_ns": [1090, 890]},
+                {"target_id": "interpolation-validation", "partition": "validation", "session_id": "neighbourhood-validation-interpolation", "process_id": 6202, "component_id": "interpolation", "predicted_ns": 1000, "observed_samples_ns": [1130, 850]},
+                {"target_id": "instrumentation-validation", "partition": "validation", "session_id": "neighbourhood-validation-instrumentation", "process_id": 6203, "component_id": "instrumentation", "predicted_ns": 1000, "observed_samples_ns": [1000, 1000]}
+              ],
+              "evidence_ref": "artifact://issue-6/257-neighbourhood-calibration"
+            }
+          },
+          "regime_id": "m4-matmul-fp32-alignment-regime-v1",
+          "anchor_records": [],
+          "local_probe_records": [],
+          "refit_records": []
+        },
+        "surface": {
+          "surface_id": "m4-matmul-fp32",
+          "version": "v1"
+        },
+        "old_surface_reference": {
+          "surface_id": "m4-matmul-fp32",
+          "version": "v1",
+          "predicted_ns": 24308.51,
+          "execution_domain": {
+            "shape": {"m": 257, "k": 257, "n": 257},
+            "dtype": "float32",
+            "layout": "C-contiguous",
+            "alignment_bytes": 16,
+            "threads": 1,
+            "execution_mode": "eager",
+            "affinity": "all-performance-cores",
+            "numa": "single-domain",
+            "context": "default",
+            "stream": "not_applicable",
+            "concurrency": 1
+          },
+          "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+          "evidence_ref": "artifact://issue-6/257-surface-v1"
+        },
+        "old_surface_uncertainty_records": [
+          {"component_id": "anchor", "standard_uncertainty_ns": 600, "evidence_ref": "artifact://issue-6/257-uncertainty-anchor"},
+          {"component_id": "interpolation", "standard_uncertainty_ns": 800, "evidence_ref": "artifact://issue-6/257-uncertainty-interpolation"},
+          {"component_id": "instrumentation", "standard_uncertainty_ns": 0, "evidence_ref": "artifact://issue-6/257-uncertainty-instrumentation"}
+        ],
+        "old_surface_uncertainty_policy": {
+          "policy_id": "surface-combined-standard-uncertainty",
+          "version": "v1",
+          "scope": "old-surface-exact-shape-band",
+          "change_reason": "issue-21 frontier qualification",
+          "revalidation": "on surface or uncertainty component change",
+          "combination_rule": "root-sum-square",
+          "target_coverage": {
+            "stable_path": "semantic/matmul-257-cube",
+            "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+            "execution_domain_sha256": "bab08fb81f4e6e2aa11205292e2d6bf06e8a555bc4aec98027ed341f8145735d",
+            "cohort_id": "apple-m4-cpu-darwin-arm64-torch2.13-baseline-v1",
+            "coverage_method": "independent-validation-absolute-residual-within-limit",
+            "minimum_fraction": 1.0,
+            "minimum_calibration_records": 3,
+            "minimum_validation_records": 3,
+            "required_calibration_target_ids": ["anchor-calibration", "interpolation-calibration", "instrumentation-calibration"],
+            "required_validation_target_ids": ["anchor-validation", "interpolation-validation", "instrumentation-validation"],
+            "evidence_ref": "artifact://issue-6/257-surface-target-coverage"
+          },
+          "calibration": {
+            "estimator": {
+              "policy_id": "component-max-absolute-residual",
+              "version": "v1",
+              "scope": "independent-surface-uncertainty-calibration",
+              "change_reason": "issue-21 calibrated surface uncertainty",
+              "revalidation": "on calibration, validation, or estimator change",
+              "method": "max-absolute-residual"
+            },
+            "records": [
+              {"target_id": "anchor-calibration", "partition": "calibration", "session_id": "surface-calibration-anchor", "process_id": 7101, "component_id": "anchor", "predicted_ns": 10000, "observed_samples_ns": [10550, 9400]},
+              {"target_id": "interpolation-calibration", "partition": "calibration", "session_id": "surface-calibration-interpolation", "process_id": 7102, "component_id": "interpolation", "predicted_ns": 10000, "observed_samples_ns": [10750, 9200]},
+              {"target_id": "instrumentation-calibration", "partition": "calibration", "session_id": "surface-calibration-instrumentation", "process_id": 7103, "component_id": "instrumentation", "predicted_ns": 10000, "observed_samples_ns": [10000, 10000]},
+              {"target_id": "anchor-validation", "partition": "validation", "session_id": "surface-validation-anchor", "process_id": 7201, "component_id": "anchor", "predicted_ns": 10000, "observed_samples_ns": [10500, 9420]},
+              {"target_id": "interpolation-validation", "partition": "validation", "session_id": "surface-validation-interpolation", "process_id": 7202, "component_id": "interpolation", "predicted_ns": 10000, "observed_samples_ns": [10700, 9250]},
+              {"target_id": "instrumentation-validation", "partition": "validation", "session_id": "surface-validation-instrumentation", "process_id": 7203, "component_id": "instrumentation", "predicted_ns": 10000, "observed_samples_ns": [10000, 10000]}
+            ],
+            "evidence_ref": "artifact://issue-6/257-surface-uncertainty-calibration"
+          }
+        },
+        "holdout": {
+          "selection_session_ids": ["session-1", "session-2", "session-3"],
+          "sessions": [],
+          "candidate_results": [],
+          "evidence_ref": "artifact://issue-6/257-holdout-missing"
+        },
+        "evidence_refs": ["artifact://issue-6/257-frontier-gates"]
+      },
+      "counterexamples": [
+        {
+          "counterexample_id": "257-cube-c1-neighbourhood-insufficient",
+          "reason_codes": [
+            "c2-or-c3-independent-candidate-families-missing",
+            "neighbourhood-regime-not-validated"
+          ],
+          "evidence_refs": ["artifact://issue-6/257-cube-counterexample"]
+        }
+      ],
+      "evidence_refs": ["artifact://issue-6/257-cube-probe"]
+    }
+  ]
+}
