@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
+from math import hypot, isfinite
 from pathlib import Path
 from statistics import median
 from typing import Any
@@ -36,6 +37,7 @@ _EVIDENCE_KEYS = (
     "single_node_schedule",
     "policies",
     "capability_surfaces",
+    "candidate_envelopes",
     "surface_updates",
     "surface_queries",
 )
@@ -52,10 +54,16 @@ class DiagnosticBundleIntegrityError(DiagnosticBundleError):
 @dataclass(frozen=True)
 class _SelectedSurfaceCell:
     cell: dict[str, Any]
-    anchors: tuple[dict[str, Any], dict[str, Any]]
-    weights: tuple[float, float]
+    anchors: tuple[dict[str, Any], ...]
+    weights: tuple[float, ...]
     exact_anchor: bool
     effective_rate: float
+
+
+@dataclass(frozen=True)
+class _RejectedSurfaceCell:
+    cell: dict[str, Any]
+    reason_code: str
 
 
 @dataclass(frozen=True)
@@ -88,6 +96,15 @@ def _unknown(reason_code: str) -> dict[str, Any]:
 
 def _nonempty_string(value: object) -> bool:
     return isinstance(value, str) and bool(value)
+
+
+def _finite_number(value: object) -> bool:
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        return isfinite(float(value))
+    except (OverflowError, ValueError):
+        return False
 
 
 def _complete_execution_domain(value: object) -> bool:
@@ -541,7 +558,9 @@ def _surface_summary(
         "input_digest": surface.get("input_digest"),
         "cohort_id": surface.get("cohort_id"),
         "domain": surface.get("domain"),
+        "domain_policy": surface.get("domain_policy"),
         "candidate_family": surface.get("candidate_family"),
+        "algorithm_family": surface.get("algorithm_family"),
         "anchor_ids": [
             anchor.get("anchor_id")
             for anchor in anchors
@@ -578,6 +597,7 @@ def _unknown_surface_query(
     query: dict[str, Any],
     surface: dict[str, Any] | None,
     reason_code: str,
+    rejected_cell: _RejectedSurfaceCell | None = None,
 ) -> dict[str, Any]:
     surface_ref = (
         {
@@ -597,6 +617,11 @@ def _unknown_surface_query(
         if isinstance(surface, dict)
         else None
     )
+    algorithm_family = (
+        surface.get("algorithm_family")
+        if isinstance(surface, dict)
+        else None
+    )
     return {
         "query_id": query.get("query_id"),
         "status": "unknown",
@@ -606,23 +631,46 @@ def _unknown_surface_query(
             surface.get("cohort_id") if isinstance(surface, dict) else None
         ),
         "domain": surface.get("domain") if isinstance(surface, dict) else None,
+        "domain_policy": (
+            surface.get("domain_policy") if isinstance(surface, dict) else None
+        ),
         "query_shape": query.get("shape"),
         "candidate_families": (
             [candidate_family] if _nonempty_string(candidate_family) else []
         ),
+        "algorithm_families": (
+            [algorithm_family] if _nonempty_string(algorithm_family) else []
+        ),
         "selected_candidate_family": None,
-        "cell_id": None,
+        "selected_algorithm_family": None,
+        "cell_id": (
+            rejected_cell.cell.get("cell_id")
+            if rejected_cell is not None
+            else None
+        ),
+        "support_seam_id": (
+            rejected_cell.cell.get("support_seam_id")
+            if rejected_cell is not None
+            else None
+        ),
         "anchors": [],
         "weights": [],
         "effective_rate": None,
         "work_rate_latency": None,
         "uncertainty": None,
-        "evidence_refs": [],
+        "evidence_refs": (
+            list(rejected_cell.cell.get("rejection_evidence_refs", []))
+            if rejected_cell is not None
+            and isinstance(
+                rejected_cell.cell.get("rejection_evidence_refs"), list
+            )
+            else []
+        ),
     }
 
 
 def _eligible_surface_anchor(
-    surface: dict[str, Any], anchor: object, axis: str
+    surface: dict[str, Any], anchor: object, axes: tuple[str, ...]
 ) -> bool:
     if not isinstance(anchor, dict):
         return False
@@ -632,16 +680,17 @@ def _eligible_surface_anchor(
         _nonempty_string(anchor.get("anchor_id"))
         and _nonempty_string(anchor.get("anchor_version"))
         and isinstance(shape, dict)
-        and set(shape) == {axis}
-        and isinstance(shape[axis], (int, float))
-        and not isinstance(shape[axis], bool)
-        and shape[axis] > 0
-        and isinstance(rate, (int, float))
-        and not isinstance(rate, bool)
+        and set(shape) == set(axes)
+        and all(_finite_number(shape[axis]) and shape[axis] > 0 for axis in axes)
+        and _finite_number(rate)
         and rate > 0
         and anchor.get("rate_unit") == "FLOP/s"
         and _nonempty_string(anchor.get("candidate_id"))
         and anchor.get("candidate_family") == surface.get("candidate_family")
+        and (
+            not _nonempty_string(surface.get("algorithm_family"))
+            or anchor.get("algorithm_family") == surface.get("algorithm_family")
+        )
         and anchor.get("cohort_id") == surface.get("cohort_id")
         and anchor.get("domain") == surface.get("domain")
         and anchor.get("observation_validity") == "QUALIFIED"
@@ -667,24 +716,59 @@ def _surface_policy(surface: dict[str, Any]) -> dict[str, Any] | None:
     ) or policy.get("combination") != "root-sum-of-squares":
         return None
     if (
-        not isinstance(target_coverage, (int, float))
-        or isinstance(target_coverage, bool)
+        not _finite_number(target_coverage)
         or not 0 < target_coverage <= 1
     ):
         return None
     return policy
 
 
+def _surface_domain_policy(
+    surface: dict[str, Any], dimensions: int
+) -> dict[str, Any] | None:
+    policy = surface.get("domain_policy")
+    if dimensions == 1 and policy is None:
+        return None
+    if not isinstance(policy, dict) or not all(
+        _nonempty_string(policy.get(key))
+        for key in (
+            "policy_id",
+            "version",
+            "scope",
+            "change_reason",
+            "revalidation",
+        )
+    ):
+        return None
+    max_edge_span = policy.get("max_edge_span")
+    minimum_twice_area = policy.get("minimum_twice_area")
+    barycentric_tolerance = policy.get("barycentric_tolerance")
+    if (
+        policy.get("cell_kind") != "2d-simplex"
+        or not _finite_number(max_edge_span)
+        or max_edge_span <= 0
+        or not _finite_number(minimum_twice_area)
+        or minimum_twice_area <= 0
+        or not _finite_number(barycentric_tolerance)
+        or barycentric_tolerance < 0
+    ):
+        return None
+    return policy
+
+
 def _select_surface_cell(
-    surface: dict[str, Any], axis: str, point: float
-) -> _SelectedSurfaceCell | None:
+    surface: dict[str, Any],
+    axes: tuple[str, ...],
+    point: tuple[float, ...],
+    domain_policy: dict[str, Any] | None,
+) -> _SelectedSurfaceCell | _RejectedSurfaceCell | None:
     anchors_value = surface.get("anchors")
     if not isinstance(anchors_value, list):
         return None
     eligible_anchors = [
         anchor
         for anchor in anchors_value
-        if _eligible_surface_anchor(surface, anchor, axis)
+        if _eligible_surface_anchor(surface, anchor, axes)
     ]
     anchor_by_id = {
         anchor["anchor_id"]: anchor for anchor in eligible_anchors
@@ -696,42 +780,139 @@ def _select_surface_cell(
             float,
             str,
             dict[str, Any],
-            tuple[dict[str, Any], dict[str, Any]],
+            tuple[dict[str, Any], ...],
+            tuple[float, ...],
         ]
     ] = []
+    rejections: list[_RejectedSurfaceCell] = []
     for cell in cells:
-        if not isinstance(cell, dict) or cell.get("status") != "retained":
+        if not isinstance(cell, dict):
             continue
         anchor_ids = cell.get("anchor_ids")
-        if not isinstance(anchor_ids, list) or len(anchor_ids) != 2:
+        if not isinstance(anchor_ids, list) or len(anchor_ids) != len(axes) + 1:
             continue
-        left_anchor = anchor_by_id.get(anchor_ids[0])
-        right_anchor = anchor_by_id.get(anchor_ids[1])
-        if left_anchor is None or right_anchor is None:
+        cell_anchors = tuple(anchor_by_id.get(anchor_id) for anchor_id in anchor_ids)
+        if any(anchor is None for anchor in cell_anchors):
             continue
-        left = float(left_anchor["shape"][axis])
-        right = float(right_anchor["shape"][axis])
-        if (
-            left >= right
-            or not left <= point <= right
-            or not _nonempty_string(cell.get("cell_id"))
-        ):
+        anchors = tuple(anchor for anchor in cell_anchors if anchor is not None)
+        if not _nonempty_string(cell.get("cell_id")):
+            continue
+        if len(axes) == 1:
+            if cell.get("status") != "retained":
+                continue
+            axis = axes[0]
+            left = float(anchors[0]["shape"][axis])
+            right = float(anchors[1]["shape"][axis])
+            if left >= right or not left <= point[0] <= right:
+                continue
+            right_weight = (point[0] - left) / (right - left)
+            weights = (1.0 - right_weight, right_weight)
+            measure = right - left
+        elif len(axes) == 2:
+            if cell.get("status") not in (
+                "retained",
+                "hole",
+                "candidate_support_boundary",
+            ):
+                continue
+            x_axis, y_axis = axes
+            vertices = tuple(
+                (
+                    float(anchor["shape"][x_axis]),
+                    float(anchor["shape"][y_axis]),
+                )
+                for anchor in anchors
+            )
+            (x0, y0), (x1, y1), (x2, y2) = vertices
+            denominator = (y1 - y2) * (x0 - x2) + (x2 - x1) * (
+                y0 - y2
+            )
+            minimum_twice_area = float(domain_policy["minimum_twice_area"])
+            if abs(denominator) < minimum_twice_area:
+                x, y = point
+                if (
+                    min(vertex[0] for vertex in vertices)
+                    <= x
+                    <= max(vertex[0] for vertex in vertices)
+                    and min(vertex[1] for vertex in vertices)
+                    <= y
+                    <= max(vertex[1] for vertex in vertices)
+                ):
+                    rejections.append(
+                        _RejectedSurfaceCell(cell, "degenerate_simplex")
+                    )
+                continue
+            x, y = point
+            first = (
+                (y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)
+            ) / denominator
+            second = (
+                (y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)
+            ) / denominator
+            weights = (first, second, 1.0 - first - second)
+            barycentric_tolerance = float(
+                domain_policy["barycentric_tolerance"]
+            )
+            if any(
+                not isfinite(weight)
+                or weight < -barycentric_tolerance
+                or weight > 1.0 + barycentric_tolerance
+                for weight in weights
+            ):
+                continue
+            max_edge_span = max(
+                hypot(
+                    vertices[left][0] - vertices[right][0],
+                    vertices[left][1] - vertices[right][1],
+                )
+                for left, right in ((0, 1), (1, 2), (2, 0))
+            )
+            if max_edge_span > float(domain_policy["max_edge_span"]):
+                rejections.append(
+                    _RejectedSurfaceCell(cell, "cell_span_exceeds_policy")
+                )
+                continue
+            if cell.get("status") == "hole":
+                rejections.append(
+                    _RejectedSurfaceCell(cell, "explicit_domain_hole")
+                )
+                continue
+            if cell.get("status") == "candidate_support_boundary":
+                rejections.append(
+                    _RejectedSurfaceCell(
+                        cell, "candidate_domain_boundary_unvalidated"
+                    )
+                )
+                continue
+            measure = abs(denominator)
+        else:
             continue
         candidates.append(
             (
-                right - left,
+                measure,
                 str(cell["cell_id"]),
                 cell,
-                (left_anchor, right_anchor),
+                anchors,
+                weights,
             )
+        )
+    if rejections:
+        rejection_priority = {
+            "explicit_domain_hole": 0,
+            "candidate_domain_boundary_unvalidated": 1,
+            "cell_span_exceeds_policy": 2,
+            "degenerate_simplex": 3,
+        }
+        return min(
+            rejections,
+            key=lambda rejection: (
+                rejection_priority[rejection.reason_code],
+                str(rejection.cell["cell_id"]),
+            ),
         )
     if not candidates:
         return None
-    _, _, cell, anchors = min(candidates, key=lambda item: item[:2])
-    left = float(anchors[0]["shape"][axis])
-    right = float(anchors[1]["shape"][axis])
-    right_weight = (point - left) / (right - left)
-    weights = (1.0 - right_weight, right_weight)
+    _, _, cell, anchors, weights = min(candidates, key=lambda item: item[:2])
     effective_rate = sum(
         weight * float(anchor["effective_rate"])
         for weight, anchor in zip(weights, anchors, strict=True)
@@ -741,7 +922,9 @@ def _select_surface_cell(
         anchors=anchors,
         weights=weights,
         exact_anchor=any(
-            point == float(anchor["shape"][axis]) for anchor in anchors
+            point
+            == tuple(float(anchor["shape"][axis]) for axis in axes)
+            for anchor in anchors
         ),
         effective_rate=effective_rate,
     )
@@ -771,10 +954,7 @@ def _derive_surface_uncertainty(
             anchor_indices, selected.weights, strict=True
         ):
             covariance_value = covariance[row_index][column_index]
-            if (
-                not isinstance(covariance_value, (int, float))
-                or isinstance(covariance_value, bool)
-            ):
+            if not _finite_number(covariance_value):
                 return None, "insufficient_uncertainty_evidence"
             anchor_variance += row_weight * column_weight * covariance_value
     interpolation_standard = (
@@ -786,22 +966,29 @@ def _derive_surface_uncertainty(
         "instrumentation_standard_uncertainty_rate"
     )
     if (
-        anchor_variance < 0
-        or not isinstance(interpolation_standard, (int, float))
-        or isinstance(interpolation_standard, bool)
+        not isfinite(anchor_variance)
+        or anchor_variance < 0
+        or not _finite_number(interpolation_standard)
         or interpolation_standard < 0
-        or not isinstance(instrumentation_standard, (int, float))
-        or isinstance(instrumentation_standard, bool)
+        or not _finite_number(instrumentation_standard)
         or instrumentation_standard < 0
     ):
         return None, "insufficient_uncertainty_evidence"
     anchor_standard = anchor_variance**0.5
-    combined_standard = (
-        anchor_standard**2
-        + float(interpolation_standard) ** 2
-        + float(instrumentation_standard) ** 2
-    ) ** 0.5
+    combined_standard = hypot(
+        anchor_standard,
+        float(interpolation_standard),
+        float(instrumentation_standard),
+    )
     rate_low = selected.effective_rate - combined_standard
+    rate_high = selected.effective_rate + combined_standard
+    if (
+        not isfinite(selected.effective_rate)
+        or not isfinite(combined_standard)
+        or not isfinite(rate_low)
+        or not isfinite(rate_high)
+    ):
+        return None, "invalid_nonfinite_rate_interval"
     if rate_low <= 0:
         return None, "invalid_nonpositive_rate_interval"
     return (
@@ -811,7 +998,7 @@ def _derive_surface_uncertainty(
             instrumentation_standard_rate=float(instrumentation_standard),
             combined_standard_rate=combined_standard,
             rate_low=rate_low,
-            rate_high=selected.effective_rate + combined_standard,
+            rate_high=rate_high,
         ),
         None,
     )
@@ -819,19 +1006,28 @@ def _derive_surface_uncertainty(
 
 def _derive_work_rate_latency(
     surface: dict[str, Any],
-    point: float,
+    point: dict[str, float],
     effective_rate: float,
     uncertainty: _SurfaceUncertainty,
 ) -> tuple[dict[str, Any], dict[str, float]] | None:
     work_formula = surface.get("work_formula")
-    if (
-        not isinstance(work_formula, dict)
-        or work_formula.get("kind") != "square-matmul-2s3"
-        or not _nonempty_string(work_formula.get("version"))
-        or work_formula.get("work_unit") != "FLOP"
-    ):
+    if not isinstance(work_formula, dict) or not _nonempty_string(
+        work_formula.get("version")
+    ) or work_formula.get("work_unit") != "FLOP":
         return None
-    declared_work = 2.0 * point**3
+    if work_formula.get("kind") == "square-matmul-2s3" and set(point) == {"s"}:
+        declared_work = 2.0 * point["s"] ** 3
+    elif (
+        work_formula.get("kind") == "matmul-2mnk"
+        and set(point) == {"m", "n"}
+        and _finite_number(work_formula.get("fixed_k"))
+        and work_formula["fixed_k"] > 0
+    ):
+        declared_work = 2.0 * point["m"] * point["n"] * work_formula["fixed_k"]
+    else:
+        return None
+    if not isfinite(declared_work) or not isfinite(effective_rate):
+        return None
     latency = {
         "declared_work": declared_work,
         "work_unit": "FLOP",
@@ -848,23 +1044,47 @@ def _query_capability_surface(
     query: dict[str, Any], surface: dict[str, Any]
 ) -> dict[str, Any]:
     coordinate = surface.get("coordinate")
+    if not isinstance(coordinate, dict):
+        return _unknown_surface_query(
+            query, surface, "invalid_surface_coordinate_policy"
+        )
+    axes_value = (
+        [coordinate.get("axis")]
+        if "axis" in coordinate
+        else coordinate.get("axes")
+    )
     if (
-        not isinstance(coordinate, dict)
-        or coordinate.get("transform") != "identity"
+        coordinate.get("transform") != "identity"
         or not _nonempty_string(coordinate.get("transform_version"))
-        or not _nonempty_string(coordinate.get("axis"))
+        or not isinstance(axes_value, list)
+        or len(axes_value) not in (1, 2)
+        or not all(_nonempty_string(axis) for axis in axes_value)
+        or len(set(axes_value)) != len(axes_value)
     ):
         return _unknown_surface_query(
             query, surface, "invalid_surface_coordinate_policy"
         )
-    axis = coordinate["axis"]
+    axes = tuple(axes_value)
+    anchors_value = surface.get("anchors")
+    if len(axes) == 2 and (
+        not _nonempty_string(surface.get("candidate_family"))
+        or not _nonempty_string(surface.get("algorithm_family"))
+        or not isinstance(anchors_value, list)
+        or any(
+            not isinstance(anchor, dict)
+            or anchor.get("candidate_family") != surface.get("candidate_family")
+            or anchor.get("algorithm_family") != surface.get("algorithm_family")
+            for anchor in anchors_value
+        )
+    ):
+        return _unknown_surface_query(
+            query, surface, "incomplete_candidate_family_facet"
+        )
     shape = query.get("shape")
     if (
         not isinstance(shape, dict)
-        or set(shape) != {axis}
-        or not isinstance(shape[axis], (int, float))
-        or isinstance(shape[axis], bool)
-        or shape[axis] <= 0
+        or set(shape) != set(axes)
+        or any(not _finite_number(shape[axis]) or shape[axis] <= 0 for axis in axes)
     ):
         return _unknown_surface_query(query, surface, "invalid_query_shape")
     surface_domain = surface.get("domain")
@@ -875,6 +1095,22 @@ def _query_capability_surface(
         return _unknown_surface_query(
             query, surface, "alignment_regime_unvalidated"
         )
+    if (
+        surface_domain.get("working_set_validated") is False
+        or len(axes) == 2
+        and surface_domain.get("working_set_validated") is not True
+    ):
+        return _unknown_surface_query(
+            query, surface, "working_set_regime_unvalidated"
+        )
+    if (
+        surface_domain.get("kernel_dispatch_validated") is False
+        or len(axes) == 2
+        and surface_domain.get("kernel_dispatch_validated") is not True
+    ):
+        return _unknown_surface_query(
+            query, surface, "kernel_dispatch_regime_unvalidated"
+        )
     if surface_domain.get("regime_validated") is not True:
         return _unknown_surface_query(query, surface, "shape_regime_unvalidated")
     if query_domain.get("alignment_regime") != surface_domain.get(
@@ -883,8 +1119,26 @@ def _query_capability_surface(
         return _unknown_surface_query(
             query, surface, "alignment_regime_unvalidated"
         )
+    if query_domain.get("working_set_regime") != surface_domain.get(
+        "working_set_regime"
+    ):
+        return _unknown_surface_query(
+            query, surface, "working_set_regime_unvalidated"
+        )
+    if query_domain.get("kernel_dispatch_regime") != surface_domain.get(
+        "kernel_dispatch_regime"
+    ):
+        return _unknown_surface_query(
+            query, surface, "kernel_dispatch_regime_unvalidated"
+        )
     if query_domain != surface_domain:
         return _unknown_surface_query(query, surface, "shape_regime_unvalidated")
+
+    domain_policy = _surface_domain_policy(surface, len(axes))
+    if len(axes) == 2 and domain_policy is None:
+        return _unknown_surface_query(
+            query, surface, "invalid_surface_domain_policy"
+        )
 
     policy = _surface_policy(surface)
     if policy is None:
@@ -901,16 +1155,22 @@ def _query_capability_surface(
             query, surface, "insufficient_uncertainty_evidence"
         )
 
-    anchors_value = surface.get("anchors")
     if not isinstance(anchors_value, list):
         return _unknown_surface_query(
             query, surface, "no_qualified_active_surface_anchor"
         )
-    point = float(shape[axis])
-    selected = _select_surface_cell(surface, axis, point)
+    point = tuple(float(shape[axis]) for axis in axes)
+    selected = _select_surface_cell(surface, axes, point, domain_policy)
     if selected is None:
         return _unknown_surface_query(
             query, surface, "outside_validated_domain"
+        )
+    if isinstance(selected, _RejectedSurfaceCell):
+        return _unknown_surface_query(
+            query,
+            surface,
+            selected.reason_code,
+            selected,
         )
     confirmation_refs = selected.cell.get("confirmation_evidence_refs")
     if (
@@ -931,7 +1191,10 @@ def _query_capability_surface(
             uncertainty_reason or "insufficient_uncertainty_evidence",
         )
     latency_derivation = _derive_work_rate_latency(
-        surface, point, selected.effective_rate, uncertainty
+        surface,
+        {axis: value for axis, value in zip(axes, point, strict=True)},
+        selected.effective_rate,
+        uncertainty,
     )
     if latency_derivation is None:
         return _unknown_surface_query(query, surface, "invalid_work_formula")
@@ -957,9 +1220,16 @@ def _query_capability_surface(
         },
         "cohort_id": surface["cohort_id"],
         "domain": surface_domain,
+        "domain_policy": domain_policy,
         "query_shape": shape,
         "candidate_families": [surface["candidate_family"]],
+        "algorithm_families": (
+            [surface["algorithm_family"]]
+            if _nonempty_string(surface.get("algorithm_family"))
+            else []
+        ),
         "selected_candidate_family": surface["candidate_family"],
+        "selected_algorithm_family": surface.get("algorithm_family"),
         "cell_id": selected.cell["cell_id"],
         "anchors": [
             {
@@ -1001,6 +1271,341 @@ def _query_capability_surface(
     }
 
 
+def _candidate_support_policy(
+    envelope: dict[str, Any],
+) -> dict[str, Any] | None:
+    policy = envelope.get("support_policy")
+    if not isinstance(policy, dict) or not all(
+        _nonempty_string(policy.get(key))
+        for key in (
+            "policy_id",
+            "version",
+            "scope",
+            "change_reason",
+            "revalidation",
+        )
+    ):
+        return None
+    if policy.get("rule") != "common-stable-support-or-validated-seam":
+        return None
+    validated_seams = policy.get("validated_seams")
+    if not isinstance(validated_seams, list) or any(
+        not isinstance(seam, dict)
+        or not all(
+            _nonempty_string(seam.get(key))
+            for key in (
+                "seam_id",
+                "unsupported_candidate_family",
+                "validation_version",
+                "evidence_ref",
+            )
+        )
+        for seam in validated_seams
+    ):
+        return None
+    return policy
+
+
+def _candidate_envelope_ref(envelope: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "envelope_id": envelope["envelope_id"],
+        "version": envelope["version"],
+        "input_digest": envelope["input_digest"],
+    }
+
+
+def _candidate_facet_result(
+    result: dict[str, Any], surface: dict[str, Any]
+) -> dict[str, Any]:
+    return {
+        "surface": result["surface"],
+        "candidate_family": surface["candidate_family"],
+        "algorithm_family": surface["algorithm_family"],
+        "status": result["status"],
+        "reason_code": result["reason_code"],
+        "cell_id": result["cell_id"],
+        "support_seam_id": result.get("support_seam_id"),
+        "anchors": result["anchors"],
+        "weights": result["weights"],
+        "effective_rate": result["effective_rate"],
+        "uncertainty": result["uncertainty"],
+        "evidence_refs": result["evidence_refs"],
+    }
+
+
+def _unknown_candidate_envelope_query(
+    query: dict[str, Any],
+    envelope: dict[str, Any] | None,
+    reason_code: str,
+    facets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    result = _unknown_surface_query(query, None, reason_code)
+    envelope_evidence_refs = (
+        envelope.get("evidence_refs")
+        if envelope is not None
+        and isinstance(envelope.get("evidence_refs"), list)
+        else []
+    )
+    evidence_refs = list(
+        dict.fromkeys(
+            [
+                *(
+                    reference
+                    for facet in facets
+                    for reference in facet["evidence_refs"]
+                ),
+                *envelope_evidence_refs,
+            ]
+        )
+    )
+    result.update(
+        {
+            "envelope": (
+                _candidate_envelope_ref(envelope)
+                if envelope is not None
+                else {
+                    "envelope_id": query.get("envelope_id"),
+                    "version": query.get("envelope_version"),
+                    "input_digest": None,
+                }
+            ),
+            "cohort_id": (
+                envelope.get("cohort_id") if envelope is not None else None
+            ),
+            "domain": envelope.get("domain") if envelope is not None else None,
+            "domain_policy": (
+                envelope.get("domain_policy")
+                if envelope is not None
+                else None
+            ),
+            "candidate_families": [
+                facet["candidate_family"] for facet in facets
+            ],
+            "algorithm_families": [
+                facet["algorithm_family"] for facet in facets
+            ],
+            "candidate_facets": facets,
+            "support_policy": (
+                envelope.get("support_policy")
+                if envelope is not None
+                else None
+            ),
+            "support_transitions": [],
+            "evidence_refs": evidence_refs,
+        }
+    )
+    return result
+
+
+def _query_candidate_envelope(
+    query: dict[str, Any],
+    envelope: dict[str, Any],
+    surface_index: dict[tuple[str, str], dict[str, Any]],
+) -> dict[str, Any]:
+    policy = _candidate_support_policy(envelope)
+    if policy is None:
+        return _unknown_candidate_envelope_query(
+            query, envelope, "invalid_candidate_support_policy", []
+        )
+    if query.get("domain") != envelope.get("domain"):
+        return _unknown_candidate_envelope_query(
+            query, envelope, "shape_regime_unvalidated", []
+        )
+    refs = envelope["surface_refs"]
+    surfaces = [
+        surface_index[(reference["surface_id"], reference["version"])]
+        for reference in refs
+    ]
+    facet_queries = [
+        _query_capability_surface(query, surface) for surface in surfaces
+    ]
+    facets = [
+        _candidate_facet_result(result, surface)
+        for result, surface in zip(facet_queries, surfaces, strict=True)
+    ]
+    known = [
+        (result, surface)
+        for result, surface in zip(facet_queries, surfaces, strict=True)
+        if result["status"] != "unknown"
+    ]
+    unknown = [
+        (result, surface)
+        for result, surface in zip(facet_queries, surfaces, strict=True)
+        if result["status"] == "unknown"
+    ]
+    support_transitions: list[dict[str, Any]] = []
+    validated_seams = policy["validated_seams"]
+    for result, surface in unknown:
+        matching_seam = next(
+            (
+                seam
+                for seam in validated_seams
+                if seam["seam_id"] == result.get("support_seam_id")
+                and seam["unsupported_candidate_family"]
+                == surface["candidate_family"]
+            ),
+            None,
+        )
+        if (
+            result["reason_code"]
+            != "candidate_domain_boundary_unvalidated"
+            or matching_seam is None
+        ):
+            reason_code = (
+                "outside_validated_domain"
+                if unknown
+                and not known
+                and all(
+                    item[0]["reason_code"] == "outside_validated_domain"
+                    for item in unknown
+                )
+                else "candidate_domain_boundary_unvalidated"
+            )
+            return _unknown_candidate_envelope_query(
+                query, envelope, reason_code, facets
+            )
+        support_transitions.append(matching_seam)
+    if not known:
+        return _unknown_candidate_envelope_query(
+            query, envelope, "outside_validated_domain", facets
+        )
+    winner_result, winner_surface = min(
+        known,
+        key=lambda item: (
+            -float(item[0]["effective_rate"]["value"]),
+            str(item[1]["candidate_family"]),
+            str(item[1]["surface_id"]),
+        ),
+    )
+    evidence_refs = [
+        *winner_result["evidence_refs"],
+        *(
+            envelope.get("evidence_refs")
+            if isinstance(envelope.get("evidence_refs"), list)
+            else []
+        ),
+        *(transition["evidence_ref"] for transition in support_transitions),
+    ]
+    return {
+        **winner_result,
+        "envelope": _candidate_envelope_ref(envelope),
+        "candidate_families": [
+            surface["candidate_family"] for surface in surfaces
+        ],
+        "algorithm_families": [
+            surface["algorithm_family"] for surface in surfaces
+        ],
+        "selected_candidate_family": winner_surface["candidate_family"],
+        "selected_algorithm_family": winner_surface["algorithm_family"],
+        "candidate_facets": facets,
+        "support_policy": policy,
+        "support_transitions": support_transitions,
+        "evidence_refs": evidence_refs,
+    }
+
+
+def _validated_candidate_envelopes(
+    envelopes: list[Any],
+    surface_index: dict[tuple[str, str], dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    dict[tuple[str, str], dict[str, Any]],
+]:
+    valid: list[dict[str, Any]] = []
+    index: dict[tuple[str, str], dict[str, Any]] = {}
+    for envelope in envelopes:
+        if not isinstance(envelope, dict):
+            continue
+        envelope_id = envelope.get("envelope_id")
+        version = envelope.get("version")
+        if not _nonempty_string(envelope_id) or not _nonempty_string(version):
+            continue
+        expected_digest = envelope.get("input_digest")
+        actual_digest = _canonical_digest(
+            {
+                key: value
+                for key, value in envelope.items()
+                if key != "input_digest"
+            }
+        )
+        if expected_digest != actual_digest:
+            raise DiagnosticBundleIntegrityError(
+                "candidate envelope input digest mismatch: "
+                f"{envelope_id}@{version}"
+            )
+        envelope_key = (envelope_id, version)
+        if envelope_key in index:
+            raise DiagnosticBundleIntegrityError(
+                f"duplicate candidate envelope version: {envelope_id}@{version}"
+            )
+        refs = envelope.get("surface_refs")
+        if (
+            not isinstance(refs, list)
+            or len(refs) < 2
+            or _candidate_support_policy(envelope) is None
+        ):
+            continue
+        surfaces: list[dict[str, Any]] = []
+        seen_refs: set[tuple[str, str]] = set()
+        for reference in refs:
+            if not isinstance(reference, dict):
+                break
+            ref_key = (reference.get("surface_id"), reference.get("version"))
+            surface = surface_index.get(ref_key)
+            if surface is None or ref_key in seen_refs:
+                break
+            seen_refs.add(ref_key)
+            surfaces.append(surface)
+        else:
+            candidate_families = [
+                surface.get("candidate_family") for surface in surfaces
+            ]
+            coordinate = surfaces[0].get("coordinate")
+            work_formula = surfaces[0].get("work_formula")
+            if (
+                len(set(candidate_families)) != len(candidate_families)
+                or any(
+                    not _nonempty_string(surface.get("algorithm_family"))
+                    or surface.get("cohort_id") != envelope.get("cohort_id")
+                    or surface.get("domain") != envelope.get("domain")
+                    or surface.get("domain_policy")
+                    != envelope.get("domain_policy")
+                    or surface.get("coordinate") != coordinate
+                    or surface.get("work_formula") != work_formula
+                    for surface in surfaces
+                )
+            ):
+                continue
+            valid.append(envelope)
+            index[envelope_key] = envelope
+    return valid, index
+
+
+def _candidate_envelope_summary(
+    envelope: dict[str, Any],
+    surface_index: dict[tuple[str, str], dict[str, Any]],
+) -> dict[str, Any]:
+    surfaces = [
+        surface_index[(reference["surface_id"], reference["version"])]
+        for reference in envelope["surface_refs"]
+    ]
+    return {
+        "envelope_id": envelope["envelope_id"],
+        "version": envelope["version"],
+        "input_digest": envelope["input_digest"],
+        "cohort_id": envelope["cohort_id"],
+        "domain": envelope["domain"],
+        "domain_policy": envelope["domain_policy"],
+        "candidate_families": [
+            surface["candidate_family"] for surface in surfaces
+        ],
+        "algorithm_families": [
+            surface["algorithm_family"] for surface in surfaces
+        ],
+        "support_policy": envelope["support_policy"],
+    }
+
+
 def _validated_surface_lineage(
     surfaces: list[dict[str, Any]],
 ) -> tuple[
@@ -1027,7 +1632,15 @@ def _validated_surface_lineage(
                     continue
                 if any(
                     previous.get(key) != surface.get(key)
-                    for key in ("cohort_id", "domain", "candidate_family")
+                    for key in (
+                        "cohort_id",
+                        "domain",
+                        "domain_policy",
+                        "candidate_family",
+                        "algorithm_family",
+                        "coordinate",
+                        "work_formula",
+                    )
                 ):
                     continue
                 previous_anchors = previous.get("anchors")
@@ -1062,11 +1675,15 @@ def _validated_surface_lineage(
 
 def _capability_surface_results(
     document: dict[str, Any],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     surfaces_value = document.get("capability_surfaces")
     queries_value = document.get("surface_queries")
     if surfaces_value is None and queries_value is None:
-        return [], []
+        return [], [], []
     surfaces = surfaces_value if isinstance(surfaces_value, list) else []
     queries = queries_value if isinstance(queries_value, list) else []
     digest_valid_surfaces: list[dict[str, Any]] = []
@@ -1122,7 +1739,19 @@ def _capability_surface_results(
                 f"duplicate capability surface version: {surface_id}@{new_version}"
             )
         coordinate = base.get("coordinate") if isinstance(base, dict) else None
-        axis = coordinate.get("axis") if isinstance(coordinate, dict) else None
+        axes_value = (
+            [coordinate.get("axis")]
+            if isinstance(coordinate, dict) and "axis" in coordinate
+            else coordinate.get("axes")
+            if isinstance(coordinate, dict)
+            else None
+        )
+        axes = (
+            tuple(axes_value)
+            if isinstance(axes_value, list)
+            and all(_nonempty_string(axis) for axis in axes_value)
+            else ()
+        )
         anchor = update.get("anchor")
         base_anchors = base.get("anchors") if isinstance(base, dict) else None
         cells = update.get("cells")
@@ -1130,9 +1759,9 @@ def _capability_surface_results(
         update_evidence_refs = update.get("evidence_refs")
         if (
             not isinstance(base, dict)
-            or not _nonempty_string(axis)
+            or not axes
             or not isinstance(base_anchors, list)
-            or not _eligible_surface_anchor(base, anchor, axis)
+            or not _eligible_surface_anchor(base, anchor, axes)
             or not isinstance(cells, list)
             or not isinstance(uncertainty_policy, dict)
             or not isinstance(update_evidence_refs, list)
@@ -1153,7 +1782,7 @@ def _capability_surface_results(
         base_evidence_refs = base.get("evidence_refs")
         new_anchors = sorted(
             [*base_anchors, anchor],
-            key=lambda item: float(item["shape"][axis]),
+            key=lambda item: tuple(float(item["shape"][axis]) for axis in axes),
         )
         new_surface = {
             **base,
@@ -1177,12 +1806,40 @@ def _capability_surface_results(
         digest_valid_index[new_key] = new_surface
         valid_surfaces.append(new_surface)
         surface_index[new_key] = new_surface
+    envelopes_value = document.get("candidate_envelopes")
+    envelopes = envelopes_value if isinstance(envelopes_value, list) else []
+    valid_envelopes, envelope_index = _validated_candidate_envelopes(
+        envelopes, surface_index
+    )
     results: list[dict[str, Any]] = []
     for query_value in queries:
         if not isinstance(query_value, dict):
             results.append(
                 _unknown_surface_query({}, None, "invalid_surface_query")
             )
+            continue
+        if "envelope_id" in query_value:
+            envelope = envelope_index.get(
+                (
+                    query_value.get("envelope_id"),
+                    query_value.get("envelope_version"),
+                )
+            )
+            if envelope is None:
+                results.append(
+                    _unknown_candidate_envelope_query(
+                        query_value,
+                        None,
+                        "candidate_envelope_version_not_found",
+                        [],
+                    )
+                )
+            else:
+                results.append(
+                    _query_candidate_envelope(
+                        query_value, envelope, surface_index
+                    )
+                )
             continue
         surface = surface_index.get(
             (query_value.get("surface_id"), query_value.get("surface_version"))
@@ -1204,7 +1861,11 @@ def _capability_surface_results(
             else None
         )
         summaries.append(_surface_summary(surface, previous))
-    return summaries, results
+    envelope_summaries = [
+        _candidate_envelope_summary(envelope, surface_index)
+        for envelope in valid_envelopes
+    ]
+    return summaries, envelope_summaries, results
 
 
 def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
@@ -1235,7 +1896,11 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             )
         }
     comparisons = _comparisons(axes)
-    capability_surfaces, surface_queries = _capability_surface_results(document)
+    (
+        capability_surfaces,
+        candidate_envelopes,
+        surface_queries,
+    ) = _capability_surface_results(document)
     derivation_basis = {
         "schema": DIAGNOSTIC_RESULT_SCHEMA,
         "run_id": manifest["run_id"],
@@ -1244,6 +1909,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "comparisons": comparisons,
         "policy_refs": document.get("policies", {}),
         "capability_surfaces": capability_surfaces,
+        "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
     }
     derivation = {
@@ -1271,6 +1937,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "axes": axes,
         "comparisons": comparisons,
         "capability_surfaces": capability_surfaces,
+        "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
         "evidence": {
             key: document[key]
@@ -1315,21 +1982,104 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                 f"{label}: unknown ({axis['reason_code']})"
             )
     for query in result.get("capability_surface_queries", []):
-        surface = query["surface"]
-        prefix = (
-            f"Capability Surface {query['query_id']} "
-            f"[{surface['surface_id']}@{surface['version']}]"
-        )
+        envelope = query.get("envelope")
+        if isinstance(envelope, dict):
+            prefix = (
+                f"Capability Envelope {query['query_id']} "
+                f"[{envelope['envelope_id']}@{envelope['version']}]"
+            )
+        else:
+            surface = query["surface"]
+            prefix = (
+                f"Capability Surface {query['query_id']} "
+                f"[{surface['surface_id']}@{surface['version']}]"
+            )
         if query["status"] == "unknown":
-            lines.append(f"{prefix}: unknown ({query['reason_code']})")
+            details = []
+            if query.get("cohort_id") is not None:
+                details.append(f"cohort={query['cohort_id']}")
+            if query.get("domain") is not None:
+                details.append(
+                    "domain="
+                    + json.dumps(
+                        query["domain"],
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                        sort_keys=True,
+                    )
+                )
+            domain_policy = query.get("domain_policy")
+            if isinstance(domain_policy, dict):
+                details.append(
+                    "domain-policy="
+                    f"{domain_policy['policy_id']}/{domain_policy['version']}"
+                )
+            if query.get("cell_id") is not None:
+                details.append(f"cell={query['cell_id']}")
+            if query.get("support_seam_id") is not None:
+                details.append(f"seam={query['support_seam_id']}")
+            facets = query.get("candidate_facets")
+            if isinstance(facets, list) and facets:
+                facet_texts = []
+                for facet in facets:
+                    facet_status = str(facet["status"])
+                    if facet_status == "unknown":
+                        facet_status += f"({facet['reason_code']})"
+                    facet_details = []
+                    if facet.get("cell_id") is not None:
+                        facet_details.append(f"cell={facet['cell_id']}")
+                    if facet.get("support_seam_id") is not None:
+                        facet_details.append(
+                            f"seam={facet['support_seam_id']}"
+                        )
+                    detail_suffix = (
+                        "[" + ";".join(facet_details) + "]"
+                        if facet_details
+                        else ""
+                    )
+                    facet_texts.append(
+                        f"{facet['candidate_family']}/"
+                        f"{facet['algorithm_family']}:{facet_status}"
+                        f"{detail_suffix}"
+                    )
+                details.append("facets=" + ",".join(facet_texts))
+            evidence_refs = query.get("evidence_refs")
+            if isinstance(evidence_refs, list) and evidence_refs:
+                details.append("evidence=" + ",".join(evidence_refs))
+            suffix = "; " + "; ".join(details) if details else ""
+            lines.append(
+                f"{prefix}: unknown ({query['reason_code']}){suffix}"
+            )
             continue
         rate = query["effective_rate"]
         latency = query["work_rate_latency"]
+        domain_policy = query.get("domain_policy")
+        domain_policy_text = (
+            f"; domain-policy={domain_policy['policy_id']}/{domain_policy['version']}"
+            if isinstance(domain_policy, dict)
+            else ""
+        )
+        if isinstance(envelope, dict):
+            candidate_text = "; candidates=" + ",".join(
+                f"{facet['candidate_family']}/{facet['algorithm_family']}"
+                for facet in query["candidate_facets"]
+            )
+            winner_text = (
+                f"; winner={query['selected_candidate_family']}/"
+                f"{query['selected_algorithm_family']}"
+            )
+        else:
+            candidate_text = (
+                f"; candidate-family={query['selected_candidate_family']}"
+            )
+            winner_text = ""
         lines.append(
             f"{prefix}: {query['status']}; "
             f"cohort={query['cohort_id']}; "
             f"domain={json.dumps(query['domain'], ensure_ascii=False, separators=(',', ':'), sort_keys=True)}; "
-            f"candidate-family={query['selected_candidate_family']}; "
+            f"{candidate_text.lstrip('; ')}"
+            f"{winner_text}"
+            f"{domain_policy_text}; "
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
             f"latency={latency['value_ns']:.6f} ns; "
             f"cell={query['cell_id']}; "
