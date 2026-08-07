@@ -29,7 +29,15 @@ def _aggregate(sessions: list[dict[str, Any]], section: str, key: str) -> dict[s
         "all_sessions_correct": all(
             item.get("correctness", {}).get("passed") is True for item in measurements
         ),
+        "all_sessions_output_contiguous": all(
+            item.get("correctness", {})
+            .get("output_layout", {})
+            .get("contiguous")
+            is True
+            for item in measurements
+        ),
     }
+
 
 def classify_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
     sessions = evidence["sessions"]
@@ -85,6 +93,67 @@ def classify_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
         "recovery_vs_old_256_reference": recovery_ratio,
         "checks": headroom_checks,
         "failed_checks": [name for name, passed in headroom_checks.items() if not passed],
+    }
+
+    legacy_target = _aggregate(
+        sessions,
+        "implementation_headroom",
+        "legacy-einsum-contiguous",
+    )
+    legacy_candidate = _aggregate(
+        sessions,
+        "implementation_headroom",
+        "batched-matmul-transpose-contiguous",
+    )
+    legacy_all_session_faster = all(
+        candidate < target
+        for candidate, target in zip(
+            legacy_candidate["session_medians_ns"],
+            legacy_target["session_medians_ns"],
+            strict=True,
+        )
+    )
+    legacy_speedup_fraction = (
+        legacy_target["median_of_session_medians_ns"]
+        / legacy_candidate["median_of_session_medians_ns"]
+        - 1.0
+    )
+    legacy_uncertainty = max(
+        0.05,
+        legacy_target["iqr_over_median"]
+        + legacy_candidate["iqr_over_median"],
+    )
+    legacy_checks = {
+        "environment_eligible": environment_eligible,
+        "target_correct_in_all_sessions": legacy_target["all_sessions_correct"],
+        "candidate_correct_in_all_sessions": legacy_candidate[
+            "all_sessions_correct"
+        ],
+        "target_output_contiguous_in_all_sessions": legacy_target[
+            "all_sessions_output_contiguous"
+        ],
+        "candidate_output_contiguous_in_all_sessions": legacy_candidate[
+            "all_sessions_output_contiguous"
+        ],
+        "candidate_faster_in_every_session": legacy_all_session_faster,
+        "speedup_exceeds_locked_uncertainty": legacy_speedup_fraction
+        > legacy_uncertainty,
+    }
+    legacy_headroom = {
+        "scenario": "context-matmul-legacy-einsum-vs-batched-matmul",
+        "verdict": (
+            "implementation_headroom"
+            if all(legacy_checks.values())
+            else "insufficient_evidence"
+        ),
+        "target": legacy_target,
+        "correct_alternative": legacy_candidate,
+        "speedup_fraction": legacy_speedup_fraction,
+        "locked_uncertainty_fraction": legacy_uncertainty,
+        "checks": legacy_checks,
+        "failed_checks": [
+            name for name, passed in legacy_checks.items() if not passed
+        ],
     }
 
     operator = _aggregate(sessions, "integration", "operator")
@@ -165,6 +234,7 @@ def classify_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
     )
     observed_verdicts = {
         headroom["verdict"],
+        legacy_headroom["verdict"],
         integration["verdict"],
         target_only["verdict"],
         frontier_shift_gate["verdict"],
@@ -174,7 +244,7 @@ def classify_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
         and len({session["process_id"] for session in sessions}) == 3,
         "environment_eligible": environment_eligible,
         "negative_control_rejected_in_every_session": negative_control_rejected,
-        "implementation_headroom_observed": headroom["verdict"]
+        "implementation_headroom_observed": legacy_headroom["verdict"]
         == "implementation_headroom",
         "integration_overhead_observed": integration["verdict"]
         == "integration_overhead",
@@ -184,7 +254,13 @@ def classify_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
         "at_least_two_distinct_verdicts": len(observed_verdicts) >= 2,
     }
     return {
-        "scenarios": [headroom, integration, target_only, frontier_shift_gate],
+        "scenarios": [
+            headroom,
+            legacy_headroom,
+            integration,
+            target_only,
+            frontier_shift_gate,
+        ],
         "assertions": assertions,
         "exit_criteria_passed": all(assertions.values()),
     }

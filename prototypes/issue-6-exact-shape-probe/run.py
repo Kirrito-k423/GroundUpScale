@@ -352,6 +352,116 @@ def _integration_measurements(session_id: int) -> dict[str, Any]:
     }
 
 
+def _implementation_headroom_measurements(session_id: int) -> dict[str, Any]:
+    measurement_threads = 4
+    thread_env_names = (
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+    )
+    previous_thread_env = {name: os.environ[name] for name in thread_env_names}
+    previous_torch_threads = torch.get_num_threads()
+    for name in thread_env_names:
+        os.environ[name] = str(measurement_threads)
+    torch.set_num_threads(measurement_threads)
+    try:
+        rng = np.random.default_rng(SEED + 2)
+        logits_np = rng.standard_normal((1, 8, 512, 512), dtype=np.float32)
+        shifted = logits_np - logits_np.max(axis=-1, keepdims=True)
+        exponentials = np.exp(shifted).astype(np.float32)
+        probabilities_np = exponentials / exponentials.sum(
+            axis=-1, keepdims=True
+        )
+        values_sequence_np = rng.standard_normal(
+            (1, 512, 8, 64), dtype=np.float32
+        )
+        values_heads_np = values_sequence_np.transpose(0, 2, 1, 3)
+        reference = np.matmul(
+            probabilities_np.astype(np.float64),
+            values_heads_np.astype(np.float64),
+        ).transpose(0, 2, 1, 3).copy()
+
+        probabilities = torch.from_numpy(probabilities_np)
+        values_sequence = torch.from_numpy(values_sequence_np)
+        values_heads = values_sequence.transpose(1, 2)
+
+        def legacy_einsum_contiguous() -> torch.Tensor:
+            return torch.einsum(
+                "bhqk,bkhd->bqhd", probabilities, values_sequence
+            ).contiguous()
+
+        def batched_matmul_transpose_contiguous() -> torch.Tensor:
+            return torch.matmul(probabilities, values_heads).transpose(
+                1, 2
+            ).contiguous()
+
+        invocations = {
+            "legacy-einsum-contiguous": legacy_einsum_contiguous,
+            "batched-matmul-transpose-contiguous": (
+                batched_matmul_transpose_contiguous
+            ),
+        }
+        correctness = {
+            key: _correctness(invoke(), reference)
+            for key, invoke in invocations.items()
+        }
+        summaries, orders = _measure_interleaved(
+            invocations, SEED + 200 + session_id
+        )
+        result = {
+            "input": {
+                "semantic": "bhqk,bkhd->bqhd Context MatMul",
+                "probabilities_shape": [1, 8, 512, 512],
+                "values_sequence_shape": [1, 512, 8, 64],
+                "values_heads_view_shape": [1, 8, 512, 64],
+                "dtype": "float32",
+                "input_layout": {
+                    "probabilities": "C-contiguous",
+                    "values_sequence": "C-contiguous",
+                    "values_heads": "zero-copy non-contiguous transpose view",
+                },
+                "output_layout": "C-contiguous [1,512,8,64]",
+                "threads": measurement_threads,
+                "seed": SEED + 2,
+                "probabilities_sha256": sha256(
+                    probabilities_np.tobytes()
+                ).hexdigest(),
+                "values_sequence_sha256": sha256(
+                    values_sequence_np.tobytes()
+                ).hexdigest(),
+            },
+            "measurement_contract": {
+                "timer": "time.perf_counter_ns",
+                "completion_boundary": "CPU call return; synchronous completion",
+                "warmup_iterations": WARMUPS,
+                "windows": WINDOWS,
+                "target_window_ns": TARGET_WINDOW_NS,
+                "instrumentation": (
+                    "baseline timing lane; no profiler in timed region"
+                ),
+                "candidate_order": orders,
+                "thread_environment": {
+                    name: os.environ[name] for name in thread_env_names
+                },
+                "torch_num_threads": torch.get_num_threads(),
+            },
+            "measurements": {
+                key: {
+                    "correctness": correctness[key],
+                    "summary": summaries[key],
+                }
+                for key in invocations
+            },
+        }
+    finally:
+        torch.set_num_threads(previous_torch_threads)
+        for name, value in previous_thread_env.items():
+            os.environ[name] = value
+    return result
+
+
 def _worker(session_id: int) -> dict[str, Any]:
     torch.set_num_threads(THREADS)
     torch.set_num_interop_threads(THREADS)
@@ -381,6 +491,9 @@ def _worker(session_id: int) -> dict[str, Any]:
                 },
             },
             "anomaly": _anomaly_measurements(session_id),
+            "implementation_headroom": _implementation_headroom_measurements(
+                session_id
+            ),
             "integration": _integration_measurements(session_id),
         }
 
@@ -485,9 +598,35 @@ def _run_parent() -> dict[str, Any]:
         "environment": environment,
         "blas_identity": _blas_identity(),
         "candidate_manifest": _candidate_manifest(),
+        "implementation_headroom_candidate_manifest": {
+            "legacy-einsum-contiguous": {
+                "role": "target",
+                "provider": "PyTorch",
+                "library": "Accelerate/einsum planner",
+                "timed_work": (
+                    "einsum bhqk,bkhd->bqhd plus contiguous output"
+                ),
+            },
+            "batched-matmul-transpose-contiguous": {
+                "role": "alternative",
+                "provider": "PyTorch",
+                "library": "Accelerate batched MatMul",
+                "timed_work": (
+                    "zero-copy values transpose, batched MatMul, output "
+                    "transpose plus contiguous output"
+                ),
+            },
+        },
         "protocol": {
             "anomaly_shape_mkn": [ANOMALY_N, ANOMALY_N, ANOMALY_N],
             "aligned_control_shape_mkn": [ALIGNED_N, ALIGNED_N, ALIGNED_N],
+            "implementation_headroom_case": {
+                "semantic": "bhqk,bkhd->bqhd Context MatMul",
+                "probabilities_shape": [1, 8, 512, 512],
+                "values_shape": [1, 512, 8, 64],
+                "output_shape": [1, 512, 8, 64],
+                "threads": 4,
+            },
             "dtype": "float32",
             "layout": "C-contiguous",
             "threads": THREADS,
@@ -501,6 +640,7 @@ def _run_parent() -> dict[str, Any]:
             "locked_thresholds": {
                 "headroom_minimum_fraction": 0.05,
                 "headroom_recovery_of_old_reference": 0.90,
+                "context_headroom_minimum_fraction": 0.05,
                 "operator_reference_tolerance_fraction": 0.10,
                 "integration_minimum_gap_fraction": 0.10,
                 "copy_ablation_relative_error_fraction": 0.35,

@@ -34,6 +34,19 @@ by `groundupscale`.
 - Removing alternatives, an ineligible environment, or a failed correctness
   oracle must produce `insufficient_evidence`.
 
+The first locked run retained the `257^3` case as an
+`insufficient_evidence` counterexample: no correct alternative beat the target.
+Before any second benchmark, a separate implementation-headroom case was
+locked from the repository's existing Context MatMul path:
+
+- target: `einsum("bhqk,bkhd->bqhd").contiguous()`;
+- alternative: a zero-copy values transpose, batched MatMul, output transpose,
+  and contiguous result;
+- exact external contract: FP32 probabilities `[1,8,512,512]`, values
+  `[1,512,8,64]`, contiguous output `[1,512,8,64]`, four threads;
+- verdict only if the correct alternative is faster in all three sessions and
+  its aggregate gain exceeds `max(5%, combined IQR/median)`.
+
 ## Run
 
 From the repository root:
