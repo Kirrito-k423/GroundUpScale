@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import json
 from collections.abc import Callable, Sequence
 from pathlib import Path
+
+import yaml
 
 from groundupscale.calibration import (
     fit_calibration,
@@ -15,10 +18,19 @@ from groundupscale.calibration import (
     write_calibration_yaml,
 )
 from groundupscale.environment import collect_environment_validity
+from groundupscale.benchmark.hardware_microbenchmark import (
+    HardwareMicrobenchmarkRunner,
+    aggregate_capability_envelope,
+)
 from groundupscale.ir import canonical_data
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
 from groundupscale.run_bundle import RunBundleWriter, verify_run_bundle
+from groundupscale.schemas.v1alpha1 import (
+    HardwareBenchmarkSuiteDocument,
+    HardwareCapabilityProfileDocument,
+)
+from groundupscale.specs import SpecRepository
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -43,6 +55,22 @@ def _parser() -> argparse.ArgumentParser:
     preflight.add_argument("--sample-interval-seconds", type=float, default=1.0)
     preflight.add_argument("--process-samples", type=int, default=3)
     preflight.add_argument("--json", action="store_true", dest="as_json")
+    hardware_benchmark = subparsers.add_parser(
+        "benchmark-hardware",
+        help="measure multi-Shape CPU resource envelopes and write a YAML profile",
+    )
+    hardware_benchmark.add_argument("suite")
+    hardware_benchmark.add_argument("--repository-root", default=".")
+    hardware_benchmark.add_argument("--observation-output", required=True)
+    hardware_benchmark.add_argument("--profile-output", required=True)
+    hardware_benchmark.add_argument("--profile-name", required=True)
+    hardware_benchmark.add_argument("--profile-version", default="0.1.0")
+    hardware_benchmark.add_argument(
+        "--preflight-sample-interval-seconds", type=float, default=0.2
+    )
+    hardware_benchmark.add_argument("--preflight-process-samples", type=int, default=3)
+    hardware_benchmark.add_argument("--require-valid-environment", action="store_true")
+    hardware_benchmark.add_argument("--json", action="store_true", dest="as_json")
     compile_command = subparsers.add_parser(
         "compile", help="compile a YAML AnalysisPlan through Semantic IR"
     )
@@ -61,6 +89,7 @@ def _parser() -> argparse.ArgumentParser:
     run_command.add_argument("--warmup", type=int)
     run_command.add_argument("--windows-per-sample", type=int, default=5)
     run_command.add_argument("--target-window-ms", type=float, default=20.0)
+    run_command.add_argument("--collect-environment", action="store_true")
     run_command.add_argument("--require-valid-environment", action="store_true")
     run_command.add_argument(
         "--preflight-sample-interval-seconds", type=float, default=1.0
@@ -158,6 +187,84 @@ def _write_json(path: Path, value: object) -> None:
     )
 
 
+def _run_hardware_benchmark(
+    args: argparse.Namespace,
+    *,
+    environment_collector: Callable[..., dict[str, object]],
+) -> int:
+    repository_root = Path(args.repository_root).resolve()
+    suite = SpecRepository(repository_root).load_document(Path(args.suite))
+    if not isinstance(suite, HardwareBenchmarkSuiteDocument):
+        raise ValueError(f"{args.suite}: expected HardwareBenchmarkSuite")
+    environment = environment_collector(
+        sample_interval_seconds=args.preflight_sample_interval_seconds,
+        process_sample_count=args.preflight_process_samples,
+    )
+    if args.require_valid_environment and environment.get("eligible") is not True:
+        if args.as_json:
+            print(
+                json.dumps(
+                    {
+                        "status": "rejected-before-benchmark",
+                        "reason_codes": environment.get("reason_codes", []),
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+        else:
+            print("hardware benchmark rejected before measurement")
+        return 2
+    observation = HardwareMicrobenchmarkRunner(
+        suite, environment=dict(environment)
+    ).run()
+    observation_path = Path(args.observation_output).resolve()
+    _write_json(observation_path, observation)
+    try:
+        source_path = observation_path.relative_to(repository_root).as_posix()
+    except ValueError:
+        source_path = str(observation_path)
+    profile_data = aggregate_capability_envelope(
+        observation,
+        profile_name=args.profile_name,
+        profile_version=args.profile_version,
+        source_path=source_path,
+        source_sha256=sha256(observation_path.read_bytes()).hexdigest(),
+    )
+    profile = HardwareCapabilityProfileDocument.model_validate(profile_data)
+    profile_path = Path(args.profile_output).resolve()
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    profile_path.write_text(
+        yaml.safe_dump(
+            profile.model_dump(mode="json", by_alias=True),
+            sort_keys=False,
+            allow_unicode=True,
+        ),
+        encoding="utf-8",
+    )
+    summary = {
+        "schema": "groundupscale.dev/hardware-benchmark-summary/v1alpha1",
+        "status": "completed",
+        "environment_eligible": environment.get("eligible"),
+        "hardware_cohort": observation["hardware_cohort"],
+        "probe_count": len(observation["probes"]),
+        "resource_count": len(profile.spec.resources),
+        "observation": str(observation_path),
+        "profile": str(profile_path),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"hardware benchmark: {summary['probe_count']} probes -> "
+            f"{summary['resource_count']} resource envelopes"
+        )
+        print(f"  observation: {observation_path}")
+        print(f"  profile: {profile_path}")
+    return 0
+
+
 def _run_compile(args: argparse.Namespace) -> int:
     repository_root = Path(args.repository_root).resolve()
     compiled = compile_analysis_plan(repository_root, Path(args.plan))
@@ -173,11 +280,20 @@ def _run_compile(args: argparse.Namespace) -> int:
     _write_json(output / "workload-ir.json", workload)
     _write_json(output / "semantic-ir.json", result.semantic_ir)
     _write_json(output / "cost-ir.json", cost_result.cost_ir)
+    if compiled.hardware_prediction is not None:
+        _write_json(
+            output / "hardware-prediction.json", compiled.hardware_prediction
+        )
     _write_json(output / "provenance.json", cost_result.provenance)
     compilation = {
         "schema": "groundupscale.dev/semantic-compilation/v1alpha1",
         "compilation_fingerprint": result.compilation_fingerprint,
         "cost_compilation_fingerprint": cost_result.compilation_fingerprint,
+        "hardware_compilation_fingerprint": (
+            compiled.hardware_prediction.compilation_fingerprint
+            if compiled.hardware_prediction is not None
+            else None
+        ),
         "diagnostics": result.diagnostics,
         "semantic_validation_results": result.validation_results,
         "cost_validation_results": cost_result.validation_results,
@@ -197,11 +313,21 @@ def _run_compile(args: argparse.Namespace) -> int:
         ),
         "semantic_compilation_fingerprint": result.compilation_fingerprint,
         "cost_compilation_fingerprint": cost_result.compilation_fingerprint,
+        "hardware_compilation_fingerprint": (
+            compiled.hardware_prediction.compilation_fingerprint
+            if compiled.hardware_prediction is not None
+            else None
+        ),
         "total_flops": cost_result.cost_ir.summary.metrics.flops,
         "parameter_bytes": cost_result.cost_ir.summary.parameter_bytes,
         "buffer_bytes": cost_result.cost_ir.summary.buffer_bytes,
         "explicit_activation_bytes": (
             cost_result.cost_ir.summary.metrics.explicit_activation_bytes
+        ),
+        "hardware_prediction_status": (
+            compiled.hardware_prediction.status
+            if compiled.hardware_prediction is not None
+            else "unsupported-hardware-backend"
         ),
         "output": str(output),
     }
@@ -231,7 +357,7 @@ def _run_analysis(
             sample_interval_seconds=args.preflight_sample_interval_seconds,
             process_sample_count=args.preflight_process_samples,
         )
-        if args.require_valid_environment
+        if args.require_valid_environment or args.collect_environment
         else None
     )
     if (
@@ -305,6 +431,18 @@ def _run_explain(args: argparse.Namespace) -> int:
     prediction = json.loads(
         (run / "prediction/metrics.json").read_text(encoding="utf-8")
     )
+    hardware_prediction_path = run / "prediction/hardware-backend.json"
+    hardware_prediction = (
+        json.loads(hardware_prediction_path.read_text(encoding="utf-8"))
+        if hardware_prediction_path.is_file()
+        else None
+    )
+    comparison_path = run / "comparison/predicted-vs-observed.json"
+    comparison = (
+        json.loads(comparison_path.read_text(encoding="utf-8"))
+        if comparison_path.is_file()
+        else None
+    )
     summary = {
         "schema": "groundupscale.dev/explain-summary/v1alpha1",
         "run_id": manifest["run_id"],
@@ -322,6 +460,70 @@ def _run_explain(args: argparse.Namespace) -> int:
         "predicted_framework_peak_bytes": prediction["live_set"][
             "predicted_framework_peak_bytes"
         ],
+        "duration_status": prediction.get("duration_status", "uncalibrated"),
+        "hardware_empirical_floor_ns": (
+            prediction.get("duration", {}).get(
+                "empirical_hardware_floor_ns"
+            )
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "full_duration_ns": (
+            prediction.get("duration", {}).get("full_duration_ns")
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "hardware_capability_environment_eligible": (
+            all(
+                item["environment_eligible"]
+                for item in hardware_prediction["measured_capabilities"]
+            )
+            if hardware_prediction is not None
+            and hardware_prediction.get("measured_capabilities")
+            else None
+        ),
+        "comparison_status": (
+            comparison["status"] if comparison is not None else "unavailable"
+        ),
+        "latency_comparisons": (
+            [
+                {
+                    "case_id": item["case_id"],
+                    "scope": item["scope"],
+                    "empirical_hardware_floor_ns": item["predicted"][
+                        "empirical_hardware_floor_ns"
+                    ],
+                    "empirical_compute_time_ns": item["predicted"][
+                        "empirical_compute_time_ns"
+                    ],
+                    "empirical_memory_time_ns": item["predicted"][
+                        "empirical_memory_time_ns"
+                    ],
+                    "limiting_resource": item["predicted"]["limiting_resource"],
+                    "observed_median_ns": item["observed"]["median_ns"],
+                    "observed_to_hardware_floor_ratio": item["comparison"][
+                        "observed_to_hardware_floor_ratio"
+                    ],
+                    "error_status": item["comparison"]["error_status"],
+                }
+                for item in comparison["latency_cases"]
+            ]
+            if comparison is not None
+            else []
+        ),
+        "memory_comparison": (
+            {
+                "predicted_framework_peak_bytes": comparison["memory"][
+                    "predicted"
+                ]["framework_peak_bytes"],
+                "observed_framework_peak_bytes": comparison["memory"][
+                    "observed"
+                ]["framework_peak_bytes"],
+                **comparison["memory"]["comparison"],
+            }
+            if comparison is not None
+            else None
+        ),
         "report": str(run / "reports/report.html"),
         "explanation_graph": str(run / "prediction/explanation.graph.json"),
     }
@@ -333,6 +535,42 @@ def _run_explain(args: argparse.Namespace) -> int:
             print(
                 f"  {case['case_id']}: {case['median_ns'] / 1_000_000:.3f} ms "
                 f"(IQR/median {case['iqr_over_median']:.2%})"
+            )
+        if summary["hardware_empirical_floor_ns"] is not None:
+            print(
+                "  algorithm-independent empirical hardware floor: "
+                f"{summary['hardware_empirical_floor_ns'] / 1_000_000:.3f} ms "
+                "(not the current implementation duration)"
+            )
+            print(
+                "  capability evidence: "
+                + (
+                    "trusted"
+                    if summary["hardware_capability_environment_eligible"]
+                    else "exploratory (measurement preflight did not pass)"
+                )
+            )
+        for item in summary["latency_comparisons"]:
+            floor = item["empirical_hardware_floor_ns"]
+            ratio = item["observed_to_hardware_floor_ratio"]
+            floor_text = (
+                f"{floor / 1_000_000:.3f} ms" if floor is not None else "N/A"
+            )
+            ratio_text = f"{ratio:.2f}x" if ratio is not None else "N/A"
+            print(
+                f"  compare {item['case_id']}: floor "
+                f"{floor_text}, "
+                f"observed {item['observed_median_ns'] / 1_000_000:.3f} ms, "
+                f"distance {ratio_text}, limiting {item['limiting_resource']} "
+                "(hardware-floor headroom; not prediction error)"
+            )
+        if summary["memory_comparison"] is not None:
+            memory = summary["memory_comparison"]
+            print(
+                "  compare framework peak memory: predicted "
+                f"{memory['predicted_framework_peak_bytes']} B, observed "
+                f"{memory['observed_framework_peak_bytes']} B, absolute relative "
+                f"error {memory['absolute_relative_error']:.2%}"
             )
         print(f"  report: {summary['report']}")
     return 0
@@ -411,6 +649,10 @@ def main(
         return _run_probe(args)
     if args.command == "preflight":
         return _run_preflight(args)
+    if args.command == "benchmark-hardware":
+        return _run_hardware_benchmark(
+            args, environment_collector=environment_collector
+        )
     if args.command == "compile":
         return _run_compile(args)
     if args.command == "run":

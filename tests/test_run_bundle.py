@@ -37,6 +37,8 @@ def _valid_preflight() -> dict[str, object]:
             },
             "competitors": {
                 "sample_interval_seconds": 1.0,
+                "sample_count": 3,
+                "total_cpu_percent_samples": [0.0, 0.0, 0.0],
                 "top": [],
             },
         }
@@ -66,8 +68,14 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     assert manifest["status"] == "completed"
     assert manifest["device"] == "cpu"
     assert manifest["environment_validity"] == "passed"
-    assert manifest["stages"]["duration_prediction"] == "skipped-uncalibrated"
-    assert len(manifest["artifacts"]) >= 15
+    assert manifest["hardware_cohort"].endswith(
+        "-cpu-env-local-apple-silicon-v2"
+    )
+    assert manifest["stages"]["duration_prediction"] == (
+        "empirical-hardware-lower-bound"
+    )
+    assert manifest["stages"]["prediction_observation_comparison"] == "completed"
+    assert len(manifest["artifacts"]) >= 17
     roles = {artifact["role"] for artifact in manifest["artifacts"]}
     assert {
         "resolved-input-lock",
@@ -75,7 +83,9 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
         "workload-ir",
         "semantic-ir",
         "cost-ir",
+        "hardware-backend-prediction",
         "prediction",
+        "prediction-observation-comparison",
         "benchmark-observation",
         "observation-trace",
         "alignment-map",
@@ -98,7 +108,87 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     )
     assert len(explanation["entrypoints"]["latency"]) == 5
     assert explanation["entrypoints"]["peak_memory"]
+    assert explanation["entrypoints"]["hardware_duration_bound"] == [
+        "metric:hardware-empirical-time-floor"
+    ]
+    assert len(
+        explanation["entrypoints"]["prediction_observation_comparison"]
+    ) == 6
+    e2e_explanation = next(
+        node
+        for node in explanation["nodes"]
+        if node["id"] == "comparison:latency:two-layer-prefill"
+    )
+    assert e2e_explanation["error_status"] == (
+        "not-evaluable-hardware-floor"
+    )
+    missing_compute = next(
+        node
+        for node in explanation["nodes"]
+        if node["id"] == "capability:missing-fp32-flops-per-second"
+    )
+    assert missing_compute["status"] == "unknown"
     assert explanation["calibration_status"] == "not-yet-applied"
+    prediction = json.loads(
+        (run / "prediction/metrics.json").read_text(encoding="utf-8")
+    )
+    assert prediction["duration_status"] == "empirical-hardware-lower-bound"
+    assert prediction["duration"]["full_duration_ns"] is None
+    assert prediction["duration"]["compulsory_bytes"] == 37_756_928
+    assert prediction["duration"]["empirical_hardware_floor_ns"] == (
+        pytest.approx(5_553_975.963160658)
+    )
+    inputs_lock = json.loads(
+        (run / "resolved/inputs.lock.json").read_text(encoding="utf-8")
+    )
+    assert inputs_lock["documents"]["hardware_capability_profiles"][0][
+        "metadata"
+    ]["name"] == "apple-m4-cpu-local"
+    comparison = json.loads(
+        (run / "comparison/predicted-vs-observed.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert comparison["schema"] == (
+        "groundupscale.dev/prediction-observation-comparison/v1alpha1"
+    )
+    assert comparison["status"] == "empirical-hardware-floor-with-observation"
+    assert comparison["summary"] == {
+        "aligned_latency_cases": 5,
+        "evaluable_latency_errors": 0,
+        "evaluable_memory_errors": 1,
+    }
+    e2e_comparison = next(
+        item
+        for item in comparison["latency_cases"]
+        if item["case_id"] == "two-layer-prefill"
+    )
+    assert e2e_comparison["predicted"][
+        "empirical_hardware_floor_ns"
+    ] == pytest.approx(5_553_975.963160658)
+    assert e2e_comparison["predicted"]["minimum_work_flops"] == 9_710_850_048
+    assert e2e_comparison["predicted"]["compulsory_bytes"] == 37_756_928
+    assert e2e_comparison["predicted"]["limiting_resource"] == "compute.fp32"
+    assert e2e_comparison["predicted"]["full_duration_ns"] is None
+    assert e2e_comparison["observed"]["median_ns"] > 0
+    assert e2e_comparison["comparison"]["relative_prediction_error"] is None
+    assert e2e_comparison["comparison"]["error_status"] == (
+        "not-evaluable-hardware-floor"
+    )
+    q_proj_comparison = next(
+        item
+        for item in comparison["latency_cases"]
+        if item["case_id"] == "matmul-q-proj"
+    )
+    assert q_proj_comparison["predicted"][
+        "empirical_hardware_floor_ns"
+    ] == pytest.approx(153_527.65853810357)
+    assert q_proj_comparison["predicted"]["candidate_count"] == 1
+    assert comparison["memory"]["predicted"][
+        "framework_peak_bytes"
+    ] == 54_534_144
+    assert comparison["memory"]["observed"]["framework_peak_bytes"] > 0
+    assert comparison["memory"]["comparison"]["error_status"] == "evaluated"
     memory = json.loads(
         (run / "observation/memory.json").read_text(encoding="utf-8")
     )
@@ -111,10 +201,17 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     )
     assert environment["measurement_preflight"]["eligible"] is True
     assert environment["measurement_preflight"]["policy"]["policy_id"] == (
-        "local-apple-silicon-v1"
+        "local-apple-silicon-v2"
     )
     report = (run / "reports/report.html").read_text(encoding="utf-8")
     assert "GroundUpScale 可解释运行报告" in report
+    assert "5.554 ms" in report
+    assert "不是当前实现耗时预测" in report
+    assert "evidence=exploratory" in report
+    assert "预测—实测对照" in report
+    assert "不可计算预测误差" in report
+    assert "matmul-q-proj" in report
+    assert "峰值内存" in report
     assert "two-layer-prefill" in report
 
     with pytest.raises(RunBundleExistsError):
@@ -146,6 +243,25 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     explain_summary = json.loads(explained.stdout)
     assert explain_summary["run_id"] == "test-cpu-run"
     assert len(explain_summary["cases"]) == 5
+    assert explain_summary["duration_status"] == (
+        "empirical-hardware-lower-bound"
+    )
+    assert explain_summary["hardware_empirical_floor_ns"] == pytest.approx(
+        5_553_975.963160658
+    )
+    assert explain_summary["full_duration_ns"] is None
+    assert explain_summary["hardware_capability_environment_eligible"] is False
+    assert explain_summary["comparison_status"] == (
+        "empirical-hardware-floor-with-observation"
+    )
+    assert len(explain_summary["latency_comparisons"]) == 5
+    assert explain_summary["memory_comparison"]["error_status"] == "evaluated"
+    assert explain_summary["memory_comparison"][
+        "predicted_framework_peak_bytes"
+    ] == 54_534_144
+    assert explain_summary["memory_comparison"][
+        "observed_framework_peak_bytes"
+    ] > 0
 
 
 def test_required_environment_gate_rejects_before_publishing_a_run(
@@ -156,10 +272,10 @@ def test_required_environment_gate_rejects_before_publishing_a_run(
     )
     invalid = _valid_preflight()
     invalid["eligible"] = False
-    invalid["reason_codes"] = ["competing-process-above-policy"]
+    invalid["reason_codes"] = ["total-competing-cpu-above-policy"]
 
     with pytest.raises(
-        EnvironmentValidityError, match="competing-process-above-policy"
+        EnvironmentValidityError, match="total-competing-cpu-above-policy"
     ):
         RunBundleWriter(compiled).run(
             tmp_path,

@@ -1,30 +1,61 @@
-# RMB Cost Report
+# RMB Cost
 
-> **状态：** Goal 因外部环境进入 blocked，estimate。C020–C021 已重复验证门禁；因没有完整原始 token 分项和本轮价格/汇率核验，不计算虚假的最终费用。
+- Generated at: `2026-08-07T04:29:21Z`
+- Confidence: `estimate`
+- USD/CNY: `7.2`
+- Task: M4 CPU microbenchmark and empirical hardware floor
+- Codex effective goal meter: `346,049` tokens (0.346049M)
+- Session: `/Users/Zhuanz/.codex/sessions/2026/08/05/rollout-2026-08-05T11-00-26-019fcfdd-7b51-7880-aacf-ac9839a19f67.jsonl`
+- Token window events: `2026-08-07T03:43:28.712Z` -> `2026-08-07T04:28:59.303Z`
 
-## 监控范围
+## Token Usage
 
-- Goal：`mac-transformer-ir-calibration-slice`
-- Goal execution 开始：2026-08-06T17:27:14+08:00
-- Codex thread：`019fcfdd-7b51-7880-aacf-ac9839a19f67`
-- Session JSONL：`/Users/Zhuanz/.codex/sessions/2026/08/05/rollout-2026-08-05T11-00-26-019fcfdd-7b51-7880-aacf-ac9839a19f67.jsonl`
-- 启动时 Codex effective goal meter：182,481 tokens（来自 `get_goal`，不等同于原始输入/输出 token 总数）
-- 当前审计时间：2026-08-06T20:46:06+08:00
-- 当前 Codex effective goal meter：1,640,735 tokens，11,892 seconds（来自 `get_goal`；不等同于原始 API billing token 分项）
-- 结束时间：2026-08-06T20:46:06+08:00（blocked；恢复后将开启新的审计区间）
+| Item | Tokens | M tokens |
+|---|---:|---:|
+| Input total | 22,162,540 | 22.162540 |
+| Cached input | 21,894,656 | 21.894656 |
+| Uncached input | 267,884 | 0.267884 |
+| Output | 79,949 | 0.079949 |
+| Reasoning output, included in output when provider reports it that way | 21,233 | 0.021233 |
 
-## Token 与费用分项
+## Price Assumptions
 
-| 分项 | Tokens | GPT USD | GPT RMB | DeepSeek USD | DeepSeek RMB |
+| Model | Input USD/M | Cached input USD/M | Output USD/M | Note |
+|---|---:|---:|---:|---|
+| gpt-5.5 | 5 | 0.5 | 30 | Script default; verify current OpenAI pricing before payable use. |
+| deepseek-v4-pro | 0.435 | 0.003625 | 0.87 | Script default; verify current DeepSeek pricing before payable use. |
+
+## Cost Breakdown
+
+| Model | Component | Cache status | Tokens | M tokens | USD/M | USD | RMB |
+|---|---|---|---:|---:|---:|---:|---:|
+| gpt-5.5 | Input (cache miss) | not cached | 267,884 | 0.267884 | 5 | 1.34 | 9.64 |
+| gpt-5.5 | Input (cache hit) | cached | 21,894,656 | 21.894656 | 0.5 | 10.95 | 78.82 |
+| gpt-5.5 | Output | not applicable | 79,949 | 0.079949 | 30 | 2.40 | 17.27 |
+| deepseek-v4-pro | Input (cache miss) | not cached | 267,884 | 0.267884 | 0.435 | 0.1165 | 0.8390 |
+| deepseek-v4-pro | Input (cache hit) | cached | 21,894,656 | 21.894656 | 0.003625 | 0.0794 | 0.5715 |
+| deepseek-v4-pro | Output | not applicable | 79,949 | 0.079949 | 0.87 | 0.0696 | 0.5008 |
+
+## Cost Summary
+
+| Model | Input cache miss RMB | Input cache hit RMB | Output RMB | Total RMB | Total USD |
 |---|---:|---:|---:|---:|---:|
-| 输入未命中缓存 | 待从 session JSONL 计算 | 待计算 | 待计算 | 待计算 | 待计算 |
-| 输入命中缓存 | 待从 session JSONL 计算 | 待计算 | 待计算 | 待计算 | 待计算 |
-| 输出 | 待从 session JSONL 计算 | 待计算 | 待计算 | 待计算 | 待计算 |
-| **合计** | 待计算 | 待计算 | 待计算 | 待计算 | 待计算 |
+| gpt-5.5 | 9.64 | 78.82 | 17.27 | 105.73 | 14.69 |
+| deepseek-v4-pro | 0.8390 | 0.5715 | 0.5008 | 1.91 | 0.2655 |
 
-## 价格与汇率
+## Formula
 
-- 本轮尚未核验最新 GPT、DeepSeek API 价格和 USD/CNY 汇率。
-- 因此本报告必须保持 `estimate`；不得用未核验默认值冒充应付费用。
-- Goal 当前尚未达到 DONE；输入未命中缓存、输入命中缓存和输出的原始分项未从 session JSONL 完整核验，因此本报告保持 estimate。
-- Goal 达到终态后，使用 `$rmb-cost-report` 提供的 `build_rmb_cost_report.py` 从上述 session JSONL、起止时间和 goal meter 生成最终明细。
+`uncached_input = input_total - cached_input`
+
+`uncached_input_cost = uncached_input_M * input_usd_per_M`
+
+`cached_input_cost = cached_input_M * cached_input_usd_per_M`
+
+`output_cost = output_M * output_usd_per_M`
+
+`total_rmb = (uncached_input_cost + cached_input_cost + output_cost) * USD_CNY`
+
+## Notes
+
+- Re-run with current official API prices and FX before using this for reimbursement or budget approval.
+- Codex goal `tokensUsed` can differ from raw session input/output because it is an effective meter, while session logs also expose cache hits and repeated context reads.

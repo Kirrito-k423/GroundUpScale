@@ -12,6 +12,7 @@ from groundupscale.specs import SpecRepository, SpecValidationError
 
 API_VERSION = "groundupscale.dev/v1alpha1"
 VERSION = "0.1.0"
+REPOSITORY_ROOT = Path(__file__).parents[1]
 
 
 def _document(kind: str, name: str, spec: dict[str, Any]) -> dict[str, Any]:
@@ -193,6 +194,75 @@ def test_analysis_plan_resolves_all_versioned_yaml_documents(tmp_path: Path) -> 
     assert list(bundle.models) == ["tiny-transformer"]
     assert len(bundle.sources) == 8
     assert all(len(source.sha256) == 64 for source in bundle.sources.values())
+
+
+def test_m4_cpu_hardware_spec_exposes_official_limits_without_inventing_flops() -> None:
+    bundle = SpecRepository(REPOSITORY_ROOT).load_analysis_plan(
+        REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+
+    cpu = next(
+        device
+        for hardware in bundle.hardware
+        for device in hardware.spec.devices
+        if device.id == "cpu"
+    )
+    capabilities = cpu.capabilities
+
+    assert capabilities is not None
+    assert [(pool.kind, pool.count) for pool in capabilities.core_pools] == [
+        ("performance", 4),
+        ("efficiency", 6),
+    ]
+    assert capabilities.vector.register_bits == 128
+    assert capabilities.vector.fp32_fma_flops_per_instruction == 8
+    assert capabilities.unified_memory.peak_bandwidth_bytes_per_second == (
+        120_000_000_000
+    )
+    assert capabilities.unified_memory.scope == "soc_shared"
+    assert capabilities.theoretical_compute.fp32_flops_per_second.value is None
+    assert capabilities.theoretical_compute.fp32_flops_per_second.status == "unknown"
+    assert capabilities.theoretical_compute.fp32_flops_per_second.reason == (
+        "vendor_does_not_publish_frequency_or_fma_issue_rate"
+    )
+
+
+def test_m4_plan_loads_measured_capabilities_without_overwriting_vendor_facts() -> None:
+    bundle = SpecRepository(REPOSITORY_ROOT).load_analysis_plan(
+        REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+
+    assert len(bundle.hardware_capability_profiles) == 1
+    profile = bundle.hardware_capability_profiles[0]
+    resources = {item.resource: item for item in profile.spec.resources}
+    assert resources["compute.fp32"].robust_achievable_rate > 0
+    assert resources["memory.shared"].robust_achievable_rate > 0
+    cpu = bundle.hardware[0].spec.devices[0]
+    assert cpu.capabilities is not None
+    assert cpu.capabilities.theoretical_compute.fp32_flops_per_second.value is None
+    assert (
+        cpu.capabilities.unified_memory.peak_bandwidth_bytes_per_second
+        == 120_000_000_000
+    )
+
+
+def test_m4_measured_memory_p80_is_within_ten_percent_of_comparable_vendor_peak() -> None:
+    bundle = SpecRepository(REPOSITORY_ROOT).load_analysis_plan(
+        REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+    cpu = bundle.hardware[0].spec.devices[0]
+    assert cpu.capabilities is not None
+    vendor_rate = cpu.capabilities.unified_memory.peak_bandwidth_bytes_per_second
+    resource = next(
+        item
+        for item in bundle.hardware_capability_profiles[0].spec.resources
+        if item.resource == "memory.shared"
+    )
+
+    relative_delta = abs(resource.robust_achievable_rate - vendor_rate) / vendor_rate
+
+    assert relative_delta == pytest.approx(0.05693822840947904)
+    assert relative_delta <= 0.10
 
 
 def test_unknown_fields_are_rejected_with_a_precise_location(tmp_path: Path) -> None:

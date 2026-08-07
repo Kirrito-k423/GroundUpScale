@@ -113,6 +113,13 @@ and platform-reported memory remain separate quantities.
 
 ## Prediction-versus-observation explanation
 
+Each Run Bundle first materializes
+`comparison/predicted-vs-observed.json`; CLI, HTML, and Web views project that
+same contract instead of recomputing comparisons. Benchmark Cases align with
+HardwareBackend candidates through Stable Paths. Complete, like-for-like
+predictions may receive an error value, while a theoretical lower bound only
+receives a diagnostic distance and an explicit `not-evaluable` status.
+
 An Error Attribution classifies evidence into:
 
 | Cause | Question |

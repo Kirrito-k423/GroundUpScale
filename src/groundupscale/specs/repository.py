@@ -18,6 +18,7 @@ from groundupscale.schemas.v1alpha1 import (
     DeploymentIntentDocument,
     FabricGraphDocument,
     HardwareSpecDocument,
+    HardwareCapabilityProfileDocument,
     ModelCallNodeSpec,
     ModelSpecDocument,
     SequenceNodeSpec,
@@ -70,6 +71,7 @@ class AnalysisBundle:
     analysis_case: AnalysisCaseDocument
     deployment_intent: DeploymentIntentDocument
     hardware: tuple[HardwareSpecDocument, ...]
+    hardware_capability_profiles: tuple[HardwareCapabilityProfileDocument, ...]
     fabric_graph: FabricGraphDocument
     benchmark_cases: tuple[BenchmarkCaseDocument, ...]
     models: dict[str, ModelSpecDocument]
@@ -180,6 +182,24 @@ class SpecRepository:
             self._load_reference(reference, "HardwareSpec")
             for reference in plan.spec.hardware
         )
+        hardware_capability_profiles = tuple(
+            self._load_reference(reference, "HardwareCapabilityProfile")
+            for reference in plan.spec.hardware_capability_profiles
+        )
+        for profile in hardware_capability_profiles:
+            assert isinstance(profile, HardwareCapabilityProfileDocument)
+            evidence_path = self._bounded_path(profile.spec.source.path)
+            try:
+                evidence_digest = sha256(evidence_path.read_bytes()).hexdigest()
+            except OSError as error:
+                raise SpecValidationError(
+                    f"cannot read capability evidence {evidence_path}: {error}"
+                ) from error
+            if evidence_digest != profile.spec.source.sha256:
+                raise SpecValidationError(
+                    f"{evidence_path}: expected capability evidence sha256 "
+                    f"{profile.spec.source.sha256}, found {evidence_digest}"
+                )
         fabric = self._load_reference(plan.spec.fabric_graph, "FabricGraph")
         benchmarks = tuple(
             self._load_reference(reference, "BenchmarkCase")
@@ -206,6 +226,10 @@ class SpecRepository:
         assert isinstance(analysis_case, AnalysisCaseDocument)
         assert isinstance(deployment, DeploymentIntentDocument)
         assert all(isinstance(document, HardwareSpecDocument) for document in hardware)
+        assert all(
+            isinstance(document, HardwareCapabilityProfileDocument)
+            for document in hardware_capability_profiles
+        )
         assert isinstance(fabric, FabricGraphDocument)
         assert all(isinstance(document, BenchmarkCaseDocument) for document in benchmarks)
         return AnalysisBundle(
@@ -214,6 +238,7 @@ class SpecRepository:
             analysis_case=analysis_case,
             deployment_intent=deployment,
             hardware=hardware,  # type: ignore[arg-type]
+            hardware_capability_profiles=hardware_capability_profiles,  # type: ignore[arg-type]
             fabric_graph=fabric,
             benchmark_cases=benchmarks,  # type: ignore[arg-type]
             models=models,

@@ -1,0 +1,5463 @@
+{
+  "captured_at": "2026-08-07T03:58:38.750725+00:00",
+  "environment": {
+    "captured_at": "2026-08-07T03:58:15.293783+00:00",
+    "checks": [
+      {
+        "check_id": "trusted-platform",
+        "observed": {
+          "machine": "arm64",
+          "system": "Darwin"
+        },
+        "passed": true,
+        "required": {
+          "machine": "arm64",
+          "system": "Darwin"
+        }
+      },
+      {
+        "check_id": "ac-power",
+        "observed": "ac",
+        "passed": true,
+        "required": "ac"
+      },
+      {
+        "check_id": "thermal-nominal",
+        "observed": "nominal",
+        "passed": true,
+        "required": "nominal"
+      },
+      {
+        "check_id": "settled-load",
+        "observed": 0.271826171875,
+        "passed": false,
+        "reason_code": "load-above-policy",
+        "required": {
+          "maximum": 0.25,
+          "normalization": "one-minute load / logical CPU count"
+        }
+      },
+      {
+        "check_id": "bounded-total-competing-cpu",
+        "observed": 0.17799999999999996,
+        "passed": false,
+        "reason_code": "total-competing-cpu-above-policy",
+        "required": {
+          "maximum": 0.1,
+          "normalization": "maximum sampled total non-coordinator process CPU percent / (100 * logical CPU count)"
+        }
+      }
+    ],
+    "collector": {
+      "name": "groundupscale-local-environment",
+      "privacy": "allowlisted fields only; no command arguments, environment variables, or unrestricted process paths",
+      "version": "v1alpha1"
+    },
+    "eligible": false,
+    "interpretation": "Preflight eligibility does not replace per-run benchmark noise gates.",
+    "observations": {
+      "competitors": {
+        "excluded_process_scope": "coordinator process and ancestors",
+        "maximum_single_process_cpu_percent": 107.5,
+        "maximum_total_cpu_percent": 177.99999999999997,
+        "normalized_maximum_total_cpu": 0.17799999999999996,
+        "sample_count": 3,
+        "sample_interval_seconds": 0.2,
+        "top": [
+          {
+            "cpu_percent": 107.5,
+            "name": "mediaanalysisd",
+            "pid": 83264
+          },
+          {
+            "cpu_percent": 60.6,
+            "name": "python3.11",
+            "pid": 71091
+          },
+          {
+            "cpu_percent": 36.9,
+            "name": "python3.11",
+            "pid": 71092
+          },
+          {
+            "cpu_percent": 8.8,
+            "name": "mediaanalysisd-access",
+            "pid": 83919
+          },
+          {
+            "cpu_percent": 4.0,
+            "name": "Codex (Renderer)",
+            "pid": 69420
+          },
+          {
+            "cpu_percent": 2.5,
+            "name": "Feishu",
+            "pid": 5986
+          },
+          {
+            "cpu_percent": 2.1,
+            "name": "Codex (Service)",
+            "pid": 69345
+          },
+          {
+            "cpu_percent": 2.0,
+            "name": "Storage",
+            "pid": 50064
+          },
+          {
+            "cpu_percent": 1.7,
+            "name": "healthmonitor",
+            "pid": 5988
+          },
+          {
+            "cpu_percent": 1.7,
+            "name": "Activity Monitor",
+            "pid": 5992
+          }
+        ],
+        "total_cpu_percent_samples": [
+          117.39999999999999,
+          177.99999999999997,
+          144.1
+        ]
+      },
+      "load": {
+        "fifteen_minutes": 3.00244140625,
+        "five_minutes": 3.2177734375,
+        "normalized_one_minute": 0.271826171875,
+        "one_minute": 2.71826171875
+      },
+      "platform": {
+        "logical_cpu_count": 10,
+        "machine": "arm64",
+        "release": "24.6.0",
+        "system": "Darwin"
+      },
+      "power": {
+        "battery_percent": 100.0,
+        "source": "ac"
+      },
+      "thermal": {
+        "performance_warning": false,
+        "speed_limits_percent": {},
+        "status": "nominal",
+        "thermal_warning": false
+      }
+    },
+    "policy": {
+      "allowlist_only": true,
+      "maximum_normalized_one_minute_load": 0.25,
+      "maximum_normalized_total_competing_cpu": 0.1,
+      "policy_id": "local-apple-silicon-v2",
+      "require_ac_power": true,
+      "require_nominal_thermal_status": true,
+      "required_machine": "arm64",
+      "required_system": "Darwin"
+    },
+    "reason_codes": [
+      "load-above-policy",
+      "total-competing-cpu-above-policy"
+    ],
+    "schema": "groundupscale.dev/environment-validity/v1alpha1"
+  },
+  "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+  "probes": [
+    {
+      "cases": [
+        {
+          "achieved_rate": 5939613925.094869,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 2.9375,
+          "iqr_over_median": 0.017309142762863272,
+          "median_ns": 169.708,
+          "q1_ns": 169.3125,
+          "q3_ns": 172.25,
+          "samples_ns": [
+            171.833,
+            169.333,
+            169.292,
+            169.708,
+            168.042,
+            188.625,
+            172.667
+          ],
+          "shape": [
+            63
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 1008
+        },
+        {
+          "achieved_rate": 5855611150.822016,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 1.2084999999999866,
+          "iqr_over_median": 0.006910650464617508,
+          "median_ns": 174.875,
+          "q1_ns": 174.14600000000002,
+          "q3_ns": 175.3545,
+          "samples_ns": [
+            174.792,
+            174.875,
+            173.5,
+            175.167,
+            175.542,
+            182.625,
+            164.583
+          ],
+          "shape": [
+            64
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 1024
+        },
+        {
+          "achieved_rate": 6457942648.501633,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 3.0829999999999984,
+          "iqr_over_median": 0.019144074216663965,
+          "median_ns": 161.042,
+          "q1_ns": 159.542,
+          "q3_ns": 162.625,
+          "samples_ns": [
+            161.042,
+            163.25,
+            162.0,
+            175.166,
+            159.041,
+            159.959,
+            159.125
+          ],
+          "shape": [
+            65
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 1040
+        },
+        {
+          "achieved_rate": 8807670301.853426,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": "unstable-measurement"
+          },
+          "eligible": false,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 25.228499999999997,
+          "iqr_over_median": 0.10935251486727811,
+          "median_ns": 230.708,
+          "q1_ns": 222.063,
+          "q3_ns": 247.29149999999998,
+          "samples_ns": [
+            230.708,
+            248.333,
+            218.084,
+            225.792,
+            246.25,
+            248.375,
+            218.334
+          ],
+          "shape": [
+            127
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2032
+        },
+        {
+          "achieved_rate": 9481481481.481482,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 3.7920000000000016,
+          "iqr_over_median": 0.017555555555555564,
+          "median_ns": 216.0,
+          "q1_ns": 214.3955,
+          "q3_ns": 218.1875,
+          "samples_ns": [
+            216.0,
+            217.667,
+            214.583,
+            214.166,
+            232.208,
+            218.708,
+            214.208
+          ],
+          "shape": [
+            128
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2048
+        },
+        {
+          "achieved_rate": 9127694859.038143,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 12.35450000000003,
+          "iqr_over_median": 0.054635710337203006,
+          "median_ns": 226.125,
+          "q1_ns": 216.47899999999998,
+          "q3_ns": 228.83350000000002,
+          "samples_ns": [
+            217.708,
+            236.792,
+            226.125,
+            215.0,
+            215.25,
+            227.708,
+            229.959
+          ],
+          "shape": [
+            129
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2064
+        },
+        {
+          "achieved_rate": 12374585997.306707,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 13.9375,
+          "iqr_over_median": 0.0422722530238878,
+          "median_ns": 329.708,
+          "q1_ns": 328.64599999999996,
+          "q3_ns": 342.58349999999996,
+          "samples_ns": [
+            331.792,
+            329.667,
+            327.625,
+            353.375,
+            329.708,
+            327.458,
+            363.583
+          ],
+          "shape": [
+            255
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4080
+        },
+        {
+          "achieved_rate": 11811114443.239752,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 24.458500000000015,
+          "iqr_over_median": 0.07052786684813957,
+          "median_ns": 346.792,
+          "q1_ns": 344.5415,
+          "q3_ns": 369.0,
+          "samples_ns": [
+            346.792,
+            342.792,
+            364.5,
+            328.667,
+            378.875,
+            346.291,
+            373.5
+          ],
+          "shape": [
+            256
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4096
+        },
+        {
+          "achieved_rate": 12126824405.823942,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 26.938000000000045,
+          "iqr_over_median": 0.07944367603212206,
+          "median_ns": 339.083,
+          "q1_ns": 333.64599999999996,
+          "q3_ns": 360.584,
+          "samples_ns": [
+            337.5,
+            362.541,
+            339.083,
+            361.334,
+            328.875,
+            359.834,
+            329.792
+          ],
+          "shape": [
+            257
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4112
+        },
+        {
+          "achieved_rate": 13827347571.08163,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 23.145999999999958,
+          "iqr_over_median": 0.03914478802351454,
+          "median_ns": 591.292,
+          "q1_ns": 583.7705000000001,
+          "q3_ns": 606.9165,
+          "samples_ns": [
+            591.292,
+            619.209,
+            559.167,
+            605.458,
+            608.375,
+            584.125,
+            583.416
+          ],
+          "shape": [
+            511
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8176
+        },
+        {
+          "achieved_rate": 13903385725.608402,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 24.041500000000042,
+          "iqr_over_median": 0.04080300877956726,
+          "median_ns": 589.209,
+          "q1_ns": 585.146,
+          "q3_ns": 609.1875,
+          "samples_ns": [
+            617.5,
+            583.458,
+            586.834,
+            600.875,
+            589.209,
+            620.833,
+            558.792
+          ],
+          "shape": [
+            512
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8192
+        },
+        {
+          "achieved_rate": 14106122448.979591,
+          "assumptions": [
+            "eight independent scalar FMADD instructions execute per loop iteration",
+            "one scalar multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "native-arm64-scalar-fma",
+          "inner_iterations": 1000,
+          "iqr_ns": 40.3125,
+          "iqr_over_median": 0.06928034371643395,
+          "median_ns": 581.875,
+          "q1_ns": 573.3125,
+          "q3_ns": 613.625,
+          "samples_ns": [
+            604.25,
+            551.417,
+            569.5,
+            623.0,
+            577.125,
+            627.0,
+            581.875
+          ],
+          "shape": [
+            513
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8208
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "scalar-fp32-fma-chain",
+      "probe_kind": "scalar_fma",
+      "resource": "compute.fp32",
+      "unit": "FLOP/s"
+    },
+    {
+      "cases": [
+        {
+          "achieved_rate": 14588343164.33958,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 559,
+          "iqr_ns": 62.016100178891065,
+          "iqr_over_median": 0.006902511262102114,
+          "median_ns": 8984.570661896243,
+          "q1_ns": 8952.817531305904,
+          "q3_ns": 9014.833631484795,
+          "samples_ns": [
+            8602.713774597496,
+            9029.59212880143,
+            9038.610017889088,
+            8923.97137745975,
+            8981.663685152058,
+            8984.570661896243,
+            9000.075134168157
+          ],
+          "shape": [
+            65535
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 131070
+        },
+        {
+          "achieved_rate": 9897387277.02918,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": "unstable-measurement"
+          },
+          "eligible": false,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 252,
+          "iqr_ns": 3144.7579365079346,
+          "iqr_over_median": 0.23746766758320115,
+          "median_ns": 13242.888888888889,
+          "q1_ns": 10542.329365079366,
+          "q3_ns": 13687.0873015873,
+          "samples_ns": [
+            13242.888888888889,
+            10724.702380952382,
+            10166.833333333334,
+            10359.95634920635,
+            13670.801587301587,
+            13703.373015873016,
+            13703.373015873016
+          ],
+          "shape": [
+            65535
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 131070
+        },
+        {
+          "achieved_rate": 4631853462.240725,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 256,
+          "iqr_ns": 1031.66015625,
+          "iqr_over_median": 0.03645760789335751,
+          "median_ns": 28297.52734375,
+          "q1_ns": 27444.986328125,
+          "q3_ns": 28476.646484375,
+          "samples_ns": [
+            28595.54296875,
+            28297.52734375,
+            29974.9375,
+            27282.71484375,
+            28357.75,
+            27115.234375,
+            27607.2578125
+          ],
+          "shape": [
+            65535
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 131070
+        },
+        {
+          "achieved_rate": 14405675424.26309,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 580,
+          "iqr_ns": 37.46379310344855,
+          "iqr_over_median": 0.0041175174225618425,
+          "median_ns": 9098.636206896552,
+          "q1_ns": 9071.263793103448,
+          "q3_ns": 9108.727586206896,
+          "samples_ns": [
+            8829.38275862069,
+            9047.198275862069,
+            9101.794827586207,
+            9098.636206896552,
+            9095.329310344827,
+            9115.660344827586,
+            9121.839655172414
+          ],
+          "shape": [
+            65536
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 131072
+        },
+        {
+          "achieved_rate": 9360743739.74692,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 307,
+          "iqr_ns": 157.02931596091366,
+          "iqr_over_median": 0.011214532366469295,
+          "median_ns": 14002.306188925082,
+          "q1_ns": 13920.399022801303,
+          "q3_ns": 14077.428338762216,
+          "samples_ns": [
+            13937.29641693811,
+            14090.524429967427,
+            13903.501628664495,
+            13839.169381107491,
+            14064.332247557004,
+            14106.407166123778,
+            14002.306188925082
+          ],
+          "shape": [
+            65536
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 131072
+        },
+        {
+          "achieved_rate": 4732693331.328671,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 244,
+          "iqr_ns": 1133.7090163934445,
+          "iqr_over_median": 0.04093549424402193,
+          "median_ns": 27695.012295081968,
+          "q1_ns": 27500.17008196721,
+          "q3_ns": 28633.879098360656,
+          "samples_ns": [
+            28853.823770491803,
+            27413.081967213115,
+            27695.012295081968,
+            27498.975409836065,
+            28544.22950819672,
+            27501.364754098362,
+            28723.52868852459
+          ],
+          "shape": [
+            65536
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 131072
+        },
+        {
+          "achieved_rate": 14329515333.652693,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 529,
+          "iqr_ns": 40.8393194707005,
+          "iqr_over_median": 0.004464711953334329,
+          "median_ns": 9147.134215500946,
+          "q1_ns": 9110.625708884687,
+          "q3_ns": 9151.465028355387,
+          "samples_ns": [
+            9010.474480151228,
+            9090.973534971645,
+            9150.047258979206,
+            9152.882797731569,
+            9130.27788279773,
+            9173.517958412098,
+            9147.134215500946
+          ],
+          "shape": [
+            65537
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 131074
+        },
+        {
+          "achieved_rate": 9442956543.243414,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 349,
+          "iqr_ns": 157.59455587392404,
+          "iqr_over_median": 0.011353575404498306,
+          "median_ns": 13880.610315186246,
+          "q1_ns": 13867.776504297995,
+          "q3_ns": 14025.37106017192,
+          "samples_ns": [
+            13876.553008595989,
+            13859.0,
+            14114.7335243553,
+            13936.008595988538,
+            14209.169054441261,
+            13880.610315186246,
+            13796.561604584527
+          ],
+          "shape": [
+            65537
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 131074
+        },
+        {
+          "achieved_rate": 4700304830.522794,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 170,
+          "iqr_ns": 1061.1529411764714,
+          "iqr_over_median": 0.03805287315055036,
+          "median_ns": 27886.276470588236,
+          "q1_ns": 27743.13823529412,
+          "q3_ns": 28804.29117647059,
+          "samples_ns": [
+            30422.058823529413,
+            26279.41176470588,
+            27771.570588235296,
+            27886.276470588236,
+            28249.023529411767,
+            27714.70588235294,
+            29359.558823529413
+          ],
+          "shape": [
+            65537
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 131074
+        },
+        {
+          "achieved_rate": 14988754541.734951,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 154,
+          "iqr_ns": 267.3149350649328,
+          "iqr_over_median": 0.0076422371511505076,
+          "median_ns": 34978.62337662338,
+          "q1_ns": 34953.73376623377,
+          "q3_ns": 35221.0487012987,
+          "samples_ns": [
+            34832.51948051948,
+            34937.5,
+            34969.96753246753,
+            35071.96753246753,
+            34978.62337662338,
+            35370.12987012987,
+            35439.93506493507
+          ],
+          "shape": [
+            262143
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 524286
+        },
+        {
+          "achieved_rate": 22119473325.203083,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 149,
+          "iqr_ns": 157.0201342281871,
+          "iqr_over_median": 0.006624633636183671,
+          "median_ns": 23702.46308724832,
+          "q1_ns": 23670.721476510065,
+          "q3_ns": 23827.741610738252,
+          "samples_ns": [
+            28550.892617449663,
+            23702.46308724832,
+            23914.42953020134,
+            23665.268456375838,
+            23641.77852348993,
+            23676.174496644297,
+            23741.053691275167
+          ],
+          "shape": [
+            262143
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 524286
+        },
+        {
+          "achieved_rate": 14445063294.069979,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 119,
+          "iqr_ns": 1310.7521008403273,
+          "iqr_over_median": 0.03611368043295782,
+          "median_ns": 36295.16806722689,
+          "q1_ns": 35430.49579831933,
+          "q3_ns": 36741.24789915966,
+          "samples_ns": [
+            36782.56302521008,
+            35172.621848739494,
+            36295.16806722689,
+            37197.82352941176,
+            35598.38655462185,
+            35262.60504201681,
+            36699.93277310924
+          ],
+          "shape": [
+            262143
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 524286
+        },
+        {
+          "achieved_rate": 13319355305.89204,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 127,
+          "iqr_ns": 585.6299212598387,
+          "iqr_over_median": 0.014877725599329702,
+          "median_ns": 39362.86614173228,
+          "q1_ns": 38794.94881889764,
+          "q3_ns": 39380.57874015748,
+          "samples_ns": [
+            39374.015748031496,
+            39387.14173228347,
+            39351.708661417324,
+            39362.86614173228,
+            39402.88976377953,
+            38238.188976377955,
+            37981.629921259846
+          ],
+          "shape": [
+            262144
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 524288
+        },
+        {
+          "achieved_rate": 26012243850.128227,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 241,
+          "iqr_ns": 113.41493775933486,
+          "iqr_over_median": 0.005627016100393169,
+          "median_ns": 20155.43153526971,
+          "q1_ns": 20107.624481327803,
+          "q3_ns": 20221.039419087138,
+          "samples_ns": [
+            20124.48132780083,
+            20089.560165975105,
+            20256.912863070538,
+            20256.91701244813,
+            20090.767634854772,
+            20155.43153526971,
+            20185.165975103733
+          ],
+          "shape": [
+            262144
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 524288
+        },
+        {
+          "achieved_rate": 14645440010.121258,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 189,
+          "iqr_ns": 777.0052910052909,
+          "iqr_over_median": 0.021704834703378296,
+          "median_ns": 35798.71957671957,
+          "q1_ns": 35307.32010582011,
+          "q3_ns": 36084.3253968254,
+          "samples_ns": [
+            34309.30158730159,
+            35181.439153439154,
+            36161.81481481482,
+            36490.96296296296,
+            36006.83597883598,
+            35433.201058201055,
+            35798.71957671957
+          ],
+          "shape": [
+            262144
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 524288
+        },
+        {
+          "achieved_rate": 13926304376.021374,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 128,
+          "iqr_ns": 117.67578125,
+          "iqr_over_median": 0.003125729553059583,
+          "median_ns": 37647.4609375,
+          "q1_ns": 37611.81640625,
+          "q3_ns": 37729.4921875,
+          "samples_ns": [
+            38595.375,
+            37805.6640625,
+            37647.4609375,
+            37599.28125,
+            37653.3203125,
+            37606.1171875,
+            37617.515625
+          ],
+          "shape": [
+            262145
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 524290
+        },
+        {
+          "achieved_rate": 25548468459.571285,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 150,
+          "iqr_ns": 107.5,
+          "iqr_over_median": 0.0052384374285298465,
+          "median_ns": 20521.386666666665,
+          "q1_ns": 20444.443333333333,
+          "q3_ns": 20551.943333333333,
+          "samples_ns": [
+            20627.5,
+            20545.28,
+            20513.886666666665,
+            20231.946666666667,
+            20521.386666666665,
+            20375.0,
+            20558.606666666667
+          ],
+          "shape": [
+            262145
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 524290
+        },
+        {
+          "achieved_rate": 14796669376.007414,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 115,
+          "iqr_ns": 1636.2347826086989,
+          "iqr_over_median": 0.046178307997070865,
+          "median_ns": 35432.973913043475,
+          "q1_ns": 34588.40434782609,
+          "q3_ns": 36224.639130434785,
+          "samples_ns": [
+            40197.10434782608,
+            36739.495652173915,
+            34186.95652173913,
+            33232.608695652176,
+            34989.852173913045,
+            35709.782608695656,
+            35432.973913043475
+          ],
+          "shape": [
+            262145
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 524290
+        },
+        {
+          "achieved_rate": 13968653967.45301,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 33,
+          "iqr_ns": 300.5151515151374,
+          "iqr_over_median": 0.0020016651949034004,
+          "median_ns": 150132.57575757575,
+          "q1_ns": 149979.80303030304,
+          "q3_ns": 150280.31818181818,
+          "samples_ns": [
+            161482.33333333334,
+            149998.72727272726,
+            150198.24242424243,
+            150132.57575757575,
+            149960.87878787878,
+            149646.48484848486,
+            150362.39393939395
+          ],
+          "shape": [
+            1048575
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2097150
+        },
+        {
+          "achieved_rate": 28107096036.68909,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 65,
+          "iqr_ns": 2764.4230769230635,
+          "iqr_over_median": 0.03705023718337558,
+          "median_ns": 74612.83076923077,
+          "q1_ns": 73508.96923076923,
+          "q3_ns": 76273.3923076923,
+          "samples_ns": [
+            72026.27692307692,
+            73288.46153846153,
+            77897.43076923076,
+            74649.35384615384,
+            73729.47692307692,
+            78580.76923076923,
+            74612.83076923077
+          ],
+          "shape": [
+            1048575
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 2097150
+        },
+        {
+          "achieved_rate": 26045118724.199978,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 44,
+          "iqr_ns": 2399.625,
+          "iqr_over_median": 0.029801644144938785,
+          "median_ns": 80519.88636363637,
+          "q1_ns": 79362.69318181818,
+          "q3_ns": 81762.31818181818,
+          "samples_ns": [
+            83465.90909090909,
+            78406.25,
+            78606.06818181818,
+            80119.31818181818,
+            80519.88636363637,
+            82412.88636363637,
+            81111.75
+          ],
+          "shape": [
+            1048575
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 2097150
+        },
+        {
+          "achieved_rate": 14946789035.14355,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 36,
+          "iqr_ns": 1107.638888888905,
+          "iqr_over_median": 0.007894346618339192,
+          "median_ns": 140307.86111111112,
+          "q1_ns": 139935.76388888888,
+          "q3_ns": 141043.40277777778,
+          "samples_ns": [
+            141552.08333333334,
+            140534.72222222222,
+            139695.61111111112,
+            139975.69444444444,
+            140307.86111111112,
+            139895.83333333334,
+            141804.41666666666
+          ],
+          "shape": [
+            1048576
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2097152
+        },
+        {
+          "achieved_rate": 27460692989.52458,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 65,
+          "iqr_ns": 2267.946153846162,
+          "iqr_over_median": 0.029697119258662474,
+          "median_ns": 76369.23076923077,
+          "q1_ns": 74249.68461538461,
+          "q3_ns": 76517.63076923077,
+          "samples_ns": [
+            74141.03076923077,
+            71029.4923076923,
+            76398.07692307692,
+            81571.15384615384,
+            76637.18461538461,
+            74358.33846153846,
+            76369.23076923077
+          ],
+          "shape": [
+            1048576
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 2097152
+        },
+        {
+          "achieved_rate": 28106519346.123062,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 67,
+          "iqr_ns": 5180.029850746272,
+          "iqr_over_median": 0.06942396603274109,
+          "median_ns": 74614.4328358209,
+          "q1_ns": 72497.20895522388,
+          "q3_ns": 77677.23880597015,
+          "samples_ns": [
+            78442.77611940299,
+            78357.58208955223,
+            76996.89552238806,
+            72898.01492537314,
+            74614.4328358209,
+            72096.40298507463,
+            71650.50746268657
+          ],
+          "shape": [
+            1048576
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 2097152
+        },
+        {
+          "achieved_rate": 15053094089.68387,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 36,
+          "iqr_ns": 196.75,
+          "iqr_over_median": 0.0014122454822799381,
+          "median_ns": 139317.13888888888,
+          "q1_ns": 139226.86111111112,
+          "q3_ns": 139423.61111111112,
+          "samples_ns": [
+            139317.13888888888,
+            139333.33333333334,
+            139703.69444444444,
+            139290.52777777778,
+            138886.55555555556,
+            139513.88888888888,
+            139163.19444444444
+          ],
+          "shape": [
+            1048577
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 2097154
+        },
+        {
+          "achieved_rate": 34931294404.04882,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": "unstable-measurement"
+          },
+          "eligible": false,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 65,
+          "iqr_ns": 6647.75384615385,
+          "iqr_over_median": 0.11072846663890586,
+          "median_ns": 60036.53846153846,
+          "q1_ns": 57543.907692307694,
+          "q3_ns": 64191.66153846154,
+          "samples_ns": [
+            70157.06153846154,
+            68157.04615384615,
+            60036.53846153846,
+            60226.276923076926,
+            56167.95384615385,
+            58721.8,
+            56366.015384615384
+          ],
+          "shape": [
+            1048577
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 2097154
+        },
+        {
+          "achieved_rate": 28671280379.447212,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 59,
+          "iqr_ns": 5518.36440677967,
+          "iqr_over_median": 0.0754444228429299,
+          "median_ns": 73144.7627118644,
+          "q1_ns": 72287.07627118644,
+          "q3_ns": 77805.44067796611,
+          "samples_ns": [
+            79362.98305084746,
+            78812.84745762713,
+            76798.03389830509,
+            73144.7627118644,
+            72536.01694915254,
+            72038.13559322034,
+            71773.30508474576
+          ],
+          "shape": [
+            1048577
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 2097154
+        },
+        {
+          "achieved_rate": 11770532097.21874,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 16044.714285714319,
+          "iqr_over_median": 0.022513254823352587,
+          "median_ns": 712678.5714285715,
+          "q1_ns": 707196.3571428572,
+          "q3_ns": 723241.0714285715,
+          "samples_ns": [
+            725422.5714285715,
+            711738.0,
+            696440.4285714285,
+            721059.5714285715,
+            752160.7142857143,
+            712678.5714285715,
+            702654.7142857143
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8388606
+        },
+        {
+          "achieved_rate": 11895316380.281488,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 9479.14285714284,
+          "iqr_over_median": 0.013441733143695091,
+          "median_ns": 705202.4285714285,
+          "q1_ns": 699184.5,
+          "q3_ns": 708663.6428571428,
+          "samples_ns": [
+            724196.4285714285,
+            710226.1428571428,
+            707101.1428571428,
+            700422.5714285715,
+            705202.4285714285,
+            690583.2857142857,
+            697946.4285714285
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 8388606
+        },
+        {
+          "achieved_rate": 11545561721.115276,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 7767.8571428571595,
+          "iqr_over_median": 0.010691201146372054,
+          "median_ns": 726565.4285714285,
+          "q1_ns": 725357.1428571428,
+          "q3_ns": 733125.0,
+          "samples_ns": [
+            724250.0,
+            716779.7142857143,
+            733565.5714285715,
+            732684.4285714285,
+            726565.4285714285,
+            726464.2857142857,
+            775803.5714285715
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 8388606
+        },
+        {
+          "achieved_rate": 11718951549.571127,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 30955.428571428638,
+          "iqr_over_median": 0.043244977906320335,
+          "median_ns": 715815.5714285715,
+          "q1_ns": 702684.5,
+          "q3_ns": 733639.9285714286,
+          "samples_ns": [
+            768380.8571428572,
+            747881.0,
+            701428.5714285715,
+            703940.4285714285,
+            719398.8571428572,
+            696208.2857142857,
+            715815.5714285715
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8388608
+        },
+        {
+          "achieved_rate": 11674152213.620945,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 8,
+          "iqr_ns": 12778.6875,
+          "iqr_over_median": 0.01778368269983474,
+          "median_ns": 718562.5,
+          "q1_ns": 707627.5625,
+          "q3_ns": 720406.25,
+          "samples_ns": [
+            719218.75,
+            718562.5,
+            721593.75,
+            706609.375,
+            701979.125,
+            744645.875,
+            708645.75
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 8388608
+        },
+        {
+          "achieved_rate": 11761594794.795918,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 9029.714285714319,
+          "iqr_over_median": 0.012660484378499016,
+          "median_ns": 713220.2857142857,
+          "q1_ns": 710378.0,
+          "q3_ns": 719407.7142857143,
+          "samples_ns": [
+            705869.0,
+            714732.1428571428,
+            724083.2857142857,
+            726863.1428571428,
+            713220.2857142857,
+            707738.1428571428,
+            713017.8571428572
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 8388608
+        },
+        {
+          "achieved_rate": 6738460432.397284,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": "unstable-measurement"
+          },
+          "eligible": false,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 4,
+          "iqr_ns": 603421.875,
+          "iqr_over_median": 0.48472088090046855,
+          "median_ns": 1244885.25,
+          "q1_ns": 840880.25,
+          "q3_ns": 1444302.125,
+          "samples_ns": [
+            968677.25,
+            1887010.25,
+            1542135.5,
+            1244885.25,
+            1346468.75,
+            709802.0,
+            713083.25
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 8388610
+        },
+        {
+          "achieved_rate": 11540083032.402288,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 53470.21428571432,
+          "iqr_over_median": 0.07355815953030195,
+          "median_ns": 726910.7142857143,
+          "q1_ns": 724095.2857142857,
+          "q3_ns": 777565.5,
+          "samples_ns": [
+            791779.8571428572,
+            823500.0,
+            763351.1428571428,
+            720190.4285714285,
+            726381.0,
+            726910.7142857143,
+            721809.5714285715
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 8388610
+        },
+        {
+          "achieved_rate": 11638915025.013048,
+          "assumptions": [
+            "one elementwise multiply and add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-vector-fma",
+          "inner_iterations": 7,
+          "iqr_ns": 15913.642857142724,
+          "iqr_over_median": 0.02207964572827799,
+          "median_ns": 720738.1428571428,
+          "q1_ns": 711386.9285714286,
+          "q3_ns": 727300.5714285714,
+          "samples_ns": [
+            715738.1428571428,
+            704797.5714285715,
+            727000.0,
+            734589.2857142857,
+            720738.1428571428,
+            727601.1428571428,
+            707035.7142857143
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 8388610
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "vector-fp32-fma",
+      "probe_kind": "vector_fma",
+      "resource": "compute.fp32",
+      "unit": "FLOP/s"
+    },
+    {
+      "cases": [
+        {
+          "achieved_rate": 819367920246.1863,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 924,
+          "iqr_ns": 47.844155844156376,
+          "iqr_over_median": 0.00956900307949266,
+          "median_ns": 4999.910173160173,
+          "q1_ns": 4974.318722943723,
+          "q3_ns": 5022.162878787879,
+          "samples_ns": [
+            4946.969696969697,
+            4953.688311688312,
+            4994.949134199134,
+            5059.028138528139,
+            5041.169913419913,
+            4999.910173160173,
+            5003.1558441558445
+          ],
+          "shape": [
+            127,
+            127,
+            127
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4096766
+        },
+        {
+          "achieved_rate": 819924945183.8834,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 968,
+          "iqr_ns": 13.79597107437985,
+          "iqr_over_median": 0.002761119582353334,
+          "median_ns": 4996.513429752066,
+          "q1_ns": 4989.475206611571,
+          "q3_ns": 5003.2711776859505,
+          "samples_ns": [
+            5004.476239669421,
+            4988.851239669421,
+            4874.5268595041325,
+            5019.671487603306,
+            4996.513429752066,
+            4990.099173553719,
+            5002.06611570248
+          ],
+          "shape": [
+            127,
+            127,
+            127
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 4096766
+        },
+        {
+          "achieved_rate": 822571594959.9551,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 984,
+          "iqr_ns": 15.074186991870192,
+          "iqr_over_median": 0.00302667958985875,
+          "median_ns": 4980.4369918699185,
+          "q1_ns": 4971.3119918699185,
+          "q3_ns": 4986.386178861789,
+          "samples_ns": [
+            4986.407520325203,
+            4971.798780487805,
+            4980.4369918699185,
+            4986.364837398374,
+            4970.825203252032,
+            4942.073170731707,
+            4988.3546747967475
+          ],
+          "shape": [
+            127,
+            127,
+            127
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 4096766
+        },
+        {
+          "achieved_rate": 935584521726.5615,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 1000,
+          "iqr_ns": 13.125,
+          "iqr_over_median": 0.002927672111430435,
+          "median_ns": 4483.084,
+          "q1_ns": 4472.75,
+          "q3_ns": 4485.875,
+          "samples_ns": [
+            4495.959,
+            4465.709,
+            4485.083,
+            4486.667,
+            4479.791,
+            4445.375,
+            4483.084
+          ],
+          "shape": [
+            128,
+            128,
+            128
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4194304
+        },
+        {
+          "achieved_rate": 935245728372.951,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 1000,
+          "iqr_ns": 8.646499999999833,
+          "iqr_over_median": 0.0019279962039891634,
+          "median_ns": 4484.708,
+          "q1_ns": 4478.0205,
+          "q3_ns": 4486.6669999999995,
+          "samples_ns": [
+            4487.625,
+            4477.208,
+            4473.917,
+            4484.708,
+            4485.709,
+            4478.833,
+            4497.333
+          ],
+          "shape": [
+            128,
+            128,
+            128
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 4194304
+        },
+        {
+          "achieved_rate": 935784700337.4515,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 1000,
+          "iqr_ns": 15.354499999999462,
+          "iqr_over_median": 0.00342571882756493,
+          "median_ns": 4482.125,
+          "q1_ns": 4471.4580000000005,
+          "q3_ns": 4486.8125,
+          "samples_ns": [
+            4489.583,
+            4482.125,
+            4467.0,
+            4487.75,
+            4485.875,
+            4467.291,
+            4475.625
+          ],
+          "shape": [
+            128,
+            128,
+            128
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 4194304
+        },
+        {
+          "achieved_rate": 676919844614.068,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 780,
+          "iqr_ns": 54.35256410256443,
+          "iqr_over_median": 0.008569552749998738,
+          "median_ns": 6342.5205128205125,
+          "q1_ns": 6299.760256410256,
+          "q3_ns": 6354.112820512821,
+          "samples_ns": [
+            6354.539743589744,
+            6353.6858974358975,
+            6260.203846153846,
+            6239.529487179487,
+            6361.271794871795,
+            6339.316666666667,
+            6342.5205128205125
+          ],
+          "shape": [
+            129,
+            129,
+            129
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 4293378
+        },
+        {
+          "achieved_rate": 675415665853.5371,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 790,
+          "iqr_ns": 13.949999999999818,
+          "iqr_over_median": 0.002194553691442198,
+          "median_ns": 6356.645569620253,
+          "q1_ns": 6344.5943037974685,
+          "q3_ns": 6358.544303797468,
+          "samples_ns": [
+            6357.43670886076,
+            6351.688607594937,
+            6337.5,
+            6359.651898734177,
+            6356.645569620253,
+            6308.016455696203,
+            6363.237974683544
+          ],
+          "shape": [
+            129,
+            129,
+            129
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 4293378
+        },
+        {
+          "achieved_rate": 674652531774.0953,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 780,
+          "iqr_ns": 16.96025641025699,
+          "iqr_over_median": 0.0026650995851559556,
+          "median_ns": 6363.835897435897,
+          "q1_ns": 6357.9326923076915,
+          "q3_ns": 6374.8929487179485,
+          "samples_ns": [
+            6363.835897435897,
+            6352.35,
+            6368.642307692307,
+            6360.524358974359,
+            6355.341025641025,
+            6381.1435897435895,
+            6384.775641025641
+          ],
+          "shape": [
+            129,
+            129,
+            129
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 4293378
+        },
+        {
+          "achieved_rate": 1316466556958.1882,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 187,
+          "iqr_ns": 675.3582887700541,
+          "iqr_over_median": 0.026809797170930842,
+          "median_ns": 25190.727272727272,
+          "q1_ns": 25018.157754010695,
+          "q3_ns": 25693.51604278075,
+          "samples_ns": [
+            25190.727272727272,
+            25034.090909090908,
+            24657.97860962567,
+            25002.224598930483,
+            25477.941176470587,
+            25943.85026737968,
+            25909.090909090908
+          ],
+          "shape": [
+            255,
+            255,
+            255
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 33162750
+        },
+        {
+          "achieved_rate": 1279459815272.2266,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 187,
+          "iqr_ns": 17.601604278075683,
+          "iqr_over_median": 0.0006790916120684065,
+          "median_ns": 25919.336898395723,
+          "q1_ns": 25904.858288770054,
+          "q3_ns": 25922.45989304813,
+          "samples_ns": [
+            25919.336898395723,
+            25884.13368983957,
+            25893.272727272728,
+            25922.68449197861,
+            25950.085561497326,
+            25916.44385026738,
+            25922.235294117647
+          ],
+          "shape": [
+            255,
+            255,
+            255
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 33162750
+        },
+        {
+          "achieved_rate": 1279037687824.1228,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 193,
+          "iqr_ns": 56.777202072538785,
+          "iqr_over_median": 0.002189811799684375,
+          "median_ns": 25927.891191709845,
+          "q1_ns": 25900.15284974093,
+          "q3_ns": 25956.93005181347,
+          "samples_ns": [
+            25967.61658031088,
+            25927.891191709845,
+            25946.24352331606,
+            25884.497409326425,
+            25900.04663212435,
+            25996.549222797927,
+            25900.259067357514
+          ],
+          "shape": [
+            255,
+            255,
+            255
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 33162750
+        },
+        {
+          "achieved_rate": 1394935227300.1501,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 205,
+          "iqr_ns": 418.59512195121715,
+          "iqr_over_median": 0.017401965903811312,
+          "median_ns": 24054.473170731708,
+          "q1_ns": 23689.736585365856,
+          "q3_ns": 24108.331707317073,
+          "samples_ns": [
+            24110.160975609757,
+            24187.19512195122,
+            24106.50243902439,
+            24020.936585365853,
+            23358.536585365855,
+            23069.30731707317,
+            24054.473170731708
+          ],
+          "shape": [
+            256,
+            256,
+            256
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 1386567637120.4333,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 206,
+          "iqr_ns": 35.09466019417596,
+          "iqr_over_median": 0.0014502143878037657,
+          "median_ns": 24199.635922330097,
+          "q1_ns": 24181.128640776697,
+          "q3_ns": 24216.223300970873,
+          "samples_ns": [
+            24222.694174757282,
+            24199.635922330097,
+            24199.635922330097,
+            24119.941747572815,
+            24216.83009708738,
+            24215.61650485437,
+            24162.6213592233
+          ],
+          "shape": [
+            256,
+            256,
+            256
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 1386704286323.2847,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 203,
+          "iqr_ns": 42.69458128078986,
+          "iqr_over_median": 0.001764439310575997,
+          "median_ns": 24197.251231527094,
+          "q1_ns": 24174.054187192116,
+          "q3_ns": 24216.748768472906,
+          "samples_ns": [
+            24230.50246305419,
+            24202.995073891627,
+            24152.093596059112,
+            24196.014778325123,
+            24236.453201970442,
+            24197.251231527094,
+            23880.339901477833
+          ],
+          "shape": [
+            256,
+            256,
+            256
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 1134375620158.4822,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 167,
+          "iqr_ns": 13.476047904194274,
+          "iqr_over_median": 0.0004502876799050732,
+          "median_ns": 29927.640718562874,
+          "q1_ns": 29925.398203592813,
+          "q3_ns": 29938.874251497007,
+          "samples_ns": [
+            29925.898203592813,
+            29935.383233532935,
+            29922.155688622755,
+            29942.36526946108,
+            29927.640718562874,
+            30077.59281437126,
+            29924.898203592813
+          ],
+          "shape": [
+            257,
+            257,
+            257
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 33949186
+        },
+        {
+          "achieved_rate": 1135246262827.43,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 167,
+          "iqr_ns": 1.8712574850287638,
+          "iqr_over_median": 6.25740501308856e-05,
+          "median_ns": 29904.688622754493,
+          "q1_ns": 29903.691616766468,
+          "q3_ns": 29905.562874251496,
+          "samples_ns": [
+            29903.94011976048,
+            29906.185628742514,
+            29912.425149700597,
+            29904.94011976048,
+            29904.688622754493,
+            29903.443113772457,
+            29860.02994011976
+          ],
+          "shape": [
+            257,
+            257,
+            257
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 33949186
+        },
+        {
+          "achieved_rate": 1134754253639.8518,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 168,
+          "iqr_ns": 11.28273809523671,
+          "iqr_over_median": 0.0003771264220082996,
+          "median_ns": 29917.654761904763,
+          "q1_ns": 29908.36011904762,
+          "q3_ns": 29919.642857142855,
+          "samples_ns": [
+            29917.654761904763,
+            30036.214285714286,
+            29901.041666666668,
+            29918.89880952381,
+            29915.678571428572,
+            29920.386904761905,
+            29898.065476190477
+          ],
+          "shape": [
+            257,
+            257,
+            257
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 33949186
+        },
+        {
+          "achieved_rate": 1679941326684.6772,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 32,
+          "iqr_ns": 193.375,
+          "iqr_over_median": 0.0012173115552335447,
+          "median_ns": 158854.15625,
+          "q1_ns": 158740.234375,
+          "q3_ns": 158933.609375,
+          "samples_ns": [
+            169527.34375,
+            158618.46875,
+            158738.28125,
+            158993.5,
+            158742.1875,
+            158854.15625,
+            158873.71875
+          ],
+          "shape": [
+            511,
+            511,
+            511
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 266865662
+        },
+        {
+          "achieved_rate": 1680257986472.8596,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 32,
+          "iqr_ns": 162.78125,
+          "iqr_over_median": 0.0010249145330677096,
+          "median_ns": 158824.21875,
+          "q1_ns": 158795.5625,
+          "q3_ns": 158958.34375,
+          "samples_ns": [
+            158768.21875,
+            158822.90625,
+            160001.3125,
+            158824.21875,
+            158750.0,
+            158895.84375,
+            159020.84375
+          ],
+          "shape": [
+            511,
+            511,
+            511
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 266865662
+        },
+        {
+          "achieved_rate": 1678716469020.7,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 32,
+          "iqr_ns": 121.75,
+          "iqr_over_median": 0.0007658674726884504,
+          "median_ns": 158970.0625,
+          "q1_ns": 158926.4375,
+          "q3_ns": 159048.1875,
+          "samples_ns": [
+            160339.84375,
+            159082.03125,
+            158920.5625,
+            159014.34375,
+            158970.0625,
+            158907.53125,
+            158932.3125
+          ],
+          "shape": [
+            511,
+            511,
+            511
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 266865662
+        },
+        {
+          "achieved_rate": 1748779685469.7048,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 33,
+          "iqr_ns": 76.39393939392176,
+          "iqr_over_median": 0.0004976845134239428,
+          "median_ns": 153498.72727272726,
+          "q1_ns": 153437.5,
+          "q3_ns": 153513.89393939392,
+          "samples_ns": [
+            153522.72727272726,
+            153505.0606060606,
+            154621.21212121213,
+            153498.72727272726,
+            153342.18181818182,
+            153496.21212121213,
+            153378.78787878787
+          ],
+          "shape": [
+            512,
+            512,
+            512
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 1748722032917.952,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 33,
+          "iqr_ns": 344.69696969699,
+          "iqr_over_median": 0.0022455274521901384,
+          "median_ns": 153503.78787878787,
+          "q1_ns": 153441.9090909091,
+          "q3_ns": 153786.60606060608,
+          "samples_ns": [
+            153402.75757575757,
+            154366.18181818182,
+            153481.0606060606,
+            153626.24242424243,
+            153503.78787878787,
+            153946.9696969697,
+            153342.18181818182
+          ],
+          "shape": [
+            512,
+            512,
+            512
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 1747873909720.8943,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 33,
+          "iqr_ns": 115.54545454544132,
+          "iqr_over_median": 0.0007523554764196962,
+          "median_ns": 153578.27272727274,
+          "q1_ns": 153505.04545454547,
+          "q3_ns": 153620.5909090909,
+          "samples_ns": [
+            153497.48484848486,
+            153512.60606060605,
+            153592.18181818182,
+            154507.57575757575,
+            153377.54545454544,
+            153578.27272727274,
+            153649.0
+          ],
+          "shape": [
+            512,
+            512,
+            512
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 1556287618833.3464,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 29,
+          "iqr_ns": 216.24137931037694,
+          "iqr_over_median": 0.001246368815458895,
+          "median_ns": 173497.10344827586,
+          "q1_ns": 173431.0344827586,
+          "q3_ns": 173647.275862069,
+          "samples_ns": [
+            173497.10344827586,
+            173517.24137931035,
+            174586.2068965517,
+            173323.27586206896,
+            173777.3103448276,
+            173491.37931034484,
+            173370.6896551724
+          ],
+          "shape": [
+            513,
+            513,
+            513
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 270011394
+        },
+        {
+          "achieved_rate": 1554009458219.351,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 29,
+          "iqr_ns": 327.5862068965216,
+          "iqr_over_median": 0.001885372525795692,
+          "median_ns": 173751.44827586206,
+          "q1_ns": 173566.8103448276,
+          "q3_ns": 173894.39655172412,
+          "samples_ns": [
+            173512.93103448275,
+            173422.41379310345,
+            173620.6896551724,
+            173751.44827586206,
+            174734.2068965517,
+            173910.93103448275,
+            173877.8620689655
+          ],
+          "shape": [
+            513,
+            513,
+            513
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 270011394
+        },
+        {
+          "achieved_rate": 1556661050465.2986,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 29,
+          "iqr_ns": 193.25862068968127,
+          "iqr_over_median": 0.0011141684172567693,
+          "median_ns": 173455.4827586207,
+          "q1_ns": 173393.6724137931,
+          "q3_ns": 173586.93103448278,
+          "samples_ns": [
+            173686.7931034483,
+            173455.4827586207,
+            174484.1724137931,
+            173373.55172413794,
+            173413.7931034483,
+            173357.75862068965,
+            173487.06896551725
+          ],
+          "shape": [
+            513,
+            513,
+            513
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 270011394
+        },
+        {
+          "achieved_rate": 1846529361595.4263,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 632.5909090908826,
+          "iqr_over_median": 0.0012943838232620981,
+          "median_ns": 488719.7272727273,
+          "q1_ns": 488274.59090909094,
+          "q3_ns": 488907.1818181818,
+          "samples_ns": [
+            488719.7272727273,
+            488299.1818181818,
+            488859.8181818182,
+            491693.1818181818,
+            488250.0,
+            488954.54545454547,
+            488200.7272727273
+          ],
+          "shape": [
+            767,
+            767,
+            767
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 902435326
+        },
+        {
+          "achieved_rate": 1847130650387.3066,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 202.63636363635305,
+          "iqr_over_median": 0.0004147619528756519,
+          "median_ns": 488560.63636363635,
+          "q1_ns": 488513.2727272727,
+          "q3_ns": 488715.90909090906,
+          "samples_ns": [
+            493704.54545454547,
+            488560.63636363635,
+            488731.0909090909,
+            488549.2727272727,
+            488477.2727272727,
+            487916.63636363635,
+            488700.7272727273
+          ],
+          "shape": [
+            767,
+            767,
+            767
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 902435326
+        },
+        {
+          "achieved_rate": 1847675240382.5125,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 1530.272727272706,
+          "iqr_over_median": 0.0031331298185620898,
+          "median_ns": 488416.63636363635,
+          "q1_ns": 488028.4545454546,
+          "q3_ns": 489558.7272727273,
+          "samples_ns": [
+            488015.1818181818,
+            494117.36363636365,
+            487871.1818181818,
+            488473.45454545453,
+            490644.0,
+            488416.63636363635,
+            488041.7272727273
+          ],
+          "shape": [
+            767,
+            767,
+            767
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 902435326
+        },
+        {
+          "achieved_rate": 1908171906656.1357,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 693.1818181818235,
+          "iqr_over_median": 0.0014599937770757155,
+          "median_ns": 474784.0909090909,
+          "q1_ns": 474570.0909090909,
+          "q3_ns": 475263.2727272727,
+          "samples_ns": [
+            474784.0909090909,
+            474659.0909090909,
+            474481.0909090909,
+            474303.0,
+            475056.8181818182,
+            476791.63636363635,
+            475469.7272727273
+          ],
+          "shape": [
+            768,
+            768,
+            768
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 905969664
+        },
+        {
+          "achieved_rate": 1906210081101.7598,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 693.2272727272939,
+          "iqr_over_median": 0.00145858837031374,
+          "median_ns": 475272.7272727273,
+          "q1_ns": 474789.7727272727,
+          "q3_ns": 475483.0,
+          "samples_ns": [
+            475458.36363636365,
+            474761.36363636365,
+            474659.0909090909,
+            475507.63636363635,
+            474818.1818181818,
+            477087.0909090909,
+            475272.7272727273
+          ],
+          "shape": [
+            768,
+            768,
+            768
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 905969664
+        },
+        {
+          "achieved_rate": 1905906404736.9653,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 11,
+          "iqr_ns": 2174.272727272706,
+          "iqr_over_median": 0.004574060789472483,
+          "median_ns": 475348.45454545453,
+          "q1_ns": 474770.81818181823,
+          "q3_ns": 476945.09090909094,
+          "samples_ns": [
+            475348.45454545453,
+            474439.36363636365,
+            474450.7272727273,
+            475897.7272727273,
+            475090.9090909091,
+            477992.45454545453,
+            495704.54545454547
+          ],
+          "shape": [
+            768,
+            768,
+            768
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 905969664
+        },
+        {
+          "achieved_rate": 1747131956010.1812,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 10,
+          "iqr_ns": 5820.800000000047,
+          "iqr_over_median": 0.011181482015079569,
+          "median_ns": 520575.0,
+          "q1_ns": 519712.5,
+          "q3_ns": 525533.3,
+          "samples_ns": [
+            520575.0,
+            520866.6,
+            530200.0,
+            583362.5,
+            519262.5,
+            519766.7,
+            519658.3
+          ],
+          "shape": [
+            769,
+            769,
+            769
+          ],
+          "threads": 1,
+          "unit": "FLOP/s",
+          "work": 909513218
+        },
+        {
+          "achieved_rate": 1743587339995.357,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 10,
+          "iqr_ns": 1114.6500000000233,
+          "iqr_over_median": 0.0021368459413922064,
+          "median_ns": 521633.3,
+          "q1_ns": 521297.9,
+          "q3_ns": 522412.55000000005,
+          "samples_ns": [
+            520487.5,
+            522379.2,
+            521633.3,
+            521125.0,
+            524104.1,
+            522445.9,
+            521470.8
+          ],
+          "shape": [
+            769,
+            769,
+            769
+          ],
+          "threads": 4,
+          "unit": "FLOP/s",
+          "work": 909513218
+        },
+        {
+          "achieved_rate": 1682777339692.5789,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-accelerate-matrix-multiply",
+          "inner_iterations": 10,
+          "iqr_ns": 10562.5,
+          "iqr_over_median": 0.019542690857850584,
+          "median_ns": 540483.4,
+          "q1_ns": 534966.65,
+          "q3_ns": 545529.15,
+          "samples_ns": [
+            540483.4,
+            565016.7,
+            550083.3,
+            540975.0,
+            536783.3,
+            533150.0,
+            530825.0
+          ],
+          "shape": [
+            769,
+            769,
+            769
+          ],
+          "threads": 10,
+          "unit": "FLOP/s",
+          "work": 909513218
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "matrix-fp32-cube",
+      "probe_kind": "matrix_multiply",
+      "resource": "compute.fp32",
+      "unit": "FLOP/s"
+    },
+    {
+      "cases": [
+        {
+          "achieved_rate": 105189030016.4581,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 15,
+          "iqr_ns": 11515.233333333337,
+          "iqr_over_median": 0.03609885315708353,
+          "median_ns": 318991.6666666667,
+          "q1_ns": 314197.26666666666,
+          "q3_ns": 325712.5,
+          "samples_ns": [
+            318991.6666666667,
+            311188.93333333335,
+            304536.13333333336,
+            317205.6,
+            344380.5333333333,
+            323705.6,
+            327719.4
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 33554424
+        },
+        {
+          "achieved_rate": 117165050549.19446,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 19,
+          "iqr_ns": 19441.894736842136,
+          "iqr_over_median": 0.06788704164953709,
+          "median_ns": 286385.94736842107,
+          "q1_ns": 271490.10526315786,
+          "q3_ns": 290932.0,
+          "samples_ns": [
+            267629.36842105264,
+            287923.2105263158,
+            262546.05263157893,
+            275350.84210526315,
+            293940.7894736842,
+            286385.94736842107,
+            297793.84210526315
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 33554424
+        },
+        {
+          "achieved_rate": 132572109963.80734,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 21,
+          "iqr_ns": 8300.595238095266,
+          "iqr_over_median": 0.0327953006932803,
+          "median_ns": 253103.19047619047,
+          "q1_ns": 248735.14285714284,
+          "q3_ns": 257035.7380952381,
+          "samples_ns": [
+            243192.47619047618,
+            244902.80952380953,
+            252567.47619047618,
+            266748.0,
+            256156.7619047619,
+            253103.19047619047,
+            257914.7142857143
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 33554424
+        },
+        {
+          "achieved_rate": 109100700993.21767,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 16,
+          "iqr_ns": 5100.25,
+          "iqr_over_median": 0.016583229608555388,
+          "median_ns": 307554.6875,
+          "q1_ns": 303593.75,
+          "q3_ns": 308694.0,
+          "samples_ns": [
+            311679.6875,
+            301752.625,
+            298187.5,
+            308927.0625,
+            307554.6875,
+            305434.875,
+            308460.9375
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 116915297715.47845,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 19,
+          "iqr_ns": 24936.36842105264,
+          "iqr_over_median": 0.08688697033793405,
+          "median_ns": 286997.7894736842,
+          "q1_ns": 275983.5789473684,
+          "q3_ns": 300919.94736842107,
+          "samples_ns": [
+            275600.8947368421,
+            276366.2631578947,
+            264570.15789473685,
+            315353.05263157893,
+            291679.7894736842,
+            286997.7894736842,
+            310160.1052631579
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 134968616255.92438,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 21,
+          "iqr_ns": 10876.976190476213,
+          "iqr_over_median": 0.04375131206146509,
+          "median_ns": 248609.14285714287,
+          "q1_ns": 244500.0238095238,
+          "q3_ns": 255377.0,
+          "samples_ns": [
+            243009.95238095237,
+            245990.09523809524,
+            242049.61904761905,
+            248609.14285714287,
+            254630.95238095237,
+            259882.90476190476,
+            256123.04761904763
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 108479790634.2278,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 16,
+          "iqr_ns": 2824.21875,
+          "iqr_over_median": 0.009130554963970805,
+          "median_ns": 309315.125,
+          "q1_ns": 307748.6875,
+          "q3_ns": 310572.90625,
+          "samples_ns": [
+            310869.8125,
+            307671.875,
+            309315.125,
+            307825.5,
+            307419.25,
+            310276.0,
+            312804.6875
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 33554440
+        },
+        {
+          "achieved_rate": 118007285515.96481,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 19,
+          "iqr_ns": 25317.99999999994,
+          "iqr_over_median": 0.0890406293382691,
+          "median_ns": 284342.1052631579,
+          "q1_ns": 275766.44736842107,
+          "q3_ns": 301084.447368421,
+          "samples_ns": [
+            274964.94736842107,
+            284342.1052631579,
+            276567.94736842107,
+            309980.2631578947,
+            269804.7894736842,
+            292188.63157894736,
+            317831.15789473685
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 33554440
+        },
+        {
+          "achieved_rate": 132924367921.73073,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 21,
+          "iqr_ns": 5569.476190476213,
+          "iqr_over_median": 0.022063223295461922,
+          "median_ns": 252432.57142857142,
+          "q1_ns": 249238.07142857142,
+          "q3_ns": 254807.54761904763,
+          "samples_ns": [
+            241218.2380952381,
+            247496.0,
+            252432.57142857142,
+            250980.14285714287,
+            257325.38095238095,
+            255214.2857142857,
+            254400.80952380953
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 33554440
+        },
+        {
+          "achieved_rate": 88809933224.89041,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 6,
+          "iqr_ns": 19513.916666666628,
+          "iqr_over_median": 0.025824157040059498,
+          "median_ns": 755645.8333333334,
+          "q1_ns": 742506.9166666666,
+          "q3_ns": 762020.8333333333,
+          "samples_ns": [
+            792507.0,
+            764798.5,
+            759243.1666666666,
+            718034.8333333334,
+            734597.1666666666,
+            750416.6666666666,
+            755645.8333333334
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108856
+        },
+        {
+          "achieved_rate": 102427768762.05055,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 8,
+          "iqr_ns": 7414.125,
+          "iqr_over_median": 0.011316126161842754,
+          "median_ns": 655182.25,
+          "q1_ns": 653270.8125,
+          "q3_ns": 660684.9375,
+          "samples_ns": [
+            663802.125,
+            664921.875,
+            653635.375,
+            652906.25,
+            655182.25,
+            657567.75,
+            641755.25
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108856
+        },
+        {
+          "achieved_rate": 97983293935.91191,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 8,
+          "iqr_ns": 7343.75,
+          "iqr_over_median": 0.010722352573583628,
+          "median_ns": 684901.0,
+          "q1_ns": 683828.125,
+          "q3_ns": 691171.875,
+          "samples_ns": [
+            695437.5,
+            684286.5,
+            686906.25,
+            702125.0,
+            681765.625,
+            684901.0,
+            683369.75
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108856
+        },
+        {
+          "achieved_rate": 91663123100.56343,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 7,
+          "iqr_ns": 24568.5,
+          "iqr_over_median": 0.03355779409253884,
+          "median_ns": 732125.0,
+          "q1_ns": 718077.3571428572,
+          "q3_ns": 742645.8571428572,
+          "samples_ns": [
+            732125.0,
+            723779.7142857143,
+            703494.1428571428,
+            712375.0,
+            733613.1428571428,
+            751678.5714285715,
+            758690.4285714285
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 102356171111.26999,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 8,
+          "iqr_ns": 32171.875,
+          "iqr_over_median": 0.049069373942470386,
+          "median_ns": 655640.625,
+          "q1_ns": 640463.5625,
+          "q3_ns": 672635.4375,
+          "samples_ns": [
+            683724.0,
+            695171.875,
+            655640.625,
+            640614.625,
+            661546.875,
+            640312.5,
+            638401.125
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 95869805714.28572,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 8,
+          "iqr_ns": 5226.5625,
+          "iqr_over_median": 0.007466517857142857,
+          "median_ns": 700000.0,
+          "q1_ns": 698856.75,
+          "q3_ns": 704083.3125,
+          "samples_ns": [
+            687739.625,
+            698343.75,
+            700000.0,
+            703822.875,
+            730661.375,
+            699369.75,
+            704343.75
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 93549991189.89894,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": "unstable-measurement"
+          },
+          "eligible": false,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 5,
+          "iqr_ns": 90529.19999999995,
+          "iqr_over_median": 0.12619800646371457,
+          "median_ns": 717358.4,
+          "q1_ns": 705283.3,
+          "q3_ns": 795812.5,
+          "samples_ns": [
+            931041.6,
+            811200.0,
+            780425.0,
+            703841.6,
+            700150.0,
+            706725.0,
+            717358.4
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108872
+        },
+        {
+          "achieved_rate": 103874497190.45796,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 8,
+          "iqr_ns": 5606.8125,
+          "iqr_over_median": 0.008678507206598176,
+          "median_ns": 646057.25,
+          "q1_ns": 644690.0625,
+          "q3_ns": 650296.875,
+          "samples_ns": [
+            643906.25,
+            653026.0,
+            647567.75,
+            637682.25,
+            645473.875,
+            661854.25,
+            646057.25
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108872
+        },
+        {
+          "achieved_rate": 98062023701.69539,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 7,
+          "iqr_ns": 12511.928571428638,
+          "iqr_over_median": 0.0182829035798032,
+          "median_ns": 684351.2857142857,
+          "q1_ns": 683961.2857142857,
+          "q3_ns": 696473.2142857143,
+          "samples_ns": [
+            677452.4285714285,
+            684142.8571428572,
+            684351.2857142857,
+            700184.5714285715,
+            701375.0,
+            683779.7142857143,
+            692761.8571428572
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108872
+        },
+        {
+          "achieved_rate": 84101444783.18227,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 3,
+          "iqr_ns": 142111.16666666674,
+          "iqr_over_median": 0.0890475150113583,
+          "median_ns": 1595902.6666666667,
+          "q1_ns": 1508430.5,
+          "q3_ns": 1650541.6666666667,
+          "samples_ns": [
+            1638805.6666666667,
+            1595902.6666666667,
+            1706527.6666666667,
+            1662277.6666666667,
+            1513750.0,
+            1501986.0,
+            1503111.0
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217720
+        },
+        {
+          "achieved_rate": 95467744413.52704,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 62125.125,
+          "iqr_over_median": 0.04418899050854402,
+          "median_ns": 1405896.0,
+          "q1_ns": 1384286.375,
+          "q3_ns": 1446411.5,
+          "samples_ns": [
+            1340864.5,
+            1376000.0,
+            1392572.75,
+            1405896.0,
+            1433687.5,
+            1459135.5,
+            1461333.5
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217720
+        },
+        {
+          "achieved_rate": 90846860841.42395,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 35406.125,
+          "iqr_over_median": 0.02396505700446306,
+          "median_ns": 1477406.25,
+          "q1_ns": 1443791.625,
+          "q3_ns": 1479197.75,
+          "samples_ns": [
+            1478479.0,
+            1487948.0,
+            1479916.5,
+            1477406.25,
+            1451083.25,
+            1436500.0,
+            1423312.5
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217720
+        },
+        {
+          "achieved_rate": 88068768555.0723,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 30458.25,
+          "iqr_over_median": 0.019985590650458115,
+          "median_ns": 1524010.5,
+          "q1_ns": 1512875.0,
+          "q3_ns": 1543333.25,
+          "samples_ns": [
+            1551562.5,
+            1499458.25,
+            1512927.25,
+            1544218.75,
+            1512822.75,
+            1524010.5,
+            1542447.75
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 100021762665.62286,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 9890.625,
+          "iqr_over_median": 0.007370693582033188,
+          "median_ns": 1341885.25,
+          "q1_ns": 1338609.5,
+          "q3_ns": 1348500.125,
+          "samples_ns": [
+            1341885.25,
+            1346885.5,
+            1323458.5,
+            1337802.25,
+            1362135.5,
+            1339416.75,
+            1350114.75
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 92271624293.72462,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 37213.5,
+          "iqr_over_median": 0.025583431800116012,
+          "median_ns": 1454593.75,
+          "q1_ns": 1448796.875,
+          "q3_ns": 1486010.375,
+          "samples_ns": [
+            1490802.0,
+            1453510.25,
+            1454593.75,
+            1444083.5,
+            1433333.5,
+            1481218.75,
+            1503031.25
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 86951261900.77205,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 3,
+          "iqr_ns": 27034.83333333349,
+          "iqr_over_median": 0.01751417468113456,
+          "median_ns": 1543597.3333333333,
+          "q1_ns": 1525625.0,
+          "q3_ns": 1552659.8333333335,
+          "samples_ns": [
+            1694347.0,
+            1551014.0,
+            1543597.3333333333,
+            1519527.6666666667,
+            1531722.3333333333,
+            1516680.3333333333,
+            1554305.6666666667
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217736
+        },
+        {
+          "achieved_rate": 97772143065.01389,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 32682.375,
+          "iqr_over_median": 0.02380777637468444,
+          "median_ns": 1372760.5,
+          "q1_ns": 1360135.375,
+          "q3_ns": 1392817.75,
+          "samples_ns": [
+            1350448.0,
+            1352343.75,
+            1372760.5,
+            1367927.0,
+            1395375.0,
+            1412573.0,
+            1390260.5
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217736
+        },
+        {
+          "achieved_rate": 91426375305.74318,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 4,
+          "iqr_ns": 26708.5,
+          "iqr_over_median": 0.018193283671939165,
+          "median_ns": 1468041.75,
+          "q1_ns": 1460197.875,
+          "q3_ns": 1486906.375,
+          "samples_ns": [
+            1461687.5,
+            1455021.0,
+            1458708.25,
+            1497958.5,
+            1521843.75,
+            1468041.75,
+            1475854.25
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217736
+        },
+        {
+          "achieved_rate": 81214869677.02898,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 44302.25,
+          "iqr_over_median": 0.013403600332803873,
+          "median_ns": 3305250.0,
+          "q1_ns": 3286416.5,
+          "q3_ns": 3330718.75,
+          "samples_ns": [
+            3304208.0,
+            3489646.0,
+            3342875.0,
+            3240812.5,
+            3318562.5,
+            3305250.0,
+            3268625.0
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435448
+        },
+        {
+          "achieved_rate": 96539979950.10002,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 46104.0,
+          "iqr_over_median": 0.01658081773022545,
+          "median_ns": 2780562.5,
+          "q1_ns": 2762573.0,
+          "q3_ns": 2808677.0,
+          "samples_ns": [
+            2772187.5,
+            2801083.0,
+            2749187.5,
+            2780562.5,
+            2968000.0,
+            2752958.5,
+            2816271.0
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435448
+        },
+        {
+          "achieved_rate": 92917723809.46283,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 43302.0,
+          "iqr_over_median": 0.014988792673899607,
+          "median_ns": 2888958.5,
+          "q1_ns": 2881760.5,
+          "q3_ns": 2925062.5,
+          "samples_ns": [
+            2888958.5,
+            2878292.0,
+            2939729.0,
+            2972625.0,
+            2885229.0,
+            2910396.0,
+            2871479.5
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435448
+        },
+        {
+          "achieved_rate": 83185282983.96152,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 40864.75,
+          "iqr_over_median": 0.012663549903105354,
+          "median_ns": 3226958.5,
+          "q1_ns": 3192249.75,
+          "q3_ns": 3233114.5,
+          "samples_ns": [
+            3387750.0,
+            3184395.5,
+            3226958.5,
+            3145708.5,
+            3229479.0,
+            3200104.0,
+            3236750.0
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 97107492731.0136,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 112239.5,
+          "iqr_over_median": 0.04060304325216487,
+          "median_ns": 2764312.5,
+          "q1_ns": 2702906.25,
+          "q3_ns": 2815145.75,
+          "samples_ns": [
+            2709812.5,
+            2830104.0,
+            2944250.0,
+            2800187.5,
+            2764312.5,
+            2682604.0,
+            2696000.0
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 92638492386.89131,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 61469.0,
+          "iqr_over_median": 0.021213276269025437,
+          "median_ns": 2897666.5,
+          "q1_ns": 2881895.75,
+          "q3_ns": 2943364.75,
+          "samples_ns": [
+            2862896.0,
+            2893208.5,
+            2940979.5,
+            2990666.5,
+            2870583.0,
+            2945750.0,
+            2897666.5
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 81188260046.96744,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 155958.25,
+          "iqr_over_median": 0.047169545963829725,
+          "median_ns": 3306333.5,
+          "q1_ns": 3225198.0,
+          "q3_ns": 3381156.25,
+          "samples_ns": [
+            3429375.0,
+            3306333.5,
+            3298521.0,
+            3607583.5,
+            3332937.5,
+            3151875.0,
+            3149520.5
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435464
+        },
+        {
+          "achieved_rate": 96475658478.87978,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 84010.5,
+          "iqr_over_median": 0.0301933589022348,
+          "median_ns": 2782416.5,
+          "q1_ns": 2749614.5,
+          "q3_ns": 2833625.0,
+          "samples_ns": [
+            2681750.0,
+            2795000.0,
+            2900187.5,
+            2747291.5,
+            2782416.5,
+            2872250.0,
+            2751937.5
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435464
+        },
+        {
+          "achieved_rate": 94453711304.69296,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-inplace-memory-copy",
+          "inner_iterations": 2,
+          "iqr_ns": 15531.0,
+          "iqr_over_median": 0.005464853892305326,
+          "median_ns": 2841979.0,
+          "q1_ns": 2838156.25,
+          "q3_ns": 2853687.25,
+          "samples_ns": [
+            2841979.0,
+            2816417.0,
+            2876562.5,
+            2863145.5,
+            2844229.0,
+            2841979.0,
+            2834333.5
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435464
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "shared-memory-copy",
+      "probe_kind": "memory_copy",
+      "resource": "memory.shared",
+      "unit": "B/s"
+    },
+    {
+      "cases": [
+        {
+          "achieved_rate": 94690380351.86737,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 8,
+          "iqr_ns": 8458.375,
+          "iqr_over_median": 0.011934741390713877,
+          "median_ns": 708718.75,
+          "q1_ns": 707153.625,
+          "q3_ns": 715612.0,
+          "samples_ns": [
+            721567.75,
+            708588.5,
+            705718.75,
+            709656.25,
+            708718.75,
+            700979.125,
+            816463.5
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108848
+        },
+        {
+          "achieved_rate": 88991822811.22147,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 7,
+          "iqr_ns": 26345.21428571432,
+          "iqr_over_median": 0.03493590951878579,
+          "median_ns": 754101.2857142857,
+          "q1_ns": 731026.7857142857,
+          "q3_ns": 757372.0,
+          "samples_ns": [
+            725178.5714285715,
+            713327.4285714285,
+            759791.7142857143,
+            754101.2857142857,
+            754952.2857142857,
+            760488.1428571428,
+            736875.0
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108848
+        },
+        {
+          "achieved_rate": 95954033925.85954,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 8,
+          "iqr_ns": 6166.6875,
+          "iqr_over_median": 0.008817295471756184,
+          "median_ns": 699385.375,
+          "q1_ns": 695453.125,
+          "q3_ns": 701619.8125,
+          "samples_ns": [
+            699385.375,
+            697114.625,
+            693791.625,
+            691713.5,
+            703078.125,
+            700161.5,
+            715244.875
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108848
+        },
+        {
+          "achieved_rate": 94492585916.65114,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 7,
+          "iqr_ns": 5187.5,
+          "iqr_over_median": 0.007304255507031497,
+          "median_ns": 710202.4285714285,
+          "q1_ns": 707952.3571428572,
+          "q3_ns": 713139.8571428572,
+          "samples_ns": [
+            716029.7142857143,
+            710202.4285714285,
+            705928.5714285715,
+            736512.0,
+            706386.8571428572,
+            709517.8571428572,
+            710250.0
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 91143671531.87094,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 7,
+          "iqr_ns": 20315.5,
+          "iqr_over_median": 0.027591426059688985,
+          "median_ns": 736297.5714285715,
+          "q1_ns": 718488.1428571428,
+          "q3_ns": 738803.6428571428,
+          "samples_ns": [
+            719994.1428571428,
+            736297.5714285715,
+            715166.7142857143,
+            716982.1428571428,
+            736613.1428571428,
+            740994.1428571428,
+            745619.0
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 95325090909.09091,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 8,
+          "iqr_ns": 7809.75,
+          "iqr_over_median": 0.011093394886363636,
+          "median_ns": 704000.0,
+          "q1_ns": 701586.0,
+          "q3_ns": 709395.75,
+          "samples_ns": [
+            709145.75,
+            700510.375,
+            704000.0,
+            702510.5,
+            700661.5,
+            709645.75,
+            710145.875
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108864
+        },
+        {
+          "achieved_rate": 94765639645.20541,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 8,
+          "iqr_ns": 12031.1875,
+          "iqr_over_median": 0.01698945324566436,
+          "median_ns": 708156.25,
+          "q1_ns": 698830.75,
+          "q3_ns": 710861.9375,
+          "samples_ns": [
+            717838.625,
+            710927.0,
+            710796.875,
+            696484.375,
+            700229.25,
+            708156.25,
+            697432.25
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 67108880
+        },
+        {
+          "achieved_rate": 93129003972.67441,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 7,
+          "iqr_ns": 10068.428571428638,
+          "iqr_over_median": 0.013972260070905164,
+          "median_ns": 720601.2857142857,
+          "q1_ns": 715003.0,
+          "q3_ns": 725071.4285714286,
+          "samples_ns": [
+            713946.4285714285,
+            713428.5714285715,
+            716059.5714285715,
+            722720.2857142857,
+            734726.2857142857,
+            727422.5714285715,
+            720601.2857142857
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 67108880
+        },
+        {
+          "achieved_rate": 95792134308.2093,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 8,
+          "iqr_ns": 12442.75,
+          "iqr_over_median": 0.01776095174235468,
+          "median_ns": 700567.75,
+          "q1_ns": 695932.3125,
+          "q3_ns": 708375.0625,
+          "samples_ns": [
+            692130.25,
+            698916.625,
+            700567.75,
+            692948.0,
+            710052.125,
+            716270.875,
+            706698.0
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 67108880
+        },
+        {
+          "achieved_rate": 89902394423.83987,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 33817.75,
+          "iqr_over_median": 0.02265197829498696,
+          "median_ns": 1492927.0,
+          "q1_ns": 1480598.875,
+          "q3_ns": 1514416.625,
+          "samples_ns": [
+            1487447.75,
+            1751375.0,
+            1535270.75,
+            1493562.5,
+            1473458.25,
+            1473750.0,
+            1492927.0
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217712
+        },
+        {
+          "achieved_rate": 90824447567.39163,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 13697.875,
+          "iqr_over_median": 0.009269282803168218,
+          "median_ns": 1477770.75,
+          "q1_ns": 1473448.0,
+          "q3_ns": 1487145.875,
+          "samples_ns": [
+            1465656.25,
+            1477021.0,
+            1495406.25,
+            1469875.0,
+            1489000.0,
+            1485291.75,
+            1477770.75
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217712
+        },
+        {
+          "achieved_rate": 93548472466.87073,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 12953.0,
+          "iqr_over_median": 0.009028118165681267,
+          "median_ns": 1434739.75,
+          "q1_ns": 1427015.625,
+          "q3_ns": 1439968.625,
+          "samples_ns": [
+            1424635.25,
+            1434739.75,
+            1467937.5,
+            1439666.5,
+            1440270.75,
+            1415239.5,
+            1429396.0
+          ],
+          "shape": [
+            8388607
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217712
+        },
+        {
+          "achieved_rate": 91803547888.94264,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 8072.75,
+          "iqr_over_median": 0.005521678114089829,
+          "median_ns": 1462010.25,
+          "q1_ns": 1460838.625,
+          "q3_ns": 1468911.375,
+          "samples_ns": [
+            1461291.75,
+            1460385.5,
+            1474197.75,
+            1462010.25,
+            1456656.25,
+            1475260.5,
+            1463625.0
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 90024257393.78314,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 52911.5,
+          "iqr_over_median": 0.03548948835649458,
+          "median_ns": 1490906.25,
+          "q1_ns": 1474005.125,
+          "q3_ns": 1526916.625,
+          "samples_ns": [
+            1490906.25,
+            1510104.25,
+            1543729.0,
+            1578520.75,
+            1457635.5,
+            1472843.75,
+            1475166.5
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 92583903772.36473,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 20671.875,
+          "iqr_over_median": 0.014259538693683984,
+          "median_ns": 1449687.5,
+          "q1_ns": 1431640.625,
+          "q3_ns": 1452312.5,
+          "samples_ns": [
+            1449687.5,
+            1432968.75,
+            1455843.75,
+            1450041.75,
+            1425239.5,
+            1430312.5,
+            1454583.25
+          ],
+          "shape": [
+            8388608
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 91646188010.65126,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 18718.625,
+          "iqr_over_median": 0.012781399648997804,
+          "median_ns": 1464520.75,
+          "q1_ns": 1454494.875,
+          "q3_ns": 1473213.5,
+          "samples_ns": [
+            1475427.0,
+            1551239.5,
+            1471000.0,
+            1459468.75,
+            1464520.75,
+            1445677.0,
+            1449521.0
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 134217744
+        },
+        {
+          "achieved_rate": 91740809061.31725,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 25260.5,
+          "iqr_over_median": 0.017266112797227496,
+          "median_ns": 1463010.25,
+          "q1_ns": 1452322.875,
+          "q3_ns": 1477583.375,
+          "samples_ns": [
+            1455520.75,
+            1444437.5,
+            1449125.0,
+            1463260.5,
+            1463010.25,
+            1491906.25,
+            1544812.5
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 134217744
+        },
+        {
+          "achieved_rate": 93737702874.35344,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 4,
+          "iqr_ns": 5562.5,
+          "iqr_over_median": 0.0038848512625766604,
+          "median_ns": 1431843.75,
+          "q1_ns": 1428864.5,
+          "q3_ns": 1434427.0,
+          "samples_ns": [
+            1426687.5,
+            1435510.25,
+            1479406.25,
+            1431843.75,
+            1433343.75,
+            1431041.5,
+            1426166.75
+          ],
+          "shape": [
+            8388609
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 134217744
+        },
+        {
+          "achieved_rate": 90761116092.62093,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 143010.5,
+          "iqr_over_median": 0.04835349830470881,
+          "median_ns": 2957604.0,
+          "q1_ns": 2908843.75,
+          "q3_ns": 3051854.25,
+          "samples_ns": [
+            3021479.5,
+            3086583.5,
+            3082229.0,
+            2879021.0,
+            2928396.0,
+            2889291.5,
+            2957604.0
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435440
+        },
+        {
+          "achieved_rate": 90868649174.16583,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 33114.75,
+          "iqr_over_median": 0.0112097441390012,
+          "median_ns": 2954104.0,
+          "q1_ns": 2944770.75,
+          "q3_ns": 2977885.5,
+          "samples_ns": [
+            2990896.0,
+            2943125.0,
+            2945062.5,
+            3035396.0,
+            2944479.0,
+            2954104.0,
+            2964875.0
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435440
+        },
+        {
+          "achieved_rate": 95372348051.03168,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 67229.25,
+          "iqr_over_median": 0.02388586034023608,
+          "median_ns": 2814604.5,
+          "q1_ns": 2807437.25,
+          "q3_ns": 2874666.5,
+          "samples_ns": [
+            2786229.0,
+            2866166.5,
+            2803145.5,
+            2814604.5,
+            2926208.5,
+            2811729.0,
+            2883166.5
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435440
+        },
+        {
+          "achieved_rate": 92301368864.43738,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 40500.0,
+          "iqr_over_median": 0.013925900455600448,
+          "median_ns": 2908250.0,
+          "q1_ns": 2895437.25,
+          "q3_ns": 2935937.25,
+          "samples_ns": [
+            2906083.0,
+            2908250.0,
+            2884791.5,
+            2917479.0,
+            2880625.0,
+            2954395.5,
+            2996562.5
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 89755230627.76895,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 58781.25,
+          "iqr_over_median": 0.019654350915322243,
+          "median_ns": 2990750.0,
+          "q1_ns": 2945104.25,
+          "q3_ns": 3003885.5,
+          "samples_ns": [
+            2931291.5,
+            3110604.0,
+            2990750.0,
+            3003562.5,
+            2947458.5,
+            3004208.5,
+            2942750.0
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 94628516153.64034,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 12812.75,
+          "iqr_over_median": 0.004516733886106145,
+          "median_ns": 2836729.0,
+          "q1_ns": 2831354.0,
+          "q3_ns": 2844166.75,
+          "samples_ns": [
+            2850646.0,
+            2832875.0,
+            2895667.0,
+            2829833.0,
+            2836729.0,
+            2837687.5,
+            2813812.5
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 91473107512.53116,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 50375.0,
+          "iqr_over_median": 0.017165979431152667,
+          "median_ns": 2934583.5,
+          "q1_ns": 2907562.5,
+          "q3_ns": 2957937.5,
+          "samples_ns": [
+            2900437.5,
+            2955646.0,
+            2914687.5,
+            2968000.0,
+            2934583.5,
+            2888167.0,
+            2960229.0
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 268435472
+        },
+        {
+          "achieved_rate": 93040515800.58687,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 51990.0,
+          "iqr_over_median": 0.018019885302164952,
+          "median_ns": 2885146.0,
+          "q1_ns": 2871541.5,
+          "q3_ns": 2923531.5,
+          "samples_ns": [
+            2872270.5,
+            2905542.0,
+            2978104.0,
+            2941521.0,
+            2870812.5,
+            2866958.0,
+            2885146.0
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 268435472
+        },
+        {
+          "achieved_rate": 95717398563.75125,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 2,
+          "iqr_ns": 35906.0,
+          "iqr_over_median": 0.01280318464330993,
+          "median_ns": 2804458.5,
+          "q1_ns": 2781218.75,
+          "q3_ns": 2817124.75,
+          "samples_ns": [
+            2786875.0,
+            2764646.0,
+            2775562.5,
+            2805854.0,
+            2858333.5,
+            2804458.5,
+            2828395.5
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 268435472
+        },
+        {
+          "achieved_rate": 89050550247.45253,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 166208.0,
+          "iqr_over_median": 0.02756885121880138,
+          "median_ns": 6028833.0,
+          "q1_ns": 5933875.5,
+          "q3_ns": 6100083.5,
+          "samples_ns": [
+            5868333.0,
+            6049500.0,
+            6150667.0,
+            6262417.0,
+            6028833.0,
+            5895959.0,
+            5971792.0
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 536870896
+        },
+        {
+          "achieved_rate": 91070964734.5084,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 34749.5,
+          "iqr_over_median": 0.005894658311002576,
+          "median_ns": 5895083.0,
+          "q1_ns": 5874250.0,
+          "q3_ns": 5908999.5,
+          "samples_ns": [
+            5906541.0,
+            5911458.0,
+            5861459.0,
+            5867333.0,
+            6066375.0,
+            5895083.0,
+            5881167.0
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 536870896
+        },
+        {
+          "achieved_rate": 94483477166.3698,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 80104.0,
+          "iqr_over_median": 0.014097438530053763,
+          "median_ns": 5682167.0,
+          "q1_ns": 5653896.0,
+          "q3_ns": 5734000.0,
+          "samples_ns": [
+            5682167.0,
+            5648709.0,
+            5842375.0,
+            5637500.0,
+            5708167.0,
+            5759833.0,
+            5659083.0
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 536870896
+        },
+        {
+          "achieved_rate": 90979649550.92357,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 74958.5,
+          "iqr_over_median": 0.012702677512286053,
+          "median_ns": 5901000.0,
+          "q1_ns": 5867937.5,
+          "q3_ns": 5942896.0,
+          "samples_ns": [
+            6062084.0,
+            5821500.0,
+            5901000.0,
+            5926417.0,
+            5959375.0,
+            5895458.0,
+            5840417.0
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 536870912
+        },
+        {
+          "achieved_rate": 88615108332.8464,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 19771.5,
+          "iqr_over_median": 0.0032634541660600765,
+          "median_ns": 6058458.0,
+          "q1_ns": 6044812.0,
+          "q3_ns": 6064583.5,
+          "samples_ns": [
+            6045458.0,
+            5873833.0,
+            6044166.0,
+            6058458.0,
+            6070292.0,
+            6079666.0,
+            6058875.0
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 536870912
+        },
+        {
+          "achieved_rate": 96505986966.94136,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 82395.5,
+          "iqr_over_median": 0.014811119156209038,
+          "median_ns": 5563084.0,
+          "q1_ns": 5492250.5,
+          "q3_ns": 5574646.0,
+          "samples_ns": [
+            5566000.0,
+            5501042.0,
+            5483459.0,
+            5464958.0,
+            5563084.0,
+            5600458.0,
+            5583292.0
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 536870912
+        },
+        {
+          "achieved_rate": 90243679196.5205,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 70166.5,
+          "iqr_over_median": 0.011794423549681675,
+          "median_ns": 5949125.0,
+          "q1_ns": 5907521.0,
+          "q3_ns": 5977687.5,
+          "samples_ns": [
+            5982625.0,
+            6084250.0,
+            5972750.0,
+            5912250.0,
+            5895125.0,
+            5949125.0,
+            5902792.0
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 1,
+          "unit": "B/s",
+          "work": 536870928
+        },
+        {
+          "achieved_rate": 91182460225.46335,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 74521.5,
+          "iqr_over_median": 0.012656773453920132,
+          "median_ns": 5887875.0,
+          "q1_ns": 5827083.0,
+          "q3_ns": 5901604.5,
+          "samples_ns": [
+            5912334.0,
+            5838416.0,
+            5890875.0,
+            5805584.0,
+            5815750.0,
+            5938000.0,
+            5887875.0
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 4,
+          "unit": "B/s",
+          "work": 536870928
+        },
+        {
+          "achieved_rate": 92183821987.8477,
+          "assumptions": [
+            "triad counts three compulsory reads and one compulsory write"
+          ],
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-elementwise-memory-triad",
+          "inner_iterations": 1,
+          "iqr_ns": 240063.0,
+          "iqr_over_median": 0.041220195960897106,
+          "median_ns": 5823917.0,
+          "q1_ns": 5716833.0,
+          "q3_ns": 5956896.0,
+          "samples_ns": [
+            6018833.0,
+            5952417.0,
+            5634417.0,
+            5692458.0,
+            5741208.0,
+            5823917.0,
+            5961375.0
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 10,
+          "unit": "B/s",
+          "work": 536870928
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "shared-memory-triad",
+      "probe_kind": "memory_triad",
+      "resource": "memory.shared",
+      "unit": "B/s"
+    }
+  ],
+  "schema": "groundupscale.dev/hardware-microbenchmark-observation/v1alpha1",
+  "software": {
+    "platform": "macOS-15.7.4-arm64-arm-64bit",
+    "python": "3.11.15",
+    "torch": "2.13.0"
+  },
+  "statistics": {
+    "per_shape": "median",
+    "probe_envelope": "P80 and P95 of best thread-count rate per Shape",
+    "resource_envelope": "maximum probe P80/P95",
+    "stability": "IQR/median <= 10%"
+  },
+  "suite": {
+    "name": "apple-m4-cpu-resource-envelope",
+    "version": "0.1.0"
+  },
+  "target": {
+    "device": "cpu",
+    "hardware": "apple-m4"
+  }
+}

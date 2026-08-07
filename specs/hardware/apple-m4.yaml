@@ -11,6 +11,54 @@ spec:
       model: M4
       compute_units: 10
       memory_bytes: 17179869184
+      capabilities:
+        architecture: arm64
+        core_pools:
+          - {kind: performance, count: 4}
+          - {kind: efficiency, count: 6}
+        core_topology_evidence:
+          - source_kind: vendor_official
+            title: MacBook Air (13-inch, M4, 2025) - Tech Specs
+            url: https://support.apple.com/en-us/122209
+            accessed_on: "2026-08-07"
+        vector:
+          isa: neon
+          register_bits: 128
+          fp32_fma_flops_per_instruction: 8
+          fp64_fma_flops_per_instruction: 4
+          evidence:
+            - source_kind: isa_derived
+              title: Arm Coding for Neon
+              url: https://developer.arm.com/documentation/102159/0104
+              accessed_on: "2026-08-07"
+        theoretical_compute:
+          fp32_flops_per_second: &unknown_cpu_peak
+            value: null
+            status: unknown
+            reason: vendor_does_not_publish_frequency_or_fma_issue_rate
+            evidence:
+              - source_kind: vendor_official
+                title: Apple introduces M4 chip
+                url: https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/
+                accessed_on: "2026-08-07"
+          fp64_flops_per_second: *unknown_cpu_peak
+          matrix_operations_per_second:
+            value: null
+            status: unknown
+            reason: vendor_does_not_publish_cpu_ml_accelerator_throughput
+            evidence:
+              - source_kind: vendor_official
+                title: Apple introduces M4 chip
+                url: https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/
+                accessed_on: "2026-08-07"
+        unified_memory:
+          peak_bandwidth_bytes_per_second: 120000000000
+          scope: soc_shared
+          evidence:
+            - source_kind: vendor_official
+              title: MacBook Air (13-inch, M4, 2025) - Tech Specs
+              url: https://support.apple.com/en-us/122209
+              accessed_on: "2026-08-07"
     - id: gpu
       kind: gpu
       vendor: Apple

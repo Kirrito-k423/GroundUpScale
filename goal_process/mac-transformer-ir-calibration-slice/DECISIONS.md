@@ -99,3 +99,23 @@
 - **决定者：** Codex，依据 Goal 的 BLOCKED 条件与权限边界。
 - **影响：** AC-06/07/08/10/12 暂不完成；已有代码、CI 和证据继续可用；恢复后必须建立全新 cohort。
 - **回滚条件：** 用户恢复 Goal 且 preflight PASS；将 GOAL/CURRENT_STATUS 恢复为执行态。
+
+## D-011：竞争 CPU 门禁采用整机归一化的逐窗口总量
+
+- **时间：** 2026-08-07T09:50:35+08:00
+- **背景证据：** 用户授权停下 board 后，C025 能获得合格窗口；但 C026 的两次重试分别被不同的 Codex/VS Code UI 进程以 `29.0%`、`50.3%` 单核口径瞬时峰值拒绝，且没有产生持续竞争或 Run Bundle。
+- **选项：** 继续随机等待 / 提高单进程阈值 / 取消竞争门禁 / 按整机容量约束全部竞争进程总量。
+- **决定：** 发布 `local-apple-silicon-v2`：连续 3 个 1 秒窗口分别汇总 coordinator/ancestor 以外全部进程 CPU，取最大值除以 `100 * logical_cpu_count`，要求不超过 `0.10`；单进程峰值只作诊断；缺少总量样本 fail closed；policy ID 写入 `hardware_cohort`。
+- **决定者：** Codex，依据 C025–C026 的对照证据与用户已确认的“实测可追溯、各模块预估和实测相互修正”原则。
+- **影响：** 10 核机器上约半个单核的短时 UI 活动不会独立误拒，而持续 board 负载的多进程总和仍会被 load 或总竞争占用拒绝；不同环境协议的校准证据不会混入同一 cohort。
+- **回滚条件：** 全新 cohort 证明 `0.10` 仍不能区分稳定/不稳定 Run 时，必须以原始逐窗口总量和 Run 噪声建立新版本；不得修改既有 Bundle 或放宽 3%/5 次/5% 合同。
+
+## D-012：用独立多 Shape 能力 Profile 构造算法无关硬件地板
+
+- **时间：** 2026-08-07T12:15:46+08:00
+- **背景证据：** ADR-0033；C028 首轮 PyTorch scalar dispatch 被稳定性门禁拒绝；第二轮原生 scalar + vector/matrix/memory 探针成功；Apple 不发布 CPU FP32 峰值。
+- **选项：** 把单算子实测吞吐写入 HardwareSpec / 用当前算子效率定义地板 / 用跨探针 P80/P95 独立 Profile 定义资源包络。
+- **决定：** HardwareSpec 只保留 vendor/ISA 事实；HardwareCapabilityProfile 用 raw SHA-256 锁定多 Shape P80/P95；后端按 `max(minimum FLOPs / compute P80, unique compulsory bytes / memory P80)` 生成硬件地板，materialized bytes 和实现效率留在上层。
+- **决定者：** 用户确认的“超越算子和算法的硬件地板”要求与 C028 实测。
+- **影响：** Q projection 可直接看到距 matrix 能力包络仅约 0.5%，而模块/E2E 的 16× 距离被正确归入实现/调度优化空间；地板不再冒充完整 Duration Prediction。
+- **回滚条件：** 只有资源语义、P80 统计或 compulsory-byte 边界被新证据反证时发布新 Profile/Backend 版本；不得覆写原始观测或厂商事实。

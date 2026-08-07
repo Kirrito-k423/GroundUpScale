@@ -18,6 +18,7 @@ from groundupscale.benchmark import (
     BenchmarkRunner,
     ReferenceRunner,
     TraceRunner,
+    build_prediction_observation_comparison,
     observe_tensor_storage_peak,
 )
 from groundupscale.benchmark.explanation import (
@@ -130,6 +131,21 @@ class RunBundleWriter:
                 else "failed-not-required"
             )
             preflight_artifact = environment_validity
+        environment_policy_id = "unverified"
+        if preflight_status == "passed":
+            policy_metadata = preflight_artifact.get("policy")
+            candidate_policy_id = (
+                policy_metadata.get("policy_id")
+                if isinstance(policy_metadata, dict)
+                else None
+            )
+            if not isinstance(candidate_policy_id, str) or not RUN_ID_PATTERN.fullmatch(
+                candidate_policy_id
+            ):
+                raise EnvironmentValidityError(
+                    "eligible environment report has no valid policy_id"
+                )
+            environment_policy_id = candidate_policy_id
         runs_root = Path(artifact_store).resolve() / "runs"
         runs_root.mkdir(parents=True, exist_ok=True)
         destination = runs_root / selected_run_id
@@ -199,8 +215,19 @@ class RunBundleWriter:
             live_set = predict_live_set(
                 self.compiled.semantic.semantic_ir, self.compiled.cost.cost_ir
             )
+            comparison = build_prediction_observation_comparison(
+                hardware_prediction=self.compiled.hardware_prediction,
+                benchmark=benchmark,
+                live_set=live_set,
+                tensor_storage_observation=tensor_storage_memory,
+            )
             explanation = build_explanation_graph(
-                self.compiled.cost.cost_ir, benchmark, trace, live_set
+                self.compiled.cost.cost_ir,
+                benchmark,
+                trace,
+                live_set,
+                self.compiled.hardware_prediction,
+                comparison,
             )
             reference_runner = ReferenceRunner.from_analysis_bundle(
                 self.compiled.bundle, seed=self.seed
@@ -236,6 +263,9 @@ class RunBundleWriter:
                 "analysis_case": bundle.analysis_case,
                 "deployment_intent": bundle.deployment_intent,
                 "hardware": bundle.hardware,
+                "hardware_capability_profiles": (
+                    bundle.hardware_capability_profiles
+                ),
                 "fabric_graph": bundle.fabric_graph,
                 "benchmark_cases": bundle.benchmark_cases,
                 "models": bundle.models,
@@ -276,14 +306,44 @@ class RunBundleWriter:
             write_json("workload-ir", "ir/workload.ir.json", self.compiled.workload, "groundupscale.dev/workload-ir/v1alpha1", ("resolved-input-lock",))
             write_json("semantic-ir", "ir/semantic.ir.json", self.compiled.semantic.semantic_ir, self.compiled.semantic.semantic_ir.schema, ("model-ir", "workload-ir"))
             write_json("cost-ir", "ir/cost.ir.json", self.compiled.cost.cost_ir, self.compiled.cost.cost_ir.schema, ("semantic-ir",))
+            if self.compiled.hardware_prediction is not None:
+                write_json(
+                    "hardware-backend-prediction",
+                    "prediction/hardware-backend.json",
+                    self.compiled.hardware_prediction,
+                    self.compiled.hardware_prediction.schema,
+                    ("cost-ir", "resolved-input-lock"),
+                )
+            duration_status = (
+                self.compiled.hardware_prediction.status
+                if self.compiled.hardware_prediction is not None
+                else "uncalibrated"
+            )
             prediction = {
                 "schema": "groundupscale.dev/prediction/v1alpha1",
                 "cost_summary": self.compiled.cost.cost_ir.summary,
                 "live_set": live_set,
-                "duration_status": "uncalibrated",
+                "duration_status": duration_status,
+                "duration": (
+                    self.compiled.hardware_prediction.program_bounds
+                    if self.compiled.hardware_prediction is not None
+                    else None
+                ),
+                "hardware_backend": (
+                    {
+                        "backend_id": self.compiled.hardware_prediction.backend_id,
+                        "backend_version": self.compiled.hardware_prediction.backend_version,
+                        "prediction_complete": (
+                            self.compiled.hardware_prediction.prediction_complete
+                        ),
+                        "artifact": "prediction/hardware-backend.json",
+                    }
+                    if self.compiled.hardware_prediction is not None
+                    else None
+                ),
             }
             write_json("prediction", "prediction/metrics.json", prediction, prediction["schema"], ("cost-ir",))
-            write_json("explanation-graph", "prediction/explanation.graph.json", explanation, explanation["schema"], ("prediction", "benchmark-observation", "alignment-map"))
+            write_json("explanation-graph", "prediction/explanation.graph.json", explanation, explanation["schema"], ("prediction", "prediction-observation-comparison", "benchmark-observation", "alignment-map"))
             write_json("benchmark-observation", "observation/raw/benchmark.json", benchmark, benchmark["schema"], ("resolved-input-lock", "environment"))
             trace_lines = b"".join(
                 _json_line_bytes(event) for event in trace["events"]
@@ -297,6 +357,22 @@ class RunBundleWriter:
                 "authoritative_gate_metric": "framework_tensor_storage.peak_framework_tensor_bytes",
             }
             write_json("memory-observation", "observation/memory.json", memory_observation, memory_observation["schema"], ("observation-trace", "semantic-ir"))
+            write_json(
+                "prediction-observation-comparison",
+                "comparison/predicted-vs-observed.json",
+                comparison,
+                comparison["schema"],
+                (
+                    "prediction",
+                    *(
+                        ("hardware-backend-prediction",)
+                        if self.compiled.hardware_prediction is not None
+                        else ()
+                    ),
+                    "benchmark-observation",
+                    "memory-observation",
+                ),
+            )
             write_json("correctness-observation", "observation/correctness.json", correctness, correctness["schema"], ("resolved-input-lock", "environment"))
             write_json("error-attribution", "comparison/error-attribution.json", trace["error_attribution"], trace["error_attribution"]["schema"], ("benchmark-observation", "alignment-map"))
             report = render_report_html(
@@ -306,8 +382,9 @@ class RunBundleWriter:
                 trace=trace,
                 live_set=live_set,
                 explanation=explanation,
+                comparison=comparison,
             )
-            write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha1", inputs=("explanation-graph",))
+            write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha1", inputs=("explanation-graph", "prediction-observation-comparison"))
 
             hardware_names = "-".join(
                 document.metadata.name for document in bundle.hardware
@@ -319,14 +396,23 @@ class RunBundleWriter:
                 "created_at": datetime.now(UTC).isoformat(),
                 "compilation_fingerprint": self.compiled.semantic.compilation_fingerprint,
                 "cost_compilation_fingerprint": self.compiled.cost.compilation_fingerprint,
-                "hardware_cohort": f"{hardware_names}-{platform.release()}-torch{torch.__version__}-{device}",
+                "hardware_compilation_fingerprint": (
+                    self.compiled.hardware_prediction.compilation_fingerprint
+                    if self.compiled.hardware_prediction is not None
+                    else None
+                ),
+                "hardware_cohort": (
+                    f"{hardware_names}-{platform.release()}-torch{torch.__version__}-"
+                    f"{device}-env-{environment_policy_id}"
+                ),
                 "device": device,
                 "environment_validity": preflight_status,
                 "seed": self.seed,
                 "stages": {
                     "compilation": "completed",
                     "structural_prediction": "completed",
-                    "duration_prediction": "skipped-uncalibrated",
+                    "duration_prediction": duration_status,
+                    "prediction_observation_comparison": "completed",
                     "benchmark": "completed",
                     "trace": "completed",
                     "calibration": "skipped-not-requested",

@@ -90,6 +90,7 @@ artifacts and are never modified in place after completion.
 │   └── execution.ir.json
 ├── prediction/
 │   ├── metrics.json
+│   ├── hardware-backend.json
 │   ├── schedule.json
 │   └── explanation.graph.json
 ├── observation/
@@ -97,6 +98,7 @@ artifacts and are never modified in place after completion.
 │   ├── observation.trace.jsonl
 │   └── alignment.map.json
 ├── comparison/
+│   ├── predicted-vs-observed.json
 │   ├── discrepancy.json
 │   └── error-attribution.json
 ├── calibration/
@@ -110,6 +112,23 @@ artifacts and are never modified in place after completion.
 Artifacts are optional according to run purpose. A prediction-only run need not
 contain observation or comparison outputs, but the manifest must state which
 expected stages were skipped, failed, or completed.
+
+`hardware-backend.json` retains the complete per-operation implementation
+candidate set, immutable HardwareSpec facts, measured HardwareCapabilityProfile
+snapshot, raw-evidence SHA-256, assumptions, Scope bounds, and an independent
+backend compilation fingerprint. For example, the M4 CPU backend records both
+vendor-theory availability and the empirical `max(minimum FLOPs / compute P80,
+compulsory bytes / memory P80)` floor while keeping full implementation duration
+null. `metrics.json` only projects the corresponding headline status and program
+bound; it does not erase provenance or why the point prediction is incomplete.
+
+`predicted-vs-observed.json` aligns Benchmark Cases and backend candidates by
+Stable Path. It keeps prediction, observation, and comparison as three separate
+objects for every scope. A conditional bound may report its distance from an
+observation but has `relative_prediction_error=null`; a matching framework
+Tensor peak-memory prediction and observation can report a real error. This
+prevents dashboards from silently treating every pair of numbers as equivalent
+prediction and ground truth.
 
 ## Run identity
 

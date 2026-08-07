@@ -1,0 +1,29 @@
+{
+  "schema": "groundupscale.dev/goal-iteration-metrics/v1alpha1",
+  "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+  "environment_eligible": false,
+  "capabilities": {
+    "compute_fp32_p80_flops_per_second": 1748450139577.8,
+    "compute_fp32_p95_flops_per_second": 1874898740205.6428,
+    "memory_shared_p80_bytes_per_second": 126832587409.13748,
+    "memory_shared_p95_bytes_per_second": 133844279672.11787
+  },
+  "two_layer_prefill": {
+    "minimum_work_flops": 9710850048,
+    "compulsory_bytes": 37756928,
+    "empirical_hardware_floor_ns": 5553975.963160658,
+    "observed_median_ns": 92814479.0,
+    "observed_to_hardware_floor_ratio": 16.711357704036786,
+    "iqr_over_median": 0.024129898956821164
+  },
+  "framework_peak_memory": {
+    "predicted_bytes": 54534144,
+    "observed_bytes": 69214208,
+    "absolute_relative_error": 0.212096106048053
+  },
+  "verification": {
+    "run_bundle_artifacts": 17,
+    "run_bundle_digests_passed": true,
+    "tests_passed": 58
+  }
+}

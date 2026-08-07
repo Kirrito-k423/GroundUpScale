@@ -21,20 +21,22 @@ ENVIRONMENT_VALIDITY_SCHEMA = "groundupscale.dev/environment-validity/v1alpha1"
 class EnvironmentValidityPolicy:
     """Versioned, predeclared thresholds for the initial Apple Silicon cohort."""
 
-    policy_id: str = "local-apple-silicon-v1"
+    policy_id: str = "local-apple-silicon-v2"
     required_system: str = "Darwin"
     required_machine: str = "arm64"
     require_ac_power: bool = True
     require_nominal_thermal_status: bool = True
     maximum_normalized_one_minute_load: float = 0.25
-    maximum_competing_process_cpu_percent: float = 25.0
+    maximum_normalized_total_competing_cpu: float = 0.10
     allowlist_only: bool = True
 
     def __post_init__(self) -> None:
         if not 0 <= self.maximum_normalized_one_minute_load:
             raise ValueError("maximum normalized load must be non-negative")
-        if not 0 <= self.maximum_competing_process_cpu_percent:
-            raise ValueError("maximum competing CPU percent must be non-negative")
+        if not 0 <= self.maximum_normalized_total_competing_cpu <= 1:
+            raise ValueError(
+                "maximum normalized total competing CPU must be between 0 and 1"
+            )
 
 
 def _mapping(value: object) -> Mapping[str, Any]:
@@ -180,29 +182,56 @@ def evaluate_environment_validity(
             cpu_percent = _number(item.get("cpu_percent"))
             if cpu_percent is not None:
                 competitor_cpu_values.append(cpu_percent)
-    maximum_competitor_cpu = (
+    maximum_single_competitor_cpu = (
         max(competitor_cpu_values, default=0.0) if isinstance(top, list) else None
     )
+    total_samples = competitor_observation.get("total_cpu_percent_samples")
+    total_cpu_values: list[float] = []
+    if isinstance(total_samples, list):
+        for value in total_samples:
+            cpu_percent = _number(value)
+            if cpu_percent is not None:
+                total_cpu_values.append(cpu_percent)
+    maximum_total_competitor_cpu = (
+        max(total_cpu_values) if total_cpu_values else None
+    )
+    normalized_total_competitor_cpu = (
+        maximum_total_competitor_cpu / (100.0 * logical_cpu_count)
+        if maximum_total_competitor_cpu is not None
+        and logical_cpu_count is not None
+        and logical_cpu_count > 0
+        else None
+    )
+    if "competitors" not in normalized_observations:
+        normalized_observations["competitors"] = dict(competitor_observation)
+    normalized_observations["competitors"].update(
+        {
+            "maximum_single_process_cpu_percent": maximum_single_competitor_cpu,
+            "maximum_total_cpu_percent": maximum_total_competitor_cpu,
+            "normalized_maximum_total_cpu": normalized_total_competitor_cpu,
+        }
+    )
     competitor_ok = (
-        maximum_competitor_cpu is not None
-        and maximum_competitor_cpu
-        <= selected.maximum_competing_process_cpu_percent
+        normalized_total_competitor_cpu is not None
+        and normalized_total_competitor_cpu
+        <= selected.maximum_normalized_total_competing_cpu
     )
     checks.append(
         _check(
-            "no-competing-process",
+            "bounded-total-competing-cpu",
             passed=competitor_ok,
-            observed=maximum_competitor_cpu,
+            observed=normalized_total_competitor_cpu,
             required={
-                "maximum_cpu_percent": (
-                    selected.maximum_competing_process_cpu_percent
+                "maximum": selected.maximum_normalized_total_competing_cpu,
+                "normalization": (
+                    "maximum sampled total non-coordinator process CPU percent / "
+                    "(100 * logical CPU count)"
                 ),
-                "scope": "single non-coordinator process",
             },
             failure_reason=(
                 "competitor-load-unverified"
-                if maximum_competitor_cpu is None
-                else "competing-process-above-policy"
+                if normalized_total_competitor_cpu is None
+                else "total-competing-cpu-above-policy"
             ),
         )
     )
@@ -322,6 +351,7 @@ def _competitor_observation(
     tracked: dict[int, psutil.Process] = {}
     names: dict[int, str] = {}
     maxima: dict[int, float] = {}
+    total_cpu_percent_samples: list[float] = []
     for process in psutil.process_iter(["pid", "name"]):
         if process.pid in excluded:
             continue
@@ -334,13 +364,16 @@ def _competitor_observation(
 
     for _ in range(sample_count):
         time.sleep(sample_interval_seconds)
+        total_cpu_percent = 0.0
         for process_id, process in list(tracked.items()):
             try:
                 cpu_percent = float(process.cpu_percent(None))
             except (psutil.Error, RuntimeError):
                 tracked.pop(process_id, None)
                 continue
+            total_cpu_percent += cpu_percent
             maxima[process_id] = max(maxima.get(process_id, 0.0), cpu_percent)
+        total_cpu_percent_samples.append(total_cpu_percent)
 
     top = sorted(
         (
@@ -358,6 +391,7 @@ def _competitor_observation(
         "sample_interval_seconds": sample_interval_seconds,
         "sample_count": sample_count,
         "excluded_process_scope": "coordinator process and ancestors",
+        "total_cpu_percent_samples": total_cpu_percent_samples,
         "top": top,
     }
 

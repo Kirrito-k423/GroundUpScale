@@ -42,6 +42,32 @@ Profile. A Calibration Run may fit a Candidate Calibration Profile, but only a
 candidate that passes its declared holdout Error Budgets and review policy can
 become active.
 
+## Hardware capability-envelope gate
+
+Hardware capacity measurement is a separate lane from operator calibration:
+
+```text
+HardwareBenchmarkSuite YAML
+  -> scalar/vector/matrix/memory probes
+  -> >=10 distinct aligned/non-aligned Shapes per promoted probe
+  -> per-Shape median and IQR gate
+  -> P80 robust / P95 optimistic probe envelope
+  -> max probe envelope per physical resource
+  -> HardwareCapabilityProfile + raw observation SHA-256
+```
+
+Compiler CI validates the strict Suite/Profile Schemas, aggregation literals,
+minimum Shape coverage, deterministic serialization, and source digest. The
+trusted M4 lane additionally requires environment preflight success, enough
+stable Shapes, matching hardware/software Cohort, and no P80 drift beyond 10%
+from the reviewed baseline. A vendor comparison is enforced only when unit,
+operation semantics, dtype, concurrency and bandwidth accounting are comparable.
+
+The profile is keyed by `compute.fp32` or `memory.shared`, not by MatMul,
+Softmax, PyTorch, or a kernel name. Probe and implementation identities remain
+provenance. This lets the backend calculate an algorithm-independent floor while
+operator calibration continues to model implementation efficiency above it.
+
 ## Benchmark Case contract
 
 Each Benchmark Case binds:
@@ -81,13 +107,19 @@ sequenceDiagram
 ## Environment-validity preflight
 
 The trusted local lane executes a versioned, fail-closed preflight before each
-benchmark. The initial `local-apple-silicon-v1` policy requires:
+benchmark. The current `local-apple-silicon-v2` policy requires:
 
 - Darwin on arm64 and AC power;
 - nominal `pmset` thermal and performance status, where unknown is a failure;
 - one-minute load divided by logical CPU count no greater than `0.25`;
-- no single process outside the coordinator/ancestor chain above `25%` CPU over
-  three one-second samples.
+- the maximum of three one-second samples of total CPU across all processes
+  outside the coordinator/ancestor chain, divided by
+  `100 * logical CPU count`, no greater than `0.10`.
+
+Per-process peaks remain diagnostic evidence, but do not independently reject a
+Run. Missing total samples fail closed. The previous v1 single-process gate was
+superseded after it rejected unrelated short UI bursts that consumed less than
+10% of whole-machine capacity.
 
 ```mermaid
 flowchart LR
@@ -105,7 +137,8 @@ only allowlisted platform, power, normalized load, thermal flags, and top
 process PID/name/CPU fields. It never captures command arguments, environment
 variables, or unrestricted paths. A Run Manifest must say
 `environment_validity: passed` before either fitting or holdout validation can
-read it.
+read it, and its `hardware_cohort` includes the environment policy ID so that
+evidence collected under different measurement protocols cannot be pooled.
 
 An Observation Trace records at least:
 

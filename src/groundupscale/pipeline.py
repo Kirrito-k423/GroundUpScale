@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from groundupscale.backends import compile_hardware_prediction
 from groundupscale.compiler import (
     CompilationContext,
     CostLowerer,
@@ -15,7 +16,12 @@ from groundupscale.compiler import (
     WorkloadBuilder,
     semantic_deployment_plan,
 )
-from groundupscale.ir import CostLoweringResult, ModelIR, SemanticCompilationResult
+from groundupscale.ir import (
+    CostLoweringResult,
+    HardwareBackendPrediction,
+    ModelIR,
+    SemanticCompilationResult,
+)
 from groundupscale.ir import WorkloadIR
 from groundupscale.specs import AnalysisBundle, SpecRepository
 
@@ -27,6 +33,7 @@ class CompiledAnalysis:
     workload: WorkloadIR
     semantic: SemanticCompilationResult
     cost: CostLoweringResult
+    hardware_prediction: HardwareBackendPrediction | None
 
 
 def compile_analysis_bundle(bundle: AnalysisBundle) -> CompiledAnalysis:
@@ -54,12 +61,14 @@ def compile_analysis_bundle(bundle: AnalysisBundle) -> CompiledAnalysis:
             provenance=semantic.provenance,
         )
     )
+    hardware_prediction = compile_hardware_prediction(bundle, cost.cost_ir)
     return CompiledAnalysis(
         bundle=bundle,
         models=models,
         workload=workload,
         semantic=semantic,
         cost=cost,
+        hardware_prediction=hardware_prediction,
     )
 
 

@@ -58,6 +58,23 @@ hardware-independent Cost IR; runs the same reference on CPU/MPS; and emits
 digest-verified benchmark, trace, alignment, live-set, explanation, and HTML
 artifacts in an immutable Run Bundle.
 
+The Apple M4 CPU path now also lowers Cost IR into 52 inspectable hardware
+implementation candidates. It preserves Apple's public 4P+6E topology, Neon
+instruction semantics, and 120 GB/s SoC-shared unified-memory peak while
+keeping the unpublished vendor CPU FLOP/s explicitly unknown. A separate
+multi-Shape HardwareCapabilityProfile supplies measured P80/P95 compute and
+memory resource envelopes without overwriting those vendor facts. The backend
+uses minimum mathematical work and unique compulsory Scope bytes to emit
+`max(compute, memory)` algorithm-independent hardware floors; full implementation
+duration remains null. The bounds, assumptions, raw-evidence digest, capability
+quality, and per-operation candidates are available in compile output, Run
+Bundles, CLI, Explanation Graph, and HTML instead of being presented as a
+calibrated latency.
+Each CPU Run also emits a Stable-Path-aligned prediction-versus-observation
+comparison: empirical hardware floors are shown beside measured medians without
+mislabeling their distance as prediction error, while matching framework Tensor
+peak-memory values receive a real absolute and relative error calculation.
+
 The controlled calibration workflow is implemented and refuses mixed cohorts,
 fit/holdout overlap, noisy fitting data, insufficient valid holdouts, or a
 failed 5% gate. Trusted Mac runs now also fail closed on a versioned preflight
@@ -91,6 +108,9 @@ marked `environment_validity=not-required` and cannot enter calibration.
 - [Domain language](CONTEXT.md)
 - [Semantic compilation](docs/architecture/semantic-compilation.md)
 - [Cost formulas and worked example](docs/methods/cost-model-formulas.md)
+- [Apple M4 CPU public-capability backend](docs/methods/apple-m4-cpu-backend.md)
+- [Prediction-versus-observation comparison](docs/methods/prediction-observation-comparison.md)
+- [Apple M4 CPU primary-source capability research](docs/research/apple-m4-cpu-capabilities.md)
 - [Explainability architecture](docs/architecture/explainability.md)
 - [Hardware measurement and calibration CI](docs/validation/hardware-calibration-ci.md)
 - [Instrumentation and trace alignment](docs/validation/instrumentation-and-trace-alignment.md)

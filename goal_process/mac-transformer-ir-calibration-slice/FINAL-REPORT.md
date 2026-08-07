@@ -2,6 +2,13 @@
 
 > **状态：BLOCKED。** 软件与真实执行链路已经交付；受控环境门禁连续三个 Goal 回合识别到同一长期后台竞争。未经用户授权不能停止这些服务，因此 Goal 不能标记 DONE，Calibration Profile 也没有被错误晋升。
 
+> **2026-08-07 C028 补充：** 用户随后明确接受 macOS 调度干扰用于功能穿刺。
+> 当前已新增多 Shape M4 CPU microbenchmark 和独立 HardwareCapabilityProfile，
+> 以 P80 `1.74845 TFLOP/s`、`126.833 GB/s` 生成算法无关硬件地板；最新版
+> 两层 CPU Run 为 floor `5.554 ms`、observed `92.814 ms`。该结果完成本次
+> microbenchmark→测量→配置→重预测子目标，但因 preflight 不合格，仍不改变
+> 原完整 Goal 的 trusted calibration BLOCKED 状态，也不晋升 active profile。
+
 ## 交付结果
 
 GroundUpScale 现在具备一个可运行的纵向切片：
@@ -73,9 +80,12 @@ Candidate `1f66d803cc23...` 只使用 3 个合格 fit Run。7 个独立 MPS hold
 
 ## 已确定的下一步
 
-保持 3%/5 次/5% 原合同不变。C020 已实现 `local-apple-silicon-v1`
-preflight；首次真实检查因 normalized load `0.363>0.25`、
-`mediaanalysisd 58.1%>25%` 在 benchmark 前拒绝。待这些外部负载消退且
-preflight PASS 后，重新建立不复用 C012–C018 的 fit/holdout cohort。
+保持 3%/5 次/5% 原合同不变。C020 的 `local-apple-silicon-v1` 首次真实检查
+确实在 benchmark 前拒绝了高负载，但 C026 也证明其单进程 `25%` 峰值规则会
+误拒普通短时 UI 活动。C027 因此只修正环境门禁：v2 以全部竞争进程占整机
+CPU 容量的逐窗口总量为硬判据，单进程峰值保留作诊断，并把 policy ID 纳入
+`hardware_cohort`。后续标定仍必须建立不复用 C012–C018 的全新 fit/holdout
+cohort。
 
-当前最科学的状态是：代码可用、证据完整、失败诚实、门禁自动执行。恢复需要用户暂停两个 autoresearch board 服务（C021 时 PID 18974/18975）或授权临时停止，然后等待系统媒体分析降载并让 preflight PASS。
+board 服务已按用户授权临时停止；完成受控实验后必须恢复对应 LaunchAgent 并
+检查两个 HTTP 端口。最终校准结论仍以全新 cohort 为准，本段不预判实验结果。

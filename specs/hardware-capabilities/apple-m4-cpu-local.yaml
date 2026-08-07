@@ -1,0 +1,437 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: HardwareCapabilityProfile
+metadata:
+  name: apple-m4-cpu-local
+  version: 0.1.0
+  description: null
+  labels: {}
+spec:
+  target:
+    hardware: apple-m4
+    device: cpu
+  hardware_cohort: apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79
+  environment:
+    schema: groundupscale.dev/environment-validity/v1alpha1
+    eligible: false
+    reason_codes:
+    - load-above-policy
+    - total-competing-cpu-above-policy
+    policy:
+      policy_id: local-apple-silicon-v2
+      required_system: Darwin
+      required_machine: arm64
+      require_ac_power: true
+      require_nominal_thermal_status: true
+      maximum_normalized_one_minute_load: 0.25
+      maximum_normalized_total_competing_cpu: 0.1
+      allowlist_only: true
+    observations:
+      platform:
+        system: Darwin
+        release: 24.6.0
+        machine: arm64
+        logical_cpu_count: 10
+      power:
+        source: ac
+        battery_percent: 100.0
+      thermal:
+        status: nominal
+        thermal_warning: false
+        performance_warning: false
+        speed_limits_percent: {}
+      load:
+        one_minute: 2.71826171875
+        five_minutes: 3.2177734375
+        fifteen_minutes: 3.00244140625
+        normalized_one_minute: 0.271826171875
+      competitors:
+        sample_interval_seconds: 0.2
+        sample_count: 3
+        excluded_process_scope: coordinator process and ancestors
+        total_cpu_percent_samples:
+        - 117.39999999999999
+        - 177.99999999999997
+        - 144.1
+        top:
+        - pid: 83264
+          name: mediaanalysisd
+          cpu_percent: 107.5
+        - pid: 71091
+          name: python3.11
+          cpu_percent: 60.6
+        - pid: 71092
+          name: python3.11
+          cpu_percent: 36.9
+        - pid: 83919
+          name: mediaanalysisd-access
+          cpu_percent: 8.8
+        - pid: 69420
+          name: Codex (Renderer)
+          cpu_percent: 4.0
+        - pid: 5986
+          name: Feishu
+          cpu_percent: 2.5
+        - pid: 69345
+          name: Codex (Service)
+          cpu_percent: 2.1
+        - pid: 50064
+          name: Storage
+          cpu_percent: 2.0
+        - pid: 5988
+          name: healthmonitor
+          cpu_percent: 1.7
+        - pid: 5992
+          name: Activity Monitor
+          cpu_percent: 1.7
+        maximum_single_process_cpu_percent: 107.5
+        maximum_total_cpu_percent: 177.99999999999997
+        normalized_maximum_total_cpu: 0.17799999999999996
+    checks:
+    - check_id: trusted-platform
+      passed: true
+      observed:
+        system: Darwin
+        machine: arm64
+      required:
+        system: Darwin
+        machine: arm64
+    - check_id: ac-power
+      passed: true
+      observed: ac
+      required: ac
+    - check_id: thermal-nominal
+      passed: true
+      observed: nominal
+      required: nominal
+    - check_id: settled-load
+      passed: false
+      observed: 0.271826171875
+      required:
+        maximum: 0.25
+        normalization: one-minute load / logical CPU count
+      reason_code: load-above-policy
+    - check_id: bounded-total-competing-cpu
+      passed: false
+      observed: 0.17799999999999996
+      required:
+        maximum: 0.1
+        normalization: maximum sampled total non-coordinator process CPU percent /
+          (100 * logical CPU count)
+      reason_code: total-competing-cpu-above-policy
+    interpretation: Preflight eligibility does not replace per-run benchmark noise
+      gates.
+    captured_at: '2026-08-07T03:58:15.293783+00:00'
+    collector:
+      name: groundupscale-local-environment
+      version: v1alpha1
+      privacy: allowlisted fields only; no command arguments, environment variables,
+        or unrestricted process paths
+  source:
+    path: goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-microbenchmark-observation-v2.json
+    sha256: 221c19f53f5df7442165943b99d097b1287b1fcd47903136ccb1a0251ed69e30
+    schema: groundupscale.dev/hardware-microbenchmark-observation/v1alpha1
+    suite:
+      name: apple-m4-cpu-resource-envelope
+      version: 0.1.0
+  resources:
+  - resource: compute.fp32
+    unit: FLOP/s
+    robust_achievable_rate: 1748450139577.8
+    optimistic_rate: 1874898740205.6428
+    selected_robust_probe: matrix-fp32-cube
+    selected_optimistic_probe: matrix-fp32-cube
+    aggregation: max(probe_shape_p80)
+    probe_envelopes:
+    - probe_id: matrix-fp32-cube
+      distinct_shape_count: 12
+      shape_p80_rate: 1748450139577.8
+      shape_p95_rate: 1874898740205.6428
+      shape_best_rates:
+      - shape:
+        - 127
+        - 127
+        - 127
+        rate: 822571594959.9551
+        threads: 10
+      - shape:
+        - 128
+        - 128
+        - 128
+        rate: 935784700337.4515
+        threads: 10
+      - shape:
+        - 129
+        - 129
+        - 129
+        rate: 676919844614.068
+        threads: 1
+      - shape:
+        - 255
+        - 255
+        - 255
+        rate: 1316466556958.1882
+        threads: 1
+      - shape:
+        - 256
+        - 256
+        - 256
+        rate: 1394935227300.1501
+        threads: 1
+      - shape:
+        - 257
+        - 257
+        - 257
+        rate: 1135246262827.43
+        threads: 4
+      - shape:
+        - 511
+        - 511
+        - 511
+        rate: 1680257986472.8596
+        threads: 4
+      - shape:
+        - 512
+        - 512
+        - 512
+        rate: 1748779685469.7048
+        threads: 1
+      - shape:
+        - 513
+        - 513
+        - 513
+        rate: 1556661050465.2986
+        threads: 10
+      - shape:
+        - 767
+        - 767
+        - 767
+        rate: 1847675240382.5125
+        threads: 10
+      - shape:
+        - 768
+        - 768
+        - 768
+        rate: 1908171906656.1357
+        threads: 1
+      - shape:
+        - 769
+        - 769
+        - 769
+        rate: 1747131956010.1812
+        threads: 1
+    - probe_id: scalar-fp32-fma-chain
+      distinct_shape_count: 11
+      shape_p80_rate: 13827347571.08163
+      shape_p95_rate: 14004754087.293997
+      shape_best_rates:
+      - shape:
+        - 63
+        rate: 5939613925.094869
+        threads: 1
+      - shape:
+        - 64
+        rate: 5855611150.822016
+        threads: 1
+      - shape:
+        - 65
+        rate: 6457942648.501633
+        threads: 1
+      - shape:
+        - 128
+        rate: 9481481481.481482
+        threads: 1
+      - shape:
+        - 129
+        rate: 9127694859.038143
+        threads: 1
+      - shape:
+        - 255
+        rate: 12374585997.306707
+        threads: 1
+      - shape:
+        - 256
+        rate: 11811114443.239752
+        threads: 1
+      - shape:
+        - 257
+        rate: 12126824405.823942
+        threads: 1
+      - shape:
+        - 511
+        rate: 13827347571.08163
+        threads: 1
+      - shape:
+        - 512
+        rate: 13903385725.608402
+        threads: 1
+      - shape:
+        - 513
+        rate: 14106122448.979591
+        threads: 1
+    - probe_id: vector-fp32-fma
+      distinct_shape_count: 12
+      shape_p80_rate: 27687664246.924095
+      shape_p95_rate: 28360978990.930244
+      shape_best_rates:
+      - shape:
+        - 65535
+        rate: 14588343164.33958
+        threads: 1
+      - shape:
+        - 65536
+        rate: 14405675424.26309
+        threads: 1
+      - shape:
+        - 65537
+        rate: 14329515333.652693
+        threads: 1
+      - shape:
+        - 262143
+        rate: 22119473325.203083
+        threads: 4
+      - shape:
+        - 262144
+        rate: 26012243850.128227
+        threads: 4
+      - shape:
+        - 262145
+        rate: 25548468459.571285
+        threads: 4
+      - shape:
+        - 1048575
+        rate: 28107096036.68909
+        threads: 4
+      - shape:
+        - 1048576
+        rate: 28106519346.123062
+        threads: 10
+      - shape:
+        - 1048577
+        rate: 28671280379.447212
+        threads: 10
+      - shape:
+        - 4194303
+        rate: 11895316380.281488
+        threads: 4
+      - shape:
+        - 4194304
+        rate: 11761594794.795918
+        threads: 10
+      - shape:
+        - 4194305
+        rate: 11638915025.013048
+        threads: 10
+  - resource: memory.shared
+    unit: B/s
+    robust_achievable_rate: 126832587409.13748
+    optimistic_rate: 133844279672.11787
+    selected_robust_probe: shared-memory-copy
+    selected_optimistic_probe: shared-memory-copy
+    aggregation: max(probe_shape_p80)
+    probe_envelopes:
+    - probe_id: shared-memory-copy
+      distinct_shape_count: 12
+      shape_p80_rate: 126832587409.13748
+      shape_p95_rate: 133844279672.11787
+      shape_best_rates:
+      - shape:
+        - 4194303
+        rate: 132572109963.80734
+        threads: 10
+      - shape:
+        - 4194304
+        rate: 134968616255.92438
+        threads: 10
+      - shape:
+        - 4194305
+        rate: 132924367921.73073
+        threads: 10
+      - shape:
+        - 8388607
+        rate: 102427768762.05055
+        threads: 4
+      - shape:
+        - 8388608
+        rate: 102356171111.26999
+        threads: 4
+      - shape:
+        - 8388609
+        rate: 103874497190.45796
+        threads: 4
+      - shape:
+        - 16777215
+        rate: 95467744413.52704
+        threads: 4
+      - shape:
+        - 16777216
+        rate: 100021762665.62286
+        threads: 4
+      - shape:
+        - 16777217
+        rate: 97772143065.01389
+        threads: 4
+      - shape:
+        - 33554431
+        rate: 96539979950.10002
+        threads: 4
+      - shape:
+        - 33554432
+        rate: 97107492731.0136
+        threads: 4
+      - shape:
+        - 33554433
+        rate: 96475658478.87978
+        threads: 4
+    - probe_id: shared-memory-triad
+      distinct_shape_count: 12
+      shape_p80_rate: 95777187159.31769
+      shape_p95_rate: 96202412794.34636
+      shape_best_rates:
+      - shape:
+        - 4194303
+        rate: 95954033925.85954
+        threads: 10
+      - shape:
+        - 4194304
+        rate: 95325090909.09091
+        threads: 10
+      - shape:
+        - 4194305
+        rate: 95792134308.2093
+        threads: 10
+      - shape:
+        - 8388607
+        rate: 93548472466.87073
+        threads: 10
+      - shape:
+        - 8388608
+        rate: 92583903772.36473
+        threads: 10
+      - shape:
+        - 8388609
+        rate: 93737702874.35344
+        threads: 10
+      - shape:
+        - 16777215
+        rate: 95372348051.03168
+        threads: 10
+      - shape:
+        - 16777216
+        rate: 94628516153.64034
+        threads: 10
+      - shape:
+        - 16777217
+        rate: 95717398563.75125
+        threads: 10
+      - shape:
+        - 33554431
+        rate: 94483477166.3698
+        threads: 10
+      - shape:
+        - 33554432
+        rate: 96505986966.94136
+        threads: 10
+      - shape:
+        - 33554433
+        rate: 92183821987.8477
+        threads: 10

@@ -1,0 +1,110 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: HardwareBenchmarkSuite
+metadata:
+  name: apple-m4-cpu-resource-envelope
+  version: 0.1.0
+  description: 多 Shape 探针，用于构造与具体算子实现解耦的 M4 CPU 资源能力包络。
+spec:
+  target:
+    hardware: apple-m4
+    device: cpu
+  warmup_iterations: 3
+  samples: 7
+  target_window_ms: 5.0
+  maximum_inner_iterations: 1000
+  probes:
+    - id: scalar-fp32-fma-chain
+      kind: scalar_fma
+      resource: compute.fp32
+      dtype: float32
+      shapes:
+        - [63]
+        - [64]
+        - [65]
+        - [127]
+        - [128]
+        - [129]
+        - [255]
+        - [256]
+        - [257]
+        - [511]
+        - [512]
+        - [513]
+      alignment_boundaries: [64, 128, 256, 512]
+      thread_counts: [1]
+    - id: vector-fp32-fma
+      kind: vector_fma
+      resource: compute.fp32
+      dtype: float32
+      shapes:
+        - [65535]
+        - [65536]
+        - [65537]
+        - [262143]
+        - [262144]
+        - [262145]
+        - [1048575]
+        - [1048576]
+        - [1048577]
+        - [4194303]
+        - [4194304]
+        - [4194305]
+      alignment_boundaries: [65536, 262144, 1048576, 4194304]
+      thread_counts: [1, 4, 10]
+    - id: matrix-fp32-cube
+      kind: matrix_multiply
+      resource: compute.fp32
+      dtype: float32
+      shapes:
+        - [127, 127, 127]
+        - [128, 128, 128]
+        - [129, 129, 129]
+        - [255, 255, 255]
+        - [256, 256, 256]
+        - [257, 257, 257]
+        - [511, 511, 511]
+        - [512, 512, 512]
+        - [513, 513, 513]
+        - [767, 767, 767]
+        - [768, 768, 768]
+        - [769, 769, 769]
+      alignment_boundaries: [128, 256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: shared-memory-copy
+      kind: memory_copy
+      resource: memory.shared
+      dtype: float32
+      shapes:
+        - [4194303]
+        - [4194304]
+        - [4194305]
+        - [8388607]
+        - [8388608]
+        - [8388609]
+        - [16777215]
+        - [16777216]
+        - [16777217]
+        - [33554431]
+        - [33554432]
+        - [33554433]
+      alignment_boundaries: [4194304, 8388608, 16777216, 33554432]
+      thread_counts: [1, 4, 10]
+    - id: shared-memory-triad
+      kind: memory_triad
+      resource: memory.shared
+      dtype: float32
+      shapes:
+        - [4194303]
+        - [4194304]
+        - [4194305]
+        - [8388607]
+        - [8388608]
+        - [8388609]
+        - [16777215]
+        - [16777216]
+        - [16777217]
+        - [33554431]
+        - [33554432]
+        - [33554433]
+      alignment_boundaries: [4194304, 8388608, 16777216, 33554432]
+      thread_counts: [1, 4, 10]

@@ -8,7 +8,14 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, PositiveFloat, PositiveInt
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PositiveFloat,
+    PositiveInt,
+    model_validator,
+)
 
 
 API_VERSION = "groundupscale.dev/v1alpha1"
@@ -229,6 +236,64 @@ class DeploymentIntentDocument(StrictModel):
     spec: DeploymentIntentBody
 
 
+class CapabilityEvidence(StrictModel):
+    source_kind: Literal["vendor_official", "isa_derived"]
+    title: str = Field(min_length=1)
+    url: str = Field(min_length=1, pattern=r"^https://")
+    accessed_on: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+
+class CpuCorePool(StrictModel):
+    kind: Literal["performance", "efficiency"]
+    count: PositiveInt
+
+
+class CpuVectorCapability(StrictModel):
+    isa: Literal["neon"]
+    register_bits: PositiveInt
+    fp32_fma_flops_per_instruction: PositiveInt
+    fp64_fma_flops_per_instruction: PositiveInt
+    evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
+
+
+class TheoreticalRate(StrictModel):
+    value: PositiveFloat | None = None
+    status: Literal["vendor_published", "unknown"]
+    reason: str | None = None
+    evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_value_status(self) -> TheoreticalRate:
+        if self.status == "unknown" and self.value is not None:
+            raise ValueError("unknown theoretical rate must not contain a value")
+        if self.status == "vendor_published" and self.value is None:
+            raise ValueError("vendor-published theoretical rate requires a value")
+        if self.status == "unknown" and not self.reason:
+            raise ValueError("unknown theoretical rate requires a reason")
+        return self
+
+
+class CpuTheoreticalCompute(StrictModel):
+    fp32_flops_per_second: TheoreticalRate
+    fp64_flops_per_second: TheoreticalRate
+    matrix_operations_per_second: TheoreticalRate
+
+
+class UnifiedMemoryCapability(StrictModel):
+    peak_bandwidth_bytes_per_second: PositiveFloat
+    scope: Literal["soc_shared", "device_dedicated"]
+    evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
+
+
+class CpuHardwareCapabilities(StrictModel):
+    architecture: Literal["arm64"]
+    core_pools: tuple[CpuCorePool, ...] = Field(min_length=1)
+    core_topology_evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
+    vector: CpuVectorCapability
+    theoretical_compute: CpuTheoreticalCompute
+    unified_memory: UnifiedMemoryCapability
+
+
 class HardwareDevice(StrictModel):
     id: str = Field(min_length=1)
     kind: Literal["cpu", "gpu"]
@@ -236,6 +301,20 @@ class HardwareDevice(StrictModel):
     model: str = Field(min_length=1)
     compute_units: PositiveInt
     memory_bytes: PositiveInt
+    capabilities: CpuHardwareCapabilities | None = None
+
+    @model_validator(mode="after")
+    def validate_capabilities(self) -> HardwareDevice:
+        if self.capabilities is None:
+            return self
+        if self.kind != "cpu":
+            raise ValueError("CpuHardwareCapabilities require kind=cpu")
+        declared_cores = sum(pool.count for pool in self.capabilities.core_pools)
+        if declared_cores != self.compute_units:
+            raise ValueError(
+                "CPU core-pool count must equal the device compute_units"
+            )
+        return self
 
 
 class HardwareSpecBody(StrictModel):
@@ -295,11 +374,126 @@ class BenchmarkCaseDocument(StrictModel):
     spec: BenchmarkCaseBody
 
 
+class HardwareBenchmarkTarget(StrictModel):
+    hardware: str = Field(min_length=1)
+    device: str = Field(min_length=1)
+
+
+class HardwareProbeSpec(StrictModel):
+    id: str = Field(min_length=1)
+    kind: Literal[
+        "scalar_fma",
+        "vector_fma",
+        "matrix_multiply",
+        "memory_copy",
+        "memory_triad",
+    ]
+    resource: str = Field(min_length=1)
+    dtype: Literal["float32"]
+    shapes: tuple[tuple[PositiveInt, ...], ...] = Field(min_length=10)
+    alignment_boundaries: tuple[PositiveInt, ...] = Field(min_length=1)
+    thread_counts: tuple[PositiveInt, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_shapes(self) -> HardwareProbeSpec:
+        expected_rank = 3 if self.kind == "matrix_multiply" else 1
+        invalid = [shape for shape in self.shapes if len(shape) != expected_rank]
+        if invalid:
+            raise ValueError(
+                f"{self.kind} requires rank-{expected_rank} benchmark Shapes"
+            )
+        if len(set(self.shapes)) != len(self.shapes):
+            raise ValueError("hardware probe Shapes must be distinct")
+        shapes = set(self.shapes)
+        for boundary in self.alignment_boundaries:
+            required = {
+                ((value,) * expected_rank)
+                for value in (boundary - 1, boundary, boundary + 1)
+            }
+            if not required <= shapes:
+                raise ValueError(
+                    "hardware probe must include alignment boundary triplet "
+                    f"{boundary - 1}/{boundary}/{boundary + 1}"
+                )
+        return self
+
+
+class HardwareBenchmarkSuiteBody(StrictModel):
+    target: HardwareBenchmarkTarget
+    warmup_iterations: int = Field(ge=0)
+    samples: int = Field(ge=4)
+    target_window_ms: PositiveFloat
+    maximum_inner_iterations: PositiveInt
+    probes: tuple[HardwareProbeSpec, ...] = Field(min_length=1)
+
+
+class HardwareBenchmarkSuiteDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["HardwareBenchmarkSuite"]
+    metadata: Metadata
+    spec: HardwareBenchmarkSuiteBody
+
+
+class HardwareCapabilitySourceSuite(StrictModel):
+    name: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+
+
+class HardwareCapabilitySource(StrictModel):
+    path: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    observation_schema: Literal[
+        "groundupscale.dev/hardware-microbenchmark-observation/v1alpha1"
+    ] = Field(alias="schema", serialization_alias="schema")
+    suite: HardwareCapabilitySourceSuite
+
+
+class ShapeBestRate(StrictModel):
+    shape: tuple[PositiveInt, ...] = Field(min_length=1)
+    rate: PositiveFloat
+    threads: PositiveInt
+
+
+class ProbeCapabilityEnvelope(StrictModel):
+    probe_id: str = Field(min_length=1)
+    distinct_shape_count: int = Field(ge=10)
+    shape_p80_rate: PositiveFloat
+    shape_p95_rate: PositiveFloat
+    shape_best_rates: tuple[ShapeBestRate, ...] = Field(min_length=10)
+
+
+class HardwareResourceEnvelope(StrictModel):
+    resource: str = Field(min_length=1)
+    unit: Literal["FLOP/s", "B/s"]
+    robust_achievable_rate: PositiveFloat
+    optimistic_rate: PositiveFloat
+    selected_robust_probe: str = Field(min_length=1)
+    selected_optimistic_probe: str = Field(min_length=1)
+    aggregation: Literal["max(probe_shape_p80)"]
+    probe_envelopes: tuple[ProbeCapabilityEnvelope, ...] = Field(min_length=1)
+
+
+class HardwareCapabilityProfileBody(StrictModel):
+    target: HardwareBenchmarkTarget
+    hardware_cohort: str = Field(min_length=1)
+    environment: dict[str, Any]
+    source: HardwareCapabilitySource
+    resources: tuple[HardwareResourceEnvelope, ...] = Field(min_length=1)
+
+
+class HardwareCapabilityProfileDocument(StrictModel):
+    apiVersion: Literal[API_VERSION]
+    kind: Literal["HardwareCapabilityProfile"]
+    metadata: Metadata
+    spec: HardwareCapabilityProfileBody
+
+
 class AnalysisPlanBody(StrictModel):
     workload: SpecReference
     analysis_case: SpecReference
     deployment_intent: SpecReference
     hardware: tuple[SpecReference, ...] = Field(min_length=1)
+    hardware_capability_profiles: tuple[SpecReference, ...] = ()
     fabric_graph: SpecReference
     benchmark_cases: tuple[SpecReference, ...] = Field(min_length=1)
 
@@ -319,6 +513,8 @@ SpecDocument: TypeAlias = (
     | HardwareSpecDocument
     | FabricGraphDocument
     | BenchmarkCaseDocument
+    | HardwareBenchmarkSuiteDocument
+    | HardwareCapabilityProfileDocument
     | AnalysisPlanDocument
 )
 
@@ -331,6 +527,8 @@ DOCUMENT_TYPES: dict[str, type[StrictModel]] = {
     "HardwareSpec": HardwareSpecDocument,
     "FabricGraph": FabricGraphDocument,
     "BenchmarkCase": BenchmarkCaseDocument,
+    "HardwareBenchmarkSuite": HardwareBenchmarkSuiteDocument,
+    "HardwareCapabilityProfile": HardwareCapabilityProfileDocument,
     "AnalysisPlan": AnalysisPlanDocument,
 }
 
