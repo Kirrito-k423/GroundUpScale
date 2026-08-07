@@ -181,6 +181,14 @@ def _rewrite_bundle(
     anchor["execution_domain"] = document["execution_domain"]
     anchor["baseline_lane_id"] = f"baseline-{adapter_id}-q-proj-holdout-001"
     anchor["evidence_ref"] = f"artifact://frontier/{anchor_id}.json"
+    for session in document["candidate"]["exact_shape_best_of_correct"][
+        "search_sessions"
+    ]:
+        session["lane_id"] = anchor["baseline_lane_id"]
+        session["cohort_id"] = cohort_id
+    for session in anchor["holdout"]["sessions"]:
+        session["lane_id"] = anchor["baseline_lane_id"]
+        session["cohort_id"] = cohort_id
     document["resource_physical_floor"]["resource_terms"][0][
         "cohort_id"
     ] = cohort_id

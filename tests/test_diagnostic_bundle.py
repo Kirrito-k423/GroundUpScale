@@ -31,6 +31,8 @@ def _write_frozen_m4_bundle(
     observation_samples_ns: list[int] | None = None,
     resource_evidence_complete: bool = True,
     resource_units_match: bool = True,
+    single_sample_anchor: bool = False,
+    legacy_anchor_evidence: bool = False,
 ) -> Path:
     run = tmp_path / "m4-exact-shape"
     inputs = {
@@ -88,6 +90,63 @@ def _write_frozen_m4_bundle(
     candidate_id = (
         "" if invalid_qualification == "blank-identity" else "torch.matmul.cpu"
     )
+    search_session_ids = (
+        ["search-session-001"]
+        if single_sample_anchor
+        else [
+            (
+                "holdout-session-001"
+                if invalid_qualification == "holdout-overlap"
+                else "search-session-001"
+            ),
+            "search-session-002",
+            "search-session-003",
+        ]
+    )
+    search_sessions = [
+        {
+            "session_id": session_id,
+            "process_id": 10_000 + index,
+            "lane_id": "baseline-m4-q-proj-holdout-001",
+            "cohort_id": inputs["cohort_id"],
+            "raw_samples_ns": [
+                1_200_000 + index * 1_000,
+                1_210_000 + index * 1_000,
+                1_220_000 + index * 1_000,
+            ],
+            "excluded_samples": [],
+            "evidence_ref": f"artifact://frontier/{session_id}.json",
+        }
+        for index, session_id in enumerate(search_session_ids, start=1)
+    ]
+    holdout_session_ids = (
+        []
+        if single_sample_anchor
+        else ["holdout-session-001"]
+        if invalid_qualification == "repeatability"
+        else [
+            "holdout-session-001",
+            "holdout-session-002",
+            "holdout-session-003",
+        ]
+    )
+    holdout_session_medians = [1_180_000, 1_200_000, 1_220_000]
+    holdout_sessions = [
+        {
+            "session_id": session_id,
+            "process_id": 20_000 + index,
+            "lane_id": "baseline-m4-q-proj-holdout-001",
+            "cohort_id": inputs["cohort_id"],
+            "raw_samples_ns": [
+                holdout_session_medians[index - 1] - 10_000,
+                holdout_session_medians[index - 1],
+                holdout_session_medians[index - 1] + 10_000,
+            ],
+            "excluded_samples": [],
+            "evidence_ref": f"artifact://frontier/{session_id}.json",
+        }
+        for index, session_id in enumerate(holdout_session_ids, start=1)
+    ]
     evidence = {
         "candidate": {
             "candidate_id": candidate_id,
@@ -98,11 +157,8 @@ def _write_frozen_m4_bundle(
                 "passed": invalid_qualification != "best-of-correct",
                 "winner_candidate_id": candidate_id,
                 "eligible_candidate_ids": [candidate_id],
-                "search_session_ids": (
-                    ["holdout-session-001"]
-                    if invalid_qualification == "holdout-overlap"
-                    else ["search-session-001"]
-                ),
+                "search_session_ids": search_session_ids,
+                "search_sessions": search_sessions,
                 "evidence_ref": "artifact://frontier/candidate-search.json",
             },
         },
@@ -212,8 +268,12 @@ def _write_frozen_m4_bundle(
         "frontier_anchors": [
             {
                 "anchor_id": "anchor-m4-q-proj-001",
-                "observation_validity": "QUALIFIED",
-                "frontier_role": "ACTIVE",
+                "observation_validity": (
+                    "COLLECTED" if single_sample_anchor else "QUALIFIED"
+                ),
+                "frontier_role": (
+                    "PROVISIONAL" if single_sample_anchor else "ACTIVE"
+                ),
                 "candidate_id": candidate_id,
                 "cohort_id": inputs["cohort_id"],
                 "execution_domain": inputs["execution_domain"],
@@ -238,18 +298,77 @@ def _write_frozen_m4_bundle(
                     "iterations": 5,
                     "converged": invalid_qualification != "warmup",
                 },
-                "raw_timing_ns": [1_180_000, 1_200_000, 1_220_000],
+                "raw_timing_ns": (
+                    [1_180_000]
+                    if single_sample_anchor
+                    else holdout_session_medians
+                ),
                 "holdout": {
-                    "passed": True,
+                    "passed": not single_sample_anchor,
                     "latency_ns": 1_200_000,
-                    "session_ids": (
-                        ["holdout-session-001"]
-                        if invalid_qualification == "repeatability"
-                        else ["holdout-session-001", "holdout-session-002"]
-                    ),
+                    "session_ids": holdout_session_ids,
+                    "sessions": holdout_sessions,
                     "evidence_ref": "artifact://frontier/anchor-holdout.json",
                 },
                 "evidence_ref": "artifact://frontier/anchor-m4-q-proj-001.json",
+                "state_transitions": (
+                    [
+                        {
+                            "sequence": 1,
+                            "axis": "frontier_role",
+                            "from": "NONE",
+                            "to": "PROVISIONAL",
+                            "reason_code": (
+                                "exact-shape-best-of-correct-search-winner"
+                            ),
+                            "evidence_refs": [
+                                "artifact://frontier/candidate-search.json"
+                            ],
+                        }
+                    ]
+                    if single_sample_anchor
+                    else [
+                        {
+                            "sequence": 1,
+                            "axis": "frontier_role",
+                            "from": "NONE",
+                            "to": "PROVISIONAL",
+                            "reason_code": (
+                                "exact-shape-best-of-correct-search-winner"
+                            ),
+                            "evidence_refs": [
+                                "artifact://frontier/candidate-search.json"
+                            ],
+                        },
+                        {
+                            "sequence": 2,
+                            "axis": "observation_validity",
+                            "from": "COLLECTED",
+                            "to": "QUALIFIED",
+                            "reason_code": (
+                                "anchor-qualification-gates-satisfied"
+                            ),
+                            "evidence_refs": [
+                                "artifact://observation/correctness.json",
+                                "artifact://resolved/environment.json",
+                                (
+                                    "artifact://frontier/"
+                                    "anchor-m4-q-proj-001.json"
+                                ),
+                            ],
+                        },
+                        {
+                            "sequence": 3,
+                            "axis": "frontier_role",
+                            "from": "PROVISIONAL",
+                            "to": "ACTIVE",
+                            "reason_code": "independent-holdout-confirmed",
+                            "evidence_refs": [
+                                "artifact://frontier/anchor-holdout.json"
+                            ],
+                        },
+                    ]
+                ),
             }
         ],
         "resource_physical_floor": {
@@ -294,9 +413,9 @@ def _write_frozen_m4_bundle(
         "policies": {
             "qualification": {
                 "policy_id": "anchor-qualification",
-                "version": "v1",
+                "version": "v2",
                 "scope": "MatMul/float32/Apple-M4-CPU",
-                "minimum_independent_sessions": 2,
+                "minimum_independent_sessions": 3,
                 "change_reason": "first production exact-Shape slice",
                 "revalidation": "on cohort or implementation change",
             },
@@ -419,6 +538,54 @@ def _write_frozen_m4_bundle(
         evidence["policies"]["qualification"][
             "minimum_independent_sessions"
         ] = 1
+    elif invalid_qualification == "holdout-raw-samples":
+        evidence["frontier_anchors"][0]["holdout"]["sessions"][0][
+            "raw_samples_ns"
+        ] = []
+    elif invalid_qualification == "holdout-exclusion":
+        evidence["frontier_anchors"][0]["holdout"]["sessions"][0][
+            "excluded_samples"
+        ] = [{"index": 0, "reason": "unknown"}]
+    elif invalid_qualification == "holdout-process-overlap":
+        evidence["frontier_anchors"][0]["holdout"]["sessions"][0][
+            "process_id"
+        ] = evidence["candidate"]["exact_shape_best_of_correct"][
+            "search_sessions"
+        ][0]["process_id"]
+    elif invalid_qualification == "search-process-duplicate":
+        evidence["candidate"]["exact_shape_best_of_correct"][
+            "search_sessions"
+        ][1]["process_id"] = evidence["candidate"][
+            "exact_shape_best_of_correct"
+        ]["search_sessions"][0]["process_id"]
+    elif invalid_qualification == "invalid-state-history":
+        evidence["frontier_anchors"][0]["state_transitions"][1][
+            "from"
+        ] = "QUARANTINED"
+    elif invalid_qualification == "authored-active-single-sample":
+        search = evidence["candidate"]["exact_shape_best_of_correct"]
+        search["search_session_ids"] = search["search_session_ids"][:1]
+        search["search_sessions"] = search["search_sessions"][:1]
+        anchor = evidence["frontier_anchors"][0]
+        anchor["raw_timing_ns"] = [1_180_000]
+        anchor["holdout"]["session_ids"] = anchor["holdout"][
+            "session_ids"
+        ][:1]
+        anchor["holdout"]["sessions"] = anchor["holdout"]["sessions"][:1]
+        anchor["holdout"]["latency_ns"] = 1_180_000
+    if legacy_anchor_evidence:
+        qualification = evidence["policies"]["qualification"]
+        qualification["version"] = "v1"
+        qualification["minimum_independent_sessions"] = 2
+        search = evidence["candidate"]["exact_shape_best_of_correct"]
+        search["search_session_ids"] = search["search_session_ids"][:1]
+        search.pop("search_sessions")
+        anchor = evidence["frontier_anchors"][0]
+        anchor["holdout"]["session_ids"] = anchor["holdout"][
+            "session_ids"
+        ][:2]
+        anchor["holdout"].pop("sessions")
+        anchor.pop("state_transitions")
     missing_evidence_key = {
         "resource_physical_floor": "resource_physical_floor",
         "operator_achievable_frontier": "frontier_anchors",
@@ -536,7 +703,7 @@ def test_m4_exact_shape_bundle_projects_four_independent_axes_and_evidence(
     assert result["evidence"]["policies"]["qualification"]["policy_id"] == (
         "anchor-qualification"
     )
-    assert result["evidence"]["policies"]["qualification"]["version"] == "v1"
+    assert result["evidence"]["policies"]["qualification"]["version"] == "v2"
     assert len(result["digests"]["input_sha256"]) == 64
     assert len(result["digests"]["evidence_sha256"]) == 64
     assert len(result["derivation"]["derivation_id"]) == 64
@@ -616,7 +783,7 @@ def test_cli_machine_and_human_views_project_the_same_derivation(
     assert direct["evidence"]["cohort_id"] in human.stdout
     assert '"dtype":"float32"' in human.stdout
     assert "baseline-m4-q-proj-001" in human.stdout
-    assert "anchor-qualification/v1" in human.stdout
+    assert "anchor-qualification/v2" in human.stdout
     assert direct["digests"]["input_sha256"] in human.stdout
     assert direct["digests"]["evidence_sha256"] in human.stdout
 
@@ -683,6 +850,66 @@ def test_slower_observation_does_not_lower_the_active_operator_frontier(
     ]
 
 
+def test_legacy_v1_anchor_remains_read_only_replayable(tmp_path: Path) -> None:
+    result = diagnose_run_bundle(
+        _write_frozen_m4_bundle(tmp_path, legacy_anchor_evidence=True)
+    )
+
+    assert result["axes"]["operator_achievable_frontier"]["status"] == "known"
+    lifecycle = result["frontier_anchor_lifecycles"][0]
+    assert lifecycle["authoritative_surface_knot"] is True
+    assert lifecycle["history_status"] == "legacy-replay"
+    assert lifecycle["transitions"] == []
+
+
+def test_fastest_single_sample_stays_provisional_until_full_qualification(
+    tmp_path: Path,
+) -> None:
+    provisional = diagnose_run_bundle(
+        _write_frozen_m4_bundle(
+            tmp_path / "provisional", single_sample_anchor=True
+        )
+    )
+    qualified = diagnose_run_bundle(
+        _write_frozen_m4_bundle(tmp_path / "qualified")
+    )
+
+    provisional_lifecycle = provisional["frontier_anchor_lifecycles"][0]
+    assert provisional_lifecycle["state"] == {
+        "observation_validity": "COLLECTED",
+        "frontier_role": "PROVISIONAL",
+    }
+    assert provisional_lifecycle["authoritative_surface_knot"] is False
+    assert provisional_lifecycle["transitions"] == [
+        {
+            "sequence": 1,
+            "axis": "frontier_role",
+            "from": "NONE",
+            "to": "PROVISIONAL",
+            "reason_code": "exact-shape-best-of-correct-search-winner",
+            "evidence_refs": ["artifact://frontier/candidate-search.json"],
+        }
+    ]
+    assert provisional["axes"]["operator_achievable_frontier"]["status"] == (
+        "unknown"
+    )
+
+    qualified_lifecycle = qualified["frontier_anchor_lifecycles"][0]
+    assert qualified_lifecycle["state"] == {
+        "observation_validity": "QUALIFIED",
+        "frontier_role": "ACTIVE",
+    }
+    assert qualified_lifecycle["authoritative_surface_knot"] is True
+    assert [
+        transition["reason_code"]
+        for transition in qualified_lifecycle["transitions"]
+    ] == [
+        "exact-shape-best-of-correct-search-winner",
+        "anchor-qualification-gates-satisfied",
+        "independent-holdout-confirmed",
+    ]
+
+
 @pytest.mark.parametrize(
     "invalid_qualification",
     [
@@ -695,6 +922,12 @@ def test_slower_observation_does_not_lower_the_active_operator_frontier(
         "minimum-session-policy",
         "blank-identity",
         "holdout-overlap",
+        "holdout-raw-samples",
+        "holdout-exclusion",
+        "holdout-process-overlap",
+        "search-process-duplicate",
+        "invalid-state-history",
+        "authored-active-single-sample",
     ],
 )
 def test_incomplete_anchor_qualification_cannot_produce_a_frontier(
@@ -716,6 +949,26 @@ def test_incomplete_anchor_qualification_cannot_produce_a_frontier(
         "reason_code": "operator-frontier-unknown",
         "evidence_refs": [],
     }
+
+
+def test_invalid_authored_anchor_history_is_preserved_but_never_authoritative(
+    tmp_path: Path,
+) -> None:
+    result = diagnose_run_bundle(
+        _write_frozen_m4_bundle(
+            tmp_path, invalid_qualification="invalid-state-history"
+        )
+    )
+
+    lifecycle = result["frontier_anchor_lifecycles"][0]
+    assert lifecycle["state"] == {
+        "observation_validity": "QUALIFIED",
+        "frontier_role": "ACTIVE",
+    }
+    assert lifecycle["history_status"] == "invalid"
+    assert lifecycle["history_reason_code"] == "invalid-anchor-state-history"
+    assert lifecycle["authoritative_surface_knot"] is False
+    assert lifecycle["transitions"][1]["from"] == "QUARANTINED"
 
 
 def test_physical_floor_without_demand_and_validated_rate_is_unknown(

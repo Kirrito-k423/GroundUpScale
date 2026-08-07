@@ -657,6 +657,65 @@ def _resource_axis(document: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _anchor_state_history_valid(anchor: object) -> bool:
+    if not isinstance(anchor, dict):
+        return False
+    transitions = anchor.get("state_transitions")
+    if not isinstance(transitions, list) or not transitions:
+        return False
+    states = {
+        "observation_validity": "COLLECTED",
+        "frontier_role": "NONE",
+    }
+    allowed = {
+        "observation_validity": {
+            ("COLLECTED", "QUARANTINED"),
+            ("COLLECTED", "QUALIFIED"),
+            ("QUARANTINED", "QUALIFIED"),
+            ("QUARANTINED", "REJECTED"),
+            ("QUALIFIED", "STALE"),
+            ("QUALIFIED", "REVOKED"),
+            ("STALE", "QUALIFIED"),
+            ("STALE", "EXPIRED"),
+            ("STALE", "REVOKED"),
+        },
+        "frontier_role": {
+            ("NONE", "PROVISIONAL"),
+            ("PROVISIONAL", "NONE"),
+            ("PROVISIONAL", "ACTIVE"),
+            ("ACTIVE", "SUPERSEDED"),
+            ("ACTIVE", "STALE_ROLE"),
+            ("ACTIVE", "REVOKED_ROLE"),
+            ("STALE_ROLE", "ACTIVE"),
+            ("STALE_ROLE", "EXPIRED_ROLE"),
+            ("STALE_ROLE", "REVOKED_ROLE"),
+        },
+    }
+    for sequence, transition in enumerate(transitions, start=1):
+        if not isinstance(transition, dict):
+            return False
+        axis = transition.get("axis")
+        source = transition.get("from")
+        target = transition.get("to")
+        evidence_refs = transition.get("evidence_refs")
+        if (
+            transition.get("sequence") != sequence
+            or axis not in states
+            or source != states[axis]
+            or (source, target) not in allowed[axis]
+            or not _nonempty_string(transition.get("reason_code"))
+            or not isinstance(evidence_refs, list)
+            or not evidence_refs
+            or not all(_artifact_uri(ref) for ref in evidence_refs)
+        ):
+            return False
+        states[axis] = target
+    return states == {
+        "observation_validity": anchor.get("observation_validity"),
+        "frontier_role": anchor.get("frontier_role"),
+    }
+
+
 def _eligible_anchor(
     document: dict[str, Any], anchor: dict[str, Any]
 ) -> bool:
@@ -673,9 +732,21 @@ def _eligible_anchor(
     qualification = _versioned_policy(document, "qualification")
     if qualification is None:
         return False
+    qualification_version = qualification.get("version")
     minimum_sessions = qualification.get("minimum_independent_sessions")
-    if not isinstance(minimum_sessions, int) or minimum_sessions < 2:
+    if (
+        not isinstance(minimum_sessions, int)
+        or isinstance(minimum_sessions, bool)
+        or qualification_version not in {"v1", "v2"}
+        or minimum_sessions
+        < (
+            _FRONTIER_MINIMUM_INDEPENDENT_SESSIONS
+            if qualification_version == "v2"
+            else 2
+        )
+    ):
         return False
+    strict_qualification = qualification_version == "v2"
     candidate_id = candidate.get("candidate_id")
     if not all(
         _nonempty_string(value)
@@ -718,10 +789,100 @@ def _eligible_anchor(
         if isinstance(best_of_correct, dict)
         else None
     )
+    search_timing = (
+        _normalize_timing_sessions(
+            best_of_correct.get("search_sessions")
+            if isinstance(best_of_correct, dict)
+            else None,
+            expected_lane_id=anchor.get("baseline_lane_id"),
+            expected_cohort_id=document.get("cohort_id"),
+            minimum_sessions=minimum_sessions,
+            require_authored_latency=False,
+        )
+        if strict_qualification
+        else None
+    )
+    holdout_timing = (
+        _normalize_timing_sessions(
+            holdout.get("sessions") if isinstance(holdout, dict) else None,
+            expected_lane_id=anchor.get("baseline_lane_id"),
+            expected_cohort_id=document.get("cohort_id"),
+            minimum_sessions=minimum_sessions,
+            require_authored_latency=False,
+        )
+        if strict_qualification
+        else None
+    )
+    independent_search_holdout = (
+        isinstance(search_timing, dict)
+        and isinstance(holdout_timing, dict)
+        and set(search_timing["session_ids"]).isdisjoint(
+            holdout_timing["session_ids"]
+        )
+        and set(search_timing["session_process_ids"].values()).isdisjoint(
+            holdout_timing["session_process_ids"].values()
+        )
+    )
+    legacy_qualification_evidence = (
+        not strict_qualification
+        and isinstance(search_session_ids, list)
+        and bool(search_session_ids)
+        and all(
+            _nonempty_string(session_id)
+            for session_id in search_session_ids
+        )
+        and isinstance(session_ids, list)
+        and all(_nonempty_string(session_id) for session_id in session_ids)
+        and len(set(session_ids)) >= minimum_sessions
+        and set(search_session_ids).isdisjoint(session_ids)
+    )
+    strict_qualification_evidence = (
+        strict_qualification
+        and isinstance(raw_timing, list)
+        and len(raw_timing) >= minimum_sessions
+        and all(
+            _finite_number(sample) and sample >= 0
+            for sample in raw_timing
+        )
+        and isinstance(search_session_ids, list)
+        and all(
+            _nonempty_string(session_id)
+            for session_id in search_session_ids
+        )
+        and isinstance(search_timing, dict)
+        and set(search_session_ids) == set(search_timing["session_ids"])
+        and len(search_session_ids) == len(set(search_session_ids))
+        and isinstance(session_ids, list)
+        and all(_nonempty_string(session_id) for session_id in session_ids)
+        and isinstance(holdout_timing, dict)
+        and set(session_ids) == set(holdout_timing["session_ids"])
+        and len(set(session_ids)) >= minimum_sessions
+        and independent_search_holdout
+        and isinstance(holdout, dict)
+        and isinstance(holdout.get("latency_ns"), (int, float))
+        and not isinstance(holdout["latency_ns"], bool)
+        and holdout["latency_ns"] >= 0
+        and isclose(
+            float(holdout["latency_ns"]),
+            float(holdout_timing["aggregate_latency_ns"]),
+            rel_tol=1e-12,
+            abs_tol=1e-9,
+        )
+        and sorted(float(sample) for sample in raw_timing)
+        == sorted(holdout_timing["session_latencies_ns"].values())
+    )
+    if strict_qualification:
+        state_history_compatible = _anchor_state_history_valid(anchor)
+    else:
+        state_history_compatible = (
+            anchor.get("state_transitions") is None
+            or _anchor_state_history_valid(anchor)
+        )
     cohort_state = _cohort_state(document)
     return (
         anchor.get("observation_validity") == "QUALIFIED"
         and anchor.get("frontier_role") == "ACTIVE"
+        and state_history_compatible
         and anchor.get("candidate_id") == candidate_id
         and anchor.get("cohort_id") == document["cohort_id"]
         and anchor.get("execution_domain") == document["execution_domain"]
@@ -757,9 +918,14 @@ def _eligible_anchor(
         and isinstance(holdout.get("latency_ns"), (int, float))
         and holdout["latency_ns"] >= 0
         and isinstance(session_ids, list)
-        and all(isinstance(session_id, str) and session_id for session_id in session_ids)
-        and len(set(session_ids)) >= minimum_sessions
-        and set(search_session_ids).isdisjoint(session_ids)
+        and all(
+            isinstance(session_id, str) and session_id
+            for session_id in session_ids
+        )
+        and (
+            legacy_qualification_evidence
+            or strict_qualification_evidence
+        )
         and _nonempty_string(holdout_evidence_ref)
         and search_evidence_ref != holdout_evidence_ref
         and _nonempty_string(anchor.get("evidence_ref"))
@@ -790,6 +956,58 @@ def _operator_axis(document: dict[str, Any]) -> dict[str, Any]:
         "candidate_id": selected["candidate_id"],
         "evidence_refs": [selected["evidence_ref"]],
     }
+
+
+def _frontier_anchor_lifecycles(
+    document: dict[str, Any],
+) -> list[dict[str, Any]]:
+    recorded_anchors = document.get("frontier_anchors")
+    if not isinstance(recorded_anchors, list):
+        return []
+    results: list[dict[str, Any]] = []
+    qualification = _versioned_policy(document, "qualification")
+    legacy_policy = (
+        isinstance(qualification, dict)
+        and qualification.get("version") == "v1"
+    )
+    for anchor in recorded_anchors:
+        if not isinstance(anchor, dict) or not _nonempty_string(
+            anchor.get("anchor_id")
+        ):
+            continue
+        history_valid = _anchor_state_history_valid(anchor)
+        legacy_replay = legacy_policy and anchor.get("state_transitions") is None
+        qualified_active = _eligible_anchor(document, anchor)
+        if history_valid:
+            history_status = "replayable"
+            history_reason = None
+        elif legacy_replay:
+            history_status = "legacy-replay"
+            history_reason = "qualification-policy-v1"
+        else:
+            history_status = "invalid"
+            history_reason = "invalid-anchor-state-history"
+        results.append(
+            {
+                "anchor_id": anchor["anchor_id"],
+                "candidate_id": anchor.get("candidate_id"),
+                "cohort_id": anchor.get("cohort_id"),
+                "execution_domain": anchor.get("execution_domain"),
+                "state": {
+                    "observation_validity": anchor.get(
+                        "observation_validity"
+                    ),
+                    "frontier_role": anchor.get("frontier_role"),
+                },
+                "authoritative_surface_knot": qualified_active,
+                "history_status": history_status,
+                "history_reason_code": history_reason,
+                "transitions": list(anchor.get("state_transitions", []))
+                if isinstance(anchor.get("state_transitions"), list)
+                else [],
+            }
+        )
+    return results
 
 
 def _schedule_axis(
@@ -1900,6 +2118,28 @@ def _direct_diagnostic_artifact_matches(
     )
 
 
+def _c3_enumerated_pool_artifacts_valid(
+    frontier_evidence: object,
+    verified_artifacts: dict[str, object],
+) -> bool:
+    if not isinstance(frontier_evidence, dict):
+        return False
+    if frontier_evidence.get("candidate_coverage") != "C3_ENUMERATED_POOL":
+        return True
+    if (
+        frontier_evidence.get("enumerated_pool_manifest") is None
+        and frontier_evidence.get("enumerated_pool_coverage_proof") is None
+    ):
+        return True
+    return _direct_diagnostic_artifact_matches(
+        verified_artifacts,
+        frontier_evidence.get("enumerated_pool_manifest"),
+    ) and _direct_diagnostic_artifact_matches(
+        verified_artifacts,
+        frontier_evidence.get("enumerated_pool_coverage_proof"),
+    )
+
+
 def _direct_defect_evidence(
     value: object,
     *,
@@ -2505,6 +2745,13 @@ def _shape_disambiguation_probes(
                     stable_path=stable_path,
                     contract=contract,
                     verified_artifacts=verified_artifacts,
+                )
+            )
+            or (
+                isinstance(frontier_shift_evidence, dict)
+                and not _c3_enumerated_pool_artifacts_valid(
+                    frontier_shift_evidence,
+                    verified_artifacts,
                 )
             )
             or not _probe_counterexamples_valid(counterexamples)
@@ -3827,6 +4074,112 @@ def _with_direct_defect_gate_context(
     return result
 
 
+def _c3_enumerated_pool_coverage_valid(
+    frontier_evidence: dict[str, Any],
+    locked_candidates: list[dict[str, Any]],
+) -> bool:
+    manifest = frontier_evidence.get("enumerated_pool_manifest")
+    proof = frontier_evidence.get("enumerated_pool_coverage_proof")
+    if not isinstance(manifest, dict) or not isinstance(proof, dict):
+        return False
+    candidate_ids = [
+        candidate["candidate_id"] for candidate in locked_candidates
+    ]
+    implementation_refs = [
+        candidate["implementation_family"]["implementation_ref"]
+        for candidate in locked_candidates
+    ]
+    implementation_digests = [
+        candidate["implementation_family"]["implementation_sha256"]
+        for candidate in locked_candidates
+    ]
+    candidate_implementations = sorted(
+        [
+            {
+                "candidate_id": candidate["candidate_id"],
+                "implementation_ref": candidate["implementation_family"][
+                    "implementation_ref"
+                ],
+                "implementation_digest": candidate[
+                    "implementation_family"
+                ]["implementation_sha256"],
+            }
+            for candidate in locked_candidates
+        ],
+        key=lambda item: item["candidate_id"],
+    )
+    manifest_ref = manifest.get("evidence_ref")
+    proof_ref = proof.get("evidence_ref")
+    versioned_fields = (
+        "version",
+        "scope",
+        "change_reason",
+        "revalidation",
+    )
+    return (
+        bool(locked_candidates)
+        and manifest.get("schema")
+        == "groundupscale.dev/enumerated-candidate-pool/v1alpha1"
+        and proof.get("schema")
+        == (
+            "groundupscale.dev/"
+            "enumerated-candidate-pool-coverage/v1alpha1"
+        )
+        and _resolved_identity_string(manifest.get("pool_id"))
+        and _resolved_identity_string(proof.get("proof_id"))
+        and all(
+            _resolved_identity_string(manifest.get(field))
+            and _resolved_identity_string(proof.get(field))
+            for field in versioned_fields
+        )
+        and _exact_version_text(manifest.get("version"))
+        and _exact_version_text(proof.get("version"))
+        and proof.get("pool_id") == manifest.get("pool_id")
+        and proof.get("pool_version") == manifest.get("version")
+        and proof.get("coverage_status") == "complete"
+        and isinstance(manifest.get("candidate_ids"), list)
+        and all(
+            _resolved_identity_string(candidate_id)
+            for candidate_id in manifest["candidate_ids"]
+        )
+        and len(manifest["candidate_ids"])
+        == len(set(manifest["candidate_ids"]))
+        and set(manifest["candidate_ids"]) == set(candidate_ids)
+        and isinstance(manifest.get("candidate_implementations"), list)
+        and manifest["candidate_implementations"]
+        == candidate_implementations
+        and isinstance(proof.get("enumerated_candidate_ids"), list)
+        and all(
+            _resolved_identity_string(candidate_id)
+            for candidate_id in proof["enumerated_candidate_ids"]
+        )
+        and proof["enumerated_candidate_ids"] == manifest["candidate_ids"]
+        and isinstance(manifest.get("implementation_refs"), list)
+        and all(
+            _artifact_uri(reference)
+            for reference in manifest["implementation_refs"]
+        )
+        and len(manifest["implementation_refs"])
+        == len(set(manifest["implementation_refs"]))
+        and set(manifest["implementation_refs"]) == set(implementation_refs)
+        and isinstance(manifest.get("implementation_digests"), list)
+        and all(
+            isinstance(digest, str)
+            and fullmatch(r"[0-9a-f]{64}", digest) is not None
+            for digest in manifest["implementation_digests"]
+        )
+        and len(manifest["implementation_digests"])
+        == len(set(manifest["implementation_digests"]))
+        and set(manifest["implementation_digests"])
+        == set(implementation_digests)
+        and _artifact_uri(manifest_ref)
+        and _artifact_uri(proof_ref)
+        and manifest_ref != proof_ref
+        and manifest_ref not in implementation_refs
+        and proof_ref not in implementation_refs
+    )
+
+
 def _derive_frontier_shift_gates(
     frontier_evidence: dict[str, Any],
     *,
@@ -3861,7 +4214,7 @@ def _derive_frontier_shift_gates(
         candidate["implementation_family"]["source_identity"]
         for candidate in eligible
     }
-    independent_candidate_coverage = (
+    c2_multi_family = (
         len(family_ids) >= 2
         and len(family_manifest_refs) >= 2
         and len(implementation_digests) >= 2
@@ -3879,6 +4232,13 @@ def _derive_frontier_shift_gates(
             == 1
             for family_id in family_ids
         )
+    )
+    coverage_level = frontier_evidence.get("candidate_coverage")
+    independent_candidate_coverage = (
+        coverage_level == "C2_MULTI_FAMILY" and c2_multi_family
+    ) or (
+        coverage_level == "C3_ENUMERATED_POOL"
+        and _c3_enumerated_pool_coverage_valid(frontier_evidence, candidates)
     )
     search_session_sets = [
         set(candidate["session_ids"]) for candidate in eligible
@@ -4044,46 +4404,34 @@ def _derive_frontier_shift_gates(
             + float(tolerance["rtol"]) * abs(float(record["expected"]))
             for record in records
         )
-        session_latencies: list[float] = []
-        result_session_ids: list[str] = []
-        records_valid = True
-        for session in sessions:
-            if not isinstance(session, dict):
-                records_valid = False
-                break
-            session_id = session.get("session_id")
-            master = holdout_by_id.get(session_id)
-            raw_samples = session.get("raw_samples_ns")
-            excluded_samples = session.get("excluded_samples")
-            if (
-                master is None
-                or session.get("process_id") != master["process_id"]
-                or session.get("lane_id") != baseline_lane_id
-                or session.get("lane_id") != master["lane_id"]
-                or session.get("cohort_id") != contract["cohort_id"]
-                or session.get("cohort_id") != master["cohort_id"]
-                or not isinstance(raw_samples, list)
-                or not raw_samples
-                or not all(
-                    _finite_number(sample) and float(sample) > 0
-                    for sample in raw_samples
-                )
-                or not isinstance(excluded_samples, list)
-                or not all(
-                    _finite_number(sample) and float(sample) > 0
-                    for sample in excluded_samples
-                )
-                or not _nonempty_string(session.get("evidence_ref"))
-            ):
-                records_valid = False
-                break
-            result_session_ids.append(session_id)
-            session_latencies.append(float(median(raw_samples)))
+        normalized_timing = _normalize_timing_sessions(
+            sessions,
+            expected_lane_id=baseline_lane_id,
+            expected_cohort_id=contract["cohort_id"],
+            minimum_sessions=required_sessions,
+            require_authored_latency=False,
+        )
+        records_match_holdout = (
+            isinstance(normalized_timing, dict)
+            and set(normalized_timing["session_ids"]) == holdout_session_set
+            and all(
+                normalized_timing["session_process_ids"].get(session_id)
+                == holdout_by_id[session_id]["process_id"]
+                and holdout_by_id[session_id]["lane_id"]
+                == baseline_lane_id
+                and holdout_by_id[session_id]["cohort_id"]
+                == contract["cohort_id"]
+                for session_id in normalized_timing["session_ids"]
+            )
+        )
+        session_latencies = (
+            list(normalized_timing["session_latencies_ns"].values())
+            if isinstance(normalized_timing, dict)
+            else []
+        )
         return (
             correctness_passed
-            and records_valid
-            and set(result_session_ids) == holdout_session_set
-            and len(result_session_ids) == len(set(result_session_ids))
+            and records_match_holdout
             and all(latency > band_upper_ns for latency in session_latencies)
             and float(median(session_latencies)) > band_upper_ns
         )
@@ -4139,45 +4487,22 @@ def _derive_frontier_shift_gates(
             "rtol": contract["correctness_policy"]["rtol"],
         }:
             return False
-        session_ids: list[str] = []
-        process_ids: list[int] = []
-        session_latencies: list[float] = []
-        for session in sessions:
-            raw_samples = (
-                session.get("raw_samples_ns")
-                if isinstance(session, dict)
-                else None
-            )
-            excluded_samples = (
-                session.get("excluded_samples")
-                if isinstance(session, dict)
-                else None
-            )
-            if (
-                not isinstance(session, dict)
-                or not _nonempty_string(session.get("session_id"))
-                or not isinstance(session.get("process_id"), int)
-                or isinstance(session["process_id"], bool)
-                or session["process_id"] <= 0
-                or session.get("lane_id") != baseline_lane_id
-                or session.get("cohort_id") != contract["cohort_id"]
-                or not isinstance(raw_samples, list)
-                or not raw_samples
-                or not all(
-                    _finite_number(sample) and float(sample) > 0
-                    for sample in raw_samples
-                )
-                or not isinstance(excluded_samples, list)
-                or not all(
-                    _finite_number(sample) and float(sample) > 0
-                    for sample in excluded_samples
-                )
-                or not _nonempty_string(session.get("evidence_ref"))
-            ):
-                return False
-            session_ids.append(session["session_id"])
-            process_ids.append(session["process_id"])
-            session_latencies.append(float(median(raw_samples)))
+        normalized_timing = _normalize_timing_sessions(
+            sessions,
+            expected_lane_id=baseline_lane_id,
+            expected_cohort_id=contract["cohort_id"],
+            minimum_sessions=required_sessions,
+            require_authored_latency=False,
+        )
+        if not isinstance(normalized_timing, dict):
+            return False
+        session_ids = normalized_timing["session_ids"]
+        process_ids = list(
+            normalized_timing["session_process_ids"].values()
+        )
+        session_latencies = list(
+            normalized_timing["session_latencies_ns"].values()
+        )
         return (
             correctness_passed is True
             and record.get("observation_validity") == "QUALIFIED"
@@ -4303,6 +4628,16 @@ def _derive_frontier_shift_gates(
             "frontier-shift-all-eligible-candidates-below-surface-band",
             all_candidates_below_band,
             "eligible-candidates-not-confirmed-below-surface-band",
+        ),
+        (
+            "frontier-shift-stable-neighbouring-anchors",
+            stable_anchors,
+            "stable-neighbouring-anchors-missing",
+        ),
+        (
+            "frontier-shift-local-shape-disambiguation",
+            dense_local_shapes and same_regime_refit,
+            "local-shape-disambiguation-incomplete",
         ),
         (
             "frontier-shift-validated-neighbourhood",
@@ -4699,6 +5034,126 @@ def _performance_diagnosis_verdicts(
             )
             result["surface_action"] = surface_action
             verdicts.append(result)
+            continue
+        if competing_frontier_shift and competing_alternatives:
+            precedence_refs = sorted(
+                _artifact_refs(
+                    {
+                        "frontier_shift_evidence": frontier_shift_evidence,
+                        "alternatives": competing_alternatives,
+                    }
+                )
+            )
+            result = _fail_closed_performance_verdict(
+                stable_path=stable_path,
+                run_id=run_id,
+                probe_id=probe["probe_id"],
+                failed_gate_id="multi-verdict-precedence",
+                reason_code="multi-verdict-precedence-undefined",
+                evidence_refs=precedence_refs or probe["evidence_refs"],
+                satisfied=[
+                    {
+                        "gate_id": "diagnostic-trigger-met",
+                        "evidence_refs": [bundle_ref],
+                    },
+                    {
+                        "gate_id": "exact-shape-probe-complete",
+                        "evidence_refs": probe["evidence_refs"],
+                    },
+                ],
+                not_evaluated=[
+                    {
+                        "gate_id": "implementation-headroom",
+                        "reason_code": "multi-verdict-precedence-undefined",
+                        "evidence_refs": precedence_refs,
+                    },
+                    {
+                        "gate_id": "frontier-shift",
+                        "reason_code": "multi-verdict-precedence-undefined",
+                        "evidence_refs": precedence_refs,
+                    },
+                ],
+            )
+            result["surface_action"] = {
+                "action": "preserve",
+                "surface": frontier_shift_evidence["surface"],
+                "reason_code": "multi-verdict-precedence-undefined",
+            }
+            verdicts.append(result)
+            continue
+        if competing_frontier_shift:
+            frontier_evidence_refs = list(
+                dict.fromkeys(
+                    [
+                        *frontier_shift_evidence["evidence_refs"],
+                        frontier_shift_evidence["holdout"]["evidence_ref"],
+                        *sorted(_artifact_refs(frontier_shift_evidence)),
+                    ]
+                )
+            )
+            frontier_gates = _derive_frontier_shift_gates(
+                frontier_shift_evidence,
+                candidates=candidates,
+                contract=probe["locked_contract"],
+                measurement_lanes=probe["measurement_lanes"],
+                trigger_item=trigger_items_by_path[stable_path],
+                minimum_sessions=policy["minimum_independent_sessions"],
+            )
+            verdicts.append(
+                {
+                    "stable_path": stable_path,
+                    "status": "decided",
+                    "verdict": "frontier_shift",
+                    "probe_id": probe["probe_id"],
+                    "gates": {
+                        "satisfied": [
+                            {
+                                "gate_id": "diagnostic-trigger-met",
+                                "evidence_refs": [bundle_ref],
+                            },
+                            {
+                                "gate_id": "exact-shape-probe-complete",
+                                "evidence_refs": probe["evidence_refs"],
+                            },
+                            *[
+                                {
+                                    "gate_id": gate_id,
+                                    "evidence_refs": frontier_evidence_refs,
+                                }
+                                for gate_id, passed, _ in frontier_gates
+                                if passed
+                            ],
+                        ],
+                        "failed": [],
+                        "not_evaluated": [
+                            {
+                                "gate_id": "confirmed-bug",
+                                "reason_code": (
+                                    "direct-defect-evidence-not-provided"
+                                ),
+                                "evidence_refs": [],
+                            },
+                            {
+                                "gate_id": "suspected-regression",
+                                "reason_code": "policy-undefined",
+                                "evidence_refs": frontier_evidence_refs,
+                            },
+                        ],
+                    },
+                    "bundle_refs": [
+                        bundle_ref,
+                        *probe["evidence_refs"],
+                    ],
+                    "counterexamples": list(
+                        probe.get("counterexamples", [])
+                    ),
+                    "surface_action": {
+                        "action": "create_version",
+                        "surface": frontier_shift_evidence["surface"],
+                        "reason_code": "qualified-frontier-shift",
+                    },
+                }
+            )
             continue
         if integration_result is not None and (
             integration_satisfied or not competing_alternatives
@@ -5408,6 +5863,9 @@ def _surface_summary(
         "domain_policy": surface.get("domain_policy"),
         "candidate_family": surface.get("candidate_family"),
         "algorithm_family": surface.get("algorithm_family"),
+        "anchor_lifecycle_policy": surface.get(
+            "anchor_lifecycle_policy"
+        ),
         "anchor_ids": [
             anchor.get("anchor_id")
             for anchor in anchors
@@ -5437,6 +5895,10 @@ def _surface_summary(
             "added_anchor_ids": sorted(current_anchor_ids - previous_anchor_ids),
             "removed_anchor_ids": sorted(previous_anchor_ids - current_anchor_ids),
         }
+    if isinstance(surface.get("anchor_state_transitions"), list):
+        summary["anchor_state_transitions"] = list(
+            surface["anchor_state_transitions"]
+        )
     return summary
 
 
@@ -5516,13 +5978,47 @@ def _unknown_surface_query(
     }
 
 
+def _surface_anchor_lifecycle_mode(
+    surface: dict[str, Any],
+) -> str | None:
+    policy = surface.get("anchor_lifecycle_policy")
+    if policy is None:
+        return "legacy-read-only"
+    if (
+        isinstance(policy, dict)
+        and policy.get("version") == "v2"
+        and all(
+            _resolved_identity_string(policy.get(key))
+            for key in (
+                "policy_id",
+                "scope",
+                "change_reason",
+                "revalidation",
+            )
+        )
+    ):
+        return "strict-v2"
+    return None
+
+
 def _eligible_surface_anchor(
     surface: dict[str, Any], anchor: object, axes: tuple[str, ...]
 ) -> bool:
     if not isinstance(anchor, dict):
         return False
+    lifecycle_mode = _surface_anchor_lifecycle_mode(surface)
     shape = anchor.get("shape")
     rate = anchor.get("effective_rate")
+    if lifecycle_mode == "strict-v2":
+        history_compatible = _anchor_state_history_valid(anchor)
+    else:
+        history_compatible = (
+            lifecycle_mode == "legacy-read-only"
+            and (
+                anchor.get("state_transitions") is None
+                or _anchor_state_history_valid(anchor)
+            )
+        )
     return (
         _nonempty_string(anchor.get("anchor_id"))
         and _nonempty_string(anchor.get("anchor_version"))
@@ -5542,6 +6038,8 @@ def _eligible_surface_anchor(
         and anchor.get("domain") == surface.get("domain")
         and anchor.get("observation_validity") == "QUALIFIED"
         and anchor.get("frontier_role") == "ACTIVE"
+        and lifecycle_mode is not None
+        and history_compatible
         and _nonempty_string(anchor.get("evidence_ref"))
     )
 
@@ -5645,12 +6143,17 @@ def _select_surface_cell(
         if not _nonempty_string(cell.get("cell_id")):
             continue
         if len(axes) == 1:
-            if cell.get("status") != "retained":
+            if cell.get("status") not in {"retained", "regime_boundary"}:
                 continue
             axis = axes[0]
             left = float(anchors[0]["shape"][axis])
             right = float(anchors[1]["shape"][axis])
             if left >= right or not left <= point[0] <= right:
+                continue
+            if cell.get("status") == "regime_boundary":
+                rejections.append(
+                    _RejectedSurfaceCell(cell, "shape_regime_unvalidated")
+                )
                 continue
             right_weight = (point[0] - left) / (right - left)
             weights = (1.0 - right_weight, right_weight)
@@ -5660,6 +6163,7 @@ def _select_surface_cell(
                 "retained",
                 "hole",
                 "candidate_support_boundary",
+                "regime_boundary",
             ):
                 continue
             x_axis, y_axis = axes
@@ -5731,6 +6235,11 @@ def _select_surface_cell(
                     )
                 )
                 continue
+            if cell.get("status") == "regime_boundary":
+                rejections.append(
+                    _RejectedSurfaceCell(cell, "shape_regime_unvalidated")
+                )
+                continue
             measure = abs(denominator)
         else:
             continue
@@ -5746,9 +6255,10 @@ def _select_surface_cell(
     if rejections:
         rejection_priority = {
             "explicit_domain_hole": 0,
-            "candidate_domain_boundary_unvalidated": 1,
-            "cell_span_exceeds_policy": 2,
-            "degenerate_simplex": 3,
+            "shape_regime_unvalidated": 1,
+            "candidate_domain_boundary_unvalidated": 2,
+            "cell_span_exceeds_policy": 3,
+            "degenerate_simplex": 4,
         }
         return min(
             rejections,
@@ -6461,7 +6971,20 @@ def _validated_surface_lineage(
 ]:
     valid_surfaces: list[dict[str, Any]] = []
     surface_index: dict[tuple[str, str], dict[str, Any]] = {}
-    pending = list(surfaces)
+    root_counts: dict[str, int] = {}
+    for surface in surfaces:
+        if surface.get("previous_version") is None:
+            surface_id = surface.get("surface_id")
+            if _nonempty_string(surface_id):
+                root_counts[surface_id] = root_counts.get(surface_id, 0) + 1
+    ambiguous_roots = {
+        surface_id for surface_id, count in root_counts.items() if count != 1
+    }
+    pending = [
+        surface
+        for surface in surfaces
+        if surface.get("surface_id") not in ambiguous_roots
+    ]
     while pending:
         unresolved: list[dict[str, Any]] = []
         progress = False
@@ -6485,6 +7008,7 @@ def _validated_surface_lineage(
                         "domain_policy",
                         "candidate_family",
                         "algorithm_family",
+                        "anchor_lifecycle_policy",
                         "coordinate",
                         "work_formula",
                     )
@@ -6599,7 +7123,6 @@ def _capability_surface_results(
             and all(_nonempty_string(axis) for axis in axes_value)
             else ()
         )
-        anchor = update.get("anchor")
         base_anchors = base.get("anchors") if isinstance(base, dict) else None
         cells = update.get("cells")
         uncertainty_policy = update.get("uncertainty_policy")
@@ -6608,13 +7131,13 @@ def _capability_surface_results(
             not isinstance(base, dict)
             or not axes
             or not isinstance(base_anchors, list)
-            or not _eligible_surface_anchor(base, anchor, axes)
+            or _surface_anchor_lifecycle_mode(base) != "strict-v2"
             or not isinstance(cells, list)
             or not isinstance(uncertainty_policy, dict)
             or not isinstance(update_evidence_refs, list)
             or not update_evidence_refs
             or not all(
-                _nonempty_string(reference)
+                _artifact_uri(reference)
                 for reference in update_evidence_refs
             )
         ):
@@ -6624,20 +7147,175 @@ def _capability_surface_results(
             for item in base_anchors
             if isinstance(item, dict)
         }
-        if anchor["anchor_id"] in anchor_ids:
+        operation = update.get("operation", "add_anchor")
+        anchor_state_transitions = list(
+            base.get("anchor_state_transitions", [])
+            if isinstance(base.get("anchor_state_transitions"), list)
+            else []
+        )
+        if operation == "add_anchor":
+            anchor = update.get("anchor")
+            same_coordinate = [
+                item
+                for item in base_anchors
+                if isinstance(item, dict)
+                and isinstance(item.get("shape"), dict)
+                and all(
+                    item["shape"].get(axis) == anchor.get("shape", {}).get(axis)
+                    for axis in axes
+                )
+            ] if isinstance(anchor, dict) else []
+            if (
+                not _eligible_surface_anchor(base, anchor, axes)
+                or anchor["anchor_id"] in anchor_ids
+                or any(
+                    float(item["effective_rate"])
+                    >= float(anchor["effective_rate"])
+                    for item in same_coordinate
+                )
+            ):
+                continue
+            superseded_ids = {
+                item["anchor_id"] for item in same_coordinate
+            }
+            new_anchors = [
+                item
+                for item in base_anchors
+                if item.get("anchor_id") not in superseded_ids
+            ]
+            new_anchors.append(anchor)
+            anchor_state_transitions.extend(
+                {
+                    "anchor_id": anchor["anchor_id"],
+                    **transition,
+                }
+                for transition in anchor["state_transitions"]
+            )
+            for superseded in same_coordinate:
+                anchor_state_transitions.append(
+                    {
+                        "anchor_id": superseded["anchor_id"],
+                        "sequence": len(
+                            superseded["state_transitions"]
+                        ) + 1,
+                        "axis": "frontier_role",
+                        "from": "ACTIVE",
+                        "to": "SUPERSEDED",
+                        "reason_code": (
+                            "faster-qualified-anchor-at-same-coordinate"
+                        ),
+                        "evidence_refs": list(update_evidence_refs),
+                    }
+                )
+        elif operation == "retract_anchor":
+            anchor_id = update.get("anchor_id")
+            invalidation = update.get("invalidation")
+            invalidation_refs = (
+                invalidation.get("evidence_refs")
+                if isinstance(invalidation, dict)
+                else None
+            )
+            invalidation_transitions = (
+                invalidation.get("state_transitions")
+                if isinstance(invalidation, dict)
+                else None
+            )
+            matching = [
+                item
+                for item in base_anchors
+                if isinstance(item, dict)
+                and item.get("anchor_id") == anchor_id
+            ]
+            if (
+                len(matching) != 1
+                or not _eligible_surface_anchor(base, matching[0], axes)
+                or not isinstance(invalidation, dict)
+                or invalidation.get("kind")
+                not in {"correctness", "provenance"}
+                or not _nonempty_string(invalidation.get("reason_code"))
+                or not isinstance(invalidation_refs, list)
+                or not invalidation_refs
+                or not all(
+                    _nonempty_string(reference)
+                    for reference in invalidation_refs
+                )
+                or not isinstance(invalidation_transitions, list)
+                or [
+                    transition.get("axis")
+                    for transition in invalidation_transitions
+                    if isinstance(transition, dict)
+                ]
+                != ["observation_validity", "frontier_role"]
+                or not _anchor_state_history_valid(
+                    {
+                        **matching[0],
+                        "observation_validity": "REVOKED",
+                        "frontier_role": "REVOKED_ROLE",
+                        "state_transitions": [
+                            *matching[0]["state_transitions"],
+                            *invalidation_transitions,
+                        ],
+                    }
+                )
+                or any(
+                    transition.get("reason_code")
+                    != invalidation.get("reason_code")
+                    or transition.get("evidence_refs")
+                    != invalidation_refs
+                    for transition in invalidation_transitions
+                )
+            ):
+                continue
+            new_anchors = [
+                item
+                for item in base_anchors
+                if item.get("anchor_id") != anchor_id
+            ]
+            anchor_state_transitions.extend(
+                {
+                    "anchor_id": anchor_id,
+                    **transition,
+                }
+                for transition in invalidation_transitions
+            )
+        else:
             continue
         base_evidence_refs = base.get("evidence_refs")
         new_anchors = sorted(
-            [*base_anchors, anchor],
+            new_anchors,
             key=lambda item: tuple(float(item["shape"][axis]) for axis in axes),
         )
+        base_cells = base.get("cells")
+        base_regime_ids = {
+            cell.get("regime_id")
+            for cell in base_cells
+            if isinstance(cell, dict)
+            and cell.get("status") == "retained"
+            and _nonempty_string(cell.get("regime_id"))
+        } if isinstance(base_cells, list) else set()
+        new_cells = []
+        for cell in cells:
+            if not isinstance(cell, dict):
+                new_cells.append(cell)
+                continue
+            new_cell = dict(cell)
+            if (
+                base_regime_ids
+                and new_cell.get("regime_id") not in base_regime_ids
+            ):
+                new_cell["status"] = "regime_boundary"
+                new_cell["rejection_evidence_refs"] = list(
+                    update_evidence_refs
+                )
+            new_cells.append(new_cell)
         new_surface = {
             **base,
             "version": new_version,
             "previous_version": base_version,
             "anchors": new_anchors,
-            "cells": cells,
+            "cells": new_cells,
             "uncertainty_policy": uncertainty_policy,
+            "anchor_state_transitions": anchor_state_transitions,
             "evidence_refs": [
                 *(
                     base_evidence_refs
@@ -6772,6 +7450,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         trigger=diagnostic_trigger,
         probes=shape_probes,
     )
+    frontier_anchor_lifecycles = _frontier_anchor_lifecycles(document)
     (
         capability_surfaces,
         candidate_envelopes,
@@ -6787,6 +7466,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "axes": axes,
         "comparisons": comparisons,
         "policy_refs": document.get("policies", {}),
+        "frontier_anchor_lifecycles": frontier_anchor_lifecycles,
         "capability_surfaces": capability_surfaces,
         "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
@@ -6835,6 +7515,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         ),
         "axes": axes,
         "comparisons": comparisons,
+        "frontier_anchor_lifecycles": frontier_anchor_lifecycles,
         "capability_surfaces": capability_surfaces,
         "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,

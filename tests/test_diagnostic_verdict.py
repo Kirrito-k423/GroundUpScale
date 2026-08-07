@@ -3227,6 +3227,123 @@ def test_frontier_holdout_must_remain_on_locked_baseline_lane(
     assert "frontier-shift-independent-holdout" in failed
 
 
+def _frontier_neighbourhood_observation(
+    probe: dict[str, object],
+    shape: dict[str, int],
+    suffix: str,
+) -> dict[str, object]:
+    neighbourhood = probe["frontier_shift_evidence"]["neighbourhood"]
+    cohort_id = probe["locked_contract"]["cohort_id"]
+    regime_id = neighbourhood["regime_id"]
+    lane_id = probe["measurement_lanes"]["baseline"]["lane_id"]
+    return {
+        "shape": shape,
+        "cohort_id": cohort_id,
+        "regime_id": regime_id,
+        "observation_validity": "QUALIFIED",
+        "frontier_role": "ACTIVE",
+        "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+        "correctness_records": [{"expected": 1.0, "observed": 1.0}],
+        "correctness_tolerance": {"atol": 0.0001, "rtol": 0.0001},
+        "holdout_sessions": [
+            {
+                "session_id": f"{suffix}-session-{index}",
+                "process_id": 80_000 + index,
+                "lane_id": lane_id,
+                "cohort_id": cohort_id,
+                "raw_samples_ns": [25_000, 25_100, 25_200],
+                "excluded_samples": [],
+                "evidence_ref": (
+                    f"artifact://issue-24/{suffix}-session-{index}"
+                ),
+            }
+            for index in range(1, 4)
+        ],
+        "predicted_ns": 25_000,
+        "observed_ns": 25_100,
+        "combined_uncertainty_ns": 200,
+        "uncertainty_records": [
+            {
+                "component_id": "anchor",
+                "standard_uncertainty_ns": 120,
+                "evidence_ref": f"artifact://issue-24/{suffix}-anchor-u",
+            },
+            {
+                "component_id": "interpolation",
+                "standard_uncertainty_ns": 160,
+                "evidence_ref": (
+                    f"artifact://issue-24/{suffix}-interpolation-u"
+                ),
+            },
+            {
+                "component_id": "instrumentation",
+                "standard_uncertainty_ns": 0,
+                "evidence_ref": (
+                    f"artifact://issue-24/{suffix}-instrumentation-u"
+                ),
+            },
+        ],
+        "evidence_ref": f"artifact://issue-24/{suffix}",
+    }
+
+
+def _populate_c3_enumerated_pool_proof(probe: dict[str, object]) -> None:
+    candidates = probe["candidates"]
+    candidate_ids = sorted(candidate["candidate_id"] for candidate in candidates)
+    implementation_refs = sorted({
+        candidate["implementation_family"]["implementation_ref"]
+        for candidate in candidates
+    })
+    implementation_digests = sorted({
+        candidate["implementation_family"]["implementation_sha256"]
+        for candidate in candidates
+    })
+    candidate_implementations = sorted(
+        [
+            {
+                "candidate_id": candidate["candidate_id"],
+                "implementation_ref": candidate["implementation_family"][
+                    "implementation_ref"
+                ],
+                "implementation_digest": candidate["implementation_family"][
+                    "implementation_sha256"
+                ],
+            }
+            for candidate in candidates
+        ],
+        key=lambda item: item["candidate_id"],
+    )
+    frontier = probe["frontier_shift_evidence"]
+    frontier["enumerated_pool_manifest"] = {
+        "schema": "groundupscale.dev/enumerated-candidate-pool/v1alpha1",
+        "pool_id": "m4-matmul-fp32-exact-shape-pool",
+        "version": "v1",
+        "scope": "exact-shape-best-of-correct-candidates",
+        "change_reason": "issue-24 enumerated candidate pool",
+        "revalidation": "on candidate or implementation change",
+        "candidate_ids": list(candidate_ids),
+        "candidate_implementations": candidate_implementations,
+        "implementation_refs": list(implementation_refs),
+        "implementation_digests": list(implementation_digests),
+        "evidence_ref": "artifact://issue-24/c3-pool-manifest",
+    }
+    frontier["enumerated_pool_coverage_proof"] = {
+        "schema": (
+            "groundupscale.dev/enumerated-candidate-pool-coverage/v1alpha1"
+        ),
+        "proof_id": "m4-matmul-fp32-exact-shape-pool-coverage",
+        "version": "v1",
+        "scope": "exact-shape-best-of-correct-candidates",
+        "change_reason": "issue-24 complete-pool coverage proof",
+        "revalidation": "on pool manifest change",
+        "pool_id": "m4-matmul-fp32-exact-shape-pool",
+        "pool_version": "v1",
+        "coverage_status": "complete",
+        "enumerated_candidate_ids": list(candidate_ids),
+        "evidence_ref": "artifact://issue-24/c3-pool-coverage-proof",
+    }
+
+
 def test_frontier_neighbourhood_is_derived_from_anchor_probe_and_refit_records(
     tmp_path: Path,
 ) -> None:
@@ -3240,62 +3357,6 @@ def test_frontier_neighbourhood_is_derived_from_anchor_probe_and_refit_records(
     probes = deepcopy(fixture["shape_disambiguation_probes"])
     probe = probes[0]
     neighbourhood = probe["frontier_shift_evidence"]["neighbourhood"]
-    cohort_id = probe["locked_contract"]["cohort_id"]
-    regime_id = neighbourhood["regime_id"]
-
-    def observation(shape: dict[str, int], suffix: str) -> dict[str, object]:
-        return {
-            "shape": shape,
-            "cohort_id": cohort_id,
-            "regime_id": regime_id,
-            "observation_validity": "QUALIFIED",
-            "frontier_role": "ACTIVE",
-            "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
-            "correctness_records": [{"expected": 1.0, "observed": 1.0}],
-            "correctness_tolerance": {"atol": 0.0001, "rtol": 0.0001},
-            "holdout_sessions": [
-                {
-                    "session_id": f"{suffix}-session-{index}",
-                    "process_id": 57_000 + index,
-                    "lane_id": "matmul-257-baseline",
-                    "cohort_id": cohort_id,
-                    "raw_samples_ns": [25_000, 25_100, 25_200],
-                    "excluded_samples": [],
-                    "evidence_ref": (
-                        f"artifact://issue-21/neighbourhood-{suffix}-session-{index}"
-                    ),
-                }
-                for index in range(1, 4)
-            ],
-            "predicted_ns": 25_000,
-            "observed_ns": 25_100,
-            "combined_uncertainty_ns": 200,
-            "uncertainty_records": [
-                {
-                    "component_id": "anchor",
-                    "standard_uncertainty_ns": 120,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-anchor"
-                    ),
-                },
-                {
-                    "component_id": "interpolation",
-                    "standard_uncertainty_ns": 160,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-interpolation"
-                    ),
-                },
-                {
-                    "component_id": "instrumentation",
-                    "standard_uncertainty_ns": 0,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-instrumentation"
-                    ),
-                },
-            ],
-            "evidence_ref": f"artifact://issue-21/neighbourhood-{suffix}",
-        }
-
     local_shapes = []
     target_shape = {"m": 257, "k": 257, "n": 257}
     for name in sorted(target_shape):
@@ -3304,15 +3365,23 @@ def test_frontier_neighbourhood_is_derived_from_anchor_probe_and_refit_records(
             shape[name] += delta
             local_shapes.append(shape)
     neighbourhood["anchor_records"] = [
-        observation(local_shapes[0], "anchor-1"),
-        observation(local_shapes[1], "anchor-2"),
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[0], "anchor-1"
+        ),
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[1], "anchor-2"
+        ),
     ]
     neighbourhood["local_probe_records"] = [
-        observation(shape, f"local-{index}")
+        _frontier_neighbourhood_observation(
+            probe, shape, f"local-{index}"
+        )
         for index, shape in enumerate(local_shapes, start=1)
     ]
     neighbourhood["refit_records"] = [
-        observation(local_shapes[index], f"refit-{index + 1}")
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[index], f"refit-{index + 1}"
+        )
         for index in range(3)
     ]
     neighbourhood["stable_neighbouring_anchors"] = False
@@ -3349,60 +3418,6 @@ def test_frontier_neighbourhood_rejects_unstable_or_duplicate_records(
     probes = deepcopy(fixture["shape_disambiguation_probes"])
     probe = probes[0]
     neighbourhood = probe["frontier_shift_evidence"]["neighbourhood"]
-    cohort_id = probe["locked_contract"]["cohort_id"]
-    regime_id = neighbourhood["regime_id"]
-
-    def observation(shape: dict[str, int], suffix: str) -> dict[str, object]:
-        return {
-            "shape": shape,
-            "cohort_id": cohort_id,
-            "regime_id": regime_id,
-            "observation_validity": "QUALIFIED",
-            "frontier_role": "ACTIVE",
-            "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
-            "correctness_records": [{"expected": 1.0, "observed": 1.0}],
-            "correctness_tolerance": {"atol": 0.0001, "rtol": 0.0001},
-            "holdout_sessions": [
-                {
-                    "session_id": f"{suffix}-session-{index}",
-                    "process_id": 57_000 + index,
-                    "lane_id": "matmul-257-baseline",
-                    "cohort_id": cohort_id,
-                    "raw_samples_ns": [25_000, 25_100, 25_200],
-                    "excluded_samples": [],
-                    "evidence_ref": f"artifact://issue-21/{suffix}-{index}",
-                }
-                for index in range(1, 4)
-            ],
-            "predicted_ns": 25_000,
-            "observed_ns": 25_100,
-            "combined_uncertainty_ns": 200,
-            "uncertainty_records": [
-                {
-                    "component_id": "anchor",
-                    "standard_uncertainty_ns": 120,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-anchor"
-                    ),
-                },
-                {
-                    "component_id": "interpolation",
-                    "standard_uncertainty_ns": 160,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-interpolation"
-                    ),
-                },
-                {
-                    "component_id": "instrumentation",
-                    "standard_uncertainty_ns": 0,
-                    "evidence_ref": (
-                        f"artifact://issue-21/{suffix}-uncertainty-instrumentation"
-                    ),
-                },
-            ],
-            "evidence_ref": f"artifact://issue-21/{suffix}",
-        }
-
     target_shape = {"m": 257, "k": 257, "n": 257}
     local_shapes = []
     for name in sorted(target_shape):
@@ -3411,15 +3426,23 @@ def test_frontier_neighbourhood_rejects_unstable_or_duplicate_records(
             shape[name] += delta
             local_shapes.append(shape)
     neighbourhood["anchor_records"] = [
-        observation(local_shapes[0], "anchor-1"),
-        observation(local_shapes[1], "anchor-2"),
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[0], "anchor-1"
+        ),
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[1], "anchor-2"
+        ),
     ]
     neighbourhood["local_probe_records"] = [
-        observation(shape, f"local-{index}")
+        _frontier_neighbourhood_observation(
+            probe, shape, f"local-{index}"
+        )
         for index, shape in enumerate(local_shapes, start=1)
     ]
     neighbourhood["refit_records"] = [
-        observation(local_shapes[index], f"refit-{index + 1}")
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[index], f"refit-{index + 1}"
+        )
         for index in range(3)
     ]
     if record_failure == "unstable-local":
@@ -3455,3 +3478,432 @@ def test_frontier_neighbourhood_rejects_unstable_or_duplicate_records(
     failed = {gate["gate_id"] for gate in verdict["gates"]["failed"]}
 
     assert "frontier-shift-validated-neighbourhood" in failed
+
+
+def _populate_valid_frontier_neighbourhood(
+    probe: dict[str, object],
+) -> None:
+    neighbourhood = probe["frontier_shift_evidence"]["neighbourhood"]
+    contract = probe["locked_contract"]
+    target_shape = contract["execution_domain"]["shape"]
+    local_shapes = []
+    for name in sorted(target_shape):
+        for delta in (-1, 1):
+            shape = dict(target_shape)
+            shape[name] += delta
+            local_shapes.append(shape)
+    neighbourhood["anchor_records"] = [
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[0], "anchor-1"
+        ),
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[1], "anchor-2"
+        ),
+    ]
+    neighbourhood["local_probe_records"] = [
+        _frontier_neighbourhood_observation(
+            probe, shape, f"local-{index}"
+        )
+        for index, shape in enumerate(local_shapes, start=1)
+    ]
+    neighbourhood["refit_records"] = [
+        _frontier_neighbourhood_observation(
+            probe, local_shapes[index], f"refit-{index + 1}"
+        )
+        for index in range(3)
+    ]
+
+
+@pytest.mark.parametrize(
+    "coverage_level", ["C2_MULTI_FAMILY", "C3_ENUMERATED_POOL"]
+)
+def test_all_strict_gates_produce_the_unique_frontier_shift_verdict(
+    tmp_path: Path,
+    coverage_level: str,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    if coverage_level == "C2_MULTI_FAMILY":
+        alternative_family = probe["candidates"][1]["implementation_family"]
+        alternative_family["family_id"] = "independent-numpy-matmul"
+        alternative_family["manifest_ref"] = (
+            "artifact://issue-24/independent-numpy-matmul-manifest"
+        )
+    else:
+        _populate_c3_enumerated_pool_proof(probe)
+    probe["frontier_shift_evidence"]["candidate_coverage"] = coverage_level
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    _populate_valid_frontier_neighbourhood(probe)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    result = diagnose_run_bundle(run)
+
+    verdicts = result["performance_diagnosis_verdicts"]
+    assert [verdict["verdict"] for verdict in verdicts] == ["frontier_shift"]
+    verdict = verdicts[0]
+    assert verdict["status"] == "decided"
+    assert verdict["gates"]["failed"] == []
+    assert {
+        "frontier-shift-independent-candidate-coverage",
+        "frontier-shift-independent-holdout",
+        "frontier-shift-minimum-independent-sessions",
+        "frontier-shift-same-hardware-validity-cohort",
+        "frontier-shift-all-eligible-candidates-below-surface-band",
+        "frontier-shift-validated-neighbourhood",
+    } <= {
+        gate["gate_id"] for gate in verdict["gates"]["satisfied"]
+    }
+    assert verdict["surface_action"] == {
+        "action": "create_version",
+        "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+        "reason_code": "qualified-frontier-shift",
+    }
+    assert not any(
+        item["verdict"] == "suspected_regression" for item in verdicts
+    )
+    assert {
+        "gate_id": "suspected-regression",
+        "reason_code": "policy-undefined",
+        "evidence_refs": verdict["gates"]["not_evaluated"][-1][
+            "evidence_refs"
+        ],
+    } in verdict["gates"]["not_evaluated"]
+
+
+def test_frontier_shift_recomputes_holdout_after_justified_exclusions(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    alternative_family = probe["candidates"][1]["implementation_family"]
+    alternative_family["family_id"] = "independent-numpy-matmul"
+    alternative_family["manifest_ref"] = (
+        "artifact://issue-24/independent-numpy-matmul-manifest"
+    )
+    probe["frontier_shift_evidence"]["candidate_coverage"] = (
+        "C2_MULTI_FAMILY"
+    )
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    _populate_valid_frontier_neighbourhood(probe)
+    frontier = probe["frontier_shift_evidence"]
+    for result in frontier["holdout"]["candidate_results"]:
+        for session in result["sessions"]:
+            session["excluded_samples"] = [
+                {"index": 0, "reason": "documented-warmup-outlier"}
+            ]
+    neighbourhood = frontier["neighbourhood"]
+    for record_group in (
+        neighbourhood["anchor_records"],
+        neighbourhood["local_probe_records"],
+        neighbourhood["refit_records"],
+    ):
+        for record in record_group:
+            for session in record["holdout_sessions"]:
+                session["excluded_samples"] = [
+                    {"index": 0, "reason": "documented-warmup-outlier"}
+                ]
+            record["observed_ns"] = 25_150
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "frontier_shift"
+    assert verdict["gates"]["failed"] == []
+
+
+def test_c3_enumerated_pool_proof_must_match_its_verified_artifact(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    probe["frontier_shift_evidence"]["candidate_coverage"] = (
+        "C3_ENUMERATED_POOL"
+    )
+    _populate_c3_enumerated_pool_proof(probe)
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    _populate_valid_frontier_neighbourhood(probe)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+    )
+    _rewrite_artifact_field(
+        run,
+        "artifact://issue-24/c3-pool-coverage-proof",
+        "payload.coverage_status",
+        "partial",
+    )
+
+    result = diagnose_run_bundle(run)
+
+    assert result["shape_disambiguation_probes"][0]["status"] == (
+        "insufficient_evidence"
+    )
+    assert result["shape_disambiguation_probes"][0]["reason_code"] == (
+        "invalid-shape-probe"
+    )
+
+
+def test_c3_proof_must_enumerate_ineligible_locked_candidates(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    omitted = deepcopy(probe["candidates"][1])
+    omitted["candidate_id"] = "omitted-ineligible-candidate"
+    omitted["eligible"] = False
+    omitted["correctness"]["evidence_ref"] = (
+        "artifact://issue-24/omitted-ineligible-correctness"
+    )
+    for session in omitted["sessions"]:
+        session["evidence_ref"] = (
+            "artifact://issue-24/omitted-ineligible-"
+            f"{session['session_id']}"
+        )
+    probe["candidates"].append(omitted)
+    probe["locked_contract"]["candidate_ids"].append(
+        omitted["candidate_id"]
+    )
+    for lane in probe["measurement_lanes"].values():
+        lane["candidate_ids"].append(omitted["candidate_id"])
+    frontier = probe["frontier_shift_evidence"]
+    frontier["candidate_coverage"] = "C3_ENUMERATED_POOL"
+    _populate_c3_enumerated_pool_proof(probe)
+    manifest = frontier["enumerated_pool_manifest"]
+    proof = frontier["enumerated_pool_coverage_proof"]
+    manifest["candidate_ids"].remove(omitted["candidate_id"])
+    manifest["candidate_implementations"] = [
+        item
+        for item in manifest["candidate_implementations"]
+        if item["candidate_id"] != omitted["candidate_id"]
+    ]
+    proof["enumerated_candidate_ids"].remove(omitted["candidate_id"])
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    frontier["holdout"]["candidate_results"] = frontier["holdout"][
+        "candidate_results"
+    ][:-1]
+    _populate_valid_frontier_neighbourhood(probe)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+        implementation_source_identities={
+            omitted["candidate_id"]: (
+                "issue-6/a5a04f9c/numpy-direct"
+            )
+        },
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert "frontier-shift-independent-candidate-coverage" in {
+        gate["gate_id"] for gate in verdict["gates"]["failed"]
+    }
+
+
+@pytest.mark.parametrize(
+    ("missing_gate", "expected_failed_gate"),
+    [
+        (
+            "coverage",
+            "frontier-shift-independent-candidate-coverage",
+        ),
+        (
+            "c3-proof",
+            "frontier-shift-independent-candidate-coverage",
+        ),
+        ("holdout", "frontier-shift-independent-holdout"),
+        (
+            "sessions",
+            "frontier-shift-minimum-independent-sessions",
+        ),
+        ("cohort", "frontier-shift-same-hardware-validity-cohort"),
+        (
+            "surface-band",
+            "frontier-shift-all-eligible-candidates-below-surface-band",
+        ),
+        (
+            "stable-neighbours",
+            "frontier-shift-stable-neighbouring-anchors",
+        ),
+        (
+            "local-shape",
+            "frontier-shift-local-shape-disambiguation",
+        ),
+    ],
+)
+def test_frontier_shift_fails_closed_when_any_strict_gate_is_missing(
+    tmp_path: Path,
+    missing_gate: str,
+    expected_failed_gate: str,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    alternative_family = probe["candidates"][1]["implementation_family"]
+    alternative_family["family_id"] = "independent-numpy-matmul"
+    alternative_family["manifest_ref"] = (
+        "artifact://issue-24/independent-numpy-matmul-manifest"
+    )
+    probe["frontier_shift_evidence"]["candidate_coverage"] = (
+        "C2_MULTI_FAMILY"
+    )
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    _populate_valid_frontier_neighbourhood(probe)
+    frontier = probe["frontier_shift_evidence"]
+    if missing_gate == "coverage":
+        frontier["candidate_coverage"] = "C0_SINGLE"
+    elif missing_gate == "c3-proof":
+        frontier["candidate_coverage"] = "C3_ENUMERATED_POOL"
+    elif missing_gate == "holdout":
+        frontier["holdout"]["sessions"] = []
+    elif missing_gate == "sessions":
+        for candidate in probe["candidates"]:
+            candidate["sessions"] = candidate["sessions"][:2]
+    elif missing_gate == "cohort":
+        frontier["holdout"]["sessions"][0]["cohort_id"] = "other-cohort"
+    elif missing_gate == "surface-band":
+        for result in frontier["holdout"]["candidate_results"]:
+            for session in result["sessions"]:
+                session["raw_samples_ns"] = [20_000, 20_100, 20_200]
+    elif missing_gate == "stable-neighbours":
+        frontier["neighbourhood"]["anchor_records"] = []
+    else:
+        frontier["neighbourhood"]["local_probe_records"] = []
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert expected_failed_gate in {
+        gate["gate_id"] for gate in verdict["gates"]["failed"]
+    }
+    assert verdict["surface_action"] == {
+        "action": "preserve",
+        "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+        "reason_code": "insufficient-evidence-cannot-lower-surface",
+    }
+    assert not any(
+        item["verdict"] == "suspected_regression"
+        for item in diagnose_run_bundle(run)[
+            "performance_diagnosis_verdicts"
+        ]
+    )
+
+
+def test_frontier_shift_and_headroom_competition_fails_closed_without_policy(
+    tmp_path: Path,
+) -> None:
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "issue21-257-cube-insufficient.json"
+        ).read_text(encoding="utf-8")
+    )
+    probes = deepcopy(fixture["shape_disambiguation_probes"])
+    probe = probes[0]
+    alternative = probe["candidates"][1]
+    alternative["implementation_family"]["family_id"] = (
+        "independent-numpy-matmul"
+    )
+    alternative["implementation_family"]["manifest_ref"] = (
+        "artifact://issue-24/independent-numpy-matmul-manifest"
+    )
+    probe["frontier_shift_evidence"]["candidate_coverage"] = (
+        "C2_MULTI_FAMILY"
+    )
+    for session in alternative["sessions"]:
+        session["raw_samples_ns"] = [20_000, 20_100, 20_200]
+        session["latency_ns"] = 20_100
+    _populate_frontier_holdout(
+        probes, process_ids=[47_175, 47_179, 47_188]
+    )
+    _populate_valid_frontier_neighbourhood(probe)
+    run = _write_bundle(
+        tmp_path,
+        diagnostic_items=fixture["diagnostic_items"],
+        probes=probes,
+        verdict_policy=fixture["verdict_policy"],
+    )
+
+    verdict = diagnose_run_bundle(run)["performance_diagnosis_verdicts"][0]
+
+    assert verdict["verdict"] == "insufficient_evidence"
+    assert verdict["gates"]["failed"] == [
+        {
+            "gate_id": "multi-verdict-precedence",
+            "reason_code": "multi-verdict-precedence-undefined",
+            "evidence_refs": verdict["gates"]["failed"][0]["evidence_refs"],
+        }
+    ]
+    assert {
+        gate["gate_id"] for gate in verdict["gates"]["not_evaluated"]
+    } >= {"implementation-headroom", "frontier-shift"}
+    assert verdict["surface_action"] == {
+        "action": "preserve",
+        "surface": {"surface_id": "m4-matmul-fp32", "version": "v1"},
+        "reason_code": "multi-verdict-precedence-undefined",
+    }

@@ -17,6 +17,47 @@ from _diagnostic_test_support import (
 )
 
 
+def _active_anchor_transitions(anchor_id: str) -> list[dict[str, object]]:
+    return [
+        {
+            "sequence": 1,
+            "axis": "frontier_role",
+            "from": "NONE",
+            "to": "PROVISIONAL",
+            "reason_code": "exact-shape-best-of-correct-search-winner",
+            "evidence_refs": [f"artifact://frontier/{anchor_id}-search.json"],
+        },
+        {
+            "sequence": 2,
+            "axis": "observation_validity",
+            "from": "COLLECTED",
+            "to": "QUALIFIED",
+            "reason_code": "anchor-qualification-gates-satisfied",
+            "evidence_refs": [
+                f"artifact://frontier/{anchor_id}-qualification.json"
+            ],
+        },
+        {
+            "sequence": 3,
+            "axis": "frontier_role",
+            "from": "PROVISIONAL",
+            "to": "ACTIVE",
+            "reason_code": "independent-holdout-confirmed",
+            "evidence_refs": [f"artifact://frontier/{anchor_id}-holdout.json"],
+        },
+    ]
+
+
+def _strict_anchor_lifecycle_policy() -> dict[str, object]:
+    return {
+        "policy_id": "frontier-anchor-lifecycle",
+        "version": "v2",
+        "scope": "capability-surface-anchor-transitions",
+        "change_reason": "issue-24 append-only anchor lifecycle",
+        "revalidation": "on anchor or lifecycle state change",
+    }
+
+
 def _surface_version(
     version: str,
     *,
@@ -48,6 +89,7 @@ def _surface_version(
             "observation_validity": "QUALIFIED",
             "frontier_role": "ACTIVE",
             "evidence_ref": "artifact://frontier/anchor-128.json",
+            "state_transitions": _active_anchor_transitions("anchor-128"),
         },
         {
             "anchor_id": "anchor-512",
@@ -62,6 +104,7 @@ def _surface_version(
             "observation_validity": "QUALIFIED",
             "frontier_role": "ACTIVE",
             "evidence_ref": "artifact://frontier/anchor-512.json",
+            "state_transitions": _active_anchor_transitions("anchor-512"),
         },
     ]
     cells: list[dict[str, object]] = [
@@ -96,6 +139,7 @@ def _surface_version(
                 "observation_validity": "QUALIFIED",
                 "frontier_role": "ACTIVE",
                 "evidence_ref": "artifact://frontier/anchor-201.json",
+                "state_transitions": _active_anchor_transitions("anchor-201"),
             },
         )
         cells = [
@@ -132,6 +176,7 @@ def _surface_version(
         "cohort_id": "fixture-m4-cohort-v1",
         "domain": domain,
         "candidate_family": "fixture-matmul-family",
+        "anchor_lifecycle_policy": _strict_anchor_lifecycle_policy(),
         "coordinate": {
             "axis": "s",
             "transform": "identity",
@@ -207,6 +252,9 @@ def _two_dimensional_surface(
                 "observation_validity": "QUALIFIED",
                 "frontier_role": "ACTIVE",
                 "evidence_ref": f"artifact://frontier/{candidate_family}-{anchor_id}.json",
+                "state_transitions": _active_anchor_transitions(
+                    f"{candidate_family}-{anchor_id}"
+                ),
             }
         )
     surface: dict[str, object] = {
@@ -217,6 +265,7 @@ def _two_dimensional_surface(
         "domain": domain,
         "candidate_family": candidate_family,
         "algorithm_family": algorithm_family,
+        "anchor_lifecycle_policy": _strict_anchor_lifecycle_policy(),
         "coordinate": {
             "axes": ["m", "n"],
             "transform": "identity",
@@ -304,6 +353,9 @@ def _two_dimensional_grid_surface(
             "evidence_ref": (
                 f"artifact://frontier/{candidate_family}-anchor-d.json"
             ),
+            "state_transitions": _active_anchor_transitions(
+                f"{candidate_family}-anchor-d"
+            ),
         }
     )
     surface["cells"].append(
@@ -372,6 +424,7 @@ def _write_surface_bundle(
     queries: list[dict[str, object]] | None = None,
     surface_updates: list[dict[str, object]] | None = None,
     candidate_envelopes: list[dict[str, object]] | None = None,
+    cohort_id: str = "fixture-m4-cohort-v1",
 ) -> Path:
     run = tmp_path / "surface-bundle"
     domain = _surface_version("v1", previous_version=None)["domain"]
@@ -390,7 +443,7 @@ def _write_surface_bundle(
             "topology": "single-socket",
             "software": "fixture-runtime-v1",
         },
-        "cohort_id": "fixture-m4-cohort-v1",
+        "cohort_id": cohort_id,
         "execution_domain": {
             "shape": {"s": 201},
             "dtype": "float32",
@@ -454,7 +507,7 @@ def _write_surface_bundle(
         "run_id": "fixture-surface-bundle",
         "status": "completed",
         "device": "cpu",
-        "hardware_cohort": "fixture-m4-cohort-v1",
+        "hardware_cohort": cohort_id,
         "artifacts": [
             {
                 "role": "diagnostic-evidence",
@@ -480,6 +533,89 @@ def _queries_by_id(result: dict[str, object]) -> dict[str, dict[str, object]]:
     queries = result["capability_surface_queries"]
     assert isinstance(queries, list)
     return {query["query_id"]: query for query in queries}
+
+
+def test_legacy_surface_replays_but_cannot_be_silently_upgraded(
+    tmp_path: Path,
+) -> None:
+    legacy = _surface_version("v1", previous_version=None)
+    legacy.pop("anchor_lifecycle_policy")
+    for anchor in legacy["anchors"]:
+        anchor.pop("state_transitions")
+    _refresh_surface_digest(legacy)
+    v2_template = _surface_version(
+        "v2", previous_version="v1", include_201_anchor=True
+    )
+    update = {
+        "update_id": "legacy-surface-update-must-not-upgrade",
+        "surface_id": legacy["surface_id"],
+        "base_version": "v1",
+        "new_version": "v2",
+        "anchor": v2_template["anchors"][1],
+        "cells": v2_template["cells"],
+        "uncertainty_policy": v2_template["uncertainty_policy"],
+        "evidence_refs": ["artifact://frontier/legacy-update-rejected.json"],
+    }
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[legacy],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": f"q128-{version}",
+                "surface_id": legacy["surface_id"],
+                "surface_version": version,
+                "shape": {"s": 128},
+                "domain": legacy["domain"],
+            }
+            for version in ("v1", "v2")
+        ],
+    )
+
+    queries = _queries_by_id(diagnose_run_bundle(run))
+
+    assert queries["q128-v1"]["status"] == "exact_anchor"
+    assert queries["q128-v2"]["status"] == "unknown"
+    assert queries["q128-v2"]["reason_code"] == "surface_version_not_found"
+
+
+def test_competing_surface_roots_fail_closed_independent_of_input_order(
+    tmp_path: Path,
+) -> None:
+    legacy = _surface_version("v1", previous_version=None)
+    legacy.pop("anchor_lifecycle_policy")
+    for anchor in legacy["anchors"]:
+        anchor.pop("state_transitions")
+    _refresh_surface_digest(legacy)
+    competing = _surface_version(
+        "v2", previous_version=None, include_201_anchor=True
+    )
+    queries = [
+        {
+            "query_id": f"q128-{version}",
+            "surface_id": legacy["surface_id"],
+            "surface_version": version,
+            "shape": {"s": 128},
+            "domain": legacy["domain"],
+        }
+        for version in ("v1", "v2")
+    ]
+
+    for index, surfaces in enumerate(
+        ([legacy, competing], [competing, legacy]), start=1
+    ):
+        run = _write_surface_bundle(
+            tmp_path / str(index),
+            surfaces=surfaces,
+            queries=queries,
+        )
+        result = diagnose_run_bundle(run)
+
+        assert result["capability_surfaces"] == []
+        assert all(
+            query["reason_code"] == "surface_version_not_found"
+            for query in result["capability_surface_queries"]
+        )
 
 
 def test_2d_retained_simplex_interpolates_and_rejects_false_bounding_box(
@@ -1488,6 +1624,486 @@ def test_qualified_201_anchor_creates_v2_without_rewriting_v1(
         "previous_input_digest": surfaces["v1"]["input_digest"],
         "added_anchor_ids": ["anchor-201"],
         "removed_anchor_ids": [],
+    }
+    assert [
+        transition["reason_code"]
+        for transition in surfaces["v2"]["anchor_state_transitions"]
+        if transition["anchor_id"] == "anchor-201"
+    ] == [
+        "exact-shape-best-of-correct-search-winner",
+        "anchor-qualification-gates-satisfied",
+        "independent-holdout-confirmed",
+    ]
+
+
+@pytest.mark.parametrize("invalidation_kind", ["correctness", "provenance"])
+def test_invalid_anchor_retracts_into_a_new_replayable_surface_version(
+    tmp_path: Path,
+    invalidation_kind: str,
+) -> None:
+    v2 = _surface_version(
+        "v2", previous_version=None, include_201_anchor=True
+    )
+    retracted_template = _surface_version("v3", previous_version="v2")
+    update = {
+        "update_id": f"surface-update-{invalidation_kind}-retract-201",
+        "operation": "retract_anchor",
+        "surface_id": "surface://fixture/matmul/1d",
+        "base_version": "v2",
+        "new_version": "v3",
+        "anchor_id": "anchor-201",
+        "invalidation": {
+            "kind": invalidation_kind,
+            "reason_code": f"{invalidation_kind}-evidence-invalidated",
+            "evidence_refs": [
+                f"artifact://frontier/{invalidation_kind}-invalidation.json"
+            ],
+            "state_transitions": [
+                {
+                    "sequence": 4,
+                    "axis": "observation_validity",
+                    "from": "QUALIFIED",
+                    "to": "REVOKED",
+                    "reason_code": (
+                        f"{invalidation_kind}-evidence-invalidated"
+                    ),
+                    "evidence_refs": [
+                        f"artifact://frontier/{invalidation_kind}-invalidation.json"
+                    ],
+                },
+                {
+                    "sequence": 5,
+                    "axis": "frontier_role",
+                    "from": "ACTIVE",
+                    "to": "REVOKED_ROLE",
+                    "reason_code": (
+                        f"{invalidation_kind}-evidence-invalidated"
+                    ),
+                    "evidence_refs": [
+                        f"artifact://frontier/{invalidation_kind}-invalidation.json"
+                    ],
+                },
+            ],
+        },
+        "cells": retracted_template["cells"],
+        "uncertainty_policy": retracted_template["uncertainty_policy"],
+        "evidence_refs": ["artifact://frontier/retract-anchor-201.json"],
+    }
+    domain = v2["domain"]
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[v2],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": "q201-v2",
+                "surface_id": v2["surface_id"],
+                "surface_version": "v2",
+                "shape": {"s": 201},
+                "domain": domain,
+            },
+            {
+                "query_id": "q201-v3",
+                "surface_id": v2["surface_id"],
+                "surface_version": "v3",
+                "shape": {"s": 201},
+                "domain": domain,
+            },
+        ],
+    )
+
+    first = diagnose_run_bundle(run)
+    replay = diagnose_run_bundle(run)
+
+    assert replay == first
+    queries = _queries_by_id(first)
+    assert queries["q201-v2"]["status"] == "exact_anchor"
+    assert queries["q201-v3"]["status"] == "interpolated"
+    surfaces = {
+        surface["version"]: surface for surface in first["capability_surfaces"]
+    }
+    assert surfaces["v2"]["anchor_ids"] == [
+        "anchor-128",
+        "anchor-201",
+        "anchor-512",
+    ]
+    assert surfaces["v3"]["anchor_ids"] == ["anchor-128", "anchor-512"]
+    assert surfaces["v3"]["transition"]["removed_anchor_ids"] == [
+        "anchor-201"
+    ]
+    assert surfaces["v3"]["anchor_state_transitions"][-2:] == [
+        {
+            "anchor_id": "anchor-201",
+            "sequence": 4,
+            "axis": "observation_validity",
+            "from": "QUALIFIED",
+            "to": "REVOKED",
+            "reason_code": f"{invalidation_kind}-evidence-invalidated",
+            "evidence_refs": [
+                f"artifact://frontier/{invalidation_kind}-invalidation.json"
+            ],
+        },
+        {
+            "anchor_id": "anchor-201",
+            "sequence": 5,
+            "axis": "frontier_role",
+            "from": "ACTIVE",
+            "to": "REVOKED_ROLE",
+            "reason_code": f"{invalidation_kind}-evidence-invalidated",
+            "evidence_refs": [
+                f"artifact://frontier/{invalidation_kind}-invalidation.json"
+            ],
+        },
+    ]
+
+
+def test_retraction_without_a_complete_append_only_history_fails_closed(
+    tmp_path: Path,
+) -> None:
+    v2 = _surface_version(
+        "v2", previous_version=None, include_201_anchor=True
+    )
+    retracted_template = _surface_version("v3", previous_version="v2")
+    evidence_refs = ["artifact://frontier/correctness-invalidation.json"]
+    update = {
+        "update_id": "surface-update-incomplete-retract-201",
+        "operation": "retract_anchor",
+        "surface_id": v2["surface_id"],
+        "base_version": "v2",
+        "new_version": "v3",
+        "anchor_id": "anchor-201",
+        "invalidation": {
+            "kind": "correctness",
+            "reason_code": "correctness-evidence-invalidated",
+            "evidence_refs": evidence_refs,
+            "state_transitions": [
+                {
+                    "sequence": 4,
+                    "axis": "observation_validity",
+                    "from": "QUALIFIED",
+                    "to": "REVOKED",
+                    "reason_code": "correctness-evidence-invalidated",
+                    "evidence_refs": evidence_refs,
+                }
+            ],
+        },
+        "cells": retracted_template["cells"],
+        "uncertainty_policy": retracted_template["uncertainty_policy"],
+        "evidence_refs": ["artifact://frontier/retract-anchor-201.json"],
+    }
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[v2],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": "q201-v3",
+                "surface_id": v2["surface_id"],
+                "surface_version": "v3",
+                "shape": {"s": 201},
+                "domain": v2["domain"],
+            }
+        ],
+    )
+
+    result = diagnose_run_bundle(run)
+
+    query = _queries_by_id(result)["q201-v3"]
+    assert query["status"] == "unknown"
+    assert query["reason_code"] == "surface_version_not_found"
+    assert query["surface"]["surface_id"] == v2["surface_id"]
+    assert query["surface"]["version"] == "v3"
+
+
+@pytest.mark.parametrize(
+    "continuity_evidence_refs",
+    [None, ["not-even-an-artifact-uri"]],
+)
+def test_anchor_update_does_not_refit_across_an_unvalidated_regime(
+    tmp_path: Path,
+    continuity_evidence_refs: list[str] | None,
+) -> None:
+    v1 = _surface_version("v1", previous_version=None)
+    v2_template = _surface_version(
+        "v2", previous_version="v1", include_201_anchor=True
+    )
+    cells = json.loads(json.dumps(v2_template["cells"]))
+    cells[1]["regime_id"] = "unvalidated-kernel-regime-v2"
+    update = {
+        "update_id": "surface-update-unvalidated-regime-anchor-201",
+        "surface_id": v1["surface_id"],
+        "base_version": "v1",
+        "new_version": "v2",
+        "anchor": v2_template["anchors"][1],
+        "cells": cells,
+        "uncertainty_policy": v2_template["uncertainty_policy"],
+        "evidence_refs": ["artifact://frontier/unvalidated-regime-v2.json"],
+    }
+    if continuity_evidence_refs is not None:
+        update["continuity_evidence_refs"] = continuity_evidence_refs
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[v1],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": "q201-v1",
+                "surface_id": v1["surface_id"],
+                "surface_version": "v1",
+                "shape": {"s": 201},
+                "domain": v1["domain"],
+            },
+            {
+                "query_id": "q201-v2",
+                "surface_id": v1["surface_id"],
+                "surface_version": "v2",
+                "shape": {"s": 201},
+                "domain": v1["domain"],
+            },
+        ],
+    )
+
+    result = diagnose_run_bundle(run)
+
+    queries = _queries_by_id(result)
+    assert queries["q201-v1"]["status"] == "interpolated"
+    assert queries["q201-v2"]["status"] == "unknown"
+    assert queries["q201-v2"]["reason_code"] == "shape_regime_unvalidated"
+    surfaces = {
+        surface["version"]: surface for surface in result["capability_surfaces"]
+    }
+    assert surfaces["v2"]["transition"]["added_anchor_ids"] == [
+        "anchor-201"
+    ]
+
+
+def test_slower_observation_cannot_lower_an_existing_active_anchor(
+    tmp_path: Path,
+) -> None:
+    v1 = _surface_version("v1", previous_version=None)
+    slower_anchor = json.loads(json.dumps(v1["anchors"][0]))
+    slower_anchor["anchor_id"] = "slower-anchor-128"
+    slower_anchor["candidate_id"] = "fixture.matmul.slower.128"
+    slower_anchor["effective_rate"] = 900_000_000_000.0
+    slower_anchor["evidence_ref"] = (
+        "artifact://frontier/slower-observation-128.json"
+    )
+    update = {
+        "update_id": "surface-update-slower-observation-128",
+        "surface_id": v1["surface_id"],
+        "base_version": "v1",
+        "new_version": "v2",
+        "anchor": slower_anchor,
+        "cells": [
+            {
+                **v1["cells"][0],
+                "anchor_ids": ["slower-anchor-128", "anchor-512"],
+            }
+        ],
+        "uncertainty_policy": v1["uncertainty_policy"],
+        "evidence_refs": [
+            "artifact://frontier/slower-observation-preserved.json"
+        ],
+    }
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[v1],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": "q128-v1",
+                "surface_id": v1["surface_id"],
+                "surface_version": "v1",
+                "shape": {"s": 128},
+                "domain": v1["domain"],
+            },
+            {
+                "query_id": "q128-v2",
+                "surface_id": v1["surface_id"],
+                "surface_version": "v2",
+                "shape": {"s": 128},
+                "domain": v1["domain"],
+            },
+        ],
+    )
+
+    result = diagnose_run_bundle(run)
+
+    queries = _queries_by_id(result)
+    assert queries["q128-v1"]["status"] == "exact_anchor"
+    assert queries["q128-v1"]["effective_rate"]["value"] == (
+        1_200_000_000_000.0
+    )
+    assert queries["q128-v2"]["status"] == "unknown"
+    assert queries["q128-v2"]["reason_code"] == "surface_version_not_found"
+    assert [
+        surface["version"] for surface in result["capability_surfaces"]
+    ] == ["v1"]
+
+
+def test_faster_qualified_anchor_supersedes_only_in_a_new_surface_version(
+    tmp_path: Path,
+) -> None:
+    v1 = _surface_version("v1", previous_version=None)
+    faster_anchor = json.loads(json.dumps(v1["anchors"][0]))
+    faster_anchor["anchor_id"] = "faster-anchor-128"
+    faster_anchor["candidate_id"] = "fixture.matmul.faster.128"
+    faster_anchor["effective_rate"] = 1_400_000_000_000.0
+    faster_anchor["evidence_ref"] = (
+        "artifact://frontier/faster-qualified-anchor-128.json"
+    )
+    faster_anchor["state_transitions"] = _active_anchor_transitions(
+        "faster-anchor-128"
+    )
+    update = {
+        "update_id": "surface-update-faster-anchor-128",
+        "surface_id": v1["surface_id"],
+        "base_version": "v1",
+        "new_version": "v2",
+        "anchor": faster_anchor,
+        "cells": [
+            {
+                **v1["cells"][0],
+                "anchor_ids": ["faster-anchor-128", "anchor-512"],
+            }
+        ],
+        "uncertainty_policy": v1["uncertainty_policy"],
+        "evidence_refs": [
+            "artifact://frontier/faster-anchor-128-confirmation.json"
+        ],
+    }
+    run = _write_surface_bundle(
+        tmp_path,
+        surfaces=[v1],
+        surface_updates=[update],
+        queries=[
+            {
+                "query_id": f"q128-{version}",
+                "surface_id": v1["surface_id"],
+                "surface_version": version,
+                "shape": {"s": 128},
+                "domain": v1["domain"],
+            }
+            for version in ("v1", "v2")
+        ],
+    )
+
+    result = diagnose_run_bundle(run)
+
+    queries = _queries_by_id(result)
+    assert queries["q128-v1"]["effective_rate"]["value"] == (
+        1_200_000_000_000.0
+    )
+    assert queries["q128-v2"]["effective_rate"]["value"] == (
+        1_400_000_000_000.0
+    )
+    surfaces = {
+        surface["version"]: surface for surface in result["capability_surfaces"]
+    }
+    assert surfaces["v2"]["transition"]["added_anchor_ids"] == [
+        "faster-anchor-128"
+    ]
+    assert surfaces["v2"]["transition"]["removed_anchor_ids"] == [
+        "anchor-128"
+    ]
+    assert surfaces["v2"]["anchor_state_transitions"][-1] == {
+        "anchor_id": "anchor-128",
+        "sequence": 4,
+        "axis": "frontier_role",
+        "from": "ACTIVE",
+        "to": "SUPERSEDED",
+        "reason_code": "faster-qualified-anchor-at-same-coordinate",
+        "evidence_refs": [
+            "artifact://frontier/faster-anchor-128-confirmation.json"
+        ],
+    }
+
+
+def test_changed_cohort_requires_an_independent_surface_identity(
+    tmp_path: Path,
+) -> None:
+    old_surface = _surface_version("v1", previous_version=None)
+    changed_cohort = "fixture-m4-cohort-runtime-v2"
+    mismatched_anchor = json.loads(json.dumps(old_surface["anchors"][0]))
+    mismatched_anchor["anchor_id"] = "anchor-128-runtime-v2"
+    mismatched_anchor["cohort_id"] = changed_cohort
+    rejected_update = {
+        "update_id": "surface-update-cross-cohort-rejected",
+        "surface_id": old_surface["surface_id"],
+        "base_version": "v1",
+        "new_version": "v2",
+        "anchor": mismatched_anchor,
+        "cells": old_surface["cells"],
+        "uncertainty_policy": old_surface["uncertainty_policy"],
+        "evidence_refs": ["artifact://frontier/cohort-change.json"],
+    }
+    rejected = diagnose_run_bundle(
+        _write_surface_bundle(
+            tmp_path / "rejected-lineage",
+            surfaces=[old_surface],
+            surface_updates=[rejected_update],
+            queries=[
+                {
+                    "query_id": "q128-v2",
+                    "surface_id": old_surface["surface_id"],
+                    "surface_version": "v2",
+                    "shape": {"s": 128},
+                    "domain": old_surface["domain"],
+                }
+            ],
+        )
+    )
+    assert rejected["capability_surface_queries"][0]["reason_code"] == (
+        "surface_version_not_found"
+    )
+
+    independent_surface = json.loads(json.dumps(old_surface))
+    independent_surface["surface_id"] = (
+        "surface://fixture/matmul/1d/cohort-runtime-v2"
+    )
+    independent_surface["cohort_id"] = changed_cohort
+    independent_surface["previous_version"] = None
+    for anchor in independent_surface["anchors"]:
+        anchor["cohort_id"] = changed_cohort
+    independent_surface["evidence_refs"] = [
+        "artifact://frontier/independent-cohort-runtime-v2.json"
+    ]
+    _refresh_surface_digest(independent_surface)
+    result = diagnose_run_bundle(
+        _write_surface_bundle(
+            tmp_path / "independent-surface",
+            surfaces=[old_surface, independent_surface],
+            queries=[
+                {
+                    "query_id": "q128-old-cohort",
+                    "surface_id": old_surface["surface_id"],
+                    "surface_version": "v1",
+                    "shape": {"s": 128},
+                    "domain": old_surface["domain"],
+                },
+                {
+                    "query_id": "q128-new-cohort",
+                    "surface_id": independent_surface["surface_id"],
+                    "surface_version": "v1",
+                    "shape": {"s": 128},
+                    "domain": independent_surface["domain"],
+                },
+            ],
+            cohort_id=changed_cohort,
+        )
+    )
+
+    queries = _queries_by_id(result)
+    assert queries["q128-old-cohort"]["reason_code"] == (
+        "surface_cohort_mismatch"
+    )
+    assert queries["q128-new-cohort"]["status"] == "exact_anchor"
+    assert queries["q128-new-cohort"]["cohort_id"] == changed_cohort
+    assert {
+        surface["surface_id"] for surface in result["capability_surfaces"]
+    } == {
+        old_surface["surface_id"],
+        independent_surface["surface_id"],
     }
 
 
