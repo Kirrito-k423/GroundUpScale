@@ -1,0 +1,12 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: BenchmarkCase
+metadata:
+  name: ascend-matmul
+  version: 0.1.0
+spec:
+  cases:
+    - id: ascend-matmul-q-proj
+      scope: model/two-layer-transformer/transformer/layer_0/attention/q_proj
+      mode: operator
+      warmup_iterations: 20
+      samples: 100

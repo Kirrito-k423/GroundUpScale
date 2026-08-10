@@ -1,0 +1,1487 @@
+{
+  "cohort_evidence": {
+    "path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-hardware-cohort-20260810-v1.json",
+    "schema": "groundupscale.dev/hardware-cohort/v1alpha1",
+    "sha256": "f3d2d7cf52d94d801ece0c8ebd6a976dc924ecb873dc43f751d212706bb97055"
+  },
+  "environment": {
+    "checks": {
+      "competing_process": false,
+      "health": "OK",
+      "physical_logical_mapping": "resolved",
+      "runtime_contract": "compatible",
+      "system_probe": "completed"
+    },
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "device": "ascend-npu",
+    "device_count": 1,
+    "device_name": "Ascend910B2",
+    "eligible": true,
+    "evidence_ref": "artifact://adapter/preflight.json",
+    "logical_device": "npu:0",
+    "operation": "preflight",
+    "reason_codes": [],
+    "runtime_compatibility": {
+      "contract_id": "ascend-npu-runtime-v1",
+      "environment_kind": "trusted-hardware-calibration",
+      "observed": {
+        "cann": "8.5.0",
+        "python": "3.11.14",
+        "torch": "2.7.1+cpu",
+        "torch_npu": "2.7.1"
+      },
+      "requirements": {
+        "cann_major_minor": "8.5",
+        "python_major_minor": "3.11",
+        "torch_major_minor": "2.7",
+        "torch_npu_major_minor": "2.7"
+      },
+      "rule": "all observed major.minor versions equal the declared trusted NPU contract",
+      "separation_policy": "pyproject torch pin governs portable compiler CI; this contract governs trusted Ascend measurement",
+      "status": "compatible"
+    },
+    "runtime_current_device": 0,
+    "schema": "groundupscale.dev/measurement-preflight/v1alpha1",
+    "status": "passed",
+    "system_probe_ref": "artifact://adapter/cohort.json#system_probe",
+    "torch_npu_version": "2.7.1",
+    "torch_version": "2.7.1+cpu"
+  },
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "probes": [
+    {
+      "cases": [
+        {
+          "achieved_rate": 1865461467271.3997,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 2.2466300464429878e-05,
+            "max_relative_error": 0.002107320463040352,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 76,
+          "iqr_ns": 461.8430608197268,
+          "iqr_over_median": 0.025979462918059627,
+          "median_ns": 17777.236668687117,
+          "q1_ns": 17559.73618281515,
+          "q3_ns": 18021.57924363488,
+          "samples_ns": [
+            17478.420546180325,
+            17412.10567323785,
+            17998.94790900381,
+            17951.579470383494,
+            18218.4216223265,
+            18157.894674100375,
+            18089.473247528076,
+            17862.368571130854,
+            18133.68420851858,
+            17838.94708282069,
+            17715.526254553544,
+            17250.788839239824,
+            17352.367702283358,
+            17713.68478473864,
+            17586.84139502676,
+            16310.789083179674,
+            17639.999326906705,
+            17998.684393732172,
+            17686.315272983753,
+            18185.526132583618
+          ],
+          "shape": [
+            255,
+            255,
+            255
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 33162750
+        },
+        {
+          "achieved_rate": 1789133041565.3364,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 2.1024073092235085e-05,
+            "max_relative_error": 0.0020716278694788816,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 59,
+          "iqr_ns": 543.2200633873363,
+          "iqr_over_median": 0.02896466744683682,
+          "median_ns": 18754.576222371245,
+          "q1_ns": 18570.33927561873,
+          "q3_ns": 19113.559339006068,
+          "samples_ns": [
+            18843.390173831227,
+            18649.830656536556,
+            19125.762632337668,
+            18651.865296444652,
+            18611.18664175777,
+            18558.64363201594,
+            18275.254863803668,
+            19199.999712281307,
+            18917.62725377487,
+            18424.068467091707,
+            19256.6099813429,
+            18665.762270911266,
+            19109.491574562202,
+            18361.356298802264,
+            18514.237161410056,
+            19347.118119062005,
+            23363.390211331644,
+            18956.610711954407,
+            18918.643563480702,
+            18574.237823486328
+          ],
+          "shape": [
+            256,
+            256,
+            256
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 1804716050472.8398,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 2.1693795538624272e-05,
+            "max_relative_error": 0.003420490803845844,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 51,
+          "iqr_ns": 268.4306864644932,
+          "iqr_over_median": 0.014269595986834954,
+          "median_ns": 18811.37256528817,
+          "q1_ns": 18660.39253917395,
+          "q3_ns": 18928.823225638444,
+          "samples_ns": [
+            18821.960570765477,
+            19019.999924828026,
+            18846.274590959736,
+            18785.490709192614,
+            19174.90187813254,
+            18253.333428326776,
+            18808.62782983219,
+            18519.21572404749,
+            18594.90193572699,
+            18896.862572314694,
+            18718.823498370602,
+            18903.528942781337,
+            18571.37212566301,
+            19004.706074209775,
+            18675.29457690669,
+            19103.529406528847,
+            19335.29447106754,
+            18615.686425975724,
+            18764.706218943877,
+            18814.11730074415
+          ],
+          "shape": [
+            257,
+            257,
+            257
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 33949186
+        },
+        {
+          "achieved_rate": 6407362139573.23,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 3.264747294906556e-05,
+            "max_relative_error": 0.007898447296918281,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 45,
+          "iqr_ns": 242.77766545613486,
+          "iqr_over_median": 0.013844002978910391,
+          "median_ns": 17536.666658189562,
+          "q1_ns": 17375.111248758105,
+          "q3_ns": 17617.88891421424,
+          "samples_ns": [
+            22530.221939086914,
+            17706.22200436062,
+            17542.22181108263,
+            17964.888943566217,
+            17372.443940904406,
+            17461.7780579461,
+            17503.999339209662,
+            17352.444595760768,
+            17588.44455083211,
+            17858.66684383816,
+            17354.66718673706,
+            17379.55543729994,
+            17929.777834150525,
+            17531.111505296496,
+            17543.11058256361,
+            17376.000351376002,
+            17583.110597398547,
+            17557.777298821344,
+            17308.8894950019,
+            17290.22264480591
+          ],
+          "shape": [
+            383,
+            383,
+            383
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 112363774
+        },
+        {
+          "achieved_rate": 6573070631652.017,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 3.331888343183209e-05,
+            "max_relative_error": 0.00733321897851123,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 59,
+          "iqr_ns": 256.9500672615177,
+          "iqr_over_median": 0.014913973463179377,
+          "median_ns": 17228.81349466615,
+          "q1_ns": 17089.237095945973,
+          "q3_ns": 17346.18716320749,
+          "samples_ns": [
+            18082.372212814073,
+            17867.11862531759,
+            17235.254837294757,
+            17093.21999953965,
+            17450.847868191995,
+            17289.15157964674,
+            17199.322328729144,
+            17113.22089373055,
+            17222.37215203754,
+            16963.728403641006,
+            17077.28838516494,
+            17186.441663968362,
+            17009.490627353473,
+            16452.88123922833,
+            17457.96607712568,
+            17288.474713341664,
+            17365.76274289923,
+            17339.66196997691,
+            17055.931737867453,
+            17237.966343507927
+          ],
+          "shape": [
+            384,
+            384,
+            384
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 113246208
+        },
+        {
+          "achieved_rate": 6700450792514.526,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 3.0303015151389445e-05,
+            "max_relative_error": 0.009819051846838144,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 60,
+          "iqr_ns": 298.50055774052817,
+          "iqr_over_median": 0.017524150926032073,
+          "median_ns": 17033.66736570994,
+          "q1_ns": 16898.333529631298,
+          "q3_ns": 17196.834087371826,
+          "samples_ns": [
+            18199.33255513509,
+            16669.33298110962,
+            17148.999373118084,
+            16899.333397547405,
+            17006.33366902669,
+            17075.999577840168,
+            17295.000950495403,
+            16849.666833877563,
+            17185.332377751667,
+            16902.3334980011,
+            17286.66623433431,
+            16721.00027402242,
+            16919.33274269104,
+            17044.66740290324,
+            16398.66630236308,
+            17214.33401107788,
+            17022.667328516643,
+            17457.99978574117,
+            16895.333925882976,
+            17191.000779469807
+          ],
+          "shape": [
+            385,
+            385,
+            385
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 114133250
+        },
+        {
+          "achieved_rate": 13900949743767.588,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 5.0983955276251436e-05,
+            "max_relative_error": 0.06619962866456656,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 64,
+          "iqr_ns": 66.79678335785866,
+          "iqr_over_median": 0.0034794237727854413,
+          "median_ns": 19197.656773030758,
+          "q1_ns": 19155.078567564487,
+          "q3_ns": 19221.875350922346,
+          "samples_ns": [
+            19160.00060737133,
+            19042.812287807465,
+            19170.312210917473,
+            19048.12455177307,
+            36545.31389474869,
+            19426.561892032623,
+            19140.31244814396,
+            19333.437085151672,
+            19206.250086426735,
+            19264.686852693558,
+            19195.62555849552,
+            19178.124144673347,
+            19255.62508404255,
+            19210.62543988228,
+            19210.62543988228,
+            19205.31317591667,
+            19127.188250422478,
+            19199.687987565994,
+            19177.187234163284,
+            19089.37469124794
+          ],
+          "shape": [
+            511,
+            511,
+            511
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 266865662
+        },
+        {
+          "achieved_rate": 15777383538479.889,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 4.350061918501069e-05,
+            "max_relative_error": 0.012898796551930446,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 66,
+          "iqr_ns": 219.92443185863885,
+          "iqr_over_median": 0.012926131900087113,
+          "median_ns": 17013.939944180573,
+          "q1_ns": 16912.120761293354,
+          "q3_ns": 17132.045193151993,
+          "samples_ns": [
+            17126.363335233746,
+            17082.72731665409,
+            17291.515162496857,
+            17164.544625715775,
+            16995.15183766683,
+            16914.848125342167,
+            17208.78752795133,
+            17032.72805069432,
+            17291.515162496857,
+            17104.242787216648,
+            16912.120761293354,
+            16947.576493927925,
+            16912.120761293354,
+            17149.09076690674,
+            16852.727442076713,
+            16911.515683838814,
+            16693.03034291123,
+            16871.212106762512,
+            16956.06022170096,
+            17082.120432998196
+          ],
+          "shape": [
+            512,
+            512,
+            512
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 14009423279435.47,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 4.980668620646611e-05,
+            "max_relative_error": 0.32897367107662984,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 45,
+          "iqr_ns": 200.8888456556524,
+          "iqr_over_median": 0.010423030040381245,
+          "median_ns": 19273.555278778076,
+          "q1_ns": 19169.777631759644,
+          "q3_ns": 19370.666477415296,
+          "samples_ns": [
+            19185.77750523885,
+            19579.999976687963,
+            19283.1105656094,
+            19330.667124854193,
+            19073.332680596246,
+            19313.332769605848,
+            19263.999991946752,
+            19371.999634636773,
+            19204.889403449164,
+            19261.333677503797,
+            19119.11169687907,
+            19121.77801132202,
+            19104.444980621338,
+            18991.111384497748,
+            19197.77790705363,
+            19500.444995032416,
+            19370.222091674805,
+            19346.66633605957,
+            19565.33326043023,
+            19403.99938159519
+          ],
+          "shape": [
+            513,
+            513,
+            513
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 270011394
+        },
+        {
+          "achieved_rate": 25261233740387.938,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 7.701020199135655e-05,
+            "max_relative_error": 0.06645397848005487,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 68,
+          "iqr_ns": 130.0748656777796,
+          "iqr_over_median": 0.003641093706072356,
+          "median_ns": 35724.11922847523,
+          "q1_ns": 35654.48434913859,
+          "q3_ns": 35784.55921481637,
+          "samples_ns": [
+            35784.99836080214,
+            35585.88378569659,
+            35596.46886937758,
+            35633.23441673728,
+            35746.76373425652,
+            35733.23698604808,
+            35659.11685719209,
+            35640.5868249781,
+            35800.5867284887,
+            35792.93980317957,
+            35784.412832821115,
+            35703.52932986091,
+            35798.82313223446,
+            35704.99840904685,
+            35668.53088491103,
+            35786.176429075356,
+            35715.00147090239,
+            35777.0604245803,
+            35634.117967942184,
+            35779.707572039435
+          ],
+          "shape": [
+            767,
+            767,
+            767
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 902435326
+        },
+        {
+          "achieved_rate": 49203044645917.39,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 8.788574959339712e-05,
+            "max_relative_error": 0.06249922407794806,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 66,
+          "iqr_ns": 49.92430860346212,
+          "iqr_over_median": 0.0027113799531511737,
+          "median_ns": 18412.878115971886,
+          "q1_ns": 18386.06008977601,
+          "q3_ns": 18435.98439837947,
+          "samples_ns": [
+            18487.576282385624,
+            18483.33351539843,
+            18398.485400459984,
+            18401.212764508797,
+            18390.90838576808,
+            18507.272908181854,
+            18430.3034435619,
+            18491.212165716923,
+            18413.635817441074,
+            18429.39311807806,
+            18379.697293946236,
+            18388.18102171927,
+            18443.94026380597,
+            18412.120414502693,
+            18372.122085455692,
+            18350.303173065186,
+            18328.48426067468,
+            18421.212832132976,
+            18373.939124020664,
+            18433.332443237305
+          ],
+          "shape": [
+            768,
+            768,
+            768
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 905969664
+        },
+        {
+          "achieved_rate": 19213860175840.938,
+          "assumptions": [
+            "one multiply and one add count as two FLOPs"
+          ],
+          "correctness": {
+            "atol": 0.001,
+            "max_absolute_error": 7.51796038827024e-05,
+            "max_relative_error": 0.08616895012700444,
+            "oracle": "cpu-float64-matmul",
+            "rtol": 0.001,
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-matmul",
+          "inner_iterations": 65,
+          "iqr_ns": 135.46118369468604,
+          "iqr_over_median": 0.002861676104594669,
+          "median_ns": 47336.30877274733,
+          "q1_ns": 47263.76900306115,
+          "q3_ns": 47399.230186755834,
+          "samples_ns": [
+            47565.84534278283,
+            47373.845027043266,
+            47193.84633577787,
+            47256.6164456881,
+            47306.76871079665,
+            47211.38293926533,
+            47266.153188852164,
+            47332.6169527494,
+            47225.53766690768,
+            47340.000592745266,
+            47392.92218134953,
+            47249.84535804162,
+            47316.00101177509,
+            47331.076401930586,
+            47418.15420297476,
+            47378.46301152156,
+            47419.07853346605,
+            47599.69344505897,
+            47435.07825411283,
+            47352.61476956881
+          ],
+          "shape": [
+            769,
+            769,
+            769
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "FLOP/s",
+          "work": 909513218
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "matrix-fp32-cube",
+      "probe_kind": "matrix_multiply",
+      "resource": "compute.fp32",
+      "unit": "FLOP/s"
+    },
+    {
+      "cases": [
+        {
+          "achieved_rate": 966040701230.163,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 66,
+          "iqr_ns": 659.9241133892174,
+          "iqr_over_median": 0.07599761023975551,
+          "median_ns": 8683.485063639553,
+          "q1_ns": 8351.51496258649,
+          "q3_ns": 9011.439075975708,
+          "samples_ns": [
+            8303.3334125172,
+            8367.575479276253,
+            8541.515379241018,
+            8581.818053216644,
+            8698.485114357689,
+            9073.939287301266,
+            9851.515293121338,
+            8746.666438651808,
+            8108.787464373039,
+            7835.4541099432745,
+            8990.605672200521,
+            8710.909070390644,
+            9593.636700601288,
+            8883.03012558908,
+            9354.545311494307,
+            8668.48501292142,
+            8160.303036371867,
+            7952.121171084317,
+            9159.394285895607,
+            8608.484810048883
+          ],
+          "shape": [
+            1048575
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 8388600
+        },
+        {
+          "achieved_rate": 1103457447361.7876,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 71,
+          "iqr_ns": 474.2957756552887,
+          "iqr_over_median": 0.06238999437082577,
+          "median_ns": 7602.112813734673,
+          "q1_ns": 7354.013936620364,
+          "q3_ns": 7828.309712275653,
+          "samples_ns": [
+            5971.830915397321,
+            7726.7608172456985,
+            6921.971767721042,
+            7304.788475305262,
+            7855.774651111012,
+            8169.295922131606,
+            7625.352328931782,
+            7493.803198908417,
+            7370.422423725397,
+            8326.760480101679,
+            6998.591439824709,
+            7554.6477881955425,
+            7578.873298537564,
+            7236.620070229114,
+            7819.1547326638665,
+            7662.253480562022,
+            7528.169054380605,
+            8371.54959289121,
+            7817.464815059178,
+            8016.337811107367
+          ],
+          "shape": [
+            1048576
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 8388608
+        },
+        {
+          "achieved_rate": 1115771669112.2915,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 73,
+          "iqr_ns": 335.4796399808911,
+          "iqr_over_median": 0.0446222210975767,
+          "median_ns": 7518.219212963157,
+          "q1_ns": 7453.904168246543,
+          "q3_ns": 7789.383808227434,
+          "samples_ns": [
+            5861.369714345017,
+            7455.890309320737,
+            7204.657548094449,
+            7798.6300808109645,
+            7404.657259379348,
+            7969.589266058517,
+            7535.3424843043495,
+            6975.342149603856,
+            8550.136873166855,
+            7462.739944458008,
+            7527.6714481719555,
+            8054.520169349566,
+            8302.465693591392,
+            7455.342436489994,
+            7786.301717366257,
+            7485.479524690811,
+            7718.630032996609,
+            7508.766977754358,
+            7592.055079055159,
+            7449.589363516194
+          ],
+          "shape": [
+            1048577
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 8388616
+        },
+        {
+          "achieved_rate": 3178043274268.1035,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 89,
+          "iqr_ns": 59.04509780112312,
+          "iqr_over_median": 0.005592343827608595,
+          "median_ns": 10558.20236045323,
+          "q1_ns": 10527.809014481105,
+          "q3_ns": 10586.854112282228,
+          "samples_ns": [
+            10495.280951596378,
+            10579.999912990614,
+            10556.62953451778,
+            10527.865270550332,
+            10597.977745399046,
+            10568.764102592897,
+            10520.00013630042,
+            10602.24717922425,
+            10495.280951596378,
+            10540.674241741051,
+            10542.471757095851,
+            10568.314723754196,
+            10541.798023695357,
+            10525.168327803023,
+            10627.41574276699,
+            10583.146234576621,
+            10559.77518638868,
+            10657.752497812335,
+            10527.640246273426,
+            10607.191016165058
+          ],
+          "shape": [
+            4194303
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 33554424
+        },
+        {
+          "achieved_rate": 3179227876182.2764,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 96,
+          "iqr_ns": 44.47872440020183,
+          "iqr_over_median": 0.004214286819402887,
+          "median_ns": 10554.270818829536,
+          "q1_ns": 10521.822919448217,
+          "q3_ns": 10566.30164384842,
+          "samples_ns": [
+            10542.708138624826,
+            10555.833578109741,
+            10447.708268960318,
+            10561.250150203705,
+            10556.45818511645,
+            10495.208203792572,
+            10622.500131527582,
+            10510.416080554327,
+            10525.625199079514,
+            10584.16689435641,
+            10486.250122388205,
+            10529.166708389917,
+            10554.791738589605,
+            10577.499866485596,
+            10548.750559488932,
+            10572.083294391632,
+            10484.375059604645,
+            10564.374427000681,
+            10573.125133911768,
+            10553.749899069468
+          ],
+          "shape": [
+            4194304
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 33554432
+        },
+        {
+          "achieved_rate": 3190707697321.3364,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 100,
+          "iqr_ns": 60.54967641830444,
+          "iqr_over_median": 0.005757697598833424,
+          "median_ns": 10516.300201416016,
+          "q1_ns": 10476.750433444977,
+          "q3_ns": 10537.300109863281,
+          "samples_ns": [
+            10326.000452041626,
+            10520.999431610107,
+            10400.79951286316,
+            10540.200471878052,
+            10536.400079727173,
+            10482.200384140015,
+            10578.399896621704,
+            10535.199642181396,
+            10529.600381851196,
+            10520.399808883667,
+            10494.999885559082,
+            10439.599752426147,
+            10438.799858093262,
+            10460.400581359863,
+            10682.599544525146,
+            10512.200593948364,
+            10540.000200271606,
+            10494.400262832642,
+            10580.19995689392,
+            10483.399629592896
+          ],
+          "shape": [
+            4194305
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 33554440
+        },
+        {
+          "achieved_rate": 4996936728376.751,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 100,
+          "iqr_ns": 88.54985237121582,
+          "iqr_over_median": 0.0032967182694361627,
+          "median_ns": 26859.999895095825,
+          "q1_ns": 26821.900606155396,
+          "q3_ns": 26910.45045852661,
+          "samples_ns": [
+            26925.39930343628,
+            26869.59981918335,
+            26861.600875854492,
+            26811.199188232422,
+            26858.39891433716,
+            26891.400814056396,
+            26844.99979019165,
+            26817.9988861084,
+            26823.201179504395,
+            26910.400390625,
+            26779.398918151855,
+            26830.00087738037,
+            26965.599060058594,
+            26837.20111846924,
+            26910.998821258545,
+            26775.999069213867,
+            26812.400817871094,
+            26944.20099258423,
+            26910.600662231445,
+            26908.80060195923
+          ],
+          "shape": [
+            16777215
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 134217720
+        },
+        {
+          "achieved_rate": 4997715383847.827,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 98,
+          "iqr_ns": 69.59146382857216,
+          "iqr_over_median": 0.002591299484376197,
+          "median_ns": 26855.816646498075,
+          "q1_ns": 26812.14347177622,
+          "q3_ns": 26881.734935604793,
+          "samples_ns": [
+            26776.734663515675,
+            26936.53106689453,
+            26871.632556526027,
+            26804.897249961385,
+            26836.531502859933,
+            26832.040475339305,
+            26813.06186987429,
+            26879.184100092672,
+            26777.347739861936,
+            26814.28558972417,
+            26899.79514297174,
+            26747.754641941614,
+            26864.489730523557,
+            26942.450173047124,
+            26936.73542567662,
+            26889.387442141164,
+            26847.143562472596,
+            26877.756021460707,
+            26877.756021460707,
+            26809.388277482012
+          ],
+          "shape": [
+            16777216
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 134217728
+        },
+        {
+          "achieved_rate": 4993962463584.805,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 100,
+          "iqr_ns": 97.90122509002686,
+          "iqr_over_median": 0.0036427007175755147,
+          "median_ns": 26876.00016593933,
+          "q1_ns": 26802.499294281006,
+          "q3_ns": 26900.400519371033,
+          "samples_ns": [
+            26889.20021057129,
+            26791.999340057373,
+            26879.20093536377,
+            26684.401035308838,
+            26891.99924468994,
+            26787.400245666504,
+            26866.600513458252,
+            26781.79979324341,
+            26871.19960784912,
+            26926.60093307495,
+            27005.600929260254,
+            26852.800846099854,
+            26898.200511932373,
+            26906.399726867676,
+            26898.40078353882,
+            26969.799995422363,
+            26743.8006401062,
+            26805.999279022217,
+            26989.600658416748,
+            26872.799396514893
+          ],
+          "shape": [
+            16777217
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 134217736
+        },
+        {
+          "achieved_rate": 1451906424891.0083,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 27,
+          "iqr_ns": 397.0419919049309,
+          "iqr_over_median": 0.0021475100374906257,
+          "median_ns": 184884.8130967882,
+          "q1_ns": 184706.4804147791,
+          "q3_ns": 185103.52240668403,
+          "samples_ns": [
+            185154.06714545356,
+            185860.7398139106,
+            186331.11317952475,
+            185420.74274133754,
+            185006.6714816623,
+            185419.25924795645,
+            184908.14279626918,
+            184677.03572026006,
+            185049.62214717158,
+            184508.88880976924,
+            184808.89002482095,
+            184844.44088406034,
+            184770.37217881944,
+            184861.48339730722,
+            185086.67416042753,
+            184639.25962094907,
+            184574.07421535917,
+            184952.59461579498,
+            184600.74177494756,
+            184716.2953129521
+          ],
+          "shape": [
+            33554431
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 268435448
+        },
+        {
+          "achieved_rate": 1452590252127.2744,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 27,
+          "iqr_ns": 458.1477906968794,
+          "iqr_over_median": 0.002479184474050752,
+          "median_ns": 184797.78148509836,
+          "q1_ns": 184616.11535814076,
+          "q3_ns": 185074.26314883764,
+          "samples_ns": [
+            185834.81400101274,
+            185458.5188406485,
+            185317.0394897461,
+            185074.8062133789,
+            184834.8158377188,
+            185036.2883673774,
+            185171.85140539097,
+            185074.08212732387,
+            184848.14961751303,
+            184922.2183227539,
+            184548.1484024613,
+            184382.2267320421,
+            184346.65821216724,
+            184680.0027070222,
+            184694.07823350694,
+            184616.30079481337,
+            184024.43991767036,
+            184674.81048018843,
+            184760.74713247793,
+            184615.55904812284
+          ],
+          "shape": [
+            33554432
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 268435456
+        },
+        {
+          "achieved_rate": 1454024056174.0964,
+          "assumptions": [
+            "copy counts one compulsory read and one compulsory write"
+          ],
+          "correctness": {
+            "oracle": "exact-cpu-source-copy",
+            "status": "passed"
+          },
+          "eligibility": {
+            "maximum_iqr_over_median": 0.1,
+            "reason": null
+          },
+          "eligible": true,
+          "implementation": "pytorch-ascend-hbm-copy",
+          "inner_iterations": 27,
+          "iqr_ns": 516.4897000348428,
+          "iqr_over_median": 0.0027976498985126815,
+          "median_ns": 184615.55904812284,
+          "q1_ns": 184461.10796045372,
+          "q3_ns": 184977.59766048857,
+          "samples_ns": [
+            185080.74018690322,
+            184906.6593028881,
+            185219.99429773403,
+            184999.25401475694,
+            184468.1457236961,
+            184734.82131958008,
+            184774.08091227213,
+            184559.25694218389,
+            184405.92730486835,
+            184970.37887573242,
+            184439.99467072662,
+            187574.81045193144,
+            184656.30213419595,
+            184574.8159620497,
+            184191.84508147064,
+            184410.37778501157,
+            184390.36828500254,
+            184470.37096376772,
+            185005.18798828125,
+            184572.59072197808
+          ],
+          "shape": [
+            33554433
+          ],
+          "threads": 1,
+          "timer": {
+            "resolution_ns": 20.0,
+            "source": "torch.npu.Event.elapsed_time"
+          },
+          "unit": "B/s",
+          "work": 268435464
+        }
+      ],
+      "dtype": "float32",
+      "probe_id": "hbm-fp32-copy",
+      "probe_kind": "memory_copy",
+      "resource": "memory.hbm",
+      "unit": "B/s"
+    }
+  ],
+  "quality": {
+    "eligible_shape_count_by_resource": {
+      "compute.fp32": 12,
+      "memory.hbm": 12
+    },
+    "reason_codes": [
+      "power-policy-unobserved"
+    ],
+    "status": "exploratory"
+  },
+  "schema": "groundupscale.dev/hardware-microbenchmark-observation/v1alpha1",
+  "software": {
+    "platform": "Linux-5.10.0-60.18.0.50.oe2203.aarch64-aarch64-with-glibc2.34",
+    "python": "3.11.14",
+    "torch": "2.7.1+cpu",
+    "torch_npu": "2.7.1"
+  },
+  "statistics": {
+    "per_shape": "median",
+    "probe_envelope": "P80 and P95 per Shape",
+    "resource_envelope": "maximum probe P80/P95",
+    "stability": "IQR/median <= 10%"
+  },
+  "suite": {
+    "name": "ascend-910b2-resource-envelope",
+    "version": "0.1.0"
+  },
+  "target": {
+    "device": "npu-0",
+    "hardware": "ascend-910b2"
+  },
+  "uncertainty": {
+    "maximum_iqr_over_median": 0.1,
+    "method": "per-shape-median-cross-shape-quantiles",
+    "optimistic_quantile": 0.95,
+    "robust_quantile": 0.8
+  },
+  "validity_domain": {
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "layout": "row-major-contiguous",
+    "logical_device": "npu:0",
+    "operation_classes": [
+      "MatMul",
+      "memory_copy"
+    ],
+    "shape_support": "observed-stratified-shapes-only"
+  }
+}

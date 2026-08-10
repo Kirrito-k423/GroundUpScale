@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
+import json
 from pathlib import Path
 from typing import Any
 
@@ -190,16 +191,46 @@ class SpecRepository:
             assert isinstance(profile, HardwareCapabilityProfileDocument)
             evidence_path = self._bounded_path(profile.spec.source.path)
             try:
-                evidence_digest = sha256(evidence_path.read_bytes()).hexdigest()
+                evidence_bytes = evidence_path.read_bytes()
             except OSError as error:
                 raise SpecValidationError(
                     f"cannot read capability evidence {evidence_path}: {error}"
                 ) from error
+            evidence_digest = sha256(evidence_bytes).hexdigest()
             if evidence_digest != profile.spec.source.sha256:
                 raise SpecValidationError(
                     f"{evidence_path}: expected capability evidence sha256 "
                     f"{profile.spec.source.sha256}, found {evidence_digest}"
                 )
+            cohort_evidence = profile.spec.cohort_evidence
+            if cohort_evidence is not None:
+                cohort_path = self._bounded_path(cohort_evidence.path)
+                try:
+                    cohort_bytes = cohort_path.read_bytes()
+                except OSError as error:
+                    raise SpecValidationError(
+                        f"cannot read capability cohort evidence {cohort_path}: {error}"
+                    ) from error
+                cohort_digest = sha256(cohort_bytes).hexdigest()
+                if cohort_digest != cohort_evidence.sha256:
+                    raise SpecValidationError(
+                        f"{cohort_path}: expected cohort evidence sha256 "
+                        f"{cohort_evidence.sha256}, found {cohort_digest}"
+                    )
+                try:
+                    cohort_document = json.loads(cohort_bytes)
+                except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                    raise SpecValidationError(
+                        f"invalid capability cohort evidence {cohort_path}: {error}"
+                    ) from error
+                if not isinstance(cohort_document, dict) or (
+                    cohort_document.get("schema") != cohort_evidence.schema_name
+                    or cohort_document.get("cohort_id")
+                    != profile.spec.hardware_cohort
+                ):
+                    raise SpecValidationError(
+                        f"{cohort_path}: capability cohort evidence identity mismatch"
+                    )
         fabric = self._load_reference(plan.spec.fabric_graph, "FabricGraph")
         benchmarks = tuple(
             self._load_reference(reference, "BenchmarkCase")

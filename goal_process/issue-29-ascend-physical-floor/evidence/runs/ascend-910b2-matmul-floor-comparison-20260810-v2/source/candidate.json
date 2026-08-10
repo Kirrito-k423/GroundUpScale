@@ -1,0 +1,8 @@
+{
+  "candidate_device": "npu:0",
+  "candidate_family": "pytorch-ascend-matmul",
+  "candidate_id": "torch.matmul",
+  "cpu_fallback": false,
+  "runtime_device_name": "Ascend910B2",
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1"
+}

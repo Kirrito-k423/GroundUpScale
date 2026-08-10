@@ -285,6 +285,26 @@ class UnifiedMemoryCapability(StrictModel):
     evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
 
 
+class NpuTheoreticalCompute(StrictModel):
+    fp32_flops_per_second: TheoreticalRate
+
+
+class NpuDedicatedMemoryCapability(StrictModel):
+    capacity_bytes: PositiveInt
+    capacity_basis: str = Field(min_length=1)
+    capacity_evidence: tuple[CapabilityEvidence, ...] = Field(min_length=1)
+    peak_bandwidth_bytes_per_second: TheoreticalRate
+    scope: Literal["device_dedicated"]
+
+
+class NpuHardwareCapabilities(StrictModel):
+    architecture: Literal["ascend"]
+    supported_operations: tuple[Literal["MatMul"], ...] = Field(min_length=1)
+    supported_dtypes: tuple[Literal["float32"], ...] = Field(min_length=1)
+    theoretical_compute: NpuTheoreticalCompute
+    dedicated_memory: NpuDedicatedMemoryCapability
+
+
 class CpuHardwareCapabilities(StrictModel):
     architecture: Literal["arm64"]
     core_pools: tuple[CpuCorePool, ...] = Field(min_length=1)
@@ -296,24 +316,36 @@ class CpuHardwareCapabilities(StrictModel):
 
 class HardwareDevice(StrictModel):
     id: str = Field(min_length=1)
-    kind: Literal["cpu", "gpu"]
+    kind: Literal["cpu", "gpu", "npu"]
     vendor: str = Field(min_length=1)
     model: str = Field(min_length=1)
-    compute_units: PositiveInt
+    compute_units: PositiveInt | None = None
     memory_bytes: PositiveInt
-    capabilities: CpuHardwareCapabilities | None = None
+    capabilities: CpuHardwareCapabilities | NpuHardwareCapabilities | None = None
 
     @model_validator(mode="after")
     def validate_capabilities(self) -> HardwareDevice:
+        if self.kind in {"cpu", "gpu"} and self.compute_units is None:
+            raise ValueError("CPU and GPU devices require compute_units")
         if self.capabilities is None:
             return self
-        if self.kind != "cpu":
+        if isinstance(self.capabilities, CpuHardwareCapabilities) and self.kind != "cpu":
             raise ValueError("CpuHardwareCapabilities require kind=cpu")
-        declared_cores = sum(pool.count for pool in self.capabilities.core_pools)
-        if declared_cores != self.compute_units:
+        if isinstance(self.capabilities, NpuHardwareCapabilities) and self.kind != "npu":
+            raise ValueError("NpuHardwareCapabilities require kind=npu")
+        if isinstance(self.capabilities, CpuHardwareCapabilities):
+            declared_cores = sum(pool.count for pool in self.capabilities.core_pools)
+        else:
+            declared_cores = None
+        if declared_cores is not None and declared_cores != self.compute_units:
             raise ValueError(
                 "CPU core-pool count must equal the device compute_units"
             )
+        if (
+            isinstance(self.capabilities, NpuHardwareCapabilities)
+            and self.capabilities.dedicated_memory.capacity_bytes != self.memory_bytes
+        ):
+            raise ValueError("NPU dedicated-memory capacity must equal memory_bytes")
         return self
 
 
@@ -473,10 +505,50 @@ class HardwareResourceEnvelope(StrictModel):
     probe_envelopes: tuple[ProbeCapabilityEnvelope, ...] = Field(min_length=1)
 
 
+class HardwareCohortEvidence(StrictModel):
+    path: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    schema_name: Literal["groundupscale.dev/hardware-cohort/v1alpha1"] = Field(
+        alias="schema", serialization_alias="schema"
+    )
+
+
+class HardwareCapabilityValidityDomain(StrictModel):
+    operation_classes: tuple[str, ...] = Field(min_length=1)
+    dtype: Literal["float32"]
+    layout: str = Field(min_length=1)
+    logical_device: str = Field(min_length=1)
+    execution_mode: str = Field(min_length=1)
+    shape_support: Literal["observed-stratified-shapes-only"]
+
+
+class HardwareCapabilityUncertainty(StrictModel):
+    method: Literal["per-shape-median-cross-shape-quantiles"]
+    robust_quantile: float = Field(gt=0, lt=1)
+    optimistic_quantile: float = Field(gt=0, lt=1)
+    maximum_iqr_over_median: float = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_quantile_order(self) -> HardwareCapabilityUncertainty:
+        if self.optimistic_quantile <= self.robust_quantile:
+            raise ValueError("optimistic quantile must exceed robust quantile")
+        return self
+
+
+class HardwareCapabilityQuality(StrictModel):
+    status: Literal["qualified", "exploratory", "quarantined"]
+    reason_codes: tuple[str, ...]
+    eligible_shape_count_by_resource: dict[str, PositiveInt]
+
+
 class HardwareCapabilityProfileBody(StrictModel):
     target: HardwareBenchmarkTarget
     hardware_cohort: str = Field(min_length=1)
+    cohort_evidence: HardwareCohortEvidence | None = None
     environment: dict[str, Any]
+    validity_domain: HardwareCapabilityValidityDomain | None = None
+    uncertainty: HardwareCapabilityUncertainty | None = None
+    quality: HardwareCapabilityQuality | None = None
     source: HardwareCapabilitySource
     resources: tuple[HardwareResourceEnvelope, ...] = Field(min_length=1)
 

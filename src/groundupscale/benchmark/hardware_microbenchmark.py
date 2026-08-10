@@ -376,22 +376,26 @@ def aggregate_capability_envelope(
             }
         )
 
+    profile_spec = {
+        "target": observation["target"],
+        "hardware_cohort": observation["hardware_cohort"],
+        "environment": observation["environment"],
+        "source": {
+            "path": source_path,
+            "sha256": source_sha256,
+            "schema": observation["schema"],
+            "suite": observation["suite"],
+        },
+        "resources": resources,
+    }
+    for field in ("cohort_evidence", "validity_domain", "uncertainty", "quality"):
+        if field in observation:
+            profile_spec[field] = observation[field]
     return {
         "apiVersion": CAPABILITY_PROFILE_API_VERSION,
         "kind": "HardwareCapabilityProfile",
         "metadata": {"name": profile_name, "version": profile_version},
-        "spec": {
-            "target": observation["target"],
-            "hardware_cohort": observation["hardware_cohort"],
-            "environment": observation["environment"],
-            "source": {
-                "path": source_path,
-                "sha256": source_sha256,
-                "schema": observation["schema"],
-                "suite": observation["suite"],
-            },
-            "resources": resources,
-        },
+        "spec": profile_spec,
     }
 
 

@@ -31,6 +31,7 @@ from groundupscale.benchmark.prediction import predict_live_set
 from groundupscale.ir import canonical_data
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
 from groundupscale.pipeline import CompiledAnalysis
+from groundupscale.physical_floor_report import render_physical_floor_report
 
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -67,6 +68,24 @@ EXACT_SHAPE_MEASUREMENT_BLOCKED_REQUIRED_ROLES = frozenset(
     }
 )
 
+PHYSICAL_FLOOR_COMPARISON_REQUIRED_ROLES = frozenset(
+    {
+        "resolved-input-lock",
+        "cost-ir",
+        "hardware-backend-prediction",
+        "source-measurement-manifest",
+        "source-benchmark-case",
+        "source-hardware-cohort",
+        "source-correctness-observation",
+        "source-raw-timing-observation",
+        "source-completion-boundary",
+        "source-candidate-identity",
+        "physical-floor-observation-comparison",
+        "explanation-graph",
+        "html-report",
+    }
+)
+
 
 def _json_bytes(value: Any) -> bytes:
     return (
@@ -93,6 +112,25 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _candidate_path_matches_scope(candidate_path: object, scope: object) -> bool:
+    if not isinstance(candidate_path, str) or not isinstance(scope, str):
+        return False
+    if not scope.startswith("model/"):
+        return False
+    parts = scope.split("/", 2)
+    if len(parts) != 3:
+        return False
+    marker = f"/model/{parts[2]}"
+    normalized = candidate_path.removeprefix("cost/")
+    return normalized.endswith(marker) or marker + "/" in normalized
+
+
+def _has_fields(document: object, expected: dict[str, object]) -> bool:
+    return isinstance(document, dict) and all(
+        document.get(key) == value for key, value in expected.items()
+    )
 
 
 def _linear_percentile(samples: list[int], fraction: float) -> float:
@@ -544,18 +582,25 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         artifacts = []
         failures.append("manifest artifacts must be a list")
     exact_shape = manifest.get("bundle_kind") == "exact-shape-measurement"
+    floor_comparison = (
+        manifest.get("bundle_kind") == "physical-floor-observation-comparison"
+    )
+    structured_bundle = exact_shape or floor_comparison
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
-    if exact_shape:
+    if structured_bundle:
         for artifact in artifacts:
             if isinstance(artifact, dict):
                 role = artifact.get("role")
                 role_counts[role] = role_counts.get(role, 0) + 1
-        required_roles = (
-            EXACT_SHAPE_MEASUREMENT_REQUIRED_ROLES
-            if manifest.get("status") == "completed"
-            else EXACT_SHAPE_MEASUREMENT_BLOCKED_REQUIRED_ROLES
-        )
+        if floor_comparison:
+            required_roles = PHYSICAL_FLOOR_COMPARISON_REQUIRED_ROLES
+        else:
+            required_roles = (
+                EXACT_SHAPE_MEASUREMENT_REQUIRED_ROLES
+                if manifest.get("status") == "completed"
+                else EXACT_SHAPE_MEASUREMENT_BLOCKED_REQUIRED_ROLES
+            )
         for role, count in sorted(
             (str(role), count)
             for role, count in role_counts.items()
@@ -582,7 +627,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         elif _sha256(artifact_path) != artifact["sha256"]:
             failures.append(f"digest mismatch: {artifact['path']}")
         if (
-            exact_shape
+            structured_bundle
             and artifact_path.is_file()
             and artifact.get("media_type") == "application/json"
         ):
@@ -605,6 +650,476 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ):
                     documents_by_role[role] = artifact_document
                     paths_by_role[role] = str(artifact["path"])
+
+    if floor_comparison:
+        comparison = documents_by_role.get(
+            "physical-floor-observation-comparison"
+        )
+        source_manifest = documents_by_role.get("source-measurement-manifest")
+        source_cohort = documents_by_role.get("source-hardware-cohort")
+        correctness = documents_by_role.get("source-correctness-observation")
+        raw_timing = documents_by_role.get("source-raw-timing-observation")
+        completion = documents_by_role.get("source-completion-boundary")
+        source_candidate = documents_by_role.get("source-candidate-identity")
+        hardware_prediction = documents_by_role.get(
+            "hardware-backend-prediction"
+        )
+        explanation = documents_by_role.get("explanation-graph")
+        if comparison is not None:
+            if comparison.get("hardware_cohort") != manifest.get(
+                "hardware_cohort"
+            ):
+                failures.append("comparison hardware cohort mismatch")
+            if comparison.get("stable_path") != manifest.get("stable_path"):
+                failures.append("comparison Stable Path mismatch")
+            physical_floor = comparison.get("physical_floor")
+            theoretical = comparison.get("theoretical_capability")
+            operator_frontier = comparison.get("operator_frontier")
+            comparison_result = comparison.get("comparison")
+            observation = comparison.get("observation")
+            if (
+                not isinstance(physical_floor, dict)
+                or physical_floor.get("resource_physical_floor_ns") is None
+                or physical_floor.get("full_duration_ns") is not None
+            ):
+                failures.append("invalid Resource Physical Floor semantics")
+            if (
+                not isinstance(theoretical, dict)
+                or not all(
+                    isinstance(value, dict) and value.get("status") == "unknown"
+                    for value in theoretical.values()
+                )
+                or not isinstance(operator_frontier, dict)
+                or operator_frontier.get("status") != "unknown"
+                or operator_frontier.get("value_ns") is not None
+            ):
+                failures.append("non-overwriting result layers mismatch")
+            if (
+                not isinstance(comparison_result, dict)
+                or comparison_result.get("relative_prediction_error") is not None
+                or comparison_result.get("interpretation")
+                != "optimization-headroom-not-prediction-error"
+            ):
+                failures.append("invalid Physical Floor comparison semantics")
+            if isinstance(observation, dict) and isinstance(raw_timing, dict):
+                summary = raw_timing.get("summary")
+                if (
+                    not isinstance(summary, dict)
+                    or observation.get("median_ns") != summary.get("median")
+                    or observation.get("completion_boundary") != "closed"
+                ):
+                    failures.append("comparison observation mismatch")
+        if source_manifest is not None:
+            if (
+                source_manifest.get("bundle_kind") != "exact-shape-measurement"
+                or source_manifest.get("status") != "completed"
+                or source_manifest.get("hardware_cohort")
+                != manifest.get("hardware_cohort")
+            ):
+                failures.append("source measurement manifest mismatch")
+            source_metadata = manifest.get("source_measurement")
+            source_artifact = next(
+                (
+                    artifact
+                    for artifact in artifacts
+                    if isinstance(artifact, dict)
+                    and artifact.get("role") == "source-measurement-manifest"
+                ),
+                None,
+            )
+            if (
+                not isinstance(source_metadata, dict)
+                or not isinstance(source_artifact, dict)
+                or source_metadata.get("run_id") != source_manifest.get("run_id")
+                or source_metadata.get("manifest_sha256")
+                != source_artifact.get("sha256")
+            ):
+                failures.append("source measurement digest mismatch")
+            source_artifacts = source_manifest.get("artifacts")
+            copied_source_roles = {
+                "source-benchmark-case": "benchmark-case",
+                "source-hardware-cohort": "hardware-cohort",
+                "source-correctness-observation": "correctness-observation",
+                "source-raw-timing-observation": "raw-timing-observation",
+                "source-completion-boundary": "completion-boundary",
+                "source-candidate-identity": "candidate-identity",
+            }
+            if not isinstance(source_artifacts, list):
+                failures.append("source measurement artifacts must be a list")
+            else:
+                for copied_role, source_role in copied_source_roles.items():
+                    copied_entries = [
+                        artifact
+                        for artifact in artifacts
+                        if isinstance(artifact, dict)
+                        and artifact.get("role") == copied_role
+                    ]
+                    source_entries = [
+                        artifact
+                        for artifact in source_artifacts
+                        if isinstance(artifact, dict)
+                        and artifact.get("role") == source_role
+                    ]
+                    if len(copied_entries) != 1 or len(source_entries) != 1:
+                        failures.append(
+                            f"source artifact role mismatch: {source_role}"
+                        )
+                        continue
+                    copied_entry = copied_entries[0]
+                    source_entry = source_entries[0]
+                    if (
+                        copied_entry.get("sha256") != source_entry.get("sha256")
+                        or copied_entry.get("schema") != source_entry.get("schema")
+                    ):
+                        failures.append(
+                            f"source artifact digest mismatch: {source_role}"
+                        )
+        if (
+            source_cohort is not None
+            and source_cohort.get("cohort_id") != manifest.get("hardware_cohort")
+        ):
+            failures.append("source hardware cohort mismatch")
+        if correctness is not None and correctness.get("status") != "passed":
+            failures.append("source correctness mismatch")
+        if completion is not None and completion.get("closed") is not True:
+            failures.append("source Completion Boundary mismatch")
+        if (
+            source_candidate is not None
+            and source_candidate.get("cpu_fallback") is not False
+        ):
+            failures.append("source candidate identity mismatch")
+        if hardware_prediction is not None:
+            measured = hardware_prediction.get("measured_capabilities")
+            if (
+                not isinstance(measured, list)
+                or not measured
+                or any(
+                    not isinstance(item, dict)
+                    or item.get("hardware_cohort")
+                    != manifest.get("hardware_cohort")
+                    for item in measured
+                )
+            ):
+                failures.append("hardware capability cohort mismatch")
+        if explanation is not None:
+            entrypoints = explanation.get("entrypoints")
+            if (
+                not isinstance(entrypoints, dict)
+                or manifest.get("stable_path") not in entrypoints
+            ):
+                failures.append("Explanation Graph Stable Path mismatch")
+        if all(
+            document is not None
+            for document in (
+                comparison,
+                source_manifest,
+                raw_timing,
+                source_candidate,
+                hardware_prediction,
+                explanation,
+            )
+        ):
+            try:
+                assert comparison is not None
+                assert source_manifest is not None
+                assert raw_timing is not None
+                assert source_candidate is not None
+                assert hardware_prediction is not None
+                assert explanation is not None
+                scope = comparison["stable_path"]
+                case_id = comparison["case_id"]
+                scope_matches = [
+                    item
+                    for item in hardware_prediction["scope_bounds"]
+                    if isinstance(item, dict)
+                    and item.get("case_id") == case_id
+                    and item.get("scope") == scope
+                ]
+                candidate_matches = [
+                    item
+                    for item in hardware_prediction["candidates"]
+                    if isinstance(item, dict)
+                    and _candidate_path_matches_scope(
+                        item.get("stable_path"), scope
+                    )
+                ]
+                if len(scope_matches) != 1 or len(candidate_matches) != 1:
+                    failures.append("physical floor derivation mismatch")
+                else:
+                    scope_bound = scope_matches[0]
+                    candidate = candidate_matches[0]
+                    candidate_duration = candidate["duration"]
+                    measured = hardware_prediction["measured_capabilities"]
+                    quality_statuses = {
+                        item["quality_status"] for item in measured
+                    }
+                    quality_reasons = sorted(
+                        {
+                            reason
+                            for item in measured
+                            for reason in item["quality_reason_codes"]
+                        }
+                    )
+                    if len(quality_statuses) != 1:
+                        raise ValueError(
+                            "inconsistent Hardware Capability quality statuses"
+                        )
+                    expected_quality = {
+                        "status": next(iter(quality_statuses)),
+                        "reason_codes": quality_reasons,
+                    }
+                    expected_floor = {
+                        "status": hardware_prediction["status"],
+                        "kind": "algorithm-independent-resource-physical-floor",
+                        "minimum_work_flops": scope_bound["flops"],
+                        "compulsory_bytes": scope_bound["compulsory_bytes"],
+                        "compute_time_ns": scope_bound[
+                            "empirical_compute_time_ns"
+                        ],
+                        "memory_time_ns": scope_bound[
+                            "empirical_memory_time_ns"
+                        ],
+                        "resource_physical_floor_ns": scope_bound[
+                            "empirical_hardware_floor_ns"
+                        ],
+                        "limiting_resource": scope_bound["limiting_resource"],
+                        "full_duration_ns": None,
+                        "formula": scope_bound["formula"],
+                        "assumptions": scope_bound["assumptions"],
+                        "quality": expected_quality,
+                        "capabilities": measured,
+                    }
+                    candidate_consistent = (
+                        candidate.get("flops") == scope_bound["flops"]
+                        and candidate.get("compulsory_bytes")
+                        == scope_bound["compulsory_bytes"]
+                        and _has_fields(
+                            candidate_duration,
+                            {
+                                "empirical_compute_time_ns": scope_bound[
+                                    "empirical_compute_time_ns"
+                                ],
+                                "empirical_memory_time_ns": scope_bound[
+                                    "empirical_memory_time_ns"
+                                ],
+                                "empirical_hardware_floor_ns": scope_bound[
+                                    "empirical_hardware_floor_ns"
+                                ],
+                                "limiting_resource": scope_bound[
+                                    "limiting_resource"
+                                ],
+                                "full_duration_ns": None,
+                                "assumptions": scope_bound["assumptions"],
+                            },
+                        )
+                    )
+                    if not candidate_consistent or not _has_fields(
+                        comparison.get("physical_floor"), expected_floor
+                    ):
+                        failures.append("physical floor derivation mismatch")
+
+                    capability = hardware_prediction["capabilities"]
+                    expected_theoretical = {
+                        "fp32_flops_per_second": capability[
+                            "fp32_flops_per_second"
+                        ],
+                        "peak_memory_bandwidth_bytes_per_second": capability[
+                            "peak_memory_bandwidth_bytes_per_second"
+                        ],
+                    }
+                    if comparison.get("theoretical_capability") != (
+                        expected_theoretical
+                    ):
+                        failures.append("theoretical capability derivation mismatch")
+                    expected_unsupported = {
+                        "count": len(hardware_prediction["unsupported_regions"]),
+                        "status": "partial-unknown",
+                        "regions": hardware_prediction["unsupported_regions"],
+                    }
+                    if comparison.get("unsupported_regions") != expected_unsupported:
+                        failures.append("unsupported region derivation mismatch")
+
+                    source_manifest_artifact = next(
+                        artifact
+                        for artifact in artifacts
+                        if isinstance(artifact, dict)
+                        and artifact.get("role")
+                        == "source-measurement-manifest"
+                    )
+                    summary = raw_timing["summary"]
+                    expected_observation = {
+                        "status": "known",
+                        "quality": source_manifest["observation_validity"][
+                            "status"
+                        ],
+                        "median_ns": summary["median"],
+                        "q1_ns": summary["q1"],
+                        "q3_ns": summary["q3"],
+                        "iqr_over_median": summary[
+                            "iqr_fraction_of_median"
+                        ],
+                        "timer_source": raw_timing["timer_source"],
+                        "timer_resolution_ns": raw_timing["timer_resolution_ns"],
+                        "completion_boundary": "closed",
+                        "candidate": source_candidate["candidate_id"],
+                        "source_run_id": source_manifest["run_id"],
+                        "source_manifest_sha256": source_manifest_artifact[
+                            "sha256"
+                        ],
+                    }
+                    observation = comparison.get("observation")
+                    if not _has_fields(observation, expected_observation):
+                        if (
+                            isinstance(observation, dict)
+                            and observation.get("candidate")
+                            != source_candidate.get("candidate_id")
+                        ):
+                            failures.append("comparison source candidate mismatch")
+                        else:
+                            failures.append("comparison observation derivation mismatch")
+
+                    floor_value = expected_floor[
+                        "resource_physical_floor_ns"
+                    ]
+                    observed_value = expected_observation["median_ns"]
+                    expected_comparison = {
+                        "observation_minus_physical_floor_ns": (
+                            observed_value - floor_value
+                        ),
+                        "observed_to_physical_floor_ratio": (
+                            observed_value / floor_value
+                        ),
+                        "relative_prediction_error": None,
+                        "error_status": (
+                            "not-evaluable-physical-floor-is-not-a-duration-prediction"
+                        ),
+                        "interpretation": (
+                            "optimization-headroom-not-prediction-error"
+                        ),
+                    }
+                    if comparison.get("comparison") != expected_comparison:
+                        failures.append("comparison headroom derivation mismatch")
+
+                    explanation_nodes = explanation.get("nodes")
+                    nodes_by_id = {
+                        node["id"]: node
+                        for node in explanation_nodes
+                        if isinstance(node, dict) and isinstance(node.get("id"), str)
+                    }
+                    expected_entrypoints = {
+                        scope: [
+                            "metric:resource-physical-floor",
+                            "metric:observation",
+                            "comparison:headroom",
+                        ]
+                    }
+                    expected_node_fields = {
+                        "scope:matmul": {
+                            "kind": "stable-path",
+                            "stable_path": scope,
+                        },
+                        "metric:minimum-work": {
+                            "kind": "resource-demand",
+                            "value": scope_bound["flops"],
+                            "unit": "FLOP",
+                        },
+                        "metric:compulsory-bytes": {
+                            "kind": "resource-demand",
+                            "value": scope_bound["compulsory_bytes"],
+                            "unit": "B",
+                        },
+                        "metric:resource-physical-floor": {
+                            "kind": "resource-physical-floor",
+                            "value_ns": floor_value,
+                            "full_duration_ns": None,
+                            "quality": expected_quality,
+                            "hardware_cohort": comparison["hardware_cohort"],
+                            "assumptions": scope_bound["assumptions"],
+                            "capabilities": measured,
+                        },
+                        "metric:observation": {
+                            "kind": "observation",
+                            "value_ns": observed_value,
+                            "completion_boundary": "closed",
+                            "source_run_id": source_manifest["run_id"],
+                            "hardware_cohort": comparison["hardware_cohort"],
+                        },
+                        "comparison:headroom": {
+                            "kind": "optimization-headroom",
+                            **expected_comparison,
+                        },
+                        "summary:unsupported-regions": {
+                            "kind": "partial-unknown",
+                            "count": expected_unsupported["count"],
+                        },
+                    }
+                    expected_edges = [
+                        {
+                            "source": "scope:matmul",
+                            "target": "metric:minimum-work",
+                        },
+                        {
+                            "source": "scope:matmul",
+                            "target": "metric:compulsory-bytes",
+                        },
+                        {
+                            "source": "metric:minimum-work",
+                            "target": "metric:resource-physical-floor",
+                        },
+                        {
+                            "source": "metric:compulsory-bytes",
+                            "target": "metric:resource-physical-floor",
+                        },
+                        {
+                            "source": "metric:resource-physical-floor",
+                            "target": "comparison:headroom",
+                        },
+                        {
+                            "source": "metric:observation",
+                            "target": "comparison:headroom",
+                        },
+                    ]
+                    explanation_consistent = (
+                        isinstance(explanation_nodes, list)
+                        and len(nodes_by_id) == len(explanation_nodes)
+                        and explanation.get("entrypoints") == expected_entrypoints
+                        and explanation.get("edges") == expected_edges
+                        and all(
+                            _has_fields(nodes_by_id.get(node_id), expected)
+                            for node_id, expected in expected_node_fields.items()
+                        )
+                    )
+                    if not explanation_consistent:
+                        failures.append("Explanation Graph derivation mismatch")
+            except (
+                AssertionError,
+                KeyError,
+                StopIteration,
+                TypeError,
+                ValueError,
+                ZeroDivisionError,
+            ):
+                failures.append("comparison derivation verification failed")
+
+            report_artifact = next(
+                (
+                    artifact
+                    for artifact in artifacts
+                    if isinstance(artifact, dict)
+                    and artifact.get("role") == "html-report"
+                ),
+                None,
+            )
+            if isinstance(report_artifact, dict):
+                report_path = (root / str(report_artifact["path"])).resolve()
+                try:
+                    expected_report = render_physical_floor_report(comparison)
+                    actual_report = report_path.read_text(encoding="utf-8")
+                except (KeyError, OSError, TypeError, ValueError):
+                    failures.append("HTML report derivation mismatch")
+                else:
+                    if actual_report != expected_report:
+                        failures.append("HTML report derivation mismatch")
 
     if exact_shape:
         cohort = documents_by_role.get("hardware-cohort")

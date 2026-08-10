@@ -1,0 +1,224 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: HardwareCapabilityProfile
+metadata:
+  name: ascend-910b2-npu-local
+  version: 0.1.0
+  description: null
+  labels: {}
+spec:
+  target:
+    hardware: ascend-910b2
+    device: npu-0
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  cohort_evidence:
+    path: goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-hardware-cohort-20260810-v2.json
+    sha256: 160f06dd340e419e92ad0161f9b013a5e2b325767c847e80afba3ebff467a66a
+    schema: groundupscale.dev/hardware-cohort/v1alpha1
+  environment:
+    schema: groundupscale.dev/measurement-preflight/v1alpha1
+    operation: preflight
+    status: passed
+    eligible: true
+    device: ascend-npu
+    logical_device: npu:0
+    cohort_id: ascend-npu-23b93a89d5fecc79
+    device_name: Ascend910B2
+    device_count: 1
+    runtime_current_device: 0
+    torch_version: 2.7.1+cpu
+    torch_npu_version: 2.7.1
+    runtime_compatibility:
+      status: compatible
+      contract_id: ascend-npu-runtime-v1
+      environment_kind: trusted-hardware-calibration
+      requirements:
+        python_major_minor: '3.11'
+        torch_major_minor: '2.7'
+        torch_npu_major_minor: '2.7'
+        cann_major_minor: '8.5'
+      observed:
+        python: 3.11.14
+        torch: 2.7.1+cpu
+        torch_npu: 2.7.1
+        cann: 8.5.0
+      rule: all observed major.minor versions equal the declared trusted NPU contract
+      separation_policy: pyproject torch pin governs portable compiler CI; this contract
+        governs trusted Ascend measurement
+    checks:
+      system_probe: completed
+      health: OK
+      competing_process: false
+      physical_logical_mapping: resolved
+      runtime_contract: compatible
+    system_probe_ref: artifact://adapter/cohort.json#system_probe
+    reason_codes: []
+    evidence_ref: artifact://adapter/preflight.json
+  validity_domain:
+    operation_classes:
+    - MatMul
+    - memory_copy
+    dtype: float32
+    layout: row-major-contiguous
+    logical_device: npu:0
+    execution_mode: pytorch-eager
+    shape_support: observed-stratified-shapes-only
+  uncertainty:
+    method: per-shape-median-cross-shape-quantiles
+    robust_quantile: 0.8
+    optimistic_quantile: 0.95
+    maximum_iqr_over_median: 0.1
+  quality:
+    status: exploratory
+    reason_codes:
+    - power-policy-unobserved
+    eligible_shape_count_by_resource:
+      compute.fp32: 11
+      memory.hbm: 12
+  source:
+    path: goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json
+    sha256: bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9
+    schema: groundupscale.dev/hardware-microbenchmark-observation/v1alpha1
+    suite:
+      name: ascend-910b2-resource-envelope
+      version: 0.1.0
+  resources:
+  - resource: compute.fp32
+    unit: FLOP/s
+    robust_achievable_rate: 19175995339398.254
+    optimistic_rate: 36874878078646.97
+    selected_robust_probe: matrix-fp32-cube
+    selected_optimistic_probe: matrix-fp32-cube
+    aggregation: max(probe_shape_p80)
+    probe_envelopes:
+    - probe_id: matrix-fp32-cube
+      distinct_shape_count: 11
+      shape_p80_rate: 19175995339398.254
+      shape_p95_rate: 36874878078646.97
+      shape_best_rates:
+      - shape:
+        - 255
+        - 255
+        - 255
+        rate: 1954066895861.4114
+        threads: 1
+      - shape:
+        - 256
+        - 256
+        - 256
+        rate: 2002687729965.1416
+        threads: 1
+      - shape:
+        - 383
+        - 383
+        - 383
+        rate: 6962649361868.546
+        threads: 1
+      - shape:
+        - 384
+        - 384
+        - 384
+        rate: 6214124643726.655
+        threads: 1
+      - shape:
+        - 385
+        - 385
+        - 385
+        rate: 7191489409447.328
+        threads: 1
+      - shape:
+        - 511
+        - 511
+        - 511
+        rate: 13450273518517.902
+        threads: 1
+      - shape:
+        - 512
+        - 512
+        - 512
+        rate: 12456112438496.615
+        threads: 1
+      - shape:
+        - 513
+        - 513
+        - 513
+        rate: 13734253981021.404
+        threads: 1
+      - shape:
+        - 767
+        - 767
+        - 767
+        rate: 25274141303887.203
+        threads: 1
+      - shape:
+        - 768
+        - 768
+        - 768
+        rate: 48475614853406.734
+        threads: 1
+      - shape:
+        - 769
+        - 769
+        - 769
+        rate: 19175995339398.254
+        threads: 1
+  - resource: memory.hbm
+    unit: B/s
+    robust_achievable_rate: 1408047205172.7576
+    optimistic_rate: 1446064058559.804
+    selected_robust_probe: hbm-fp32-copy
+    selected_optimistic_probe: hbm-fp32-copy
+    aggregation: max(probe_shape_p80)
+    probe_envelopes:
+    - probe_id: hbm-fp32-copy
+      distinct_shape_count: 12
+      shape_p80_rate: 1408047205172.7576
+      shape_p95_rate: 1446064058559.804
+      shape_best_rates:
+      - shape:
+        - 33554431
+        rate: 1445504025573.7063
+        threads: 1
+      - shape:
+        - 33554432
+        rate: 1446606173246.649
+        threads: 1
+      - shape:
+        - 33554433
+        rate: 1445620510179.6582
+        threads: 1
+      - shape:
+        - 41943039
+        rate: 1253673196457.199
+        threads: 1
+      - shape:
+        - 41943040
+        rate: 1253018090963.65
+        threads: 1
+      - shape:
+        - 41943041
+        rate: 1249767548697.2114
+        threads: 1
+      - shape:
+        - 50331647
+        rate: 1255221133820.0347
+        threads: 1
+      - shape:
+        - 50331648
+        rate: 1258219923568.962
+        threads: 1
+      - shape:
+        - 50331649
+        rate: 1255238967944.9365
+        threads: 1
+      - shape:
+        - 58720255
+        rate: 1256376997802.3513
+        threads: 1
+      - shape:
+        - 58720256
+        rate: 1256235407102.7393
+        threads: 1
+      - shape:
+        - 58720257
+        rate: 1256389057635.6724
+        threads: 1

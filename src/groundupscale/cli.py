@@ -26,6 +26,9 @@ from groundupscale.benchmark.hardware_microbenchmark import (
     HardwareMicrobenchmarkRunner,
     aggregate_capability_envelope,
 )
+from groundupscale.benchmark.ascend_hardware_microbenchmark import (
+    AscendNpuHardwareMicrobenchmarkRunner,
+)
 from groundupscale.ir import canonical_data
 from groundupscale.measurement_adapters import (
     available_measurement_devices,
@@ -33,6 +36,7 @@ from groundupscale.measurement_adapters import (
 )
 from groundupscale.measurement_run import MeasurementRunBundleWriter
 from groundupscale.pipeline import compile_analysis_plan
+from groundupscale.physical_floor_bundle import PhysicalFloorComparisonBundleWriter
 from groundupscale.probe import run_environment_probe
 from groundupscale.run_bundle import RunBundleWriter, verify_run_bundle
 from groundupscale.schemas.v1alpha1 import (
@@ -71,9 +75,11 @@ def _parser() -> argparse.ArgumentParser:
     hardware_benchmark.add_argument("suite")
     hardware_benchmark.add_argument("--repository-root", default=".")
     hardware_benchmark.add_argument("--observation-output", required=True)
+    hardware_benchmark.add_argument("--cohort-output")
     hardware_benchmark.add_argument("--profile-output", required=True)
     hardware_benchmark.add_argument("--profile-name", required=True)
     hardware_benchmark.add_argument("--profile-version", default="0.1.0")
+    hardware_benchmark.add_argument("--logical-device-index", type=int, default=0)
     hardware_benchmark.add_argument(
         "--preflight-sample-interval-seconds", type=float, default=0.2
     )
@@ -124,6 +130,16 @@ def _parser() -> argparse.ArgumentParser:
     measure_command.add_argument("--artifact-store", default=".groundupscale")
     measure_command.add_argument("--run-id", required=True)
     measure_command.add_argument("--json", action="store_true", dest="as_json")
+    compare_measurement = subparsers.add_parser(
+        "compare-measurement",
+        help="replay a verified exact-Shape measurement beside its Physical Floor",
+    )
+    compare_measurement.add_argument("plan")
+    compare_measurement.add_argument("measurement_bundle")
+    compare_measurement.add_argument("--repository-root", default=".")
+    compare_measurement.add_argument("--artifact-store", default=".groundupscale")
+    compare_measurement.add_argument("--run-id", required=True)
+    compare_measurement.add_argument("--json", action="store_true", dest="as_json")
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
     )
@@ -230,10 +246,61 @@ def _run_hardware_benchmark(
     suite = SpecRepository(repository_root).load_document(Path(args.suite))
     if not isinstance(suite, HardwareBenchmarkSuiteDocument):
         raise ValueError(f"{args.suite}: expected HardwareBenchmarkSuite")
-    environment = environment_collector(
-        sample_interval_seconds=args.preflight_sample_interval_seconds,
-        process_sample_count=args.preflight_process_samples,
-    )
+    observation_path = Path(args.observation_output).resolve()
+    if suite.spec.target.device.startswith("npu-"):
+        if args.cohort_output is None:
+            raise ValueError("Ascend hardware benchmark requires --cohort-output")
+        adapter = create_measurement_adapter(
+            "ascend-npu", logical_device_index=args.logical_device_index
+        )
+        cohort = dict(adapter.fingerprint_cohort())
+        environment = dict(adapter.preflight())
+        if cohort.get("status") != "completed" or environment.get("eligible") is not True:
+            reason_codes = list(
+                environment.get(
+                    "reason_codes", cohort.get("reason_codes", ["ascend-preflight-failed"])
+                )
+            )
+            if args.as_json:
+                print(
+                    json.dumps(
+                        {
+                            "status": "rejected-before-benchmark",
+                            "reason_codes": reason_codes,
+                        },
+                        ensure_ascii=False,
+                        indent=2,
+                        sort_keys=True,
+                    )
+                )
+            return 2
+        cohort_path = Path(args.cohort_output).resolve()
+        _write_json(cohort_path, cohort)
+        try:
+            cohort_source_path = cohort_path.relative_to(repository_root).as_posix()
+        except ValueError:
+            cohort_source_path = str(cohort_path)
+        runner: HardwareMicrobenchmarkRunner | AscendNpuHardwareMicrobenchmarkRunner = (
+            AscendNpuHardwareMicrobenchmarkRunner(
+                suite,
+                environment=environment,
+                cohort=cohort,
+                cohort_evidence={
+                    "path": cohort_source_path,
+                    "sha256": sha256(cohort_path.read_bytes()).hexdigest(),
+                    "schema": cohort["schema"],
+                },
+                logical_device_index=args.logical_device_index,
+            )
+        )
+    else:
+        environment = environment_collector(
+            sample_interval_seconds=args.preflight_sample_interval_seconds,
+            process_sample_count=args.preflight_process_samples,
+        )
+        runner = HardwareMicrobenchmarkRunner(
+            suite, environment=dict(environment)
+        )
     if args.require_valid_environment and environment.get("eligible") is not True:
         if args.as_json:
             print(
@@ -250,10 +317,7 @@ def _run_hardware_benchmark(
         else:
             print("hardware benchmark rejected before measurement")
         return 2
-    observation = HardwareMicrobenchmarkRunner(
-        suite, environment=dict(environment)
-    ).run()
-    observation_path = Path(args.observation_output).resolve()
+    observation = runner.run()
     _write_json(observation_path, observation)
     try:
         source_path = observation_path.relative_to(repository_root).as_posix()
@@ -515,9 +579,95 @@ def _run_measurement(args: argparse.Namespace) -> int:
     return 2 if manifest["status"] == "blocked" else 0
 
 
+def _run_compare_measurement(args: argparse.Namespace) -> int:
+    compiled = compile_analysis_plan(
+        Path(args.repository_root).resolve(), Path(args.plan)
+    )
+    run = PhysicalFloorComparisonBundleWriter(compiled).run(
+        args.artifact_store,
+        measurement_bundle=args.measurement_bundle,
+        run_id=args.run_id,
+    )
+    verification = verify_run_bundle(run)
+    comparison = json.loads(
+        (run / "comparison/physical-floor-vs-observation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    summary = {
+        "schema": "groundupscale.dev/physical-floor-comparison-summary/v1alpha1",
+        "status": "completed" if verification["passed"] else "verification-failed",
+        "run_id": args.run_id,
+        "stable_path": comparison["stable_path"],
+        "hardware_cohort": comparison["hardware_cohort"],
+        "resource_physical_floor_ns": comparison["physical_floor"][
+            "resource_physical_floor_ns"
+        ],
+        "full_duration_ns": comparison["physical_floor"]["full_duration_ns"],
+        "observation_median_ns": comparison["observation"]["median_ns"],
+        "run_bundle": str(run),
+        "verification_passed": verification["passed"],
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"comparison {summary['run_id']}: {summary['status']} "
+            f"for {summary['stable_path']}"
+        )
+        print(f"  bundle: {summary['run_bundle']}")
+    return 0 if verification["passed"] else 1
+
+
 def _run_explain(args: argparse.Namespace) -> int:
     run = Path(args.run_bundle).resolve()
     manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
+    if manifest.get("bundle_kind") == "physical-floor-observation-comparison":
+        comparison = json.loads(
+            (run / "comparison/physical-floor-vs-observation.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        summary = {
+            "schema": "groundupscale.dev/explain-summary/v1alpha1",
+            "bundle_kind": manifest["bundle_kind"],
+            "run_id": manifest["run_id"],
+            "device": manifest["device"],
+            "hardware_cohort": manifest["hardware_cohort"],
+            "stable_path": comparison["stable_path"],
+            "resource_physical_floor_ns": comparison["physical_floor"][
+                "resource_physical_floor_ns"
+            ],
+            "full_duration_ns": comparison["physical_floor"][
+                "full_duration_ns"
+            ],
+            "capability_quality": comparison["physical_floor"]["quality"],
+            "observation_median_ns": comparison["observation"]["median_ns"],
+            "observed_to_physical_floor_ratio": comparison["comparison"][
+                "observed_to_physical_floor_ratio"
+            ],
+            "unsupported_region_count": comparison["unsupported_regions"][
+                "count"
+            ],
+            "report": str(run / "reports/report.html"),
+            "explanation_graph": str(
+                run / "prediction/explanation.graph.json"
+            ),
+        }
+        if args.as_json:
+            print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print(f"run {summary['run_id']} on {summary['device']}")
+            print(
+                "  Resource Physical Floor: "
+                f"{summary['resource_physical_floor_ns'] / 1_000:.3f} μs"
+            )
+            print(
+                "  Observation: "
+                f"{summary['observation_median_ns'] / 1_000:.3f} μs"
+            )
+            print("  full implementation duration: unknown")
+        return 0
     benchmark = json.loads(
         (run / "observation/raw/benchmark.json").read_text(encoding="utf-8")
     )
@@ -761,6 +911,8 @@ def main(
         return _run_analysis(args, environment_collector=environment_collector)
     if args.command == "measure":
         return _run_measurement(args)
+    if args.command == "compare-measurement":
+        return _run_compare_measurement(args)
     if args.command == "verify-run":
         return _run_verify(args)
     if args.command == "explain":

@@ -1,0 +1,11 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: FabricGraph
+metadata:
+  name: local-ascend-910b2
+  version: 0.1.0
+spec:
+  nodes:
+    - id: local-ascend-910b2/npu-0
+      hardware: ascend-910b2
+      device: npu-0
+  links: []

@@ -1,0 +1,171 @@
+{
+  "edges": [
+    {
+      "source": "scope:matmul",
+      "target": "metric:minimum-work"
+    },
+    {
+      "source": "scope:matmul",
+      "target": "metric:compulsory-bytes"
+    },
+    {
+      "source": "metric:minimum-work",
+      "target": "metric:resource-physical-floor"
+    },
+    {
+      "source": "metric:compulsory-bytes",
+      "target": "metric:resource-physical-floor"
+    },
+    {
+      "source": "metric:resource-physical-floor",
+      "target": "comparison:headroom"
+    },
+    {
+      "source": "metric:observation",
+      "target": "comparison:headroom"
+    }
+  ],
+  "entrypoints": {
+    "model/two-layer-transformer/transformer/layer_0/attention/q_proj": [
+      "metric:resource-physical-floor",
+      "metric:observation",
+      "comparison:headroom"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "scope:matmul",
+      "kind": "stable-path",
+      "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "id": "metric:minimum-work",
+      "kind": "resource-demand",
+      "unit": "FLOP",
+      "value": 268435456
+    },
+    {
+      "id": "metric:compulsory-bytes",
+      "kind": "resource-demand",
+      "unit": "B",
+      "value": 3145728
+    },
+    {
+      "assumptions": [
+        "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+        "Compulsory bytes count each MatMul input and output once.",
+        "P80 rates are cross-Shape robust achieved resource capacities.",
+        "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+        "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+        "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+        "The complete uncalibrated implementation duration remains unknown."
+      ],
+      "capabilities": [
+        {
+          "environment_eligible": true,
+          "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+          "optimistic_rate": 36874878078646.97,
+          "profile_name": "ascend-910b2-npu-local",
+          "profile_version": "0.1.0",
+          "quality_reason_codes": [
+            "power-policy-unobserved"
+          ],
+          "quality_status": "exploratory",
+          "resource": "compute.fp32",
+          "robust_achievable_rate": 19175995339398.254,
+          "selected_optimistic_probe": "matrix-fp32-cube",
+          "selected_robust_probe": "matrix-fp32-cube",
+          "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+          "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+          "uncertainty": {
+            "maximum_iqr_over_median": 0.1,
+            "method": "per-shape-median-cross-shape-quantiles",
+            "optimistic_quantile": 0.95,
+            "robust_quantile": 0.8
+          },
+          "unit": "FLOP/s",
+          "validity_domain": {
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "layout": "row-major-contiguous",
+            "logical_device": "npu:0",
+            "operation_classes": [
+              "MatMul",
+              "memory_copy"
+            ],
+            "shape_support": "observed-stratified-shapes-only"
+          }
+        },
+        {
+          "environment_eligible": true,
+          "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+          "optimistic_rate": 1446064058559.804,
+          "profile_name": "ascend-910b2-npu-local",
+          "profile_version": "0.1.0",
+          "quality_reason_codes": [
+            "power-policy-unobserved"
+          ],
+          "quality_status": "exploratory",
+          "resource": "memory.hbm",
+          "robust_achievable_rate": 1408047205172.7576,
+          "selected_optimistic_probe": "hbm-fp32-copy",
+          "selected_robust_probe": "hbm-fp32-copy",
+          "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+          "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+          "uncertainty": {
+            "maximum_iqr_over_median": 0.1,
+            "method": "per-shape-median-cross-shape-quantiles",
+            "optimistic_quantile": 0.95,
+            "robust_quantile": 0.8
+          },
+          "unit": "B/s",
+          "validity_domain": {
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "layout": "row-major-contiguous",
+            "logical_device": "npu:0",
+            "operation_classes": [
+              "MatMul",
+              "memory_copy"
+            ],
+            "shape_support": "observed-stratified-shapes-only"
+          }
+        }
+      ],
+      "full_duration_ns": null,
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "id": "metric:resource-physical-floor",
+      "kind": "resource-physical-floor",
+      "quality": {
+        "reason_codes": [
+          "power-policy-unobserved"
+        ],
+        "status": "exploratory"
+      },
+      "value_ns": 13998.514874921926
+    },
+    {
+      "completion_boundary": "closed",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "id": "metric:observation",
+      "kind": "observation",
+      "source_run_id": "ascend-910b2-exact-shape-512-20260810-v1",
+      "value_ns": 82810.0
+    },
+    {
+      "error_status": "not-evaluable-physical-floor-is-not-a-duration-prediction",
+      "id": "comparison:headroom",
+      "interpretation": "optimization-headroom-not-prediction-error",
+      "kind": "optimization-headroom",
+      "observation_minus_physical_floor_ns": 68811.48512507808,
+      "observed_to_physical_floor_ratio": 5.915627531914299,
+      "relative_prediction_error": null
+    },
+    {
+      "count": 44,
+      "id": "summary:unsupported-regions",
+      "kind": "partial-unknown"
+    }
+  ],
+  "schema": "groundupscale.dev/explanation-graph/v1alpha1"
+}

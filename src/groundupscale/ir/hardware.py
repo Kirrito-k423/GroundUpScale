@@ -45,6 +45,36 @@ class CpuCapabilitySnapshot:
 
 
 @dataclass(frozen=True)
+class NpuCapabilitySnapshot:
+    architecture: str
+    supported_operations: tuple[str, ...]
+    supported_dtypes: tuple[str, ...]
+    fp32_flops_per_second: RateAvailability
+    peak_memory_bandwidth_bytes_per_second: RateAvailability
+    memory_bytes: int
+    memory_scope: str
+    evidence: tuple[CapabilityEvidenceRef, ...]
+
+
+@dataclass(frozen=True)
+class HardwareCapabilityValidityDomainSnapshot:
+    operation_classes: tuple[str, ...]
+    dtype: str
+    layout: str
+    logical_device: str
+    execution_mode: str
+    shape_support: str
+
+
+@dataclass(frozen=True)
+class HardwareCapabilityUncertaintySnapshot:
+    method: str
+    robust_quantile: float
+    optimistic_quantile: float
+    maximum_iqr_over_median: float
+
+
+@dataclass(frozen=True)
 class HardwareCapabilityEnvelopeSnapshot:
     resource: str
     unit: str
@@ -58,6 +88,10 @@ class HardwareCapabilityEnvelopeSnapshot:
     source_path: str
     source_sha256: str
     environment_eligible: bool
+    quality_status: str = "legacy-unspecified"
+    quality_reason_codes: tuple[str, ...] = ()
+    validity_domain: HardwareCapabilityValidityDomainSnapshot | None = None
+    uncertainty: HardwareCapabilityUncertaintySnapshot | None = None
 
 
 @dataclass(frozen=True)
@@ -65,7 +99,7 @@ class CandidateDurationEstimate:
     model: str
     status: str
     compute_time_ns: float | None
-    memory_optimistic_lower_bound_ns: float
+    memory_optimistic_lower_bound_ns: float | None
     empirical_compute_time_ns: float | None
     empirical_memory_time_ns: float | None
     empirical_hardware_floor_ns: float | None
@@ -95,8 +129,8 @@ class ProgramDurationBounds:
     compulsory_bytes: int
     materialized_bytes: int
     compute_time: DurationAvailability
-    memory_optimistic_lower_bound_ns: float
-    vendor_memory_time_floor_ns: float
+    memory_optimistic_lower_bound_ns: float | None
+    vendor_memory_time_floor_ns: float | None
     empirical_compute_time_ns: float | None
     empirical_memory_time_ns: float | None
     empirical_hardware_floor_ns: float | None
@@ -122,6 +156,14 @@ class ScopeDurationBounds:
 
 
 @dataclass(frozen=True)
+class UnsupportedCostRegion:
+    cost_node_id: str
+    stable_path: str
+    operation: str
+    reason: str
+
+
+@dataclass(frozen=True)
 class HardwareBackendPrediction:
     schema: str
     backend_id: str
@@ -132,8 +174,9 @@ class HardwareBackendPrediction:
     device: str
     status: str
     prediction_complete: bool
-    capabilities: CpuCapabilitySnapshot
+    capabilities: CpuCapabilitySnapshot | NpuCapabilitySnapshot
     measured_capabilities: tuple[HardwareCapabilityEnvelopeSnapshot, ...]
     candidates: tuple[ImplementationCandidate, ...]
     scope_bounds: tuple[ScopeDurationBounds, ...]
     program_bounds: ProgramDurationBounds
+    unsupported_regions: tuple[UnsupportedCostRegion, ...] = ()

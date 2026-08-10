@@ -1,0 +1,53 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: HardwareBenchmarkSuite
+metadata:
+  name: ascend-910b2-resource-envelope
+  version: 0.1.0
+  description: 真实 Ascend 910B2 单卡多 Shape 计算与 HBM 探针。
+spec:
+  target:
+    hardware: ascend-910b2
+    device: npu-0
+  warmup_iterations: 20
+  samples: 20
+  target_window_ms: 5.0
+  maximum_inner_iterations: 100
+  probes:
+    - id: matrix-fp32-cube
+      kind: matrix_multiply
+      resource: compute.fp32
+      dtype: float32
+      shapes:
+        - [255, 255, 255]
+        - [256, 256, 256]
+        - [257, 257, 257]
+        - [383, 383, 383]
+        - [384, 384, 384]
+        - [385, 385, 385]
+        - [511, 511, 511]
+        - [512, 512, 512]
+        - [513, 513, 513]
+        - [767, 767, 767]
+        - [768, 768, 768]
+        - [769, 769, 769]
+      alignment_boundaries: [256, 384, 512, 768]
+      thread_counts: [1]
+    - id: hbm-fp32-copy
+      kind: memory_copy
+      resource: memory.hbm
+      dtype: float32
+      shapes:
+        - [33554431]
+        - [33554432]
+        - [33554433]
+        - [41943039]
+        - [41943040]
+        - [41943041]
+        - [50331647]
+        - [50331648]
+        - [50331649]
+        - [58720255]
+        - [58720256]
+        - [58720257]
+      alignment_boundaries: [33554432, 41943040, 50331648, 58720256]
+      thread_counts: [1]

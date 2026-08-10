@@ -1,0 +1,10 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: DeploymentIntent
+metadata:
+  name: ascend-npu
+  version: 0.1.0
+spec:
+  bindings:
+    - scope: workload/transformer-prefill/request/model-prefill
+      placement: local-ascend-910b2/npu-0
+      strategies: []

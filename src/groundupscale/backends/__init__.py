@@ -3,6 +3,7 @@
 from collections.abc import Callable
 
 from groundupscale.backends.apple_m4_cpu import compile_apple_m4_cpu_prediction
+from groundupscale.backends.ascend_910b2 import compile_ascend_910b2_prediction
 from groundupscale.ir import CostProgram, HardwareBackendPrediction
 from groundupscale.specs import AnalysisBundle
 
@@ -13,6 +14,7 @@ BackendCompiler = Callable[
 
 _BACKEND_COMPILERS: tuple[BackendCompiler, ...] = (
     compile_apple_m4_cpu_prediction,
+    compile_ascend_910b2_prediction,
 )
 
 
