@@ -5,10 +5,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from hashlib import sha256
 import json
+import math
 import os
 from pathlib import Path
 import platform
 import re
+import statistics
 import tempfile
 from typing import Any
 
@@ -27,10 +29,43 @@ from groundupscale.benchmark.explanation import (
 )
 from groundupscale.benchmark.prediction import predict_live_set
 from groundupscale.ir import canonical_data
+from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
 from groundupscale.pipeline import CompiledAnalysis
 
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+EXACT_SHAPE_MEASUREMENT_REQUIRED_ROLES = frozenset(
+    {
+        "benchmark-case",
+        "measurement-capability-manifest",
+        "hardware-cohort",
+        "measurement-preflight",
+        "timing-plan",
+        "measurement-collection",
+        "environment",
+        "candidate-identity",
+        "input-corpus",
+        "execution-contract",
+        "instrumentation-profile",
+        "correctness-observation",
+        "raw-timing-observation",
+        "memory-observation",
+        "completion-boundary",
+        "measurement-operation-evidence",
+    }
+)
+
+EXACT_SHAPE_MEASUREMENT_BLOCKED_REQUIRED_ROLES = frozenset(
+    {
+        "benchmark-case",
+        "measurement-capability-manifest",
+        "hardware-cohort",
+        "measurement-preflight",
+        "measurement-failure",
+        "measurement-operation-evidence",
+    }
+)
 
 
 def _json_bytes(value: Any) -> bytes:
@@ -58,6 +93,69 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _linear_percentile(samples: list[int], fraction: float) -> float:
+    ordered = sorted(samples)
+    position = (len(ordered) - 1) * fraction
+    lower = math.floor(position)
+    upper = math.ceil(position)
+    if lower == upper:
+        return float(ordered[lower])
+    weight = position - lower
+    return float(ordered[lower] * (1 - weight) + ordered[upper] * weight)
+
+
+def _measurement_timing_summary(
+    samples: list[int],
+) -> dict[str, float | int]:
+    median = statistics.median(samples)
+    q1 = _linear_percentile(samples, 0.25)
+    q3 = _linear_percentile(samples, 0.75)
+    median_absolute_deviation = statistics.median(
+        abs(sample - median) for sample in samples
+    )
+    return {
+        "count": len(samples),
+        "minimum": min(samples),
+        "p10": _linear_percentile(samples, 0.10),
+        "q1": q1,
+        "median": median,
+        "q3": q3,
+        "p90": _linear_percentile(samples, 0.90),
+        "maximum": max(samples),
+        "iqr": q3 - q1,
+        "iqr_fraction_of_median": (q3 - q1) / median,
+        "median_absolute_deviation": median_absolute_deviation,
+        "mad_fraction_of_median": median_absolute_deviation / median,
+    }
+
+
+def _measurement_timing_quality(
+    summary: dict[str, float | int],
+    *,
+    timer_resolution_ns: float,
+) -> dict[str, object]:
+    timer_resolution_fraction = timer_resolution_ns / float(summary["median"])
+    reason_codes: list[str] = []
+    if float(summary["iqr_fraction_of_median"]) > 0.10:
+        reason_codes.append("session-dispersion-exceeds-policy")
+    if timer_resolution_fraction > 0.01:
+        reason_codes.append("timer-resolution-exceeds-policy")
+    return {
+        "schema": "groundupscale.dev/timing-quality/v1alpha1",
+        "policy_id": "issue28-session-dispersion-v1",
+        "status": "passed" if not reason_codes else "quarantined",
+        "observed_iqr_fraction_of_median": summary[
+            "iqr_fraction_of_median"
+        ],
+        "maximum_iqr_fraction_of_median": 0.10,
+        "timer_resolution_ns": timer_resolution_ns,
+        "timer_resolution_fraction_of_median": timer_resolution_fraction,
+        "maximum_timer_resolution_fraction_of_median": 0.01,
+        "excluded_samples": 0,
+        "reason_codes": reason_codes,
+    }
 
 
 def _default_run_id(device: str, fingerprint: str) -> str:
@@ -441,7 +539,41 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     manifest_path = root / "run.manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     failures: list[str] = []
-    for artifact in manifest["artifacts"]:
+    artifacts = manifest.get("artifacts", [])
+    if not isinstance(artifacts, list):
+        artifacts = []
+        failures.append("manifest artifacts must be a list")
+    exact_shape = manifest.get("bundle_kind") == "exact-shape-measurement"
+    completed_measurement = exact_shape and manifest.get("status") == "completed"
+    role_counts: dict[object, int] = {}
+    if exact_shape:
+        for artifact in artifacts:
+            if isinstance(artifact, dict):
+                role = artifact.get("role")
+                role_counts[role] = role_counts.get(role, 0) + 1
+        required_roles = (
+            EXACT_SHAPE_MEASUREMENT_REQUIRED_ROLES
+            if manifest.get("status") == "completed"
+            else EXACT_SHAPE_MEASUREMENT_BLOCKED_REQUIRED_ROLES
+        )
+        for role, count in sorted(
+            (str(role), count)
+            for role, count in role_counts.items()
+            if role in required_roles and count > 1
+        ):
+            failures.append(f"duplicate artifact role: {role}")
+        present_roles = {
+            role for role in role_counts if isinstance(role, str)
+        }
+        for role in sorted(required_roles - present_roles):
+            failures.append(f"missing required artifact role: {role}")
+
+    documents_by_role: dict[str, dict[str, object]] = {}
+    paths_by_role: dict[str, str] = {}
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            failures.append("invalid artifact entry")
+            continue
         artifact_path = (root / artifact["path"]).resolve()
         if root not in artifact_path.parents:
             failures.append(f"path escapes bundle: {artifact['path']}")
@@ -449,6 +581,362 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             failures.append(f"missing artifact: {artifact['path']}")
         elif _sha256(artifact_path) != artifact["sha256"]:
             failures.append(f"digest mismatch: {artifact['path']}")
+        if (
+            exact_shape
+            and artifact_path.is_file()
+            and artifact.get("media_type") == "application/json"
+        ):
+            try:
+                artifact_document = json.loads(
+                    artifact_path.read_text(encoding="utf-8")
+                )
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                failures.append(f"invalid JSON artifact: {artifact['path']}")
+            else:
+                if not isinstance(artifact_document, dict):
+                    failures.append(f"invalid JSON artifact: {artifact['path']}")
+                    continue
+                if artifact_document.get("schema") != artifact.get("schema"):
+                    failures.append(f"schema mismatch: {artifact['path']}")
+                role = artifact.get("role")
+                if (
+                    isinstance(role, str)
+                    and role_counts.get(role) == 1
+                ):
+                    documents_by_role[role] = artifact_document
+                    paths_by_role[role] = str(artifact["path"])
+
+    if exact_shape:
+        cohort = documents_by_role.get("hardware-cohort")
+        if cohort is not None:
+            cohort_path = paths_by_role["hardware-cohort"]
+            if cohort.get("cohort_id") != manifest.get("hardware_cohort"):
+                failures.append(f"hardware cohort mismatch: {cohort_path}")
+            identity = {
+                dimension: cohort.get(dimension)
+                for dimension in COHORT_IDENTITY_DIMENSIONS
+            }
+            encoded_identity = json.dumps(
+                identity,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+            cohort_digest = sha256(encoded_identity).hexdigest()
+            if completed_measurement and (
+                cohort.get("cohort_digest") != cohort_digest
+                or cohort.get("cohort_id")
+                != f"ascend-npu-{cohort_digest[:16]}"
+            ):
+                failures.append(f"cohort digest mismatch: {cohort_path}")
+
+        capabilities = documents_by_role.get(
+            "measurement-capability-manifest"
+        )
+        if capabilities is not None:
+            capability_path = paths_by_role[
+                "measurement-capability-manifest"
+            ]
+            if capabilities.get("cohort_id") != manifest.get(
+                "hardware_cohort"
+            ):
+                failures.append(
+                    f"hardware cohort mismatch: {capability_path}"
+                )
+            adapter_identity = manifest.get("adapter", {})
+            if completed_measurement and (
+                not isinstance(adapter_identity, dict) or any(
+                capabilities.get(key) != adapter_identity.get(key)
+                for key in (
+                    "adapter_id",
+                    "adapter_version",
+                    "protocol_id",
+                    "protocol_version",
+                )
+                )
+            ):
+                failures.append(f"adapter mismatch: {capability_path}")
+
+        for role in (
+            "measurement-capability-manifest",
+            "measurement-preflight",
+            "timing-plan",
+            "measurement-collection",
+            "environment",
+            "measurement-failure",
+        ):
+            document = documents_by_role.get(role)
+            if (
+                document is not None
+                and document.get("device") != manifest.get("device")
+            ):
+                failures.append(f"device mismatch: {paths_by_role[role]}")
+
+        preflight = documents_by_role.get("measurement-preflight")
+        if (
+            completed_measurement
+            and preflight is not None
+            and preflight.get("cohort_id") != manifest.get("hardware_cohort")
+        ):
+            failures.append(
+                "hardware cohort mismatch: "
+                f"{paths_by_role['measurement-preflight']}"
+            )
+        expected_logical_device = (
+            preflight.get("logical_device") if preflight is not None else None
+        )
+        for role in (
+            "timing-plan",
+            "measurement-collection",
+            "environment",
+            "measurement-failure",
+        ):
+            document = documents_by_role.get(role)
+            if (
+                document is not None
+                and document.get("logical_device") != expected_logical_device
+            ):
+                failures.append(
+                    f"logical device mismatch: {paths_by_role[role]}"
+                )
+
+        environment = documents_by_role.get("environment")
+        if environment is not None:
+            environment_path = paths_by_role["environment"]
+            if environment.get("preflight") != preflight:
+                failures.append(
+                    f"environment preflight mismatch: {environment_path}"
+                )
+            if cohort is not None and (
+                environment.get("software") != cohort.get("software_evidence")
+                or environment.get("cohort_identity_software")
+                != cohort.get("software")
+            ):
+                failures.append(
+                    f"environment cohort mismatch: {environment_path}"
+                )
+
+        collection = documents_by_role.get("measurement-collection")
+        if collection is not None:
+            component_roles = {
+                "candidate_identity": "candidate-identity",
+                "input_corpus": "input-corpus",
+                "execution_contract": "execution-contract",
+                "instrumentation_profile": "instrumentation-profile",
+                "correctness": "correctness-observation",
+                "raw_timing": "raw-timing-observation",
+                "memory": "memory-observation",
+                "completion_boundary": "completion-boundary",
+            }
+            for key, role in component_roles.items():
+                component = documents_by_role.get(role)
+                if component is not None and collection.get(key) != component:
+                    failures.append(
+                        f"collection component mismatch: {paths_by_role[role]}"
+                    )
+            candidate = documents_by_role.get("candidate-identity")
+            contract = documents_by_role.get("execution-contract")
+            if (
+                candidate is not None
+                and candidate.get("candidate_device")
+                != expected_logical_device
+            ):
+                failures.append(
+                    f"logical device mismatch: {paths_by_role['candidate-identity']}"
+                )
+            if (
+                contract is not None
+                and contract.get("logical_device") != expected_logical_device
+            ):
+                failures.append(
+                    f"logical device mismatch: {paths_by_role['execution-contract']}"
+                )
+
+            correctness = documents_by_role.get("correctness-observation")
+            raw_timing = documents_by_role.get("raw-timing-observation")
+            completion = documents_by_role.get("completion-boundary")
+            timing_plan = documents_by_role.get("timing-plan")
+            samples = (
+                raw_timing.get("samples", [])
+                if raw_timing is not None
+                else []
+            )
+            repetitions = (
+                timing_plan.get("repetitions")
+                if timing_plan is not None
+                else None
+            )
+            summary = (
+                raw_timing.get("summary", {})
+                if raw_timing is not None
+                else {}
+            )
+            timer_resolution = (
+                raw_timing.get("timer_resolution_ns")
+                if raw_timing is not None
+                else None
+            )
+            recomputed_summary = (
+                _measurement_timing_summary(samples)
+                if isinstance(samples, list)
+                and bool(samples)
+                and all(
+                    isinstance(sample, int)
+                    and not isinstance(sample, bool)
+                    and sample > 0
+                    for sample in samples
+                )
+                else None
+            )
+            recomputed_timing_quality = (
+                _measurement_timing_quality(
+                    recomputed_summary,
+                    timer_resolution_ns=float(timer_resolution),
+                )
+                if recomputed_summary is not None
+                and isinstance(timer_resolution, (int, float))
+                and not isinstance(timer_resolution, bool)
+                and timer_resolution > 0
+                else None
+            )
+            raw_timing_valid = (
+                isinstance(samples, list)
+                and bool(samples)
+                and all(
+                    isinstance(sample, int)
+                    and not isinstance(sample, bool)
+                    and sample > 0
+                    for sample in samples
+                )
+                and isinstance(repetitions, int)
+                and len(samples) == repetitions
+                and isinstance(summary, dict)
+                and summary == recomputed_summary
+                and collection.get("timing_quality")
+                == recomputed_timing_quality
+            )
+            timing_quality_status = (
+                recomputed_timing_quality.get("status")
+                if recomputed_timing_quality is not None
+                else "quarantined"
+            )
+            timing_reason_codes = (
+                list(recomputed_timing_quality["reason_codes"])
+                if recomputed_timing_quality is not None
+                else ["invalid-timing-evidence"]
+            )
+            expected_observation_validity = {
+                "status": (
+                    "valid"
+                    if timing_quality_status == "passed"
+                    else "quarantined"
+                ),
+                "correctness": "passed",
+                "completion_boundary": "closed",
+                "raw_timing_sample_count": len(samples),
+                "timing_quality": timing_quality_status,
+                "reason_codes": timing_reason_codes,
+            }
+            if (
+                collection.get("status") != "completed"
+                or correctness is None
+                or correctness.get("status") != "passed"
+                or completion is None
+                or completion.get("closed") is not True
+                or not raw_timing_valid
+                or manifest.get("observation_validity")
+                != expected_observation_validity
+            ):
+                failures.append("observation validity mismatch")
+
+        operations = documents_by_role.get(
+            "measurement-operation-evidence"
+        )
+        if operations is not None:
+            declared_paths = {
+                artifact.get("path")
+                for artifact in artifacts
+                if isinstance(artifact, dict)
+            }
+            operation_items = operations.get("operations", [])
+            if not isinstance(operation_items, list):
+                operation_items = []
+                failures.append("invalid measurement operation evidence")
+            expected_operation_roles = [
+                ("discover_capabilities", "measurement-capability-manifest"),
+                ("fingerprint_cohort", "hardware-cohort"),
+                ("preflight", "measurement-preflight"),
+            ]
+            if completed_measurement:
+                expected_operation_roles.extend(
+                    [
+                        ("build_timing_plan", "timing-plan"),
+                        ("collect", "measurement-collection"),
+                    ]
+                )
+            actual_operation_refs = [
+                (
+                    item.get("operation"),
+                    item.get("evidence_ref"),
+                )
+                for item in operation_items
+                if isinstance(item, dict)
+            ]
+            expected_operation_refs = [
+                (
+                    operation,
+                    f"artifact://{paths_by_role.get(role, '')}",
+                )
+                for operation, role in expected_operation_roles
+            ]
+            if actual_operation_refs != expected_operation_refs:
+                failures.append("measurement operation evidence mismatch")
+            for operation in operation_items:
+                reference = (
+                    operation.get("evidence_ref")
+                    if isinstance(operation, dict)
+                    else None
+                )
+                referenced_path = (
+                    reference[len("artifact://") :].split("#", 1)[0]
+                    if isinstance(reference, str)
+                    and reference.startswith("artifact://")
+                    else None
+                )
+                if referenced_path not in declared_paths:
+                    failures.append(f"missing evidence reference: {reference}")
+
+        producer_lineage = manifest.get("producer_lineage")
+        if isinstance(producer_lineage, dict):
+            source_files = producer_lineage.get("source_files", [])
+            lineage_digest = sha256()
+            if isinstance(source_files, list):
+                for source_file in sorted(
+                    source_files,
+                    key=lambda item: str(item.get("path"))
+                    if isinstance(item, dict)
+                    else "",
+                ):
+                    if not isinstance(source_file, dict):
+                        continue
+                    lineage_digest.update(str(source_file.get("path")).encode("utf-8"))
+                    lineage_digest.update(b"\0")
+                    lineage_digest.update(
+                        str(source_file.get("sha256")).encode("ascii")
+                    )
+            expected_source_digest = lineage_digest.hexdigest()
+            if producer_lineage.get("source_sha256") != expected_source_digest:
+                failures.append("producer lineage digest mismatch")
+            producer_suffix = expected_source_digest[:16]
+            for artifact in artifacts:
+                if isinstance(artifact, dict) and producer_suffix not in str(
+                    artifact.get("produced_by")
+                ):
+                    failures.append(
+                        f"producer lineage mismatch: {artifact.get('path')}"
+                    )
+        else:
+            failures.append("missing producer lineage")
     return {
         "schema": "groundupscale.dev/run-verification/v1alpha1",
         "run_id": manifest["run_id"],

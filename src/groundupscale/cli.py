@@ -27,6 +27,11 @@ from groundupscale.benchmark.hardware_microbenchmark import (
     aggregate_capability_envelope,
 )
 from groundupscale.ir import canonical_data
+from groundupscale.measurement_adapters import (
+    available_measurement_devices,
+    create_measurement_adapter,
+)
+from groundupscale.measurement_run import MeasurementRunBundleWriter
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
 from groundupscale.run_bundle import RunBundleWriter, verify_run_bundle
@@ -100,6 +105,25 @@ def _parser() -> argparse.ArgumentParser:
     )
     run_command.add_argument("--preflight-process-samples", type=int, default=3)
     run_command.add_argument("--json", action="store_true", dest="as_json")
+    measure_command = subparsers.add_parser(
+        "measure",
+        help="run an exact-Shape case through an explicit Measurement Adapter",
+    )
+    measure_command.add_argument(
+        "--device", required=True, choices=available_measurement_devices()
+    )
+    measure_command.add_argument("--logical-device-index", type=int, default=0)
+    measure_command.add_argument("--m", type=int, required=True)
+    measure_command.add_argument("--n", type=int, required=True)
+    measure_command.add_argument("--k", type=int, required=True)
+    measure_command.add_argument("--dtype", default="float32")
+    measure_command.add_argument("--layout", default="row-major-contiguous")
+    measure_command.add_argument("--seed", type=int, default=20260810)
+    measure_command.add_argument("--warmup", type=int, default=20)
+    measure_command.add_argument("--repetitions", type=int, default=100)
+    measure_command.add_argument("--artifact-store", default=".groundupscale")
+    measure_command.add_argument("--run-id", required=True)
+    measure_command.add_argument("--json", action="store_true", dest="as_json")
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
     )
@@ -432,6 +456,65 @@ def _run_verify(args: argparse.Namespace) -> int:
     return 0 if result["passed"] else 1
 
 
+def _run_measurement(args: argparse.Namespace) -> int:
+    case = {
+        "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
+        "operation": "MatMul",
+        "shape": {
+            "left": [args.m, args.k],
+            "right": [args.k, args.n],
+        },
+        "dtype": args.dtype,
+        "layout": args.layout,
+        "seed": args.seed,
+        "candidate": "torch.matmul",
+        "warmup_iterations": args.warmup,
+        "repetitions": args.repetitions,
+    }
+    adapter = create_measurement_adapter(
+        args.device,
+        logical_device_index=args.logical_device_index,
+    )
+    run = MeasurementRunBundleWriter(adapter).run(
+        Path(args.artifact_store),
+        case=case,
+        run_id=args.run_id,
+    )
+    verification = verify_run_bundle(run)
+    manifest = json.loads(
+        (run / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    reason_codes: list[str] = []
+    if manifest["status"] == "blocked":
+        failure = json.loads(
+            (run / "adapter/failure.json").read_text(encoding="utf-8")
+        )
+        reason_codes = list(failure["reason_codes"])
+    summary = {
+        "schema": "groundupscale.dev/measurement-run-summary/v1alpha1",
+        "run_id": manifest["run_id"],
+        "status": manifest["status"],
+        "device": manifest["device"],
+        "hardware_cohort": manifest["hardware_cohort"],
+        "reason_codes": reason_codes,
+        "verification_passed": verification["passed"],
+        "run_bundle": str(run),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"measurement {summary['run_id']}: {summary['status']} "
+            f"on {summary['device']}"
+        )
+        print(f"  bundle: {summary['run_bundle']}")
+        if reason_codes:
+            print(f"  reasons: {', '.join(reason_codes)}")
+    if not verification["passed"]:
+        return 1
+    return 2 if manifest["status"] == "blocked" else 0
+
+
 def _run_explain(args: argparse.Namespace) -> int:
     run = Path(args.run_bundle).resolve()
     manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
@@ -676,6 +759,8 @@ def main(
         return _run_compile(args)
     if args.command == "run":
         return _run_analysis(args, environment_collector=environment_collector)
+    if args.command == "measure":
+        return _run_measurement(args)
     if args.command == "verify-run":
         return _run_verify(args)
     if args.command == "explain":
