@@ -452,6 +452,26 @@ def test_qualification_requires_an_explicit_versioned_policy(
     assert captured.value.reason_code == "missing-qualification-policy"
 
 
+def test_qualification_rejects_unsafe_run_id_before_reading_evidence(
+    tmp_path: Path,
+) -> None:
+    artifact_store = tmp_path / "frontier"
+
+    with pytest.raises(ValueError, match="unsafe run_id"):
+        OperatorFrontierBundleWriter().run(
+            artifact_store,
+            run_id="../escaped",
+            qualification_policy=_qualification_policy(),
+            search_runs=(tmp_path / "missing-search",),
+            holdout_runs=(tmp_path / "missing-holdout",),
+            confirmation_runs=(tmp_path / "missing-confirmation",),
+            query_sizes=(384,),
+        )
+
+    assert not artifact_store.exists()
+    assert not (tmp_path / "escaped").exists()
+
+
 def test_c2_policy_requires_holdout_for_every_eligible_candidate(
     tmp_path: Path,
 ) -> None:

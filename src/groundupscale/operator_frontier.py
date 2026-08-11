@@ -15,7 +15,11 @@ from statistics import median, stdev
 from typing import Any, cast
 
 from groundupscale.ir import content_fingerprint
-from groundupscale.run_bundle import RunBundleExistsError, verify_run_bundle
+from groundupscale.run_bundle import (
+    RUN_ID_PATTERN,
+    RunBundleExistsError,
+    verify_run_bundle,
+)
 
 QUALIFICATION_SCHEMA = (
     "groundupscale.dev/operator-frontier-qualification/v1alpha1"
@@ -624,6 +628,8 @@ class OperatorFrontierBundleWriter:
         confirmation_runs: Iterable[str | Path],
         query_sizes: Sequence[int],
     ) -> Path:
+        if not RUN_ID_PATTERN.fullmatch(run_id):
+            raise ValueError(f"unsafe run_id: {run_id!r}")
         policy = _QualificationPolicy.from_document(qualification_policy)
         searches = [_observation(path) for path in search_runs]
         holdouts = [_observation(path) for path in holdout_runs]
