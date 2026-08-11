@@ -1,0 +1,17 @@
+{
+  "dtype": "float32",
+  "initialization": "cpu-torch-randn-fixed-seed",
+  "layout": "row-major-contiguous",
+  "left_sha256": "e3a041e19d7fb37558a59d150c3829552e861853f03abe026d5dc4cf4f22a457",
+  "left_shape": [
+    512,
+    512
+  ],
+  "right_sha256": "7fc571d319a78641188f4ac85a2824026e706593e7b6b2cbfd543b40a0a77384",
+  "right_shape": [
+    512,
+    512
+  ],
+  "schema": "groundupscale.dev/input-corpus/v1alpha1",
+  "seed": 20260811
+}

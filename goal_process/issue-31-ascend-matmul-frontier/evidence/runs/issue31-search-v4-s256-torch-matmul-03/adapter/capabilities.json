@@ -1,0 +1,221 @@
+{
+  "adapter_id": "ascend-npu",
+  "adapter_version": "v1",
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "device": "ascend-npu",
+  "evidence_ref": "artifact://adapter/capabilities.json",
+  "execution_profiles": [
+    {
+      "correctness": {
+        "atol": 0.001,
+        "oracle": "cpu-float64-matmul",
+        "rtol": 0.001
+      },
+      "execution_domain": {
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "operation": "MatMul"
+      },
+      "profile_id": "exact-shape-matmul",
+      "protocol_id": "exact-shape-measurement"
+    },
+    {
+      "correctness": {
+        "atol": 0.001,
+        "cpu_fallback_policy": "warning-is-compatibility-failure",
+        "dtype_layout_substitution": "compatibility-failure",
+        "oracle": "cpu-float32-same-seed-same-weights",
+        "rtol": 0.001
+      },
+      "execution_domain": {
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "model": "two-layer-transformer",
+        "semantic_operations": [
+          "MatMul",
+          "Add",
+          "RMSNorm",
+          "Softmax",
+          "SiLU",
+          "Mul",
+          "View",
+          "Transpose"
+        ],
+        "shape": {
+          "B": 1,
+          "D": 64,
+          "H": 512,
+          "I": 2048,
+          "NH": 8,
+          "S": 512
+        },
+        "workload": "transformer-prefill"
+      },
+      "instrumentation": {
+        "baseline_timing": "npu-event",
+        "diagnostic_profiling": "separate-non-frontier-lane"
+      },
+      "profile_id": "two-layer-transformer-demo",
+      "protocol_id": "two-layer-transformer-demo"
+    }
+  ],
+  "fields": [
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "timer.primary",
+      "intrusion": "baseline",
+      "required_for_anchor": true,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.npu.Event.elapsed_time",
+      "status": "declared",
+      "value": {
+        "resolution_ns": 20.0,
+        "unit": "nanoseconds"
+      }
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "synchronization.device_stream",
+      "intrusion": "baseline",
+      "required_for_anchor": true,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.npu.synchronize",
+      "status": "declared",
+      "value": "end-event-synchronize-plus-device-synchronize"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "completion.boundary",
+      "intrusion": "baseline",
+      "required_for_anchor": true,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.npu.Event.synchronize",
+      "status": "declared",
+      "value": "device-event-stream-completion"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "correctness.cpu_oracle",
+      "intrusion": "baseline",
+      "required_for_anchor": true,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.float64.matmul",
+      "status": "declared",
+      "value": "cpu-float64-matmul"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "raw_timing.samples",
+      "intrusion": "baseline",
+      "required_for_anchor": true,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.npu.Event.elapsed_time",
+      "status": "declared",
+      "value": "all-samples-preserved"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "memory.framework",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.npu.memory_*",
+      "status": "declared",
+      "value": "allocated-reserved-maximum-allocated"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "memory.hbm_device_wide",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "artifact://adapter/cohort.json#system_probe/hardware/sources/memory",
+      "status": "measured",
+      "value": {
+        "capacity_bytes": 68719476736
+      }
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "power.device_wide",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "artifact://adapter/cohort.json#system_probe/hardware/sources/power",
+      "status": "measured",
+      "value": {
+        "policy": "unsupported(npu-smi-work-mode-query)",
+        "real_time_watts": 91.5
+      }
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "frequency.hbm",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "artifact://adapter/cohort.json#system_probe/hardware/sources/frequency",
+      "status": "measured",
+      "value": {
+        "clock_mhz": 1600
+      }
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "transfer.h2d",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "python://tensor.to-npu",
+      "status": "not_requested"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "transfer.d2h",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "python://tensor.to-cpu",
+      "status": "not_requested"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "profiling.operator_timeline",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "python://torch.profiler",
+      "status": "not_requested"
+    },
+    {
+      "attribution": "single Ascend NPU logical device",
+      "field": "counter.ai_core",
+      "intrusion": "optional",
+      "required_for_anchor": false,
+      "scope": "exact-shape MatMul",
+      "source": "tool://ascend-profiler",
+      "status": "not_requested"
+    }
+  ],
+  "logical_device": "npu:0",
+  "manifest_id": "ascend-npu-ascend-npu-23b93a89d5fecc79-v1",
+  "operation": "discover_capabilities",
+  "protocol_id": "exact-shape-measurement",
+  "protocol_version": "v1",
+  "schema": "groundupscale.dev/measurement-capability-manifest/v1alpha1",
+  "status": "completed",
+  "supported_execution_profiles": [
+    "exact-shape-matmul",
+    "two-layer-transformer-demo"
+  ],
+  "supported_operations": [
+    "MatMul",
+    "Add",
+    "RMSNorm",
+    "Softmax",
+    "SiLU",
+    "Mul",
+    "View",
+    "Transpose"
+  ]
+}

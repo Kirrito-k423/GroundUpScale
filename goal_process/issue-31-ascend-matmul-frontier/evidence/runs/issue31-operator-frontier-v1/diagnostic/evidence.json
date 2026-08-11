@@ -1,0 +1,361 @@
+{
+  "capability_surfaces": [
+    {
+      "anchor_lifecycle_policy": {
+        "change_reason": "issue-31 first qualified NPU Frontier",
+        "policy_id": "frontier-anchor-lifecycle",
+        "revalidation": "on cohort, candidate, execution contract, anchor, or cell change",
+        "scope": "ascend-910b2-square-matmul",
+        "version": "v2"
+      },
+      "anchors": [
+        {
+          "anchor_id": "ascend-matmul-square-256",
+          "anchor_version": "v1",
+          "candidate_family": "pytorch-ascend-matmul",
+          "candidate_id": "torch.matmul",
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "domain": {
+            "alignment_regime": "minimum-64-byte",
+            "alignment_validated": true,
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "kernel_dispatch_regime": "pytorch-ascend-matmul",
+            "kernel_dispatch_validated": true,
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 1,
+            "working_set_regime": "square-256-512",
+            "working_set_validated": true
+          },
+          "effective_rate": 2055086939212.984,
+          "evidence_ref": "artifact://frontier/qualification.json",
+          "frontier_role": "ACTIVE",
+          "holdout_run_ids": [
+            "issue31-holdout-v4-s256-torch-matmul-01",
+            "issue31-holdout-v4-s256-torch-matmul-02",
+            "issue31-holdout-v4-s256-torch-matmul-03"
+          ],
+          "holdout_session_medians_ns": [
+            16327.5,
+            17190.5,
+            16222.0
+          ],
+          "latency_ns": 16327.5,
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "search_run_ids": [
+            "issue31-search-v4-s256-torch-matmul-01",
+            "issue31-search-v4-s256-torch-matmul-02",
+            "issue31-search-v4-s256-torch-matmul-03"
+          ],
+          "shape": {
+            "s": 256
+          },
+          "standard_uncertainty_rate": 63774412474.39749,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        },
+        {
+          "anchor_id": "ascend-matmul-square-512",
+          "anchor_version": "v1",
+          "candidate_family": "pytorch-ascend-matmul",
+          "candidate_id": "torch.matmul",
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "domain": {
+            "alignment_regime": "minimum-64-byte",
+            "alignment_validated": true,
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "kernel_dispatch_regime": "pytorch-ascend-matmul",
+            "kernel_dispatch_validated": true,
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 1,
+            "working_set_regime": "square-256-512",
+            "working_set_validated": true
+          },
+          "effective_rate": 16436668768943.451,
+          "evidence_ref": "artifact://frontier/qualification.json",
+          "frontier_role": "ACTIVE",
+          "holdout_run_ids": [
+            "issue31-holdout-v4-s512-torch-matmul-01",
+            "issue31-holdout-v4-s512-torch-matmul-02",
+            "issue31-holdout-v4-s512-torch-matmul-03"
+          ],
+          "holdout_session_medians_ns": [
+            16224.5,
+            16437.5,
+            16331.5
+          ],
+          "latency_ns": 16331.5,
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "search_run_ids": [
+            "issue31-search-v4-s512-torch-matmul-01",
+            "issue31-search-v4-s512-torch-matmul-02",
+            "issue31-search-v4-s512-torch-matmul-03"
+          ],
+          "shape": {
+            "s": 512
+          },
+          "standard_uncertainty_rate": 107199190020.224,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        }
+      ],
+      "candidate_family": "pytorch-ascend-matmul",
+      "cells": [
+        {
+          "anchor_ids": [
+            "ascend-matmul-square-256",
+            "ascend-matmul-square-512"
+          ],
+          "cell_id": "ascend-matmul-square-256-512",
+          "confirmation_evidence_refs": [
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-01",
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-02",
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-03"
+          ],
+          "confirmation_observed_rate": 6786086289549.377,
+          "confirmation_shape": {
+            "s": 384
+          },
+          "interpolation_standard_uncertainty_rate": 2461462914692.7686,
+          "regime_id": "ascend-910b2-square-256-512-v1",
+          "status": "retained"
+        }
+      ],
+      "cohort_id": "ascend-npu-23b93a89d5fecc79",
+      "coordinate": {
+        "axis": "s",
+        "transform": "identity",
+        "transform_version": "v1"
+      },
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "evidence_refs": [
+        "artifact://frontier/qualification.json"
+      ],
+      "input_digest": "367268c4edb3aa9262cb0c2706f8a67afb95732fb6bc29940f4cd442f616ee58",
+      "previous_version": null,
+      "surface_id": "surface://ascend-910b2/matmul/square/v1",
+      "uncertainty_policy": {
+        "anchor_covariance": [
+          [
+            4.067175686454586e+21,
+            0.0
+          ],
+          [
+            0.0,
+            1.1491666340992092e+22
+          ]
+        ],
+        "calibration_evidence_refs": [
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-01",
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-02",
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-03"
+        ],
+        "change_reason": "independent holdout and interior confirmation",
+        "combination": "root-sum-of-squares",
+        "instrumentation_standard_uncertainty_rate": 201337238.0210498,
+        "policy_id": "ascend-matmul-surface-uncertainty",
+        "revalidation": "on cohort, candidate, contract, anchor, or confirmation change",
+        "scope": "single validated square MatMul cell",
+        "target_coverage": 0.68,
+        "version": "v1"
+      },
+      "version": "v1",
+      "work_formula": {
+        "kind": "square-matmul-2s3",
+        "version": "v1",
+        "work_unit": "FLOP"
+      }
+    }
+  ],
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "digests": {
+    "evidence_sha256": "72bdf45e336014f1d0210304a3824de5948f28ae8ffc78a30de10ea27a76a7d7",
+    "input_sha256": "5ef975d463aafeaefe013197671dfd1bcd408eab782a651e70c620f370a68c61"
+  },
+  "execution_domain": {
+    "alignment_regime": "minimum-64-byte",
+    "alignment_validated": true,
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "kernel_dispatch_regime": "pytorch-ascend-matmul",
+    "kernel_dispatch_validated": true,
+    "layout": "row-major-contiguous",
+    "regime_validated": true,
+    "semantic_operation": "MatMul",
+    "threads": 1,
+    "working_set_regime": "square-256-512",
+    "working_set_validated": true
+  },
+  "hardware": {
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "device": "Ascend 910B2",
+    "partition": "single-npu:0"
+  },
+  "operator_frontier_qualification_ref": "artifact://frontier/qualification.json",
+  "resolved_configuration": {
+    "analysis_plan": "issue-31-ascend-matmul-frontier",
+    "qualification_policy": {
+      "estimator": "median(independent-holdout-session-medians)",
+      "maximum_session_median_relative_range": 0.1,
+      "minimum_confirmation_sessions": 3,
+      "minimum_holdout_sessions": 3,
+      "minimum_search_sessions": 3,
+      "policy_id": "ascend-exact-shape-frontier-qualification",
+      "sample_exclusion": "none-preserve-all-raw-samples",
+      "version": "v1"
+    }
+  },
+  "resolved_ir": {
+    "semantic_operation": "MatMul",
+    "shape_coordinate": "square-s"
+  },
+  "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+  "surface_queries": [
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-512",
+      "shape": {
+        "s": 512
+      },
+      "surface_id": "surface://ascend-910b2/matmul/square/v1",
+      "surface_version": "v1"
+    },
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-384",
+      "shape": {
+        "s": 384
+      },
+      "surface_id": "surface://ascend-910b2/matmul/square/v1",
+      "surface_version": "v1"
+    },
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-640",
+      "shape": {
+        "s": 640
+      },
+      "surface_id": "surface://ascend-910b2/matmul/square/v1",
+      "surface_version": "v1"
+    }
+  ]
+}

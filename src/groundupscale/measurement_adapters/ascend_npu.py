@@ -2,25 +2,25 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from copy import deepcopy
-from hashlib import sha256
 import importlib
 import json
 import math
 import os
-from pathlib import Path
 import platform
 import re
 import statistics
 import subprocess
-from typing import Any, Mapping
+from collections.abc import Callable, Mapping
+from copy import deepcopy
+from hashlib import sha256
+from pathlib import Path
+from typing import Any
 
+from groundupscale.ir import content_fingerprint
 from groundupscale.measurement_adapters import ascend_npu_runtime
 from groundupscale.measurement_adapters.ascend_npu_runtime import (
     assess_ascend_npu_runtime,
 )
-
 
 RuntimeLoader = Callable[[], tuple[object, object]]
 CollectionExecutor = Callable[
@@ -31,6 +31,31 @@ SystemProbe = Callable[[int], dict[str, object]]
 PRODUCER_SOURCE_PATHS = (
     Path(str(ascend_npu_runtime.__file__)).resolve(),
 )
+
+
+_MATMUL_CANDIDATES: dict[str, dict[str, object]] = {
+    "torch.matmul": {
+        "candidate_family": "pytorch-ascend-matmul",
+        "operator_entrypoint": "torch.matmul",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {},
+    },
+    "torch.matmul.k-split-2": {
+        "candidate_family": "pytorch-ascend-matmul-k-split",
+        "operator_entrypoint": "two torch.matmul calls plus torch.add",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {
+            "k_partitions": 2,
+            "split_axis": "k",
+        },
+    },
+}
 
 
 def _load_runtime() -> tuple[object, object]:
@@ -436,9 +461,10 @@ def _collect_exact_shape_matmul(
 ) -> dict[str, object]:
     runtime: Any = torch
     shape = case.get("shape")
+    candidate_id = case.get("candidate")
     if (
         case.get("operation") != "MatMul"
-        or case.get("candidate") != "torch.matmul"
+        or candidate_id not in _MATMUL_CANDIDATES
         or case.get("dtype") != "float32"
         or case.get("layout") != "row-major-contiguous"
         or not isinstance(shape, dict)
@@ -460,11 +486,14 @@ def _collect_exact_shape_matmul(
         raise ValueError("invalid exact-Shape MatMul dimensions")
     warmup_iterations = timing_plan.get("warmup_iterations")
     repetitions = timing_plan.get("repetitions")
+    inner_iterations = timing_plan.get("inner_iterations", 1)
     if (
         not isinstance(warmup_iterations, int)
         or warmup_iterations < 0
         or not isinstance(repetitions, int)
         or repetitions < 1
+        or not isinstance(inner_iterations, int)
+        or inner_iterations < 1
     ):
         raise ValueError("invalid timing plan iteration counts")
 
@@ -483,16 +512,33 @@ def _collect_exact_shape_matmul(
     right = right_cpu.to(logical_device)
     runtime.npu.synchronize()
 
+    def invoke_candidate() -> object:
+        if candidate_id == "torch.matmul":
+            return runtime.matmul(left, right)
+        split = int(left_shape[1]) // 2
+        if split == 0:
+            raise ValueError("k-split candidate requires k >= 2")
+        return runtime.matmul(left[:, :split], right[:split, :]) + runtime.matmul(
+            left[:, split:], right[split:, :]
+        )
+
     def measure() -> tuple[object, int]:
         start = runtime.npu.Event(enable_timing=True)
         end = runtime.npu.Event(enable_timing=True)
         runtime.npu.synchronize()
         start.record()
-        result = runtime.matmul(left, right)
+        result = None
+        for _ in range(inner_iterations):
+            result = invoke_candidate()
         end.record()
         end.synchronize()
         runtime.npu.synchronize()
-        elapsed_ns = int(round(float(start.elapsed_time(end)) * 1_000_000))
+        elapsed_ns = round(
+            float(start.elapsed_time(end))
+            * 1_000_000
+            / inner_iterations
+        )
+        assert result is not None
         return result, elapsed_ns
 
     for _ in range(warmup_iterations):
@@ -500,7 +546,7 @@ def _collect_exact_shape_matmul(
         if warmup_result.device.type != "npu":
             raise RuntimeError("cpu-fallback-detected")
 
-    actual = runtime.matmul(left, right)
+    actual = invoke_candidate()
     runtime.npu.synchronize()
     if actual.device.type != "npu":
         raise RuntimeError("cpu-fallback-detected")
@@ -518,9 +564,6 @@ def _collect_exact_shape_matmul(
         and shape_exact
         and runtime.allclose(actual_cpu, oracle, atol=atol, rtol=rtol)
     )
-    if not passed:
-        raise RuntimeError("cpu-correctness-oracle-failed")
-
     samples: list[int] = []
     for _ in range(repetitions):
         result, elapsed_ns = measure()
@@ -539,17 +582,25 @@ def _collect_exact_shape_matmul(
         "reserved_bytes_after": int(runtime.npu.memory_reserved()),
         "maximum_allocated_bytes": int(runtime.npu.max_memory_allocated()),
     }
+
+    def pointer_alignment(pointer: int) -> int:
+        return pointer & -pointer
+
     return {
         "runtime_device_name": str(
             runtime.npu.get_device_name(logical_device_index)
         ),
         "candidate_device": str(actual.device),
         "cpu_fallback": actual.device.type == "cpu",
+        "minimum_alignment_bytes": min(
+            pointer_alignment(int(left.data_ptr())),
+            pointer_alignment(int(right.data_ptr())),
+        ),
         "left_sha256": tensor_digest(left_cpu),
         "right_sha256": tensor_digest(right_cpu),
         "target_output_sha256": tensor_digest(actual_cpu),
         "correctness": {
-            "status": "passed",
+            "status": "passed" if passed else "failed",
             "oracle": "cpu-float64-matmul",
             "atol": atol,
             "rtol": rtol,
@@ -1125,6 +1176,7 @@ class AscendNpuMeasurementAdapter:
             },
             "warmup_iterations": case["warmup_iterations"],
             "repetitions": case["repetitions"],
+            "inner_iterations": case.get("inner_iterations", 1),
             "sample_exclusion": "none-preserve-all-raw-samples",
             "evidence_ref": "artifact://adapter/timing-plan.json",
         }
@@ -1134,7 +1186,7 @@ class AscendNpuMeasurementAdapter:
         case: dict[str, object],
         timing_plan: dict[str, object],
     ) -> Mapping[str, object]:
-        torch, _ = self._runtime_loader()
+        torch, torch_npu = self._runtime_loader()
         raw = self._collection_executor(
             torch,
             self.logical_device_index,
@@ -1143,7 +1195,8 @@ class AscendNpuMeasurementAdapter:
         )
         samples = list(raw["raw_samples_ns"])
         timing_summary = _timing_summary(samples)
-        timer_resolution_ns = 20.0
+        inner_iterations = int(timing_plan.get("inner_iterations", 1))
+        timer_resolution_ns = 20.0 / inner_iterations
         timer_resolution_fraction = (
             timer_resolution_ns / timing_summary["median"]
         )
@@ -1177,20 +1230,56 @@ class AscendNpuMeasurementAdapter:
         )
         memory = dict(raw["memory"])
         memory["schema"] = "groundupscale.dev/memory-observation/v1alpha1"
+        candidate_id = str(case["candidate"])
+        candidate_spec = _MATMUL_CANDIDATES.get(candidate_id)
+        if candidate_spec is None:
+            raise ValueError(f"unsupported MatMul candidate: {candidate_id}")
+        candidate_identity = {
+            "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+            "candidate_id": candidate_id,
+            "candidate_family": candidate_spec["candidate_family"],
+            "build_identity": {
+                "framework": "torch",
+                "framework_version": str(getattr(torch, "__version__", "unknown")),
+                "extension": "torch_npu",
+                "extension_version": str(
+                    getattr(torch_npu, "__version__", "unknown")
+                ),
+                "operator_entrypoint": candidate_spec["operator_entrypoint"],
+            },
+            "runtime_identity": {
+                "runtime_device_name": raw["runtime_device_name"],
+                "logical_device": f"npu:{self.logical_device_index}",
+                "candidate_device": raw["candidate_device"],
+            },
+            "execution_mode": "pytorch-eager",
+            "shape": deepcopy(case["shape"]),
+            "dtype": case["dtype"],
+            "layout": case["layout"],
+            "minimum_alignment_bytes": raw.get(
+                "minimum_alignment_bytes", 64
+            ),
+            "compilation_parameters": deepcopy(
+                candidate_spec["compilation_parameters"]
+            ),
+            "tuning_parameters": deepcopy(
+                candidate_spec["tuning_parameters"]
+            ),
+            "runtime_device_name": raw["runtime_device_name"],
+            "candidate_device": raw["candidate_device"],
+            "cpu_fallback": raw["cpu_fallback"],
+            "evidence_ref": "artifact://observation/candidate.json",
+        }
+        candidate_identity["candidate_digest"] = content_fingerprint(
+            candidate_identity
+        )
         return {
             "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
             "operation": "collect",
             "status": "completed",
             "device": "ascend-npu",
             "logical_device": f"npu:{self.logical_device_index}",
-            "candidate_identity": {
-                "schema": "groundupscale.dev/candidate-identity/v1alpha1",
-                "candidate_id": case["candidate"],
-                "candidate_family": "pytorch-ascend-matmul",
-                "runtime_device_name": raw["runtime_device_name"],
-                "candidate_device": raw["candidate_device"],
-                "cpu_fallback": raw["cpu_fallback"],
-            },
+            "candidate_identity": candidate_identity,
             "input_corpus": {
                 "schema": "groundupscale.dev/input-corpus/v1alpha1",
                 "seed": case["seed"],
@@ -1212,6 +1301,7 @@ class AscendNpuMeasurementAdapter:
                 "logical_device": f"npu:{self.logical_device_index}",
                 "warmup_iterations": timing_plan["warmup_iterations"],
                 "repetitions": timing_plan["repetitions"],
+                "inner_iterations": inner_iterations,
                 "sample_exclusion": timing_plan["sample_exclusion"],
                 "timer": deepcopy(timing_plan["timer"]),
                 "completion_protocol": deepcopy(
@@ -1248,13 +1338,14 @@ class AscendNpuMeasurementAdapter:
                         "seed",
                         "warmup_iterations",
                         "repetitions",
+                        "inner_iterations",
                         "timer_source",
                         "timer_resolution_ns",
                     ],
                 },
                 "accepted_overhead": {
                     "rule": (
-                        "only candidate execution lies between timing events"
+                        "only candidate executions lie between timing events"
                     ),
                     "event_pair": "accepted-primary-timer-overhead",
                     "correctness_oracle": "outside-timed-region",
@@ -1273,6 +1364,9 @@ class AscendNpuMeasurementAdapter:
                 "timer_source": "torch.npu.Event.elapsed_time",
                 "timer_resolution_ns": timer_resolution_ns,
                 "unit": "nanoseconds",
+                "sample_derivation": (
+                    "device-event-elapsed-ns / inner_iterations"
+                ),
                 "samples": samples,
                 "summary": timing_summary,
             },

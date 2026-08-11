@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from dataclasses import dataclass
-from hashlib import sha256
 import json
 import math
 import os
-from pathlib import Path
 import platform
 import re
 import statistics
 import tempfile
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -29,12 +29,11 @@ from groundupscale.benchmark.explanation import (
     render_report_html,
 )
 from groundupscale.benchmark.prediction import predict_live_set
-from groundupscale.ir import canonical_data
 from groundupscale.execution_runtime import ExecutionRuntime
+from groundupscale.ir import canonical_data
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
-from groundupscale.pipeline import CompiledAnalysis
 from groundupscale.physical_floor_report import render_physical_floor_report
-
+from groundupscale.pipeline import CompiledAnalysis
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -85,6 +84,13 @@ PHYSICAL_FLOOR_COMPARISON_REQUIRED_ROLES = frozenset(
         "physical-floor-observation-comparison",
         "explanation-graph",
         "html-report",
+    }
+)
+
+OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
+        "operator-frontier-qualification",
+        "diagnostic-evidence",
     }
 )
 
@@ -1237,7 +1243,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         manifest.get("bundle_kind") == "physical-floor-observation-comparison"
     )
     transformer_demo = manifest.get("bundle_kind") == "transformer-demo"
-    structured_bundle = exact_shape or floor_comparison or transformer_demo
+    operator_frontier = manifest.get("bundle_kind") == "operator-frontier"
+    structured_bundle = (
+        exact_shape or floor_comparison or transformer_demo or operator_frontier
+    )
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
     if structured_bundle:
@@ -1245,7 +1254,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             if isinstance(artifact, dict):
                 role = artifact.get("role")
                 role_counts[role] = role_counts.get(role, 0) + 1
-        if transformer_demo:
+        if operator_frontier:
+            required_roles = OPERATOR_FRONTIER_REQUIRED_ROLES
+        elif transformer_demo:
             if manifest.get("status") == "completed":
                 required_roles = TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES
             elif manifest.get("status") == "blocked":
@@ -1282,8 +1293,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     != TRANSFORMER_DEMO_PRODUCER
                     for artifact in artifacts
                 )
-            ):
-                failures.append("invalid transformer demo producer lineage")
+                ):
+                    failures.append("invalid transformer demo producer lineage")
 
     documents_by_role: dict[str, dict[str, object]] = {}
     paths_by_role: dict[str, str] = {}
@@ -1322,6 +1333,100 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ):
                     documents_by_role[role] = artifact_document
                     paths_by_role[role] = str(artifact["path"])
+
+    if operator_frontier:
+        qualification = documents_by_role.get(
+            "operator-frontier-qualification"
+        )
+        diagnostic = documents_by_role.get("diagnostic-evidence")
+        source_runs = manifest.get("source_runs")
+        if (
+            manifest.get("status") != "completed"
+            or manifest.get("device") != "ascend-npu"
+            or not isinstance(source_runs, list)
+            or not source_runs
+            or not isinstance(qualification, dict)
+            or qualification.get("status") != "qualified"
+            or qualification.get("hardware_cohort")
+            != manifest.get("hardware_cohort")
+            or qualification.get("source_runs") != source_runs
+            or not isinstance(diagnostic, dict)
+        ):
+            failures.append("invalid operator Frontier bundle identity")
+        else:
+            surface = qualification.get("surface")
+            surfaces = diagnostic.get("capability_surfaces")
+            surface_ref = manifest.get("surface")
+            if (
+                not isinstance(surface, dict)
+                or surfaces != [surface]
+                or not isinstance(surface_ref, dict)
+                or surface_ref
+                != {
+                    "surface_id": surface.get("surface_id"),
+                    "version": surface.get("version"),
+                    "input_digest": surface.get("input_digest"),
+                }
+                or surface.get("cohort_id") != manifest.get("hardware_cohort")
+                or diagnostic.get("cohort_id") != manifest.get("hardware_cohort")
+            ):
+                failures.append("operator Frontier Surface identity mismatch")
+            seen_source_ids: set[str] = set()
+            seen_source_paths: set[Path] = set()
+            for source in source_runs:
+                if not isinstance(source, dict):
+                    failures.append("invalid operator Frontier source Run")
+                    continue
+                source_id = source.get("run_id")
+                relative_path = source.get("path")
+                if (
+                    not isinstance(source_id, str)
+                    or not source_id
+                    or source_id in seen_source_ids
+                    or not isinstance(relative_path, str)
+                    or not relative_path
+                    or Path(relative_path).is_absolute()
+                ):
+                    failures.append("invalid operator Frontier source Run")
+                    continue
+                source_root = (root / relative_path).resolve()
+                source_manifest_path = source_root / "run.manifest.json"
+                if source_root in seen_source_paths:
+                    failures.append("duplicate operator Frontier source Run path")
+                    continue
+                seen_source_ids.add(source_id)
+                seen_source_paths.add(source_root)
+                if not source_manifest_path.is_file():
+                    failures.append(
+                        f"missing operator Frontier source Run: {source_id}"
+                    )
+                    continue
+                if _sha256(source_manifest_path) != source.get(
+                    "manifest_sha256"
+                ):
+                    failures.append(
+                        f"source Run Manifest digest mismatch: {source_id}"
+                    )
+                    continue
+                source_manifest = json.loads(
+                    source_manifest_path.read_text(encoding="utf-8")
+                )
+                if (
+                    source_manifest.get("run_id") != source_id
+                    or source_manifest.get("bundle_kind")
+                    != "exact-shape-measurement"
+                    or source_manifest.get("hardware_cohort")
+                    != manifest.get("hardware_cohort")
+                ):
+                    failures.append(
+                        f"operator Frontier source Run identity mismatch: {source_id}"
+                    )
+                    continue
+                source_verification = verify_run_bundle(source_root)
+                if source_verification.get("passed") is not True:
+                    failures.append(
+                        f"operator Frontier source Run failed verification: {source_id}"
+                    )
 
     if floor_comparison:
         comparison = documents_by_role.get(
@@ -2012,22 +2117,38 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 if recomputed_timing_quality is not None
                 else ["invalid-timing-evidence"]
             )
+            correctness_status = (
+                correctness.get("status")
+                if isinstance(correctness, dict)
+                else None
+            )
             expected_observation_validity = {
                 "status": (
-                    "valid"
-                    if timing_quality_status == "passed"
-                    else "quarantined"
+                    "rejected"
+                    if correctness_status != "passed"
+                    else (
+                        "valid"
+                        if timing_quality_status == "passed"
+                        else "quarantined"
+                    )
                 ),
-                "correctness": "passed",
+                "correctness": correctness_status,
                 "completion_boundary": "closed",
                 "raw_timing_sample_count": len(samples),
                 "timing_quality": timing_quality_status,
-                "reason_codes": timing_reason_codes,
+                "reason_codes": [
+                    *(
+                        ["candidate-correctness-failed"]
+                        if correctness_status != "passed"
+                        else []
+                    ),
+                    *timing_reason_codes,
+                ],
             }
             if (
                 collection.get("status") != "completed"
                 or correctness is None
-                or correctness.get("status") != "passed"
+                or correctness_status not in {"passed", "failed"}
                 or completion is None
                 or completion.get("closed") is not True
                 or not raw_timing_valid

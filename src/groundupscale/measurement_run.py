@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from hashlib import sha256
-from importlib.metadata import PackageNotFoundError, version
 import json
 import os
-from pathlib import Path
 import re
 import sys
 import tempfile
+from datetime import UTC, datetime
+from hashlib import sha256
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Any
 
 from groundupscale.measurement_contract import MeasurementAdapter
 from groundupscale.run_bundle import RunBundleExistsError
 
-
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+PROCESS_STARTED_AT = datetime.now(UTC).isoformat()
 
 
 def _json_bytes(value: object) -> bytes:
@@ -238,6 +238,13 @@ class MeasurementRunBundleWriter:
             "software": cohort["software_evidence"],
             "cohort_identity_software": cohort["software"],
             "preflight": preflight,
+            "measurement_session": {
+                "session_id": run_id,
+                "process_id": os.getpid(),
+                "process_started_at": PROCESS_STARTED_AT,
+                "python_executable": str(Path(sys.executable).resolve()),
+                "source": "python-process-identity",
+            },
             "policy": "allowlisted fields only; no credentials or ambient dump",
         }
         write_json(
@@ -314,9 +321,13 @@ class MeasurementRunBundleWriter:
             },
             "observation_validity": {
                 "status": (
-                    "valid"
-                    if collection["timing_quality"]["status"] == "passed"
-                    else "quarantined"
+                    "rejected"
+                    if collection["correctness"]["status"] != "passed"
+                    else (
+                        "valid"
+                        if collection["timing_quality"]["status"] == "passed"
+                        else "quarantined"
+                    )
                 ),
                 "correctness": collection["correctness"]["status"],
                 "completion_boundary": (
@@ -328,9 +339,14 @@ class MeasurementRunBundleWriter:
                     collection["raw_timing"]["samples"]
                 ),
                 "timing_quality": collection["timing_quality"]["status"],
-                "reason_codes": list(
-                    collection["timing_quality"]["reason_codes"]
-                ),
+                "reason_codes": [
+                    *(
+                        ["candidate-correctness-failed"]
+                        if collection["correctness"]["status"] != "passed"
+                        else []
+                    ),
+                    *list(collection["timing_quality"]["reason_codes"]),
+                ],
             },
             "frontier_role": {
                 "status": "not-evaluated",

@@ -1,0 +1,41 @@
+{
+  "build_identity": {
+    "extension": "torch_npu",
+    "extension_version": "2.7.1",
+    "framework": "torch",
+    "framework_version": "2.7.1+cpu",
+    "operator_entrypoint": "torch.matmul"
+  },
+  "candidate_device": "npu:0",
+  "candidate_digest": "cbdad01d220507a8054900bdadd84ec3b6791cd96a50e314a6a5f0be7e58beb8",
+  "candidate_family": "pytorch-ascend-matmul",
+  "candidate_id": "torch.matmul",
+  "compilation_parameters": {
+    "compiler": "pytorch-eager",
+    "graph_compilation": false
+  },
+  "cpu_fallback": false,
+  "dtype": "float32",
+  "evidence_ref": "artifact://observation/candidate.json",
+  "execution_mode": "pytorch-eager",
+  "layout": "row-major-contiguous",
+  "minimum_alignment_bytes": 512,
+  "runtime_device_name": "Ascend910B2",
+  "runtime_identity": {
+    "candidate_device": "npu:0",
+    "logical_device": "npu:0",
+    "runtime_device_name": "Ascend910B2"
+  },
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+  "shape": {
+    "left": [
+      512,
+      512
+    ],
+    "right": [
+      512,
+      512
+    ]
+  },
+  "tuning_parameters": {}
+}

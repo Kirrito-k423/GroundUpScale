@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import builtins
-from hashlib import sha256
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
+from hashlib import sha256
+from pathlib import Path
 from types import SimpleNamespace
 from typing import NoReturn
 
@@ -163,6 +163,7 @@ def _exact_shape_case() -> dict[str, object]:
         "candidate": "torch.matmul",
         "warmup_iterations": 2,
         "repetitions": 3,
+        "inner_iterations": 8,
     }
 
 
@@ -435,6 +436,7 @@ def test_exact_shape_case_builds_explicit_npu_timing_plan() -> None:
         },
         "warmup_iterations": 20,
         "repetitions": 100,
+        "inner_iterations": 1,
         "sample_exclusion": "none-preserve-all-raw-samples",
         "evidence_ref": "artifact://adapter/timing-plan.json",
     }
@@ -624,6 +626,7 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
         "candidate": "torch.matmul",
         "warmup_iterations": 2,
         "repetitions": 3,
+        "inner_iterations": 8,
     }
 
     def collect_at_hardware_boundary(
@@ -635,6 +638,7 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
         assert logical_device_index == 0
         assert received_case == case
         assert timing_plan["repetitions"] == 3
+        assert timing_plan["inner_iterations"] == 8
         return {
             "runtime_device_name": "Ascend910B2",
             "candidate_device": "npu:0",
@@ -676,14 +680,16 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
     )
     assert collection["operation"] == "collect"
     assert collection["status"] == "completed"
-    assert collection["candidate_identity"] == {
-        "schema": "groundupscale.dev/candidate-identity/v1alpha1",
-        "candidate_id": "torch.matmul",
-        "candidate_family": "pytorch-ascend-matmul",
-        "runtime_device_name": "Ascend910B2",
-        "candidate_device": "npu:0",
-        "cpu_fallback": False,
-    }
+    candidate = collection["candidate_identity"]
+    assert candidate["schema"] == (
+        "groundupscale.dev/candidate-identity/v1alpha1"
+    )
+    assert candidate["candidate_id"] == "torch.matmul"
+    assert candidate["candidate_family"] == "pytorch-ascend-matmul"
+    assert candidate["runtime_device_name"] == "Ascend910B2"
+    assert candidate["candidate_device"] == "npu:0"
+    assert candidate["cpu_fallback"] is False
+    assert candidate["candidate_digest"]
     assert collection["input_corpus"] == {
         "schema": "groundupscale.dev/input-corpus/v1alpha1",
         "seed": 20260810,
@@ -697,6 +703,10 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
     }
     assert collection["execution_contract"]["warmup_iterations"] == 2
     assert collection["execution_contract"]["repetitions"] == 3
+    assert collection["execution_contract"]["inner_iterations"] == 8
+    assert collection["raw_timing"]["sample_derivation"] == (
+        "device-event-elapsed-ns / inner_iterations"
+    )
     assert collection["execution_contract"]["sample_exclusion"] == (
         "none-preserve-all-raw-samples"
     )
@@ -705,8 +715,9 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
     assert collection["raw_timing"] == {
         "schema": "groundupscale.dev/raw-timing-observation/v1alpha1",
         "timer_source": "torch.npu.Event.elapsed_time",
-        "timer_resolution_ns": 20.0,
+        "timer_resolution_ns": 2.5,
         "unit": "nanoseconds",
+        "sample_derivation": "device-event-elapsed-ns / inner_iterations",
         "samples": [12_000, 13_000, 14_000],
         "summary": {
             "count": 3,
@@ -729,8 +740,8 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
         "status": "passed",
         "observed_iqr_fraction_of_median": 1_000 / 13_000,
         "maximum_iqr_fraction_of_median": 0.10,
-        "timer_resolution_ns": 20.0,
-        "timer_resolution_fraction_of_median": 20 / 13_000,
+        "timer_resolution_ns": 2.5,
+        "timer_resolution_fraction_of_median": 2.5 / 13_000,
         "maximum_timer_resolution_fraction_of_median": 0.01,
         "excluded_samples": 0,
         "reason_codes": [],
@@ -772,12 +783,13 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
                 "seed",
                 "warmup_iterations",
                 "repetitions",
+                "inner_iterations",
                 "timer_source",
                 "timer_resolution_ns",
             ],
         },
         "accepted_overhead": {
-            "rule": "only candidate execution lies between timing events",
+            "rule": "only candidate executions lie between timing events",
             "event_pair": "accepted-primary-timer-overhead",
             "correctness_oracle": "outside-timed-region",
             "memory_queries": "outside-timed-region",
@@ -786,6 +798,52 @@ def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:
         "evidence_ref": "artifact://resolved/instrumentation-profile.json",
     }
     assert collection["evidence_ref"] == "artifact://adapter/collection.json"
+
+
+def test_collection_records_distinct_k_split_candidate_identity() -> None:
+    from groundupscale.ir import content_fingerprint
+    from groundupscale.measurement_adapters.ascend_npu import (
+        AscendNpuMeasurementAdapter,
+    )
+
+    case = _exact_shape_case()
+    case["candidate"] = "torch.matmul.k-split-2"
+    raw = _raw_hardware_collection(None, 0, case, {})
+    raw["minimum_alignment_bytes"] = 64
+    adapter = AscendNpuMeasurementAdapter(
+        runtime_loader=_available_runtime,
+        collection_executor=lambda *args: raw,
+    )
+
+    collection = adapter.collect(case, dict(adapter.build_timing_plan(case)))
+
+    candidate = collection["candidate_identity"]
+    assert candidate["candidate_id"] == "torch.matmul.k-split-2"
+    assert candidate["candidate_family"] == (
+        "pytorch-ascend-matmul-k-split"
+    )
+    assert candidate["execution_mode"] == "pytorch-eager"
+    assert candidate["shape"] == case["shape"]
+    assert candidate["dtype"] == "float32"
+    assert candidate["layout"] == "row-major-contiguous"
+    assert candidate["minimum_alignment_bytes"] == 64
+    assert candidate["build_identity"] == {
+        "framework": "torch",
+        "framework_version": "2.7.1",
+        "extension": "torch_npu",
+        "extension_version": "2.7.1",
+        "operator_entrypoint": "two torch.matmul calls plus torch.add",
+    }
+    assert candidate["compilation_parameters"] == {
+        "compiler": "pytorch-eager",
+        "graph_compilation": False,
+    }
+    assert candidate["tuning_parameters"] == {
+        "k_partitions": 2,
+        "split_axis": "k",
+    }
+    digest = candidate.pop("candidate_digest")
+    assert digest == content_fingerprint(candidate)
 
 
 def test_high_dispersion_collection_is_quarantined_without_dropping_samples() -> None:
@@ -942,6 +1000,66 @@ def test_five_adapter_operations_publish_immutable_run_bundle(
         item["evidence_ref"].startswith("artifact://")
         for item in operations["operations"]
     )
+    assert verify_run_bundle(run)["passed"] is True
+
+
+def test_measurement_bundle_records_process_session_identity(
+    tmp_path: Path,
+) -> None:
+    run = _write_measurement_bundle(tmp_path)
+
+    environment = json.loads(
+        (run / "resolved/environment.json").read_text(encoding="utf-8")
+    )
+    session = environment["measurement_session"]
+    assert session["session_id"] == "ascend-exact-shape-verifier-test"
+    assert isinstance(session["process_id"], int)
+    assert session["process_id"] > 0
+    assert session["process_started_at"]
+    assert session["python_executable"]
+    assert session["source"] == "python-process-identity"
+    assert verify_run_bundle(run)["passed"] is True
+
+
+def test_failed_correctness_is_preserved_as_rejected_candidate_evidence(
+    tmp_path: Path,
+) -> None:
+    from groundupscale.measurement_adapters.ascend_npu import (
+        AscendNpuMeasurementAdapter,
+    )
+    from groundupscale.measurement_run import MeasurementRunBundleWriter
+
+    raw = _raw_hardware_collection(None, 0, _exact_shape_case(), {})
+    raw["correctness"] = {
+        **raw["correctness"],
+        "status": "failed",
+        "max_absolute_error": 1.0,
+        "max_relative_error": 1.0,
+    }
+    adapter = AscendNpuMeasurementAdapter(
+        runtime_loader=_available_runtime,
+        collection_executor=lambda *args: raw,
+        system_probe=_complete_system_probe,
+    )
+
+    run = MeasurementRunBundleWriter(adapter).run(
+        tmp_path,
+        case=_exact_shape_case(),
+        run_id="ascend-incorrect-candidate-test",
+    )
+
+    manifest = json.loads(
+        (run / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["status"] == "completed"
+    assert manifest["observation_validity"] == {
+        "status": "rejected",
+        "correctness": "failed",
+        "completion_boundary": "closed",
+        "raw_timing_sample_count": 3,
+        "timing_quality": "passed",
+        "reason_codes": ["candidate-correctness-failed"],
+    }
     assert verify_run_bundle(run)["passed"] is True
 
 
@@ -1156,6 +1274,10 @@ def test_public_cli_selects_ascend_npu_and_reports_blocked_on_mac(
             "4",
             "--k",
             "3",
+            "--candidate",
+            "torch.matmul.k-split-2",
+            "--inner-iterations",
+            "8",
             "--warmup",
             "2",
             "--repetitions",
@@ -1181,6 +1303,8 @@ def test_public_cli_selects_ascend_npu_and_reports_blocked_on_mac(
     run = Path(summary["run_bundle"])
     case = json.loads((run / "resolved/case.json").read_text(encoding="utf-8"))
     assert case["shape"] == {"left": [2, 3], "right": [3, 4]}
+    assert case["candidate"] == "torch.matmul.k-split-2"
+    assert case["inner_iterations"] == 8
 
 
 def test_verify_run_fails_when_operation_evidence_ref_cannot_replay(

@@ -1,0 +1,21 @@
+{
+  "candidate": "torch.matmul",
+  "dtype": "float32",
+  "inner_iterations": 100,
+  "layout": "row-major-contiguous",
+  "operation": "MatMul",
+  "repetitions": 100,
+  "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
+  "seed": 20260811,
+  "shape": {
+    "left": [
+      384,
+      384
+    ],
+    "right": [
+      384,
+      384
+    ]
+  },
+  "warmup_iterations": 100
+}

@@ -3,13 +3,21 @@
 from __future__ import annotations
 
 import argparse
-from hashlib import sha256
 import json
 from collections.abc import Callable, Sequence
+from hashlib import sha256
 from pathlib import Path
 
 import yaml
 
+from groundupscale.benchmark.ascend_hardware_microbenchmark import (
+    AscendNpuHardwareMicrobenchmarkRunner,
+)
+from groundupscale.benchmark.hardware_microbenchmark import (
+    HardwareMicrobenchmarkRunner,
+    aggregate_capability_envelope,
+)
+from groundupscale.benchmark.measurement import resolve_device
 from groundupscale.calibration import (
     fit_calibration,
     load_calibration_yaml,
@@ -17,32 +25,28 @@ from groundupscale.calibration import (
     validate_calibration,
     write_calibration_yaml,
 )
-from groundupscale.environment import collect_environment_validity
-from groundupscale.execution_runtime import (
-    ExecutionRuntime,
-    create_execution_runtime,
-)
 from groundupscale.diagnostics import (
     diagnose_run_bundle,
     render_diagnostic_report,
 )
-from groundupscale.benchmark.hardware_microbenchmark import (
-    HardwareMicrobenchmarkRunner,
-    aggregate_capability_envelope,
-)
-from groundupscale.benchmark.measurement import resolve_device
-from groundupscale.benchmark.ascend_hardware_microbenchmark import (
-    AscendNpuHardwareMicrobenchmarkRunner,
+from groundupscale.environment import collect_environment_validity
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    create_execution_runtime,
 )
 from groundupscale.ir import canonical_data
 from groundupscale.measurement_adapters import (
     available_measurement_devices,
     create_measurement_adapter,
 )
-from groundupscale.measurement_run import MeasurementRunBundleWriter
 from groundupscale.measurement_contract import MeasurementAdapter
-from groundupscale.pipeline import compile_analysis_plan
+from groundupscale.measurement_run import MeasurementRunBundleWriter
+from groundupscale.operator_frontier import (
+    OperatorFrontierBundleWriter,
+    OperatorFrontierQualificationError,
+)
 from groundupscale.physical_floor_bundle import PhysicalFloorComparisonBundleWriter
+from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
 from groundupscale.run_bundle import (
     NpuRunEvidence,
@@ -135,9 +139,15 @@ def _parser() -> argparse.ArgumentParser:
     measure_command.add_argument("--k", type=int, required=True)
     measure_command.add_argument("--dtype", default="float32")
     measure_command.add_argument("--layout", default="row-major-contiguous")
+    measure_command.add_argument(
+        "--candidate",
+        choices=("torch.matmul", "torch.matmul.k-split-2"),
+        default="torch.matmul",
+    )
     measure_command.add_argument("--seed", type=int, default=20260810)
     measure_command.add_argument("--warmup", type=int, default=20)
     measure_command.add_argument("--repetitions", type=int, default=100)
+    measure_command.add_argument("--inner-iterations", type=int, default=1)
     measure_command.add_argument("--artifact-store", default=".groundupscale")
     measure_command.add_argument("--run-id", required=True)
     measure_command.add_argument("--json", action="store_true", dest="as_json")
@@ -151,6 +161,21 @@ def _parser() -> argparse.ArgumentParser:
     compare_measurement.add_argument("--artifact-store", default=".groundupscale")
     compare_measurement.add_argument("--run-id", required=True)
     compare_measurement.add_argument("--json", action="store_true", dest="as_json")
+    qualify_frontier = subparsers.add_parser(
+        "qualify-frontier",
+        help="qualify Ascend MatMul Anchors and publish a minimal Capability Surface",
+    )
+    qualify_frontier.add_argument("--search-run", action="append", required=True)
+    qualify_frontier.add_argument("--holdout-run", action="append", required=True)
+    qualify_frontier.add_argument(
+        "--confirmation-run", action="append", required=True
+    )
+    qualify_frontier.add_argument(
+        "--query-size", action="append", type=int, required=True
+    )
+    qualify_frontier.add_argument("--artifact-store", default=".groundupscale")
+    qualify_frontier.add_argument("--run-id", required=True)
+    qualify_frontier.add_argument("--json", action="store_true", dest="as_json")
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
     )
@@ -673,9 +698,10 @@ def _run_measurement(args: argparse.Namespace) -> int:
         "dtype": args.dtype,
         "layout": args.layout,
         "seed": args.seed,
-        "candidate": "torch.matmul",
+        "candidate": args.candidate,
         "warmup_iterations": args.warmup,
         "repetitions": args.repetitions,
+        "inner_iterations": args.inner_iterations,
     }
     adapter = create_measurement_adapter(
         args.device,
@@ -961,6 +987,66 @@ def _run_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_qualify_frontier(args: argparse.Namespace) -> int:
+    try:
+        run = OperatorFrontierBundleWriter().run(
+            args.artifact_store,
+            run_id=args.run_id,
+            search_runs=args.search_run,
+            holdout_runs=args.holdout_run,
+            confirmation_runs=args.confirmation_run,
+            query_sizes=tuple(args.query_size),
+        )
+    except OperatorFrontierQualificationError as error:
+        failure = {
+            "schema": (
+                "groundupscale.dev/operator-frontier-qualification-failure/"
+                "v1alpha1"
+            ),
+            "status": "insufficient_evidence",
+            "reason_code": error.reason_code,
+            "message": str(error),
+        }
+        if args.as_json:
+            print(json.dumps(failure, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print(
+                "operator Frontier qualification failed: "
+                f"{failure['reason_code']}"
+            )
+        return 2
+    verification = verify_run_bundle(run)
+    result = diagnose_run_bundle(run)
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    summary = {
+        "schema": (
+            "groundupscale.dev/operator-frontier-run-summary/v1alpha1"
+        ),
+        "run_id": args.run_id,
+        "status": qualification["status"],
+        "hardware_cohort": qualification["hardware_cohort"],
+        "anchor_count": len(qualification["anchors"]),
+        "surface": qualification["surface"]["surface_id"],
+        "query_statuses": {
+            str(query["query_shape"]["s"]): query["status"]
+            for query in result["capability_surface_queries"]
+        },
+        "verification_passed": verification["passed"],
+        "run_bundle": str(run),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"operator Frontier {summary['run_id']}: {summary['status']} "
+            f"({summary['anchor_count']} anchors)"
+        )
+        print(f"  bundle: {summary['run_bundle']}")
+    return 0 if verification["passed"] else 1
+
+
 def _run_diagnose(args: argparse.Namespace) -> int:
     result = diagnose_run_bundle(args.run_bundle)
     if args.as_json:
@@ -1066,6 +1152,8 @@ def main(
         return _run_measurement(args)
     if args.command == "compare-measurement":
         return _run_compare_measurement(args)
+    if args.command == "qualify-frontier":
+        return _run_qualify_frontier(args)
     if args.command == "verify-run":
         return _run_verify(args)
     if args.command == "explain":
