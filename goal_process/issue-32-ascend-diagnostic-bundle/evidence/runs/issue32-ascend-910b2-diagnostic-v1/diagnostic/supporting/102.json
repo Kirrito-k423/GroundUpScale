@@ -1,0 +1,104 @@
+{
+  "estimator": {
+    "change_reason": "Calibrate every uncertainty component before replay.",
+    "method": "max-absolute-residual",
+    "policy_id": "component-max-absolute-residual",
+    "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
+    "scope": "independent-ascend-uncertainty-calibration",
+    "version": "v1"
+  },
+  "policy_id": "issue32-frontier-uncertainty",
+  "records": [
+    {
+      "component_id": "anchor",
+      "observed_samples_ns": [
+        10300.0
+      ],
+      "partition": "calibration",
+      "predicted_ns": 10000.0,
+      "process_id": 4200001,
+      "session_id": "issue32-anchor-calibration",
+      "target_id": "anchor-calibration"
+    },
+    {
+      "component_id": "interpolation",
+      "observed_samples_ns": [
+        10000.0
+      ],
+      "partition": "calibration",
+      "predicted_ns": 10000.0,
+      "process_id": 4200002,
+      "session_id": "issue32-interpolation-calibration",
+      "target_id": "interpolation-calibration"
+    },
+    {
+      "component_id": "instrumentation",
+      "observed_samples_ns": [
+        10400.0
+      ],
+      "partition": "calibration",
+      "predicted_ns": 10000.0,
+      "process_id": 4200003,
+      "session_id": "issue32-instrumentation-calibration",
+      "target_id": "instrumentation-calibration"
+    },
+    {
+      "component_id": "anchor",
+      "observed_samples_ns": [
+        10270.0
+      ],
+      "partition": "validation",
+      "predicted_ns": 10000.0,
+      "process_id": 4200011,
+      "session_id": "issue32-anchor-validation",
+      "target_id": "anchor-validation"
+    },
+    {
+      "component_id": "interpolation",
+      "observed_samples_ns": [
+        10000.0
+      ],
+      "partition": "validation",
+      "predicted_ns": 10000.0,
+      "process_id": 4200012,
+      "session_id": "issue32-interpolation-validation",
+      "target_id": "interpolation-validation"
+    },
+    {
+      "component_id": "instrumentation",
+      "observed_samples_ns": [
+        10360.0
+      ],
+      "partition": "validation",
+      "predicted_ns": 10000.0,
+      "process_id": 4200013,
+      "session_id": "issue32-instrumentation-validation",
+      "target_id": "instrumentation-validation"
+    }
+  ],
+  "schema": "groundupscale.dev/uncertainty-calibration/v1alpha1",
+  "target_coverage": {
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "coverage_method": "independent-validation-absolute-residual-within-limit",
+    "execution_domain_sha256": "064e8582ff660acc8699579c9da35116957719aa206f44ca163d0cbdd4a6aed0",
+    "minimum_calibration_records": 3,
+    "minimum_fraction": 1.0,
+    "minimum_validation_records": 3,
+    "required_calibration_target_ids": [
+      "anchor-calibration",
+      "interpolation-calibration",
+      "instrumentation-calibration"
+    ],
+    "required_validation_target_ids": [
+      "anchor-validation",
+      "interpolation-validation",
+      "instrumentation-validation"
+    ],
+    "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+    "surface": {
+      "surface_id": "ascend-910b2-square-matmul",
+      "version": "v1"
+    }
+  },
+  "version": "v1"
+}

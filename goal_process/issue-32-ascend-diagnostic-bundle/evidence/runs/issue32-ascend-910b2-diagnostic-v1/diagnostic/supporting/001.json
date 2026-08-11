@@ -1,0 +1,10 @@
+{
+  "payload": {
+    "axis": "frontier_role",
+    "from": "NONE",
+    "reason_code": "exact-shape-best-of-correct-holdout-winner",
+    "sequence": 1,
+    "to": "PROVISIONAL"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,9 @@
+{
+  "payload": {
+    "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+    "outcome": "violation",
+    "process_id": 2512236,
+    "session_id": "issue32-session-01-v3"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

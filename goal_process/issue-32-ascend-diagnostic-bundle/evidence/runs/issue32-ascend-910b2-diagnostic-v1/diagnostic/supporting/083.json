@@ -1,0 +1,11 @@
+{
+  "payload": {
+    "candidate_id": "torch.matmul",
+    "dependencies": [],
+    "overlap_claims": [],
+    "schedule_id": "issue32-single-node-q-proj",
+    "transformations": [],
+    "version": "v1"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

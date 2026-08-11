@@ -1,0 +1,64 @@
+{
+  "payload": {
+    "ablation_id": "remove-dispatch",
+    "correctness": {
+      "evidence_ref": "artifact://issue-32/integration-dispatch-correctness",
+      "passed": true,
+      "records": [
+        {
+          "expected": 0.0,
+          "observed": 0.0001220703125
+        }
+      ],
+      "tolerance": {
+        "atol": 0.001,
+        "rtol": 0.001
+      }
+    },
+    "kind": "dispatch",
+    "lane_id": "issue32-ascend-diagnostic",
+    "measurement_id": "issue32-dispatch-exclusive-attribution",
+    "removed_leaf_ids": [
+      "dispatch-overhead"
+    ],
+    "sessions": [
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "evidence_ref": "artifact://issue-32/integration-dispatch-1",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 0.0,
+        "process_id": 2512236,
+        "raw_samples_ns": [
+          0.0
+        ],
+        "session_id": "issue32-session-01-v3"
+      },
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "evidence_ref": "artifact://issue-32/integration-dispatch-2",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 0.0,
+        "process_id": 2513462,
+        "raw_samples_ns": [
+          0.0
+        ],
+        "session_id": "issue32-session-02-v3"
+      },
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "evidence_ref": "artifact://issue-32/integration-dispatch-3",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 0.0,
+        "process_id": 2515110,
+        "raw_samples_ns": [
+          0.0
+        ],
+        "session_id": "issue32-session-03-v3"
+      }
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

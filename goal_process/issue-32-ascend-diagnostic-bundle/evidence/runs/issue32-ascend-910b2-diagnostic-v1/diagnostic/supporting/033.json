@@ -1,0 +1,14 @@
+{
+  "payload": {
+    "counterfactual_id": "remove-integration-overhead",
+    "declared_recovered_ns": 182045.00496387482,
+    "kind": "declared-component-removal",
+    "removed_leaf_ids": [
+      "dispatch-overhead",
+      "copy-overhead",
+      "sync-overhead",
+      "profiling-overhead"
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

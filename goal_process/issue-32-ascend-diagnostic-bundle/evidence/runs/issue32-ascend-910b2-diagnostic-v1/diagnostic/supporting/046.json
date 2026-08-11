@@ -1,0 +1,8 @@
+{
+  "payload": {
+    "duration_ns": 0.0,
+    "kind": "unattributed",
+    "residual_id": "unattributed-residual"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,5 @@
+{
+  "component_id": "interpolation",
+  "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
+  "standard_uncertainty_ns": 0.0
+}

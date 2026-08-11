@@ -1,0 +1,44 @@
+{
+  "payload": {
+    "candidate_ids": [
+      "torch-matmul-v-proj-negative"
+    ],
+    "case": {
+      "semantic": "batch-one Q projection MatMul",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+    },
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "completion_boundary": {
+      "absolute_timestamps_subtracted": false,
+      "closed": true,
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event-stream-completion",
+      "stream_id": "default-npu-stream",
+      "stream_synchronized": true
+    },
+    "execution_domain": {
+      "affinity": "192-223",
+      "alignment_bytes": 512,
+      "concurrency": 1,
+      "context": "pytorch-eager",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "row-major-contiguous",
+      "numa": "6",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "default-npu-stream",
+      "threads": 1
+    },
+    "instrumentation_profile": "paired-component-ablation/v1",
+    "lane_id": "issue32-ascend-diagnostic",
+    "pair_id": "issue32-ascend-paired-lanes",
+    "paired_baseline_lane_id": "issue32-ascend-baseline",
+    "timer_source": "torch.npu.Event.elapsed_time",
+    "timing_used_for_verdict": false
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

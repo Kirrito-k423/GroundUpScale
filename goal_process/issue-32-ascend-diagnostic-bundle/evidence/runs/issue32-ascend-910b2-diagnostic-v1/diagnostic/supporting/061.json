@@ -1,0 +1,11 @@
+{
+  "payload": {
+    "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+    "failure_kind": "correctness_difference",
+    "max_abs_difference": 0.01012420654296875,
+    "mismatched_elements": 81259,
+    "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+    "oracle": "cpu-float32-same-seed-matmul"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

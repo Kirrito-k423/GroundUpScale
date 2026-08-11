@@ -2536,6 +2536,7 @@ def _normalize_timing_sessions(
     expected_cohort_id: str,
     minimum_sessions: int,
     require_authored_latency: bool,
+    allow_zero_samples: bool = False,
 ) -> dict[str, Any] | None:
     """Validate one lane/cohort and derive medians from included raw samples."""
     if not isinstance(sessions, list) or not sessions:
@@ -2569,7 +2570,12 @@ def _normalize_timing_sessions(
             or not isinstance(raw_samples, list)
             or not raw_samples
             or not all(
-                _finite_number(sample) and float(sample) > 0
+                _finite_number(sample)
+                and (
+                    float(sample) >= 0
+                    if allow_zero_samples
+                    else float(sample) > 0
+                )
                 for sample in raw_samples
             )
             or not isinstance(exclusions, list)
@@ -3198,6 +3204,7 @@ def _integration_measurement(
     expected_cohort_id: str,
     minimum_sessions: int,
     correctness_policy: dict[str, Any],
+    allow_zero_samples: bool = False,
 ) -> dict[str, Any] | None:
     correctness = value.get("correctness") if isinstance(value, dict) else None
     correctness_passed = (
@@ -3228,6 +3235,7 @@ def _integration_measurement(
         expected_cohort_id=expected_cohort_id,
         minimum_sessions=minimum_sessions,
         require_authored_latency=False,
+        allow_zero_samples=allow_zero_samples,
     )
     if normalized is None:
         return None
@@ -3289,7 +3297,15 @@ def _integration_ledger(
             or not _resolved_identity_string(leaf.get("leaf_id"))
             or leaf["leaf_id"] in leaf_by_id
             or leaf.get("kind")
-            not in {"operator", "copy", "dispatch", "sync", "wait", "other"}
+            not in {
+                "operator",
+                "copy",
+                "dispatch",
+                "sync",
+                "profiling",
+                "wait",
+                "other",
+            }
             or not _finite_number(leaf.get("duration_ns"))
             or float(leaf["duration_ns"]) < 0
             or not isinstance(leaf.get("evidence_refs"), list)
@@ -3632,9 +3648,23 @@ def _integration_overhead_verdict(
             "standalone-operator-outside-frontier-uncertainty",
         )
     minimum_sessions = policy["minimum_independent_sessions"]
+    wrapped_value = evidence.get("wrapped_e2e")
+    wrapped_lane_id = (
+        wrapped_value.get("lane_id")
+        if isinstance(wrapped_value, dict)
+        else None
+    )
+    if wrapped_lane_id not in {
+        lanes["baseline"]["lane_id"],
+        lanes["diagnostic"]["lane_id"],
+    }:
+        return fail(
+            "wrapped-e2e-evidence-valid",
+            "wrapped-e2e-lane-invalid",
+        )
     wrapped = _integration_measurement(
-        evidence.get("wrapped_e2e"),
-        expected_lane_id=lanes["baseline"]["lane_id"],
+        wrapped_value,
+        expected_lane_id=wrapped_lane_id,
         expected_cohort_id=evidence["cohort_id"],
         minimum_sessions=minimum_sessions,
         correctness_policy=probe["locked_contract"]["correctness_policy"],
@@ -3672,6 +3702,7 @@ def _integration_overhead_verdict(
             correctness_policy=probe["locked_contract"][
                 "correctness_policy"
             ],
+            allow_zero_samples=True,
         )
         value_removed = (
             value.get("removed_leaf_ids")
@@ -3684,7 +3715,14 @@ def _integration_overhead_verdict(
             or not _resolved_identity_string(value.get("ablation_id"))
             or value["ablation_id"] in ablation_ids
             or value.get("kind")
-            not in {"copy", "dispatch", "sync", "wait", "other"}
+            not in {
+                "copy",
+                "dispatch",
+                "sync",
+                "profiling",
+                "wait",
+                "other",
+            }
             or not isinstance(value_removed, list)
             or not value_removed
             or len(value_removed) != len(set(value_removed))
@@ -4886,7 +4924,10 @@ def _performance_diagnosis_verdicts(
                             ]
                         )
                     ),
-                    "counterexamples": [
+                    "counterexamples": list(
+                        probe.get("counterexamples", [])
+                    )
+                    + [
                         {
                             "candidate_id": candidate["candidate_id"],
                             "reason_code": candidate["exclusion_reason"],
@@ -7471,6 +7512,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
         "adapter_contract": adapter_contract,
+        "source_runs": list(document.get("source_runs", [])),
     }
     if diagnostic_trigger is not None:
         derivation_basis["diagnostic_trigger"] = diagnostic_trigger
@@ -7541,6 +7583,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         },
         "digests": digests,
         "derivation": derivation,
+        "source_runs": list(document.get("source_runs", [])),
     }
     if diagnostic_trigger is not None:
         result["diagnostic_trigger"] = diagnostic_trigger
@@ -7578,6 +7621,16 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             lines.append(
                 f"{label}: unknown ({axis['reason_code']})"
             )
+    for lifecycle in result.get("frontier_anchor_lifecycles", []):
+        state = lifecycle.get("state", {})
+        lines.append(
+            f"Frontier Anchor {lifecycle['anchor_id']}: "
+            f"{state.get('observation_validity', 'unknown')}/"
+            f"{state.get('frontier_role', 'unknown')}; "
+            "authoritative="
+            f"{str(lifecycle.get('authoritative_surface_knot', False)).lower()}; "
+            f"history={lifecycle.get('history_status', 'unknown')}"
+        )
     for query in result.get("capability_surface_queries", []):
         envelope = query.get("envelope")
         if isinstance(envelope, dict):
@@ -7898,6 +7951,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
     qualification = (
         policies.get("qualification") if isinstance(policies, dict) else None
     )
+    best_of_correct = candidate.get("exact_shape_best_of_correct")
     lines.extend(
         [
             "hardware/cohort: "
@@ -7924,10 +7978,28 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                 if isinstance(qualification, dict)
                 else "unknown"
             ),
+            "candidate search: "
+            + (
+                f"winner={best_of_correct.get('winner_candidate_id', 'unknown')}; "
+                "eligible="
+                + ",".join(best_of_correct.get("eligible_candidate_ids", []))
+                + "; sessions="
+                + ",".join(best_of_correct.get("search_session_ids", []))
+                + f"; evidence={best_of_correct.get('evidence_ref', 'unknown')}"
+                if isinstance(best_of_correct, dict)
+                else "unknown"
+            ),
+            f"raw bundle: run-bundle://{result['run_id']}",
             f"input digest: {result['digests']['input_sha256']}",
             f"evidence digest: {result['digests']['evidence_sha256']}",
         ]
     )
+    for source_run in result.get("source_runs", []):
+        if isinstance(source_run, dict):
+            lines.append(
+                f"source run {source_run.get('run_id', 'unknown')}: "
+                f"{source_run.get('role', 'unknown')}"
+            )
     lines.append(
         "Resource Physical Floor distance is optimization headroom; "
         "not prediction error."

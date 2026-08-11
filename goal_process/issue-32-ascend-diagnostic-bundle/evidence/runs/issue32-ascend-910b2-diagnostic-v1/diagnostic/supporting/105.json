@@ -1,0 +1,24 @@
+{
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "coverage_method": "independent-validation-absolute-residual-within-limit",
+  "execution_domain_sha256": "064e8582ff660acc8699579c9da35116957719aa206f44ca163d0cbdd4a6aed0",
+  "minimum_calibration_records": 3,
+  "minimum_fraction": 1.0,
+  "minimum_validation_records": 3,
+  "required_calibration_target_ids": [
+    "anchor-calibration",
+    "interpolation-calibration",
+    "instrumentation-calibration"
+  ],
+  "required_validation_target_ids": [
+    "anchor-validation",
+    "interpolation-validation",
+    "instrumentation-validation"
+  ],
+  "schema": "groundupscale.dev/uncertainty-target-coverage/v1alpha1",
+  "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+  "surface": {
+    "surface_id": "ascend-910b2-square-matmul",
+    "version": "v1"
+  }
+}

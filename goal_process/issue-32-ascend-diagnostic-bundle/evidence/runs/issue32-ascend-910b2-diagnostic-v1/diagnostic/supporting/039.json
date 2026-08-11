@@ -1,0 +1,83 @@
+{
+  "payload": {
+    "e2e_duration_ns": 198051.60522460938,
+    "leaf_semantics": "mutually-exclusive",
+    "leaves": [
+      {
+        "duration_ns": 16006.600260734558,
+        "evidence_refs": [
+          "artifact://issue-32/integration-operator"
+        ],
+        "kind": "operator",
+        "leaf_id": "operator"
+      },
+      {
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "artifact://issue-32/integration-dispatch"
+        ],
+        "kind": "dispatch",
+        "leaf_id": "dispatch-overhead"
+      },
+      {
+        "duration_ns": 24955.927937962915,
+        "evidence_refs": [
+          "artifact://issue-32/integration-copy"
+        ],
+        "kind": "copy",
+        "leaf_id": "copy-overhead"
+      },
+      {
+        "duration_ns": 123359.42434561998,
+        "evidence_refs": [
+          "artifact://issue-32/integration-sync"
+        ],
+        "kind": "sync",
+        "leaf_id": "sync-overhead"
+      },
+      {
+        "duration_ns": 33729.652680291925,
+        "evidence_refs": [
+          "artifact://issue-32/integration-profiling"
+        ],
+        "kind": "profiling",
+        "leaf_id": "profiling-overhead"
+      }
+    ],
+    "ledger_id": "issue32-q-proj-exclusive-ledger",
+    "parents": [
+      {
+        "additive": false,
+        "child_parent_ids": [
+          "q-projection-wrapper"
+        ],
+        "kind": "e2e",
+        "leaf_ids": [],
+        "span_id": "wrapped-e2e"
+      },
+      {
+        "additive": false,
+        "child_parent_ids": [],
+        "kind": "module",
+        "leaf_ids": [
+          "operator",
+          "dispatch-overhead",
+          "copy-overhead",
+          "sync-overhead",
+          "profiling-overhead"
+        ],
+        "span_id": "q-projection-wrapper"
+      }
+    ],
+    "residual": {
+      "duration_ns": 0.0,
+      "evidence_refs": [
+        "artifact://issue-32/integration-residual"
+      ],
+      "kind": "unattributed",
+      "residual_id": "unattributed-residual"
+    },
+    "version": "v1"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

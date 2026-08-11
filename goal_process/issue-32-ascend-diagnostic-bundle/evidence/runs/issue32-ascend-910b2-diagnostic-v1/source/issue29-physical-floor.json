@@ -1,0 +1,430 @@
+{
+  "case_id": "ascend-matmul-q-proj",
+  "comparison": {
+    "error_status": "not-evaluable-physical-floor-is-not-a-duration-prediction",
+    "interpretation": "optimization-headroom-not-prediction-error",
+    "observation_minus_physical_floor_ns": 68811.48512507808,
+    "observed_to_physical_floor_ratio": 5.915627531914299,
+    "relative_prediction_error": null
+  },
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "observation": {
+    "candidate": "torch.matmul",
+    "completion_boundary": "closed",
+    "iqr_over_median": 0.09388962685665983,
+    "median_ns": 82810.0,
+    "q1_ns": 79680.0,
+    "q3_ns": 87455.0,
+    "quality": "valid",
+    "source_manifest_sha256": "f5a57f085f8865e40afffa628e9f9f5fa8f7ae03f2050720f4b0db118416f17d",
+    "source_run_id": "ascend-910b2-exact-shape-512-20260810-v1",
+    "status": "known",
+    "timer_resolution_ns": 20.0,
+    "timer_source": "torch.npu.Event.elapsed_time"
+  },
+  "operator_frontier": {
+    "reason_code": "not-qualified-by-issue-29",
+    "status": "unknown",
+    "value_ns": null
+  },
+  "physical_floor": {
+    "assumptions": [
+      "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+      "Compulsory bytes count each MatMul input and output once.",
+      "P80 rates are cross-Shape robust achieved resource capacities.",
+      "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+      "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+      "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+      "The complete uncalibrated implementation duration remains unknown."
+    ],
+    "capabilities": [
+      {
+        "environment_eligible": true,
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "optimistic_rate": 36874878078646.97,
+        "profile_name": "ascend-910b2-npu-local",
+        "profile_version": "0.1.0",
+        "quality_reason_codes": [
+          "power-policy-unobserved"
+        ],
+        "quality_status": "exploratory",
+        "resource": "compute.fp32",
+        "robust_achievable_rate": 19175995339398.254,
+        "selected_optimistic_probe": "matrix-fp32-cube",
+        "selected_robust_probe": "matrix-fp32-cube",
+        "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+        "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+        "uncertainty": {
+          "maximum_iqr_over_median": 0.1,
+          "method": "per-shape-median-cross-shape-quantiles",
+          "optimistic_quantile": 0.95,
+          "robust_quantile": 0.8
+        },
+        "unit": "FLOP/s",
+        "validity_domain": {
+          "dtype": "float32",
+          "execution_mode": "pytorch-eager",
+          "layout": "row-major-contiguous",
+          "logical_device": "npu:0",
+          "operation_classes": [
+            "MatMul",
+            "memory_copy"
+          ],
+          "shape_support": "observed-stratified-shapes-only"
+        }
+      },
+      {
+        "environment_eligible": true,
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "optimistic_rate": 1446064058559.804,
+        "profile_name": "ascend-910b2-npu-local",
+        "profile_version": "0.1.0",
+        "quality_reason_codes": [
+          "power-policy-unobserved"
+        ],
+        "quality_status": "exploratory",
+        "resource": "memory.hbm",
+        "robust_achievable_rate": 1408047205172.7576,
+        "selected_optimistic_probe": "hbm-fp32-copy",
+        "selected_robust_probe": "hbm-fp32-copy",
+        "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+        "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+        "uncertainty": {
+          "maximum_iqr_over_median": 0.1,
+          "method": "per-shape-median-cross-shape-quantiles",
+          "optimistic_quantile": 0.95,
+          "robust_quantile": 0.8
+        },
+        "unit": "B/s",
+        "validity_domain": {
+          "dtype": "float32",
+          "execution_mode": "pytorch-eager",
+          "layout": "row-major-contiguous",
+          "logical_device": "npu:0",
+          "operation_classes": [
+            "MatMul",
+            "memory_copy"
+          ],
+          "shape_support": "observed-stratified-shapes-only"
+        }
+      }
+    ],
+    "compulsory_bytes": 3145728,
+    "compute_time_ns": 13998.514874921926,
+    "formula": "max(sum(minimum_flops) / measured_fp32_P80, unique_scope_boundary_bytes / measured_hbm_copy_P80)",
+    "full_duration_ns": null,
+    "kind": "algorithm-independent-resource-physical-floor",
+    "limiting_resource": "compute.fp32",
+    "memory_time_ns": 2234.1069166172174,
+    "minimum_work_flops": 268435456,
+    "quality": {
+      "reason_codes": [
+        "power-policy-unobserved"
+      ],
+      "status": "exploratory"
+    },
+    "resource_physical_floor_ns": 13998.514874921926,
+    "status": "partial-empirical-hardware-floor-exploratory"
+  },
+  "schema": "groundupscale.dev/physical-floor-observation-comparison/v1alpha1",
+  "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+  "status": "physical-floor-with-observation",
+  "theoretical_capability": {
+    "fp32_flops_per_second": {
+      "evidence": [
+        {
+          "accessed_on": "2026-08-10",
+          "source_kind": "vendor_official",
+          "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+          "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+        }
+      ],
+      "reason": "public_material_does_not_bind_a_per_card_910b2_fp32_rate",
+      "status": "unknown",
+      "value": null
+    },
+    "peak_memory_bandwidth_bytes_per_second": {
+      "evidence": [
+        {
+          "accessed_on": "2026-08-10",
+          "source_kind": "vendor_official",
+          "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+          "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+        }
+      ],
+      "reason": "public_material_does_not_bind_a_per_card_910b2_hbm_rate",
+      "status": "unknown",
+      "value": null
+    }
+  },
+  "unsupported_regions": {
+    "count": 44,
+    "regions": [
+      {
+        "cost_node_id": "cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c",
+        "operation": "RMSNorm",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+      },
+      {
+        "cost_node_id": "cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "cost_node_id": "cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "cost_node_id": "cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+        "operation": "MatMul",
+        "reason": "outside-capability-validity-domain",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "cost_node_id": "cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72",
+        "operation": "Mul",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+      },
+      {
+        "cost_node_id": "cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+      },
+      {
+        "cost_node_id": "cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46",
+        "operation": "Softmax",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "cost_node_id": "cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "cost_node_id": "cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+        "operation": "MatMul",
+        "reason": "outside-capability-validity-domain",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+      },
+      {
+        "cost_node_id": "cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "cost_node_id": "cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+      },
+      {
+        "cost_node_id": "cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80",
+        "operation": "RMSNorm",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+      },
+      {
+        "cost_node_id": "cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "cost_node_id": "cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "cost_node_id": "cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a",
+        "operation": "SiLU",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "cost_node_id": "cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f",
+        "operation": "Mul",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+      },
+      {
+        "cost_node_id": "cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "cost_node_id": "cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+      },
+      {
+        "cost_node_id": "cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4",
+        "operation": "RMSNorm",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+      },
+      {
+        "cost_node_id": "cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "cost_node_id": "cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "cost_node_id": "cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1",
+        "operation": "MatMul",
+        "reason": "outside-capability-validity-domain",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "cost_node_id": "cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c",
+        "operation": "Mul",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+      },
+      {
+        "cost_node_id": "cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+      },
+      {
+        "cost_node_id": "cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13",
+        "operation": "Softmax",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "cost_node_id": "cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "cost_node_id": "cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512",
+        "operation": "Transpose",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "cost_node_id": "cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3",
+        "operation": "MatMul",
+        "reason": "outside-capability-validity-domain",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      },
+      {
+        "cost_node_id": "cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a",
+        "operation": "View",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      {
+        "cost_node_id": "cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+      },
+      {
+        "cost_node_id": "cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443",
+        "operation": "RMSNorm",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+      },
+      {
+        "cost_node_id": "cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "cost_node_id": "cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "cost_node_id": "cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8",
+        "operation": "SiLU",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+      },
+      {
+        "cost_node_id": "cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124",
+        "operation": "Mul",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+      },
+      {
+        "cost_node_id": "cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b",
+        "operation": "MatMul",
+        "reason": "outside-capability-observed-shapes",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "cost_node_id": "cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec",
+        "operation": "Add",
+        "reason": "unsupported-ascend-cost-operation",
+        "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+      }
+    ],
+    "status": "partial-unknown"
+  }
+}

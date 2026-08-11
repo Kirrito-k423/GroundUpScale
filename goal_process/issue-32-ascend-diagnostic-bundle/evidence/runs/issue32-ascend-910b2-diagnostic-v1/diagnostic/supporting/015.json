@@ -1,0 +1,180 @@
+{
+  "payload": {
+    "candidate_identity": {
+      "candidate_id": "torch-matmul-v-proj-negative",
+      "family_id": "pytorch-ascend-matmul",
+      "family_version": "v1",
+      "implementation_ref": "artifact://issue-32/torch-matmul-v-proj-negative-implementation",
+      "implementation_sha256": "f2b004ae0107e9aaa5ac4a7dd9ff1ba453e255330e87cf3c27abb4d3514093e7",
+      "source_identity": "issue-32/remote/torch-matmul-v-proj-negative"
+    },
+    "defect_kind": "correctness_oracle_violation",
+    "environment": {
+      "cohort_id": "ascend-npu-23b93a89d5fecc79",
+      "cohort_identity": {
+        "communication": {
+          "status": "not_applicable"
+        },
+        "communication_library": {
+          "name": "single-device",
+          "status": "not_applicable",
+          "version": "v1"
+        },
+        "compiler": {
+          "name": "PyTorch-eager",
+          "status": "resolved",
+          "version": "2.7.1"
+        },
+        "device": "Ascend910B2",
+        "driver": {
+          "name": "CANN-driver",
+          "status": "resolved",
+          "version": "25.3.rc1"
+        },
+        "evidence_ref": "artifact://issue-32/cohort-identity",
+        "execution_context": {
+          "affinity": "192-223",
+          "concurrency": 1,
+          "context": "pytorch-eager",
+          "numa": "6",
+          "stream": "default-npu-stream"
+        },
+        "firmware": {
+          "name": "Ascend-firmware",
+          "status": "resolved",
+          "version": "7.8.0.2.212"
+        },
+        "framework": {
+          "name": "PyTorch",
+          "status": "resolved",
+          "version": "2.7.1"
+        },
+        "kernel": {
+          "name": "Linux",
+          "status": "resolved",
+          "version": "5.10.0-60.18.0.50.oe2203.aarch64"
+        },
+        "numeric_execution": {
+          "alignment_bytes": 512,
+          "dtype": "float32",
+          "execution_mode": "pytorch-eager",
+          "layout": "row-major-contiguous",
+          "threads": 1
+        },
+        "operator_library": {
+          "name": "torch-npu",
+          "status": "resolved",
+          "version": "2.7.1"
+        },
+        "os": {
+          "name": "openEuler",
+          "status": "resolved",
+          "version": "22.03"
+        },
+        "partition": "physical-npu=0/chip=0;logical-device=npu:0;ASCEND_RT_VISIBLE_DEVICES=0;chip-logic-id=0",
+        "power_clock": {
+          "clock_policy": "hbm-1600mhz-ai-core-unobserved",
+          "power_policy": "unsupported(npu-smi-work-mode-query)"
+        },
+        "runtime": {
+          "name": "CPython",
+          "status": "resolved",
+          "version": "3.11.14"
+        },
+        "software": "cann=8.5.0;driver=25.3.rc1;firmware=7.8.0.2.212;kernel=5.10.0-60.18.0.50.oe2203.aarch64;os=openEuler 22.03 LTS;python=3.11.14;torch=2.7.1+cpu;torch_npu=2.7.1",
+        "timer_protocol": {
+          "adapter_id": "ascend-npu",
+          "adapter_version": "v1",
+          "completion_kind": "device-event-stream-completion",
+          "monotonic": true,
+          "protocol_id": "issue32-exact-shape-diagnostic",
+          "protocol_version": "v1",
+          "resolution_ns": 20,
+          "source": "torch.npu.Event.elapsed_time"
+        },
+        "topology": "single-node-single-npu"
+      },
+      "preflight": {
+        "eligible": true,
+        "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+      }
+    },
+    "failure": {
+      "evidence_ref": "artifact://issue-32/negative-correctness-difference",
+      "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+      "failure_kind": "correctness_difference",
+      "max_abs_difference": 0.01012420654296875,
+      "mismatched_elements": 81259,
+      "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+      "oracle": "cpu-float32-same-seed-matmul"
+    },
+    "input_summary": {
+      "alignment_bytes": 512,
+      "dtype": "float32",
+      "evidence_ref": "artifact://issue-32/negative-input-summary",
+      "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+      "layout": "row-major-contiguous",
+      "shape": {
+        "left": [
+          1,
+          512,
+          512
+        ],
+        "output": [
+          1,
+          512,
+          512
+        ],
+        "right": [
+          512,
+          512
+        ]
+      },
+      "strides": {
+        "left": [
+          262144,
+          512,
+          1
+        ],
+        "output": [
+          262144,
+          512,
+          1
+        ],
+        "right": [
+          512,
+          1
+        ]
+      }
+    },
+    "repetitions": [
+      {
+        "evidence_ref": "artifact://issue-32/negative-repeat-1",
+        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "outcome": "violation",
+        "process_id": 2512236,
+        "session_id": "issue32-session-01-v3"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/negative-repeat-2",
+        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "outcome": "violation",
+        "process_id": 2513462,
+        "session_id": "issue32-session-02-v3"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/negative-repeat-3",
+        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "outcome": "violation",
+        "process_id": 2515110,
+        "session_id": "issue32-session-03-v3"
+      }
+    ],
+    "schema": "groundupscale.dev/direct-defect-evidence/v1alpha1",
+    "supporting_evidence_refs": [
+      "artifact://issue-32/torch-matmul-v-proj-negative-correctness"
+    ],
+    "target_candidate_id": "torch-matmul-v-proj-negative"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}
