@@ -1,19 +1,19 @@
 # RMB Cost
 
-- Generated at: `2026-08-11T02:37:37Z`
+- Generated at: `2026-08-11T03:27:47Z`
 - Confidence: `estimate`
 - USD/CNY: `7.2`
-- Task: Issue #30 Ascend NPU 两层 Transformer Demo（主会话 + Standards/Spec 复审）
+- Task: Issue #30 Ascend NPU 两层 Transformer Demo（主会话 + 两轮 Standards/Spec 复审）
 
 ## Token Usage
 
 | Item | Tokens | M tokens |
 |---|---:|---:|
-| Input total | 85,142,812 | 85.142812 |
-| Cached input | 83,509,760 | 83.509760 |
-| Uncached input | 1,633,052 | 1.633052 |
-| Output | 291,410 | 0.291410 |
-| Reasoning output, included in output when provider reports it that way | 91,394 | 0.091394 |
+| Input total | 186,354,752 | 186.354752 |
+| Cached input | 182,987,776 | 182.987776 |
+| Uncached input | 3,366,976 | 3.366976 |
+| Output | 601,880 | 0.601880 |
+| Reasoning output, included in output when provider reports it that way | 189,939 | 0.189939 |
 
 ## Price Assumptions
 
@@ -26,19 +26,19 @@
 
 | Model | Component | Cache status | Tokens | M tokens | USD/M | USD | RMB |
 |---|---|---|---:|---:|---:|---:|---:|
-| GPT/Codex estimate | Input (cache miss) | not cached | 1,633,052 | 1.633052 | 5 | 8.17 | 58.79 |
-| GPT/Codex estimate | Input (cache hit) | cached | 83,509,760 | 83.509760 | 0.5 | 41.75 | 300.64 |
-| GPT/Codex estimate | Output | not applicable | 291,410 | 0.291410 | 30 | 8.74 | 62.94 |
-| DeepSeek counterfactual | Input (cache miss) | not cached | 1,633,052 | 1.633052 | 0.435 | 0.7104 | 5.11 |
-| DeepSeek counterfactual | Input (cache hit) | cached | 83,509,760 | 83.509760 | 0.003625 | 0.3027 | 2.18 |
-| DeepSeek counterfactual | Output | not applicable | 291,410 | 0.291410 | 0.87 | 0.2535 | 1.83 |
+| GPT/Codex estimate | Input (cache miss) | not cached | 3,366,976 | 3.366976 | 5 | 16.83 | 121.21 |
+| GPT/Codex estimate | Input (cache hit) | cached | 182,987,776 | 182.987776 | 0.5 | 91.49 | 658.76 |
+| GPT/Codex estimate | Output | not applicable | 601,880 | 0.601880 | 30 | 18.06 | 130.01 |
+| DeepSeek counterfactual | Input (cache miss) | not cached | 3,366,976 | 3.366976 | 0.435 | 1.46 | 10.55 |
+| DeepSeek counterfactual | Input (cache hit) | cached | 182,987,776 | 182.987776 | 0.003625 | 0.6633 | 4.78 |
+| DeepSeek counterfactual | Output | not applicable | 601,880 | 0.601880 | 0.87 | 0.5236 | 3.77 |
 
 ## Cost Summary
 
 | Model | Input cache miss RMB | Input cache hit RMB | Output RMB | Total RMB | Total USD |
 |---|---:|---:|---:|---:|---:|
-| GPT/Codex estimate | 58.79 | 300.64 | 62.94 | 422.37 | 58.66 |
-| DeepSeek counterfactual | 5.11 | 2.18 | 1.83 | 9.12 | 1.27 |
+| GPT/Codex estimate | 121.21 | 658.76 | 130.01 | 909.97 | 126.39 |
+| DeepSeek counterfactual | 10.55 | 4.78 | 3.77 | 19.09 | 2.65 |
 
 ## Formula
 
@@ -54,12 +54,14 @@
 
 ## Notes
 
-- Usage window: `2026-08-11T01:28:01Z` to `2026-08-11T02:37:20Z`.
+- Usage window: `2026-08-11T01:28:01Z` to `2026-08-11T03:26:38Z`.
 - Token evidence sums the main-session delta after the window start and the final
-  cumulative counters of the two review sessions:
+  cumulative counters of four isolated review sessions:
   - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T09-26-45-019fee6d-df81-7772-bb57-ed50760cd8f8.jsonl`
   - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T10-16-20-019fee9b-41b5-78d2-b9da-8bcbfc9917f5.jsonl`
   - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T10-16-31-019fee9b-6c8c-7043-9023-bd31dded6a87.jsonl`
+  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T11-22-21-019feed7-b26a-7c00-9a32-945c2a04563f.jsonl`
+  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T11-22-34-019feed7-e754-7b21-92cd-f89f784a2233.jsonl`
 - The main-session baseline event was `2026-08-11T01:27:31.816Z` with
   50,503 input, 13,824 cached-input, 1,501 output, and 745 reasoning-output
   tokens; those counters were subtracted before adding the child sessions.
