@@ -56,6 +56,8 @@ class ExecutionRuntime(Protocol):
 
     def copy_to_cpu(self, tensor: Tensor, *, lane: str, role: str) -> Tensor: ...
 
+    def execute_checked(self, invoke: Callable[[], Tensor]) -> Tensor: ...
+
     def synchronize(self) -> None: ...
 
     def execute_timed(
@@ -147,6 +149,9 @@ class AscendNpuExecutionRuntime:
     def synchronize(self) -> None:
         self._torch.npu.synchronize()
 
+    def execute_checked(self, invoke: Callable[[], Tensor]) -> Tensor:
+        return execute_with_npu_cpu_fallback_guard(invoke)
+
     def execute_timed(
         self, invoke: Callable[[], Tensor], *, iterations: int
     ) -> dict[str, int]:
@@ -158,7 +163,7 @@ class AscendNpuExecutionRuntime:
         host_started = time.perf_counter_ns()
         start_event.record()
         for _ in range(iterations):
-            result = execute_with_npu_cpu_fallback_guard(invoke)
+            result = self.execute_checked(invoke)
             if self.tensor_device_type(result) != "npu":
                 raise RuntimeError("cpu-fallback-detected")
         end_event.record()

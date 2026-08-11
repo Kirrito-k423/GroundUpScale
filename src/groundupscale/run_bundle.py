@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from dataclasses import dataclass
 from hashlib import sha256
 import json
 import math
@@ -138,6 +139,13 @@ def _transformer_demo_producer_lineage() -> dict[str, object]:
     }
 
 
+@dataclass(frozen=True)
+class NpuRunEvidence:
+    capabilities: dict[str, object]
+    cohort: dict[str, object]
+    preflight: dict[str, object]
+
+
 def _json_bytes(value: Any) -> bytes:
     return (
         json.dumps(canonical_data(value), ensure_ascii=False, indent=2, sort_keys=True)
@@ -265,9 +273,7 @@ def write_blocked_transformer_run(
     artifact_store: str | Path,
     *,
     run_id: str,
-    capabilities: dict[str, object],
-    cohort: dict[str, object],
-    preflight: dict[str, object],
+    npu_evidence: NpuRunEvidence,
 ) -> Path:
     """Publish immutable compatibility evidence when an NPU run cannot start."""
 
@@ -303,6 +309,9 @@ def write_blocked_transformer_run(
             }
         )
 
+    capabilities = npu_evidence.capabilities
+    cohort = npu_evidence.cohort
+    preflight = npu_evidence.preflight
     reason_code_values: list[object] = []
     for document in (capabilities, cohort, preflight):
         document_reasons = document.get("reason_codes")
@@ -412,7 +421,7 @@ class RunBundleWriter:
         seed: int = 20260806,
         *,
         execution_runtime: ExecutionRuntime | None = None,
-        npu_evidence: dict[str, dict[str, object]] | None = None,
+        npu_evidence: NpuRunEvidence | None = None,
     ) -> None:
         self.compiled = compiled
         self.seed = seed
@@ -754,9 +763,9 @@ class RunBundleWriter:
             write_json("resolved-input-lock", "resolved/inputs.lock.json", inputs_lock, inputs_lock["schema"])
             write_json("environment", "resolved/environment.json", environment, environment["schema"])
             if self.npu_evidence is not None:
-                capabilities = self.npu_evidence["capabilities"]
-                cohort = self.npu_evidence["cohort"]
-                preflight = self.npu_evidence["preflight"]
+                capabilities = self.npu_evidence.capabilities
+                cohort = self.npu_evidence.cohort
+                preflight = self.npu_evidence.preflight
                 write_json(
                     "measurement-capability-manifest",
                     "adapter/capabilities.json",
@@ -933,7 +942,7 @@ class RunBundleWriter:
                     else None
                 ),
                 "hardware_cohort": (
-                    self.npu_evidence["cohort"].get("cohort_id")
+                    self.npu_evidence.cohort.get("cohort_id")
                     if self.npu_evidence is not None
                     else (
                         f"{hardware_names}-{platform.release()}-torch{torch.__version__}-"
@@ -1027,9 +1036,9 @@ class RunBundleWriter:
                     inputs_lock["schema"],
                 )
                 if self.npu_evidence is not None:
-                    capabilities = self.npu_evidence["capabilities"]
-                    cohort = self.npu_evidence["cohort"]
-                    preflight = self.npu_evidence["preflight"]
+                    capabilities = self.npu_evidence.capabilities
+                    cohort = self.npu_evidence.cohort
+                    preflight = self.npu_evidence.preflight
                     write_json_once(
                         "measurement-capability-manifest",
                         "adapter/capabilities.json",
@@ -1182,7 +1191,7 @@ class RunBundleWriter:
                         else None
                     ),
                     "hardware_cohort": (
-                        self.npu_evidence["cohort"].get("cohort_id")
+                        self.npu_evidence.cohort.get("cohort_id")
                         if self.npu_evidence is not None
                         else None
                     ),
@@ -2126,6 +2135,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
 
 __all__ = [
     "EnvironmentValidityError",
+    "NpuRunEvidence",
     "RunBundleExistsError",
     "RunBundleWriter",
     "verify_run_bundle",

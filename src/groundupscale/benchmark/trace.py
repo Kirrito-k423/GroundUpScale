@@ -12,10 +12,7 @@ from torch import Tensor, nn
 
 from groundupscale.benchmark.measurement import BenchmarkRunner, synchronize
 from groundupscale.benchmark.reference import SemanticLeaf
-from groundupscale.execution_runtime import (
-    ExecutionRuntime,
-    execute_with_npu_cpu_fallback_guard,
-)
+from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.ir import SemanticOperation, SemanticProgram, SemanticRegion
 from groundupscale.specs import AnalysisBundle
 
@@ -194,7 +191,7 @@ class TraceRunner:
         try:
             with torch.inference_mode():
                 output = (
-                    execute_with_npu_cpu_fallback_guard(lambda: model(hidden))
+                    self.execution_runtime.execute_checked(lambda: model(hidden))
                     if self.execution_runtime is not None
                     else model(hidden)
                 )

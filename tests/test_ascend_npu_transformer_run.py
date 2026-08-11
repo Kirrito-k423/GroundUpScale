@@ -11,6 +11,7 @@ import torch
 from torch import Tensor, nn
 
 from groundupscale.cli import main
+from groundupscale.execution_runtime import execute_with_npu_cpu_fallback_guard
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.run_bundle import verify_run_bundle
 
@@ -237,11 +238,14 @@ class _FakeNpuExecutionRuntime:
     def synchronize(self) -> None:
         return None
 
+    def execute_checked(self, invoke: object) -> Tensor:
+        return execute_with_npu_cpu_fallback_guard(invoke)  # type: ignore[arg-type,return-value]
+
     def execute_timed(self, invoke: object, *, iterations: int) -> dict[str, int]:
         self.synchronize()
         started = time.perf_counter_ns()
         for _ in range(iterations):
-            invoke()  # type: ignore[operator]
+            self.execute_checked(invoke)
         launch_ended = time.perf_counter_ns()
         self.synchronize()
         completed = time.perf_counter_ns()
@@ -468,14 +472,17 @@ class _DtypeSubstitutingRuntime(_FakeNpuExecutionRuntime):
 
 
 class _HiddenCpuFallbackRuntime(_FakeNpuExecutionRuntime):
-    def execute_timed(self, invoke: object, *, iterations: int) -> dict[str, int]:
-        warnings.warn(
-            "CAUTION: The operator 'aten::unsupported' is not currently supported "
-            "on the NPU backend and will fall back to run on the CPU. "
-            "(function npu_cpu_fallback)",
-            UserWarning,
-        )
-        return super().execute_timed(invoke, iterations=iterations)
+    def execute_checked(self, invoke: object) -> Tensor:
+        def invoke_with_warning() -> Tensor:
+            warnings.warn(
+                "CAUTION: The operator 'aten::unsupported' is not currently "
+                "supported on the NPU backend and will fall back to run on the "
+                "CPU. (function npu_cpu_fallback)",
+                UserWarning,
+            )
+            return invoke()  # type: ignore[operator,no-any-return]
+
+        return super().execute_checked(invoke_with_warning)
 
 
 class _MismatchedCohortAdapter(_AvailableAscendAdapter):

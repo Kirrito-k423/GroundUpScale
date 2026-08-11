@@ -45,6 +45,7 @@ from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.physical_floor_bundle import PhysicalFloorComparisonBundleWriter
 from groundupscale.probe import run_environment_probe
 from groundupscale.run_bundle import (
+    NpuRunEvidence,
     RunBundleWriter,
     verify_run_bundle,
     write_blocked_transformer_run,
@@ -468,7 +469,7 @@ def _run_analysis(
     compiled = compile_analysis_plan(repository_root, Path(args.plan))
     device = resolve_device(compiled.bundle)
     execution_runtime: ExecutionRuntime | None = None
-    npu_evidence: dict[str, dict[str, object]] | None = None
+    npu_evidence: NpuRunEvidence | None = None
     if device.startswith("npu:"):
         logical_device_index = int(device.partition(":")[2])
         adapter = measurement_adapter_factory(
@@ -505,9 +506,11 @@ def _run_analysis(
                 compiled,
                 Path(args.artifact_store),
                 run_id=selected_run_id,
-                capabilities=capabilities,
-                cohort=cohort,
-                preflight=preflight,
+                npu_evidence=NpuRunEvidence(
+                    capabilities=capabilities,
+                    cohort=cohort,
+                    preflight=preflight,
+                ),
             )
             verification = verify_run_bundle(blocked_run)
             manifest = json.loads(
@@ -564,11 +567,11 @@ def _run_analysis(
                 }
             )
             return publish_blocked_npu_run()
-        npu_evidence = {
-            "capabilities": capabilities,
-            "cohort": cohort,
-            "preflight": preflight,
-        }
+        npu_evidence = NpuRunEvidence(
+            capabilities=capabilities,
+            cohort=cohort,
+            preflight=preflight,
+        )
     environment_validity = (
         environment_collector(
             sample_interval_seconds=args.preflight_sample_interval_seconds,

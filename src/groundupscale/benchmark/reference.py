@@ -12,10 +12,7 @@ from torch import Tensor, nn
 
 from groundupscale.schemas.v1alpha1 import ModuleRepeatSpec
 from groundupscale.specs import AnalysisBundle
-from groundupscale.execution_runtime import (
-    ExecutionRuntime,
-    execute_with_npu_cpu_fallback_guard,
-)
+from groundupscale.execution_runtime import ExecutionRuntime
 
 
 @dataclass(frozen=True)
@@ -505,7 +502,7 @@ class ReferenceRunner:
         try:
             with torch.inference_mode():
                 output = (
-                    execute_with_npu_cpu_fallback_guard(lambda: model(hidden))
+                    execution_runtime.execute_checked(lambda: model(hidden))
                     if execution_runtime is not None
                     else model(hidden)
                 )
