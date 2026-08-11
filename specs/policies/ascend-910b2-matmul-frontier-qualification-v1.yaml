@@ -1,0 +1,33 @@
+schema: groundupscale.dev/operator-frontier-qualification-policy/v1alpha1
+policy_id: ascend-910b2-matmul-frontier-qualification
+version: v1
+scope:
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  operation: MatMul
+  dtype: float32
+  layout: row-major-contiguous
+  anchor_shapes:
+    - 256
+    - 512
+  confirmation_shape: 384
+  candidate_ids:
+    - torch.matmul
+    - torch.matmul.k-split-2
+minimum_search_sessions: 3
+minimum_holdout_sessions: 3
+minimum_confirmation_sessions: 3
+minimum_warmup_iterations: 100
+maximum_session_median_relative_range: 0.10
+minimum_candidate_coverage: C2_MULTI_FAMILY
+holdout_candidate_scope: all-eligible-candidates
+uncertainty_combination: root-sum-of-squares
+target_coverage: 0.68
+sample_exclusion: none-preserve-all-raw-samples
+estimator: median(independent-holdout-session-medians)
+change_reason: >-
+  Ticket #31 initial cohort-scoped qualification policy for the Ascend 910B2
+  square MatMul operator Frontier.
+revalidation: >-
+  Revalidate on hardware cohort, candidate or build identity, execution
+  protocol, policy, anchor Shape, confirmation Shape, or evidence change.
+evidence_ref: docs/adr/0035-diagnose-cross-hardware-performance-gaps-with-evidence-qualified-frontiers.md

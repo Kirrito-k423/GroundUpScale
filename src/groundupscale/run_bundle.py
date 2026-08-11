@@ -179,6 +179,16 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _canonical_digest(value: object) -> str:
+    payload = json.dumps(
+        canonical_data(value),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return sha256(payload).hexdigest()
+
+
 def _candidate_path_matches_scope(candidate_path: object, scope: object) -> bool:
     if not isinstance(candidate_path, str) or not isinstance(scope, str):
         return False
@@ -1371,6 +1381,66 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or diagnostic.get("cohort_id") != manifest.get("hardware_cohort")
             ):
                 failures.append("operator Frontier Surface identity mismatch")
+            if isinstance(surface, dict):
+                expected_surface_digest = surface.get("input_digest")
+                surface_body = {
+                    key: value
+                    for key, value in surface.items()
+                    if key != "input_digest"
+                }
+                if expected_surface_digest != _canonical_digest(surface_body):
+                    failures.append(
+                        "operator Frontier Surface input digest mismatch"
+                    )
+            policy = qualification.get("policy")
+            if isinstance(policy, dict):
+                expected_policy_digest = policy.get("input_digest")
+                policy_body = {
+                    key: value
+                    for key, value in policy.items()
+                    if key != "input_digest"
+                }
+                if expected_policy_digest != _canonical_digest(policy_body):
+                    failures.append(
+                        "operator Frontier qualification policy digest mismatch"
+                    )
+            else:
+                failures.append("invalid operator Frontier qualification policy")
+            diagnostic_input_keys = (
+                "resolved_configuration",
+                "resolved_ir",
+                "hardware",
+                "cohort_id",
+                "execution_domain",
+            )
+            if all(key in diagnostic for key in diagnostic_input_keys):
+                diagnostic_inputs = {
+                    key: diagnostic[key] for key in diagnostic_input_keys
+                }
+                diagnostic_evidence = {
+                    key: value
+                    for key, value in diagnostic.items()
+                    if key
+                    not in {*diagnostic_input_keys, "schema", "digests"}
+                }
+                expected_digests = diagnostic.get("digests")
+                actual_digests = {
+                    "input_sha256": _canonical_digest(diagnostic_inputs),
+                    "evidence_sha256": _canonical_digest(
+                        diagnostic_evidence
+                    ),
+                }
+                if not isinstance(expected_digests, dict) or any(
+                    expected_digests.get(name) != digest
+                    for name, digest in actual_digests.items()
+                ):
+                    failures.append(
+                        "operator Frontier diagnostic evidence digest mismatch"
+                    )
+            else:
+                failures.append(
+                    "operator Frontier diagnostic evidence digest mismatch"
+                )
             seen_source_ids: set[str] = set()
             seen_source_paths: set[Path] = set()
             for source in source_runs:

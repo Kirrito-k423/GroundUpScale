@@ -12,7 +12,7 @@ from hashlib import sha256
 from math import hypot
 from pathlib import Path
 from statistics import median, stdev
-from typing import Any
+from typing import Any, cast
 
 from groundupscale.ir import content_fingerprint
 from groundupscale.run_bundle import RunBundleExistsError, verify_run_bundle
@@ -20,11 +20,12 @@ from groundupscale.run_bundle import RunBundleExistsError, verify_run_bundle
 QUALIFICATION_SCHEMA = (
     "groundupscale.dev/operator-frontier-qualification/v1alpha1"
 )
+QUALIFICATION_POLICY_SCHEMA = (
+    "groundupscale.dev/operator-frontier-qualification-policy/v1alpha1"
+)
 DIAGNOSTIC_EVIDENCE_SCHEMA = (
     "groundupscale.dev/diagnostic-evidence/v1alpha1"
 )
-MINIMUM_SESSIONS = 3
-MAXIMUM_SESSION_MEDIAN_RELATIVE_RANGE = 0.10
 
 
 class OperatorFrontierQualificationError(ValueError):
@@ -33,6 +34,109 @@ class OperatorFrontierQualificationError(ValueError):
     def __init__(self, message: str, *, reason_code: str) -> None:
         super().__init__(message)
         self.reason_code = reason_code
+
+
+@dataclass(frozen=True)
+class _QualificationPolicy:
+    document: dict[str, Any]
+    digest: str
+    minimum_search_sessions: int
+    minimum_holdout_sessions: int
+    minimum_confirmation_sessions: int
+    minimum_warmup_iterations: int
+    maximum_session_median_relative_range: float
+    minimum_candidate_coverage: str
+    target_coverage: float
+
+    @classmethod
+    def from_document(
+        cls, value: dict[str, object] | None
+    ) -> _QualificationPolicy:
+        if value is None:
+            raise OperatorFrontierQualificationError(
+                "an explicit versioned qualification policy is required",
+                reason_code="missing-qualification-policy",
+            )
+        document = dict(value)
+        scope = document.get("scope")
+        required_strings = (
+            "policy_id",
+            "version",
+            "change_reason",
+            "revalidation",
+            "evidence_ref",
+        )
+        integer_fields = (
+            "minimum_search_sessions",
+            "minimum_holdout_sessions",
+            "minimum_confirmation_sessions",
+            "minimum_warmup_iterations",
+        )
+        if (
+            document.get("schema") != QUALIFICATION_POLICY_SCHEMA
+            or not isinstance(scope, dict)
+            or any(
+                not isinstance(document.get(field), str)
+                or not str(document[field]).strip()
+                for field in required_strings
+            )
+            or any(
+                not isinstance(document.get(field), int)
+                or isinstance(document.get(field), bool)
+                or cast(int, document[field]) < 1
+                for field in integer_fields
+            )
+            or document.get("holdout_candidate_scope")
+            != "all-eligible-candidates"
+            or document.get("sample_exclusion")
+            != "none-preserve-all-raw-samples"
+            or document.get("estimator")
+            != "median(independent-holdout-session-medians)"
+        ):
+            raise OperatorFrontierQualificationError(
+                "qualification policy is incomplete or unsupported",
+                reason_code="invalid-qualification-policy",
+            )
+        maximum_range = document.get(
+            "maximum_session_median_relative_range"
+        )
+        minimum_coverage = document.get("minimum_candidate_coverage")
+        target_coverage = document.get("target_coverage")
+        if (
+            not isinstance(maximum_range, (int, float))
+            or isinstance(maximum_range, bool)
+            or not 0 < float(maximum_range) <= 1
+            or minimum_coverage
+            not in {"C0_SINGLE", "C1_SAME_FAMILY", "C2_MULTI_FAMILY"}
+            or document.get("uncertainty_combination")
+            != "root-sum-of-squares"
+            or not isinstance(target_coverage, (int, float))
+            or isinstance(target_coverage, bool)
+            or not 0 < float(target_coverage) <= 1
+        ):
+            raise OperatorFrontierQualificationError(
+                "qualification policy has invalid thresholds",
+                reason_code="invalid-qualification-policy",
+            )
+        return cls(
+            document=document,
+            digest=_canonical_digest(document),
+            minimum_search_sessions=cast(
+                int, document["minimum_search_sessions"]
+            ),
+            minimum_holdout_sessions=cast(
+                int, document["minimum_holdout_sessions"]
+            ),
+            minimum_confirmation_sessions=cast(
+                int, document["minimum_confirmation_sessions"]
+            ),
+            minimum_warmup_iterations=cast(
+                int, document["minimum_warmup_iterations"]
+            ),
+            maximum_session_median_relative_range=float(maximum_range),
+            minimum_candidate_coverage=str(minimum_coverage),
+            target_coverage=float(target_coverage),
+        )
 
 
 @dataclass(frozen=True)
@@ -65,6 +169,9 @@ class _Observation:
     execution_contract_digest: str
     execution_protocol_digest: str
     execution_mode: str
+    runtime_device_name: str
+    logical_device: str
+    warmup_iterations: int
     process_identity: tuple[int, str]
 
     @property
@@ -165,6 +272,7 @@ def _observation(path: str | Path) -> _Observation:
     execution, _ = _artifact(root, manifest, "execution-contract")
     environment, _ = _artifact(root, manifest, "environment")
     preflight, _ = _artifact(root, manifest, "measurement-preflight")
+    timing_plan, _ = _artifact(root, manifest, "timing-plan")
 
     shape = case.get("shape")
     left = shape.get("left") if isinstance(shape, dict) else None
@@ -195,6 +303,8 @@ def _observation(path: str | Path) -> _Observation:
     samples = raw_timing.get("samples")
     timer_resolution_ns = raw_timing.get("timer_resolution_ns")
     seed = case.get("seed")
+    warmup_iterations = execution.get("warmup_iterations")
+    logical_device = execution.get("logical_device")
     observation_validity = manifest.get("observation_validity")
     if (
         not isinstance(candidate_digest, str)
@@ -216,6 +326,12 @@ def _observation(path: str | Path) -> _Observation:
         or timer_resolution_ns <= 0
         or not isinstance(seed, int)
         or isinstance(seed, bool)
+        or not isinstance(warmup_iterations, int)
+        or isinstance(warmup_iterations, bool)
+        or warmup_iterations < 0
+        or timing_plan.get("warmup_iterations") != warmup_iterations
+        or not isinstance(logical_device, str)
+        or not logical_device
         or preflight.get("eligible") is not True
         or completion.get("closed") is not True
         or instrumentation.get("lane") != "baseline-timing"
@@ -265,7 +381,10 @@ def _observation(path: str | Path) -> _Observation:
         median_ns=float(summary["median"]),
         samples_ns=tuple(samples),
         timer_source=str(raw_timing.get("timer_source")),
-        timer_resolution_ns=float(timer_resolution_ns),
+        # Legacy averaged integer samples may report the divided device-event
+        # resolution.  Qualification remains conservative at the serialization
+        # boundary, where the stored samples cannot resolve below one ns.
+        timer_resolution_ns=max(1.0, float(timer_resolution_ns)),
         completion_kind=str(completion.get("kind")),
         completion_protocol=str(completion.get("protocol")),
         instrumentation_profile=str(instrumentation.get("profile_id")),
@@ -277,6 +396,9 @@ def _observation(path: str | Path) -> _Observation:
         execution_contract_digest=_canonical_digest(execution_body),
         execution_protocol_digest=_canonical_digest(execution_protocol_body),
         execution_mode=str(candidate.get("execution_mode")),
+        runtime_device_name=str(candidate.get("runtime_device_name")),
+        logical_device=logical_device,
+        warmup_iterations=warmup_iterations,
         process_identity=(
             int(session["process_id"]),
             str(session["process_started_at"]),
@@ -287,6 +409,60 @@ def _observation(path: str | Path) -> _Observation:
 def _relative_range(values: Sequence[float]) -> float:
     center = float(median(values))
     return (max(values) - min(values)) / center
+
+
+def _coverage_level(
+    candidate_ids: set[str], candidate_families: set[str]
+) -> str:
+    if len(candidate_families) >= 2:
+        return "C2_MULTI_FAMILY"
+    if len(candidate_ids) >= 2:
+        return "C1_SAME_FAMILY"
+    return "C0_SINGLE"
+
+
+def _coverage_satisfies(observed: str, required: str) -> bool:
+    ranks = {
+        "C0_SINGLE": 0,
+        "C1_SAME_FAMILY": 1,
+        "C2_MULTI_FAMILY": 2,
+    }
+    return ranks[observed] >= ranks[required]
+
+
+def _require_policy_scope(
+    policy: _QualificationPolicy,
+    observations: Sequence[_Observation],
+    *,
+    cohort_id: str,
+    anchor_shapes: Sequence[int],
+    confirmation_shape: int,
+    candidate_ids: Sequence[str],
+) -> None:
+    scope = policy.document["scope"]
+    assert isinstance(scope, dict)
+    expected = {
+        "hardware_cohort": cohort_id,
+        "operation": "MatMul",
+        "dtype": observations[0].dtype,
+        "layout": observations[0].layout,
+        "anchor_shapes": list(anchor_shapes),
+        "confirmation_shape": confirmation_shape,
+        "candidate_ids": list(candidate_ids),
+    }
+    if any(scope.get(key) != value for key, value in expected.items()):
+        raise OperatorFrontierQualificationError(
+            "qualification policy does not cover this evidence cohort",
+            reason_code="qualification-policy-scope-mismatch",
+        )
+    if any(
+        item.warmup_iterations < policy.minimum_warmup_iterations
+        for item in observations
+    ):
+        raise OperatorFrontierQualificationError(
+            "source evidence does not meet the versioned warmup policy",
+            reason_code="warmup-policy-failed",
+        )
 
 
 def _require_independent_sessions(observations: Sequence[_Observation]) -> None:
@@ -321,6 +497,8 @@ def _require_common_identity(observations: Sequence[_Observation]) -> str:
             item.completion_protocol,
             item.instrumentation_profile,
             item.execution_mode,
+            item.runtime_device_name,
+            item.logical_device,
         )
         for item in observations
     }
@@ -369,7 +547,7 @@ def _active_transitions(anchor_id: str) -> list[dict[str, object]]:
             "axis": "frontier_role",
             "from": "NONE",
             "to": "PROVISIONAL",
-            "reason_code": "exact-shape-best-of-correct-search-winner",
+            "reason_code": "exact-shape-best-of-correct-holdout-winner",
             "evidence_refs": [evidence_ref],
         },
         {
@@ -407,12 +585,23 @@ def _source_record(
         "candidate_id": observation.candidate_id,
         "candidate_family": observation.candidate_family,
         "candidate_digest": observation.candidate_digest,
+        "candidate_protocol_digest": observation.candidate_protocol_digest,
         "candidate_identity": observation.candidate_identity,
         "candidate_evidence_sha256": observation.candidate_evidence_sha256,
         "correctness": observation.correctness,
         "timing_quality": observation.timing_quality,
         "raw_samples_ns": list(observation.samples_ns),
         "median_ns": observation.median_ns,
+        "warmup_iterations": observation.warmup_iterations,
+        "timer": {
+            "source": observation.timer_source,
+            "resolution_ns": observation.timer_resolution_ns,
+        },
+        "completion_boundary": {
+            "kind": observation.completion_kind,
+            "protocol": observation.completion_protocol,
+        },
+        "execution_protocol_digest": observation.execution_protocol_digest,
         "process_identity": {
             "process_id": observation.process_identity[0],
             "process_started_at": observation.process_identity[1],
@@ -429,11 +618,13 @@ class OperatorFrontierBundleWriter:
         artifact_store: str | Path,
         *,
         run_id: str,
+        qualification_policy: dict[str, object] | None,
         search_runs: Iterable[str | Path],
         holdout_runs: Iterable[str | Path],
         confirmation_runs: Iterable[str | Path],
         query_sizes: Sequence[int],
     ) -> Path:
+        policy = _QualificationPolicy.from_document(qualification_policy)
         searches = [_observation(path) for path in search_runs]
         holdouts = [_observation(path) for path in holdout_runs]
         confirmations = [_observation(path) for path in confirmation_runs]
@@ -447,11 +638,9 @@ class OperatorFrontierBundleWriter:
         cohort_id = _require_common_identity(all_observations)
 
         runs_root = Path(artifact_store).resolve() / "runs"
-        runs_root.mkdir(parents=True, exist_ok=True)
         destination = runs_root / run_id
         if destination.exists():
             raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
-        temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_root))
 
         search_by_shape_candidate: dict[
             tuple[int, str], list[_Observation]
@@ -467,13 +656,34 @@ class OperatorFrontierBundleWriter:
                 reason_code="invalid-minimal-surface-anchor-count",
             )
 
-        candidate_records: list[dict[str, object]] = []
-        winners: dict[int, tuple[str, str, list[_Observation]]] = {}
+        confirmation_shapes = sorted({item.size for item in confirmations})
+        if (
+            len(confirmation_shapes) != 1
+            or not shapes[0] < confirmation_shapes[0] < shapes[1]
+        ):
+            raise OperatorFrontierQualificationError(
+                "one independent interior confirmation Shape is required",
+                reason_code="invalid-regime-confirmation-shape",
+            )
+        confirmation_size = confirmation_shapes[0]
         attempted_ids = sorted({item.candidate_id for item in searches})
         attempted_families = {item.candidate_family for item in searches}
-        eligible_ids: set[str] = set()
+        _require_policy_scope(
+            policy,
+            all_observations,
+            cohort_id=cohort_id,
+            anchor_shapes=shapes,
+            confirmation_shape=confirmation_size,
+            candidate_ids=attempted_ids,
+        )
+
+        candidate_records: list[dict[str, object]] = []
+        candidate_records_by_key: dict[
+            tuple[int, str], dict[str, object]
+        ] = {}
+        eligible_ids_by_shape: dict[int, set[str]] = {}
         for size in shapes:
-            eligible: list[tuple[float, str, str, list[_Observation]]] = []
+            shape_eligible_ids: set[str] = set()
             shape_candidates = sorted(
                 candidate_id
                 for candidate_size, candidate_id in search_by_shape_candidate
@@ -489,7 +699,7 @@ class OperatorFrontierBundleWriter:
                 families = {item.candidate_family for item in records}
                 digests = {item.candidate_digest for item in records}
                 reasons: list[str] = []
-                if len(records) < MINIMUM_SESSIONS:
+                if len(records) < policy.minimum_search_sessions:
                     reasons.append("insufficient-independent-search-sessions")
                 if not _same_shape_input_and_contract(records):
                     raise OperatorFrontierQualificationError(
@@ -507,41 +717,167 @@ class OperatorFrontierBundleWriter:
                     reasons.append("candidate-timing-quality-failed")
                 medians = [item.median_ns for item in records]
                 if (
-                    len(medians) >= MINIMUM_SESSIONS
+                    len(medians) >= policy.minimum_search_sessions
                     and _relative_range(medians)
-                    > MAXIMUM_SESSION_MEDIAN_RELATIVE_RANGE
+                    > policy.maximum_session_median_relative_range
                 ):
                     reasons.append("candidate-repeatability-failed")
                 status = "eligible" if not reasons else "excluded"
                 family = next(iter(families)) if len(families) == 1 else "mixed"
                 aggregate = float(median(medians))
-                candidate_records.append(
-                    {
-                        "shape": {"s": size},
-                        "candidate_id": candidate_id,
-                        "candidate_family": family,
-                        "status": status,
-                        "reason_codes": reasons,
-                        "search_run_ids": [item.run_id for item in records],
-                        "search_session_medians_ns": medians,
-                        "search_aggregate_median_ns": aggregate,
-                        "candidate_digests": sorted(digests),
-                        "candidate_identity": records[0].candidate_identity,
-                        "candidate_evidence_digests": sorted(
-                            {item.candidate_evidence_sha256 for item in records}
-                        ),
-                    }
-                )
+                record: dict[str, object] = {
+                    "shape": {"s": size},
+                    "candidate_id": candidate_id,
+                    "candidate_family": family,
+                    "status": status,
+                    "reason_codes": reasons,
+                    "search_run_ids": [item.run_id for item in records],
+                    "search_session_medians_ns": medians,
+                    "search_aggregate_median_ns": aggregate,
+                    "candidate_digests": sorted(digests),
+                    "candidate_identity": records[0].candidate_identity,
+                    "candidate_evidence_digests": sorted(
+                        {item.candidate_evidence_sha256 for item in records}
+                    ),
+                    "holdout_run_ids": [],
+                    "holdout_session_medians_ns": [],
+                    "holdout_aggregate_median_ns": None,
+                }
+                candidate_records.append(record)
+                candidate_records_by_key[(size, candidate_id)] = record
                 if not reasons:
-                    eligible.append((aggregate, candidate_id, family, records))
-                    eligible_ids.add(candidate_id)
-            if not eligible:
+                    shape_eligible_ids.add(candidate_id)
+            if not shape_eligible_ids:
                 raise OperatorFrontierQualificationError(
                     f"Shape {size} has no correct repeatable candidate",
                     reason_code="no-best-of-correct-candidate",
                 )
-            _, winner_id, winner_family, winner_records = min(eligible)
-            winners[size] = (winner_id, winner_family, winner_records)
+            eligible_ids_by_shape[size] = shape_eligible_ids
+
+        regime_eligible_ids = set.intersection(
+            *(eligible_ids_by_shape[size] for size in shapes)
+        )
+        candidate_family_by_id = {
+            item.candidate_id: item.candidate_family for item in searches
+        }
+        regime_eligible_families = {
+            candidate_family_by_id[candidate_id]
+            for candidate_id in regime_eligible_ids
+        }
+        eligible_level = _coverage_level(
+            regime_eligible_ids, regime_eligible_families
+        )
+        if not regime_eligible_ids or not _coverage_satisfies(
+            eligible_level, policy.minimum_candidate_coverage
+        ):
+            raise OperatorFrontierQualificationError(
+                "candidate coverage does not meet the versioned policy",
+                reason_code="candidate-coverage-policy-failed",
+            )
+        for record in candidate_records:
+            candidate_id = str(record["candidate_id"])
+            if record["status"] == "eligible" and (
+                candidate_id not in regime_eligible_ids
+            ):
+                record["status"] = "excluded"
+                reasons = cast(list[str], record["reason_codes"])
+                reasons.append("candidate-not-eligible-across-all-anchor-shapes")
+
+        expected_holdout_keys = {
+            (size, candidate_id)
+            for size in shapes
+            for candidate_id in regime_eligible_ids
+        }
+        actual_holdout_keys = {
+            (item.size, item.candidate_id) for item in holdouts
+        }
+        if actual_holdout_keys != expected_holdout_keys:
+            raise OperatorFrontierQualificationError(
+                "holdout must cover every search-eligible candidate",
+                reason_code="holdout-candidate-coverage-incomplete",
+            )
+
+        qualified_holdouts: dict[tuple[int, str], list[_Observation]] = {}
+        for size, candidate_id in sorted(expected_holdout_keys):
+            search_records = search_by_shape_candidate[(size, candidate_id)]
+            shape_holdouts = [
+                item
+                for item in holdouts
+                if item.size == size and item.candidate_id == candidate_id
+            ]
+            if not _same_shape_input_and_contract(shape_holdouts):
+                raise OperatorFrontierQualificationError(
+                    f"Shape {size} holdout execution contract changed",
+                    reason_code="execution-contract-mismatch",
+                )
+            if (
+                len(shape_holdouts) < policy.minimum_holdout_sessions
+                or any(
+                    item.correctness != "passed"
+                    or item.timing_quality != "passed"
+                    or item.candidate_family
+                    != candidate_family_by_id[candidate_id]
+                    for item in shape_holdouts
+                )
+                or _relative_range(
+                    [item.median_ns for item in shape_holdouts]
+                )
+                > policy.maximum_session_median_relative_range
+            ):
+                raise OperatorFrontierQualificationError(
+                    f"Shape {size} candidate {candidate_id} holdout failed",
+                    reason_code="independent-holdout-failed",
+                )
+            if (
+                search_records[0].input_identity
+                != shape_holdouts[0].input_identity
+                or search_records[0].execution_contract_digest
+                != shape_holdouts[0].execution_contract_digest
+            ):
+                raise OperatorFrontierQualificationError(
+                    f"Shape {size} search/holdout contract changed",
+                    reason_code="execution-contract-mismatch",
+                )
+            qualified_holdouts[(size, candidate_id)] = shape_holdouts
+            holdout_medians = [item.median_ns for item in shape_holdouts]
+            record = candidate_records_by_key[(size, candidate_id)]
+            record["holdout_run_ids"] = [
+                item.run_id for item in shape_holdouts
+            ]
+            record["holdout_session_medians_ns"] = holdout_medians
+            record["holdout_aggregate_median_ns"] = float(
+                median(holdout_medians)
+            )
+
+        winners: dict[
+            int, tuple[str, str, list[_Observation], list[_Observation]]
+        ] = {}
+        for size in shapes:
+            choices = []
+            for candidate_id in sorted(regime_eligible_ids):
+                shape_holdouts = qualified_holdouts[(size, candidate_id)]
+                choices.append(
+                    (
+                        float(
+                            median(
+                                [item.median_ns for item in shape_holdouts]
+                            )
+                        ),
+                        candidate_id,
+                        candidate_family_by_id[candidate_id],
+                        search_by_shape_candidate[(size, candidate_id)],
+                        shape_holdouts,
+                    )
+                )
+            _, winner_id, winner_family, search_records, shape_holdouts = min(
+                choices
+            )
+            winners[size] = (
+                winner_id,
+                winner_family,
+                search_records,
+                shape_holdouts,
+            )
 
         selected_ids = {value[0] for value in winners.values()}
         selected_families = {value[1] for value in winners.values()}
@@ -552,6 +888,53 @@ class OperatorFrontierBundleWriter:
             )
         selected_candidate_id = next(iter(selected_ids))
         selected_candidate_family = next(iter(selected_families))
+
+        candidate_set_digest = _canonical_digest(
+            {
+                candidate_id: sorted(
+                    {
+                        item.candidate_protocol_digest
+                        for item in all_observations
+                        if item.candidate_id == candidate_id
+                    }
+                )
+                for candidate_id in attempted_ids
+            }
+        )
+        selected_candidate_protocol_digest = next(
+            item.candidate_protocol_digest
+            for item in all_observations
+            if item.candidate_id == selected_candidate_id
+        )
+        execution_protocol_digest = searches[0].execution_protocol_digest
+        validity_key = _canonical_digest(
+            {
+                "hardware_cohort": cohort_id,
+                "runtime_device_name": searches[0].runtime_device_name,
+                "logical_device": searches[0].logical_device,
+                "dtype": searches[0].dtype,
+                "layout": searches[0].layout,
+                "candidate_family": selected_candidate_family,
+                "selected_candidate_protocol_digest": (
+                    selected_candidate_protocol_digest
+                ),
+                "candidate_set_digest": candidate_set_digest,
+                "execution_protocol_digest": execution_protocol_digest,
+            }
+        )
+        evidence_version_digest = _canonical_digest(
+            {
+                "validity_key": validity_key,
+                "qualification_policy_digest": policy.digest,
+                "source_manifest_digests": sorted(
+                    item.manifest_sha256 for item in all_observations
+                ),
+            }
+        )
+        surface_version = f"v-{evidence_version_digest[:16]}"
+        surface_id = (
+            f"surface://{cohort_id}/matmul/square/{validity_key[:16]}"
+        )
 
         domain = {
             "semantic_operation": "MatMul",
@@ -566,69 +949,47 @@ class OperatorFrontierBundleWriter:
             "regime_validated": True,
             "execution_mode": searches[0].execution_mode,
             "threads": 1,
+            "candidate_protocol_digest": selected_candidate_protocol_digest,
+            "candidate_set_digest": candidate_set_digest,
+            "execution_protocol_digest": execution_protocol_digest,
         }
         anchors: list[dict[str, object]] = []
         anchor_rates: list[float] = []
         anchor_latencies: list[float] = []
         anchor_rate_variances: list[float] = []
         for size in shapes:
-            winner_id, winner_family, search_records = winners[size]
-            shape_holdouts = [
-                item
-                for item in holdouts
-                if item.size == size and item.candidate_id == winner_id
-            ]
-            if shape_holdouts and not _same_shape_input_and_contract(
-                shape_holdouts
-            ):
-                raise OperatorFrontierQualificationError(
-                    f"Shape {size} holdout execution contract changed",
-                    reason_code="execution-contract-mismatch",
-                )
-            if (
-                len(shape_holdouts) < MINIMUM_SESSIONS
-                or any(
-                    item.correctness != "passed"
-                    or item.timing_quality != "passed"
-                    or item.candidate_family != winner_family
-                    for item in shape_holdouts
-                )
-                or _relative_range([item.median_ns for item in shape_holdouts])
-                > MAXIMUM_SESSION_MEDIAN_RELATIVE_RANGE
-            ):
-                raise OperatorFrontierQualificationError(
-                    f"Shape {size} independent holdout did not pass",
-                    reason_code="independent-holdout-failed",
-                )
-            if (
-                search_records[0].input_identity
-                != shape_holdouts[0].input_identity
-                or search_records[0].execution_contract_digest
-                != shape_holdouts[0].execution_contract_digest
-            ):
-                raise OperatorFrontierQualificationError(
-                    f"Shape {size} search/holdout contract changed",
-                    reason_code="execution-contract-mismatch",
-                )
+            (
+                winner_id,
+                winner_family,
+                search_records,
+                shape_holdouts,
+            ) = winners[size]
             holdout_medians = [item.median_ns for item in shape_holdouts]
             latency_ns = float(median(holdout_medians))
             work = float(2 * size**3)
             rates = [work / (value * 1e-9) for value in holdout_medians]
             effective_rate = float(median(rates))
             standard_rate = float(stdev(rates))
-            anchor_id = f"ascend-matmul-square-{size}"
+            anchor_id = (
+                f"ascend-matmul-square-{size}-{validity_key[:12]}"
+            )
             anchor_rate_variances.append(standard_rate**2)
             anchor_rates.append(effective_rate)
             anchor_latencies.append(latency_ns)
             anchors.append(
                 {
                     "anchor_id": anchor_id,
-                    "anchor_version": "v1",
+                    "anchor_version": surface_version,
                     "shape": {"s": size},
                     "effective_rate": effective_rate,
                     "rate_unit": "FLOP/s",
                     "candidate_id": winner_id,
                     "candidate_family": winner_family,
+                    "candidate_digest": search_records[0].candidate_digest,
+                    "candidate_protocol_digest": (
+                        search_records[0].candidate_protocol_digest
+                    ),
+                    "execution_protocol_digest": execution_protocol_digest,
                     "cohort_id": cohort_id,
                     "domain": domain,
                     "observation_validity": "QUALIFIED",
@@ -643,18 +1004,8 @@ class OperatorFrontierBundleWriter:
                 }
             )
 
-        confirmation_shapes = sorted({item.size for item in confirmations})
         if (
-            len(confirmation_shapes) != 1
-            or not shapes[0] < confirmation_shapes[0] < shapes[1]
-        ):
-            raise OperatorFrontierQualificationError(
-                "one independent interior confirmation Shape is required",
-                reason_code="invalid-regime-confirmation-shape",
-            )
-        confirmation_size = confirmation_shapes[0]
-        if (
-            len(confirmations) < MINIMUM_SESSIONS
+            len(confirmations) < policy.minimum_confirmation_sessions
             or not _same_shape_input_and_contract(confirmations)
             or any(
                 item.candidate_id != selected_candidate_id
@@ -664,7 +1015,7 @@ class OperatorFrontierBundleWriter:
                 for item in confirmations
             )
             or _relative_range([item.median_ns for item in confirmations])
-            > MAXIMUM_SESSION_MEDIAN_RELATIVE_RANGE
+            > policy.maximum_session_median_relative_range
         ):
             raise OperatorFrontierQualificationError(
                 "interior regime confirmation did not pass",
@@ -699,12 +1050,18 @@ class OperatorFrontierBundleWriter:
             ]
             for row in range(len(anchor_rate_variances))
         ]
-        cell_id = f"ascend-matmul-square-{shapes[0]}-{shapes[1]}"
-        regime_id = f"ascend-910b2-square-{shapes[0]}-{shapes[1]}-v1"
+        cell_id = (
+            f"ascend-matmul-square-{shapes[0]}-{shapes[1]}-"
+            f"{validity_key[:12]}"
+        )
+        regime_id = (
+            f"{cohort_id}-square-{shapes[0]}-{shapes[1]}-"
+            f"{validity_key[:12]}"
+        )
         confirmation_refs = [item.evidence_ref for item in confirmations]
         surface: dict[str, object] = {
-            "surface_id": "surface://ascend-910b2/matmul/square/v1",
-            "version": "v1",
+            "surface_id": surface_id,
+            "version": surface_version,
             "previous_version": None,
             "cohort_id": cohort_id,
             "domain": domain,
@@ -712,7 +1069,7 @@ class OperatorFrontierBundleWriter:
             "anchor_lifecycle_policy": {
                 "policy_id": "frontier-anchor-lifecycle",
                 "version": "v2",
-                "scope": "ascend-910b2-square-matmul",
+                "scope": f"{cohort_id}-square-matmul",
                 "change_reason": "issue-31 first qualified NPU Frontier",
                 "revalidation": (
                     "on cohort, candidate, execution contract, anchor, or cell change"
@@ -751,8 +1108,8 @@ class OperatorFrontierBundleWriter:
                 "revalidation": (
                     "on cohort, candidate, contract, anchor, or confirmation change"
                 ),
-                "combination": "root-sum-of-squares",
-                "target_coverage": 0.68,
+                "combination": policy.document["uncertainty_combination"],
+                "target_coverage": policy.target_coverage,
                 "anchor_covariance": covariance,
                 "instrumentation_standard_uncertainty_rate": (
                     instrumentation_standard_rate
@@ -777,42 +1134,23 @@ class OperatorFrontierBundleWriter:
                 for item in confirmations
             ),
         ]
-        attempted_level = (
-            "C2_MULTI_FAMILY"
-            if len(attempted_families) >= 2
-            else "C0_SINGLE"
+        attempted_level = _coverage_level(
+            set(attempted_ids), attempted_families
         )
-        eligible_families = {
-            record["candidate_family"]
-            for record in candidate_records
-            if record["status"] == "eligible"
+        policy_document = {
+            **policy.document,
+            "input_digest": policy.digest,
         }
-        eligible_level = (
-            "C2_MULTI_FAMILY"
-            if len(eligible_families) >= 2
-            else "C0_SINGLE"
-        )
         qualification: dict[str, object] = {
             "schema": QUALIFICATION_SCHEMA,
             "status": "qualified",
-            "policy": {
-                "policy_id": "ascend-exact-shape-frontier-qualification",
-                "version": "v1",
-                "minimum_search_sessions": MINIMUM_SESSIONS,
-                "minimum_holdout_sessions": MINIMUM_SESSIONS,
-                "minimum_confirmation_sessions": MINIMUM_SESSIONS,
-                "maximum_session_median_relative_range": (
-                    MAXIMUM_SESSION_MEDIAN_RELATIVE_RANGE
-                ),
-                "estimator": "median(independent-holdout-session-medians)",
-                "sample_exclusion": "none-preserve-all-raw-samples",
-            },
+            "policy": policy_document,
             "hardware_cohort": cohort_id,
             "candidate_coverage": {
                 "attempted_level": attempted_level,
                 "eligible_level": eligible_level,
                 "attempted_candidate_ids": attempted_ids,
-                "eligible_candidate_ids": sorted(eligible_ids),
+                "eligible_candidate_ids": sorted(regime_eligible_ids),
                 "selected_candidate_id": selected_candidate_id,
                 "selected_candidate_family": selected_candidate_family,
             },
@@ -852,8 +1190,8 @@ class OperatorFrontierBundleWriter:
                 "shape_coordinate": "square-s",
             },
             "hardware": {
-                "device": "Ascend 910B2",
-                "partition": "single-npu:0",
+                "device": searches[0].runtime_device_name,
+                "partition": searches[0].logical_device,
                 "cohort_id": cohort_id,
             },
             "cohort_id": cohort_id,
@@ -876,6 +1214,8 @@ class OperatorFrontierBundleWriter:
             },
         }
 
+        runs_root.mkdir(parents=True, exist_ok=True)
+        temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_root))
         artifacts: list[dict[str, object]] = []
 
         def write_artifact(

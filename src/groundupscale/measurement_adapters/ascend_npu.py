@@ -1196,7 +1196,7 @@ class AscendNpuMeasurementAdapter:
         samples = list(raw["raw_samples_ns"])
         timing_summary = _timing_summary(samples)
         inner_iterations = int(timing_plan.get("inner_iterations", 1))
-        timer_resolution_ns = 20.0 / inner_iterations
+        timer_resolution_ns = max(1.0, 20.0 / inner_iterations)
         timer_resolution_fraction = (
             timer_resolution_ns / timing_summary["median"]
         )

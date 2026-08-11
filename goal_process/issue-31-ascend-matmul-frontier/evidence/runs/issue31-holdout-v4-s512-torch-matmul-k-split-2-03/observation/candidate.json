@@ -1,0 +1,44 @@
+{
+  "build_identity": {
+    "extension": "torch_npu",
+    "extension_version": "2.7.1",
+    "framework": "torch",
+    "framework_version": "2.7.1+cpu",
+    "operator_entrypoint": "two torch.matmul calls plus torch.add"
+  },
+  "candidate_device": "npu:0",
+  "candidate_digest": "f65a3286b347697eceb42babc8718bded39fd26acbcf00d85f3d59665fc3e2ee",
+  "candidate_family": "pytorch-ascend-matmul-k-split",
+  "candidate_id": "torch.matmul.k-split-2",
+  "compilation_parameters": {
+    "compiler": "pytorch-eager",
+    "graph_compilation": false
+  },
+  "cpu_fallback": false,
+  "dtype": "float32",
+  "evidence_ref": "artifact://observation/candidate.json",
+  "execution_mode": "pytorch-eager",
+  "layout": "row-major-contiguous",
+  "minimum_alignment_bytes": 512,
+  "runtime_device_name": "Ascend910B2",
+  "runtime_identity": {
+    "candidate_device": "npu:0",
+    "logical_device": "npu:0",
+    "runtime_device_name": "Ascend910B2"
+  },
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+  "shape": {
+    "left": [
+      512,
+      512
+    ],
+    "right": [
+      512,
+      512
+    ]
+  },
+  "tuning_parameters": {
+    "k_partitions": 2,
+    "split_axis": "k"
+  }
+}

@@ -4,10 +4,12 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from hashlib import sha256
 from pathlib import Path
 
 import pytest
+import yaml
 from test_ascend_npu_measurement_adapter import (
     _available_runtime,
     _complete_system_probe,
@@ -71,6 +73,7 @@ def _measurement_run(
     process_id: int,
     correctness: str = "passed",
     foreign_cohort: bool = False,
+    warmup_iterations: int = 20,
 ) -> Path:
     case = {
         "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
@@ -80,7 +83,7 @@ def _measurement_run(
         "layout": "row-major-contiguous",
         "seed": 20260811,
         "candidate": candidate,
-        "warmup_iterations": 20,
+        "warmup_iterations": warmup_iterations,
         "repetitions": 5,
     }
     raw = _raw_hardware_collection(None, 0, case, {})
@@ -187,7 +190,39 @@ def _rewrite_execution_contract(run: Path) -> None:
     )
 
 
-def _frontier_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]]:
+def _rewrite_bundle_artifact(
+    run: Path,
+    role: str,
+    mutate: Callable[[dict[str, object]], None],
+) -> None:
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    artifact = next(
+        item for item in manifest["artifacts"] if item["role"] == role
+    )
+    path = run / artifact["path"]
+    document = json.loads(path.read_text(encoding="utf-8"))
+    mutate(document)
+    path.write_text(
+        json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    artifact["sha256"] = sha256(path.read_bytes()).hexdigest()
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _frontier_inputs(
+    tmp_path: Path,
+    *,
+    split_correctness: str = "failed",
+    include_split_holdout: bool = False,
+    warmup_iterations: int = 20,
+) -> tuple[list[Path], list[Path], list[Path]]:
     measurements = tmp_path / "measurements"
     search: list[Path] = []
     holdout: list[Path] = []
@@ -206,6 +241,7 @@ def _frontier_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]
                     candidate="torch.matmul",
                     median_ns=direct_ns + session * 50,
                     process_id=process_id,
+                    warmup_iterations=warmup_iterations,
                 )
             )
             process_id += 1
@@ -217,7 +253,8 @@ def _frontier_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]
                     candidate="torch.matmul.k-split-2",
                     median_ns=split_ns + session * 50,
                     process_id=process_id,
-                    correctness="failed",
+                    correctness=split_correctness,
+                    warmup_iterations=warmup_iterations,
                 )
             )
             process_id += 1
@@ -230,9 +267,23 @@ def _frontier_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]
                     candidate="torch.matmul",
                     median_ns=direct_ns + offset,
                     process_id=process_id,
+                    warmup_iterations=warmup_iterations,
                 )
             )
             process_id += 1
+            if include_split_holdout:
+                holdout.append(
+                    _measurement_run(
+                        measurements,
+                        run_id=f"holdout-{size}-split-{session}",
+                        size=size,
+                        candidate="torch.matmul.k-split-2",
+                        median_ns=split_ns + offset,
+                        process_id=process_id,
+                        warmup_iterations=warmup_iterations,
+                    )
+                )
+                process_id += 1
     for session, offset in enumerate((-100, 0, 100)):
         confirmation.append(
             _measurement_run(
@@ -242,10 +293,55 @@ def _frontier_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]
                 candidate="torch.matmul",
                 median_ns=29_000 + offset,
                 process_id=process_id,
+                warmup_iterations=warmup_iterations,
             )
         )
         process_id += 1
     return search, holdout, confirmation
+
+
+def _qualification_policy(
+    *,
+    minimum_candidate_coverage: str = "C0_SINGLE",
+    minimum_warmup_iterations: int = 20,
+) -> dict[str, object]:
+    return {
+        "schema": (
+            "groundupscale.dev/operator-frontier-qualification-policy/"
+            "v1alpha1"
+        ),
+        "policy_id": "test-ascend-matmul-frontier",
+        "version": "v1",
+        "scope": {
+            "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+            "operation": "MatMul",
+            "dtype": "float32",
+            "layout": "row-major-contiguous",
+            "anchor_shapes": [256, 512],
+            "confirmation_shape": 384,
+            "candidate_ids": [
+                "torch.matmul",
+                "torch.matmul.k-split-2",
+            ],
+        },
+        "minimum_search_sessions": 3,
+        "minimum_holdout_sessions": 3,
+        "minimum_confirmation_sessions": 3,
+        "minimum_warmup_iterations": minimum_warmup_iterations,
+        "maximum_session_median_relative_range": 0.10,
+        "minimum_candidate_coverage": minimum_candidate_coverage,
+        "holdout_candidate_scope": "all-eligible-candidates",
+        "uncertainty_combination": "root-sum-of-squares",
+        "target_coverage": 0.68,
+        "sample_exclusion": "none-preserve-all-raw-samples",
+        "estimator": "median(independent-holdout-session-medians)",
+        "change_reason": "deterministic ticket-31 test fixture",
+        "revalidation": (
+            "on cohort, candidate, execution contract, policy, anchor, "
+            "or confirmation change"
+        ),
+        "evidence_ref": "test://ticket-31/qualification-policy-v1",
+    }
 
 
 def test_qualifies_best_correct_candidates_and_queries_minimal_surface(
@@ -256,6 +352,7 @@ def test_qualifies_best_correct_candidates_and_queries_minimal_surface(
     run = OperatorFrontierBundleWriter().run(
         tmp_path / "frontier",
         run_id="ascend-matmul-frontier-v1",
+        qualification_policy=_qualification_policy(),
         search_runs=search,
         holdout_runs=holdout,
         confirmation_runs=confirmation,
@@ -329,15 +426,126 @@ def test_qualifies_best_correct_candidates_and_queries_minimal_surface(
     }
     assert queries[512]["status"] == "exact_anchor"
     assert queries[384]["status"] == "interpolated"
-    assert queries[384]["cell_id"] == "ascend-matmul-square-256-512"
+    assert queries[384]["cell_id"].startswith(
+        "ascend-matmul-square-256-512-"
+    )
     assert queries[640]["status"] == "unknown"
     assert queries[640]["reason_code"] == "outside_validated_domain"
+
+
+def test_qualification_requires_an_explicit_versioned_policy(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(tmp_path)
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-missing-policy",
+            qualification_policy=None,
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(384,),
+        )
+
+    assert captured.value.reason_code == "missing-qualification-policy"
+
+
+def test_c2_policy_requires_holdout_for_every_eligible_candidate(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(
+        tmp_path,
+        split_correctness="passed",
+    )
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-incomplete-c2-holdout",
+            qualification_policy=_qualification_policy(
+                minimum_candidate_coverage="C2_MULTI_FAMILY"
+            ),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(384,),
+        )
+
+    assert captured.value.reason_code == "holdout-candidate-coverage-incomplete"
+    assert not (tmp_path / "frontier").exists()
+
+
+def test_c2_policy_qualifies_all_candidates_before_best_of_correct(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(
+        tmp_path,
+        split_correctness="passed",
+        include_split_holdout=True,
+    )
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="complete-c2-holdout",
+        qualification_policy=_qualification_policy(
+            minimum_candidate_coverage="C2_MULTI_FAMILY"
+        ),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(384,),
+    )
+
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    assert qualification["candidate_coverage"]["eligible_level"] == (
+        "C2_MULTI_FAMILY"
+    )
+    assert all(
+        len(record["holdout_run_ids"]) == 3
+        for record in qualification["candidate_records"]
+        if record["status"] == "eligible"
+    )
+    assert all(
+        anchor["candidate_id"] == "torch.matmul"
+        for anchor in qualification["anchors"]
+    )
+
+
+def test_qualification_rejects_zero_warmup_evidence(tmp_path: Path) -> None:
+    search, holdout, confirmation = _frontier_inputs(
+        tmp_path,
+        warmup_iterations=0,
+    )
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-zero-warmup",
+            qualification_policy=_qualification_policy(
+                minimum_warmup_iterations=1
+            ),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(384,),
+        )
+
+    assert captured.value.reason_code == "warmup-policy-failed"
 
 
 def test_public_cli_publishes_and_replays_operator_frontier(
     tmp_path: Path,
 ) -> None:
     search, holdout, confirmation = _frontier_inputs(tmp_path)
+    policy_path = tmp_path / "qualification-policy.json"
+    policy_path.write_text(
+        json.dumps(_qualification_policy(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(Path(__file__).parents[1] / "src")
     command = [
@@ -345,6 +553,8 @@ def test_public_cli_publishes_and_replays_operator_frontier(
         "-m",
         "groundupscale.cli",
         "qualify-frontier",
+        "--policy",
+        str(policy_path),
     ]
     for run in search:
         command.extend(("--search-run", str(run)))
@@ -395,6 +605,7 @@ def test_frontier_bundle_rejects_changed_source_run_digest(
     run = OperatorFrontierBundleWriter().run(
         tmp_path / "frontier",
         run_id="ascend-matmul-frontier-source-digest-v1",
+        qualification_policy=_qualification_policy(),
         search_runs=search,
         holdout_runs=holdout,
         confirmation_runs=confirmation,
@@ -417,6 +628,84 @@ def test_frontier_bundle_rejects_changed_source_run_digest(
     )
 
 
+def test_frontier_verifier_recomputes_surface_input_digest(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="must-reject-rehashed-surface-tamper",
+        qualification_policy=_qualification_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(384,),
+    )
+
+    def mutate_qualification(document: dict[str, object]) -> None:
+        surface = document["surface"]
+        assert isinstance(surface, dict)
+        cells = surface["cells"]
+        assert isinstance(cells, list)
+        cell = cells[0]
+        assert isinstance(cell, dict)
+        cell["confirmation_observed_rate"] = 1.0
+
+    def mutate_diagnostic(document: dict[str, object]) -> None:
+        surfaces = document["capability_surfaces"]
+        assert isinstance(surfaces, list)
+        surface = surfaces[0]
+        assert isinstance(surface, dict)
+        cells = surface["cells"]
+        assert isinstance(cells, list)
+        cell = cells[0]
+        assert isinstance(cell, dict)
+        cell["confirmation_observed_rate"] = 1.0
+
+    _rewrite_bundle_artifact(
+        run, "operator-frontier-qualification", mutate_qualification
+    )
+    _rewrite_bundle_artifact(run, "diagnostic-evidence", mutate_diagnostic)
+
+    verification = verify_run_bundle(run)
+
+    assert verification["passed"] is False
+    assert "operator Frontier Surface input digest mismatch" in verification[
+        "failures"
+    ]
+
+
+def test_frontier_verifier_recomputes_diagnostic_evidence_digest(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="must-reject-rehashed-diagnostic-tamper",
+        qualification_policy=_qualification_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(384,),
+    )
+
+    def mutate(document: dict[str, object]) -> None:
+        queries = document["surface_queries"]
+        assert isinstance(queries, list)
+        query = queries[0]
+        assert isinstance(query, dict)
+        query["shape"] = {"s": 640}
+
+    _rewrite_bundle_artifact(run, "diagnostic-evidence", mutate)
+
+    verification = verify_run_bundle(run)
+
+    assert verification["passed"] is False
+    assert "operator Frontier diagnostic evidence digest mismatch" in (
+        verification["failures"]
+    )
+
+
 def test_qualification_rejects_mixed_hardware_cohort(tmp_path: Path) -> None:
     search, holdout, confirmation = _frontier_inputs(tmp_path)
     search[0] = _measurement_run(
@@ -433,6 +722,7 @@ def test_qualification_rejects_mixed_hardware_cohort(tmp_path: Path) -> None:
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-mixed-cohort",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -453,6 +743,7 @@ def test_qualification_rejects_changed_candidate_identity(
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-changed-candidate",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -475,6 +766,7 @@ def test_qualification_rejects_candidate_identity_changed_only_in_holdout(
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-holdout-candidate-change",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -495,6 +787,7 @@ def test_qualification_rejects_changed_execution_contract(
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-changed-contract",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -517,6 +810,7 @@ def test_qualification_rejects_cross_shape_execution_protocol_change(
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-cross-shape-contract-change",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -524,6 +818,67 @@ def test_qualification_rejects_cross_shape_execution_protocol_change(
         )
 
     assert captured.value.reason_code == "execution-contract-mismatch"
+
+
+def test_surface_identity_binds_candidate_and_execution_protocols_while_new_evidence_versions(
+    tmp_path: Path,
+) -> None:
+    def qualify(
+        root: Path,
+        run_id: str,
+        *,
+        mutate_candidate: bool = False,
+        mutate_execution: bool = False,
+    ) -> Path:
+        search, holdout, confirmation = _frontier_inputs(root)
+        observations = [*search, *holdout, *confirmation]
+        if mutate_candidate:
+            for source in observations:
+                if "torch-matmul-k-split-2" not in source.name:
+                    _rewrite_candidate_identity(source)
+        if mutate_execution:
+            for source in observations:
+                _rewrite_execution_contract(source)
+        return OperatorFrontierBundleWriter().run(
+            root / "frontier",
+            run_id=run_id,
+            qualification_policy=_qualification_policy(),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(384,),
+        )
+
+    first = qualify(tmp_path / "first", "first-evidence")
+    second = qualify(tmp_path / "second", "second-evidence")
+    changed_candidate = qualify(
+        tmp_path / "candidate", "changed-candidate", mutate_candidate=True
+    )
+    changed_execution = qualify(
+        tmp_path / "execution", "changed-execution", mutate_execution=True
+    )
+
+    def surface_ref(run: Path) -> tuple[str, str]:
+        qualification = json.loads(
+            (run / "frontier/qualification.json").read_text(encoding="utf-8")
+        )
+        surface = qualification["surface"]
+        return surface["surface_id"], surface["version"]
+
+    first_id, first_version = surface_ref(first)
+    second_id, second_version = surface_ref(second)
+    candidate_id, _ = surface_ref(changed_candidate)
+    execution_id, _ = surface_ref(changed_execution)
+
+    assert first_id == second_id
+    assert first_version != second_version
+    assert candidate_id != first_id
+    assert execution_id != first_id
+    assert verify_run_bundle(first)["passed"] is True
+    assert verify_run_bundle(second)["passed"] is True
+    assert diagnose_run_bundle(first)["capability_surface_queries"][0][
+        "status"
+    ] == "interpolated"
 
 
 def test_qualification_requires_disjoint_search_and_holdout_processes(
@@ -537,6 +892,7 @@ def test_qualification_requires_disjoint_search_and_holdout_processes(
         OperatorFrontierBundleWriter().run(
             tmp_path / "frontier",
             run_id="must-reject-reused-process",
+            qualification_policy=_qualification_policy(),
             search_runs=search,
             holdout_runs=holdout,
             confirmation_runs=confirmation,
@@ -550,10 +906,31 @@ def test_committed_ascend_frontier_evidence_replays() -> None:
     run = (
         Path(__file__).parents[1]
         / "goal_process/issue-31-ascend-matmul-frontier/evidence/runs"
-        / "issue31-operator-frontier-v1"
+        / "issue31-operator-frontier-v3"
     )
 
     assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    policy = yaml.safe_load(
+        (
+            Path(__file__).parents[1]
+            / "specs/policies/ascend-910b2-matmul-frontier-qualification-v1.yaml"
+        ).read_text(encoding="utf-8")
+    )
+    embedded_policy = dict(qualification["policy"])
+    embedded_policy.pop("input_digest")
+    assert embedded_policy == policy
+    assert qualification["candidate_coverage"]["eligible_level"] == (
+        "C2_MULTI_FAMILY"
+    )
+    assert len(qualification["source_runs"]) == 27
+    assert all(
+        len(record["holdout_run_ids"]) == 3
+        for record in qualification["candidate_records"]
+        if record["status"] == "eligible"
+    )
     result = diagnose_run_bundle(run)
     queries = {
         item["query_shape"]["s"]: item

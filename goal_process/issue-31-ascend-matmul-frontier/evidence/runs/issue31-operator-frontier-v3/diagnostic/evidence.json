@@ -5,21 +5,26 @@
         "change_reason": "issue-31 first qualified NPU Frontier",
         "policy_id": "frontier-anchor-lifecycle",
         "revalidation": "on cohort, candidate, execution contract, anchor, or cell change",
-        "scope": "ascend-910b2-square-matmul",
+        "scope": "ascend-npu-23b93a89d5fecc79-square-matmul",
         "version": "v2"
       },
       "anchors": [
         {
-          "anchor_id": "ascend-matmul-square-256",
-          "anchor_version": "v1",
+          "anchor_id": "ascend-matmul-square-256-2897f3312167",
+          "anchor_version": "v-fab9fb985107087d",
+          "candidate_digest": "6be550c70b06d57431768db26ec244231f253e34bbc447e36d9849250d92dda3",
           "candidate_family": "pytorch-ascend-matmul",
           "candidate_id": "torch.matmul",
+          "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
           "domain": {
             "alignment_regime": "minimum-64-byte",
             "alignment_validated": true,
+            "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+            "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
             "dtype": "float32",
             "execution_mode": "pytorch-eager",
+            "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
             "kernel_dispatch_regime": "pytorch-ascend-matmul",
             "kernel_dispatch_validated": true,
             "layout": "row-major-contiguous",
@@ -31,6 +36,7 @@
           },
           "effective_rate": 2055086939212.984,
           "evidence_ref": "artifact://frontier/qualification.json",
+          "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
           "frontier_role": "ACTIVE",
           "holdout_run_ids": [
             "issue31-holdout-v4-s256-torch-matmul-01",
@@ -61,7 +67,7 @@
                 "artifact://frontier/qualification.json"
               ],
               "from": "NONE",
-              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "reason_code": "exact-shape-best-of-correct-holdout-winner",
               "sequence": 1,
               "to": "PROVISIONAL"
             },
@@ -88,16 +94,21 @@
           ]
         },
         {
-          "anchor_id": "ascend-matmul-square-512",
-          "anchor_version": "v1",
+          "anchor_id": "ascend-matmul-square-512-2897f3312167",
+          "anchor_version": "v-fab9fb985107087d",
+          "candidate_digest": "cbdad01d220507a8054900bdadd84ec3b6791cd96a50e314a6a5f0be7e58beb8",
           "candidate_family": "pytorch-ascend-matmul",
           "candidate_id": "torch.matmul",
+          "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
           "domain": {
             "alignment_regime": "minimum-64-byte",
             "alignment_validated": true,
+            "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+            "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
             "dtype": "float32",
             "execution_mode": "pytorch-eager",
+            "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
             "kernel_dispatch_regime": "pytorch-ascend-matmul",
             "kernel_dispatch_validated": true,
             "layout": "row-major-contiguous",
@@ -109,6 +120,7 @@
           },
           "effective_rate": 16436668768943.451,
           "evidence_ref": "artifact://frontier/qualification.json",
+          "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
           "frontier_role": "ACTIVE",
           "holdout_run_ids": [
             "issue31-holdout-v4-s512-torch-matmul-01",
@@ -139,7 +151,7 @@
                 "artifact://frontier/qualification.json"
               ],
               "from": "NONE",
-              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "reason_code": "exact-shape-best-of-correct-holdout-winner",
               "sequence": 1,
               "to": "PROVISIONAL"
             },
@@ -170,10 +182,10 @@
       "cells": [
         {
           "anchor_ids": [
-            "ascend-matmul-square-256",
-            "ascend-matmul-square-512"
+            "ascend-matmul-square-256-2897f3312167",
+            "ascend-matmul-square-512-2897f3312167"
           ],
-          "cell_id": "ascend-matmul-square-256-512",
+          "cell_id": "ascend-matmul-square-256-512-2897f3312167",
           "confirmation_evidence_refs": [
             "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-01",
             "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-02",
@@ -184,7 +196,7 @@
             "s": 384
           },
           "interpolation_standard_uncertainty_rate": 2461462914692.7686,
-          "regime_id": "ascend-910b2-square-256-512-v1",
+          "regime_id": "ascend-npu-23b93a89d5fecc79-square-256-512-2897f3312167",
           "status": "retained"
         }
       ],
@@ -197,8 +209,11 @@
       "domain": {
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
         "dtype": "float32",
         "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
         "kernel_dispatch_regime": "pytorch-ascend-matmul",
         "kernel_dispatch_validated": true,
         "layout": "row-major-contiguous",
@@ -211,9 +226,9 @@
       "evidence_refs": [
         "artifact://frontier/qualification.json"
       ],
-      "input_digest": "367268c4edb3aa9262cb0c2706f8a67afb95732fb6bc29940f4cd442f616ee58",
+      "input_digest": "ee01f1daa738795e233ad3ec044ad45eedf489f8c39c4541efb3d91bd402bb94",
       "previous_version": null,
-      "surface_id": "surface://ascend-910b2/matmul/square/v1",
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
       "uncertainty_policy": {
         "anchor_covariance": [
           [
@@ -232,14 +247,14 @@
         ],
         "change_reason": "independent holdout and interior confirmation",
         "combination": "root-sum-of-squares",
-        "instrumentation_standard_uncertainty_rate": 201337238.0210498,
+        "instrumentation_standard_uncertainty_rate": 1006686190.1052489,
         "policy_id": "ascend-matmul-surface-uncertainty",
         "revalidation": "on cohort, candidate, contract, anchor, or confirmation change",
         "scope": "single validated square MatMul cell",
         "target_coverage": 0.68,
         "version": "v1"
       },
-      "version": "v1",
+      "version": "v-fab9fb985107087d",
       "work_formula": {
         "kind": "square-matmul-2s3",
         "version": "v1",
@@ -249,14 +264,17 @@
   ],
   "cohort_id": "ascend-npu-23b93a89d5fecc79",
   "digests": {
-    "evidence_sha256": "72bdf45e336014f1d0210304a3824de5948f28ae8ffc78a30de10ea27a76a7d7",
-    "input_sha256": "5ef975d463aafeaefe013197671dfd1bcd408eab782a651e70c620f370a68c61"
+    "evidence_sha256": "fef5f2c60c71171a89ba545fc0c321c43ba117a5ddc68a7928cc9ac01a62f5bd",
+    "input_sha256": "e829d477bcfda8984a12ede91ff828e5ba7e401171f5510b4e04d7a9c51c0776"
   },
   "execution_domain": {
     "alignment_regime": "minimum-64-byte",
     "alignment_validated": true,
+    "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+    "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
     "dtype": "float32",
     "execution_mode": "pytorch-eager",
+    "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
     "kernel_dispatch_regime": "pytorch-ascend-matmul",
     "kernel_dispatch_validated": true,
     "layout": "row-major-contiguous",
@@ -268,20 +286,45 @@
   },
   "hardware": {
     "cohort_id": "ascend-npu-23b93a89d5fecc79",
-    "device": "Ascend 910B2",
-    "partition": "single-npu:0"
+    "device": "Ascend910B2",
+    "partition": "npu:0"
   },
   "operator_frontier_qualification_ref": "artifact://frontier/qualification.json",
   "resolved_configuration": {
     "analysis_plan": "issue-31-ascend-matmul-frontier",
     "qualification_policy": {
+      "change_reason": "Ticket #31 initial cohort-scoped qualification policy for the Ascend 910B2 square MatMul operator Frontier.",
       "estimator": "median(independent-holdout-session-medians)",
+      "evidence_ref": "docs/adr/0035-diagnose-cross-hardware-performance-gaps-with-evidence-qualified-frontiers.md",
+      "holdout_candidate_scope": "all-eligible-candidates",
+      "input_digest": "de08b2a640806f47773733237b3e0528f49da1f8397cc7c7ae56972255f7fa5d",
       "maximum_session_median_relative_range": 0.1,
+      "minimum_candidate_coverage": "C2_MULTI_FAMILY",
       "minimum_confirmation_sessions": 3,
       "minimum_holdout_sessions": 3,
       "minimum_search_sessions": 3,
-      "policy_id": "ascend-exact-shape-frontier-qualification",
+      "minimum_warmup_iterations": 100,
+      "policy_id": "ascend-910b2-matmul-frontier-qualification",
+      "revalidation": "Revalidate on hardware cohort, candidate or build identity, execution protocol, policy, anchor Shape, confirmation Shape, or evidence change.",
       "sample_exclusion": "none-preserve-all-raw-samples",
+      "schema": "groundupscale.dev/operator-frontier-qualification-policy/v1alpha1",
+      "scope": {
+        "anchor_shapes": [
+          256,
+          512
+        ],
+        "candidate_ids": [
+          "torch.matmul",
+          "torch.matmul.k-split-2"
+        ],
+        "confirmation_shape": 384,
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": "row-major-contiguous",
+        "operation": "MatMul"
+      },
+      "target_coverage": 0.68,
+      "uncertainty_combination": "root-sum-of-squares",
       "version": "v1"
     }
   },
@@ -295,8 +338,11 @@
       "domain": {
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
         "dtype": "float32",
         "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
         "kernel_dispatch_regime": "pytorch-ascend-matmul",
         "kernel_dispatch_validated": true,
         "layout": "row-major-contiguous",
@@ -310,15 +356,18 @@
       "shape": {
         "s": 512
       },
-      "surface_id": "surface://ascend-910b2/matmul/square/v1",
-      "surface_version": "v1"
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
     },
     {
       "domain": {
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
         "dtype": "float32",
         "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
         "kernel_dispatch_regime": "pytorch-ascend-matmul",
         "kernel_dispatch_validated": true,
         "layout": "row-major-contiguous",
@@ -332,15 +381,18 @@
       "shape": {
         "s": 384
       },
-      "surface_id": "surface://ascend-910b2/matmul/square/v1",
-      "surface_version": "v1"
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
     },
     {
       "domain": {
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
         "dtype": "float32",
         "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
         "kernel_dispatch_regime": "pytorch-ascend-matmul",
         "kernel_dispatch_validated": true,
         "layout": "row-major-contiguous",
@@ -354,8 +406,8 @@
       "shape": {
         "s": 640
       },
-      "surface_id": "surface://ascend-910b2/matmul/square/v1",
-      "surface_version": "v1"
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
     }
   ]
 }

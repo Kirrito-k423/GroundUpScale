@@ -846,6 +846,25 @@ def test_collection_records_distinct_k_split_candidate_identity() -> None:
     assert digest == content_fingerprint(candidate)
 
 
+def test_inner_iteration_averaging_does_not_claim_subnanosecond_samples() -> None:
+    from groundupscale.measurement_adapters.ascend_npu import (
+        AscendNpuMeasurementAdapter,
+    )
+
+    case = _exact_shape_case()
+    case["inner_iterations"] = 100
+    raw = _raw_hardware_collection(None, 0, case, {})
+    adapter = AscendNpuMeasurementAdapter(
+        runtime_loader=_available_runtime,
+        collection_executor=lambda *args: raw,
+    )
+
+    collection = adapter.collect(case, dict(adapter.build_timing_plan(case)))
+
+    assert collection["raw_timing"]["timer_resolution_ns"] == 1.0
+    assert collection["timing_quality"]["timer_resolution_ns"] == 1.0
+
+
 def test_high_dispersion_collection_is_quarantined_without_dropping_samples() -> None:
     from groundupscale.measurement_adapters.ascend_npu import (
         AscendNpuMeasurementAdapter,

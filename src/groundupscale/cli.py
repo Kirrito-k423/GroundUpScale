@@ -165,6 +165,7 @@ def _parser() -> argparse.ArgumentParser:
         "qualify-frontier",
         help="qualify Ascend MatMul Anchors and publish a minimal Capability Surface",
     )
+    qualify_frontier.add_argument("--policy", required=True)
     qualify_frontier.add_argument("--search-run", action="append", required=True)
     qualify_frontier.add_argument("--holdout-run", action="append", required=True)
     qualify_frontier.add_argument(
@@ -989,9 +990,16 @@ def _run_explain(args: argparse.Namespace) -> int:
 
 def _run_qualify_frontier(args: argparse.Namespace) -> int:
     try:
+        policy = yaml.safe_load(Path(args.policy).read_text(encoding="utf-8"))
+        if not isinstance(policy, dict):
+            raise OperatorFrontierQualificationError(
+                "qualification policy must be a JSON/YAML object",
+                reason_code="invalid-qualification-policy",
+            )
         run = OperatorFrontierBundleWriter().run(
             args.artifact_store,
             run_id=args.run_id,
+            qualification_policy=policy,
             search_runs=args.search_run,
             holdout_runs=args.holdout_run,
             confirmation_runs=args.confirmation_run,
