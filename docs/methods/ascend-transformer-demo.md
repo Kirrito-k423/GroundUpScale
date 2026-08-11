@@ -54,3 +54,20 @@ uv run groundupscale explain .groundupscale/runs/<run-id> --json
 回落。
 失败 Bundle 保留已解析输入、adapter 证据、已发生的传输和结构化 reason code，仍可
 由 `verify-run` 校验；不会用 CPU 结果伪装成 NPU 成功运行。
+
+## 冻结的真实硬件证据
+
+2026-08-11 在 A2-AK-225 的 Ascend 910B2 `npu:0` 上完成了真实运行，Hardware
+Cohort 为 `ascend-npu-23b93a89d5fecc79`。权威 Run Bundle 位于：
+
+`goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1/`
+
+该 Bundle 的 22 个 artifact 均通过 digest 和 producer-lineage 校验。CPU oracle
+正确性通过，最大绝对误差 `9.5367431640625e-07`；52 个语义叶子的输出均为
+`npu:0`，未启用 CPU fallback。五个 Baseline Timing case 各保存 20 个样本，完整
+两层 prefill 的 NPU Event median 为 1,921,530 ns。详细运行命令、各 case 结果、
+内存与传输口径见
+`goal_process/issue-30-ascend-transformer-demo/README.md`。
+
+Comparison 只对已有实测 Profile 覆盖的 MatMul 产生物理下界；其状态保持
+`partial-base-prediction`，不会将未覆盖算子的 unknown 解释为完整模型 duration。

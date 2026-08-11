@@ -1,0 +1,7 @@
+{
+  "artifact_count": 22,
+  "failures": [],
+  "passed": true,
+  "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+  "schema": "groundupscale.dev/run-verification/v1alpha1"
+}

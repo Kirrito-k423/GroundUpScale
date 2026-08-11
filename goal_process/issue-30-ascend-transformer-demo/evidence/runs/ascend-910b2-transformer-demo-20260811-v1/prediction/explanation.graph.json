@@ -1,0 +1,2974 @@
+{
+  "calibration_status": "not-yet-applied",
+  "edges": [
+    {
+      "kind": "measures",
+      "source": "metric:latency:matmul-q-proj",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "kind": "derived_from",
+      "source": "metric:throughput:matmul-q-proj",
+      "target": "metric:latency:matmul-q-proj"
+    },
+    {
+      "kind": "measures",
+      "source": "metric:latency:rmsnorm-input",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "kind": "derived_from",
+      "source": "metric:throughput:rmsnorm-input",
+      "target": "metric:latency:rmsnorm-input"
+    },
+    {
+      "kind": "measures",
+      "source": "metric:latency:softmax-attention",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "kind": "derived_from",
+      "source": "metric:throughput:softmax-attention",
+      "target": "metric:latency:softmax-attention"
+    },
+    {
+      "kind": "measures",
+      "source": "metric:latency:transformer-layer",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "kind": "derived_from",
+      "source": "metric:throughput:transformer-layer",
+      "target": "metric:latency:transformer-layer"
+    },
+    {
+      "kind": "measures",
+      "source": "metric:latency:two-layer-prefill",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    },
+    {
+      "kind": "derived_from",
+      "source": "metric:throughput:two-layer-prefill",
+      "target": "metric:latency:two-layer-prefill"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c",
+      "target": "formula:cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c",
+      "target": "span:span-00003"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+      "target": "formula:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+      "target": "span:span-00005"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+      "target": "formula:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+      "target": "span:span-00006"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+      "target": "formula:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+      "target": "span:span-00007"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89",
+      "target": "formula:cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89",
+      "target": "span:span-00008"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0",
+      "target": "formula:cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0",
+      "target": "span:span-00009"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add",
+      "target": "formula:cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add",
+      "target": "span:span-00010"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a",
+      "target": "formula:cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a",
+      "target": "span:span-00011"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e",
+      "target": "formula:cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e",
+      "target": "span:span-00012"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+      "target": "formula:cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+      "target": "span:span-00013"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72",
+      "target": "formula:cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72",
+      "target": "span:span-00014"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c",
+      "target": "formula:cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c",
+      "target": "span:span-00015"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46",
+      "target": "formula:cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46",
+      "target": "span:span-00016"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3",
+      "target": "formula:cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3",
+      "target": "span:span-00017"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9",
+      "target": "formula:cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9",
+      "target": "span:span-00018"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+      "target": "formula:cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+      "target": "span:span-00019"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b",
+      "target": "formula:cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b",
+      "target": "span:span-00020"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+      "target": "formula:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+      "target": "span:span-00021"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13",
+      "target": "formula:cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13",
+      "target": "span:span-00022"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80",
+      "target": "formula:cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80",
+      "target": "span:span-00023"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+      "target": "formula:cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+      "target": "span:span-00025"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+      "target": "formula:cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+      "target": "span:span-00026"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a",
+      "target": "formula:cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a",
+      "target": "span:span-00027"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f",
+      "target": "formula:cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f",
+      "target": "span:span-00028"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+      "target": "formula:cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+      "target": "span:span-00029"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e",
+      "target": "formula:cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e",
+      "target": "span:span-00030"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4",
+      "target": "formula:cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4",
+      "target": "span:span-00032"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+      "target": "formula:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+      "target": "span:span-00034"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+      "target": "formula:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+      "target": "span:span-00035"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+      "target": "formula:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+      "target": "span:span-00036"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f",
+      "target": "formula:cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f",
+      "target": "span:span-00037"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88",
+      "target": "formula:cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88",
+      "target": "span:span-00038"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4",
+      "target": "formula:cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4",
+      "target": "span:span-00039"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642",
+      "target": "formula:cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642",
+      "target": "span:span-00040"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0",
+      "target": "formula:cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0",
+      "target": "span:span-00041"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1",
+      "target": "formula:cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1",
+      "target": "span:span-00042"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c",
+      "target": "formula:cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c",
+      "target": "span:span-00043"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44",
+      "target": "formula:cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44",
+      "target": "span:span-00044"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13",
+      "target": "formula:cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13",
+      "target": "span:span-00045"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57",
+      "target": "formula:cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57",
+      "target": "span:span-00046"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512",
+      "target": "formula:cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512",
+      "target": "span:span-00047"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3",
+      "target": "formula:cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3",
+      "target": "span:span-00048"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a",
+      "target": "formula:cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a",
+      "target": "span:span-00049"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f",
+      "target": "formula:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f",
+      "target": "span:span-00050"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35",
+      "target": "formula:cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35",
+      "target": "span:span-00051"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443",
+      "target": "formula:cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443",
+      "target": "span:span-00052"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+      "target": "formula:cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+      "target": "span:span-00054"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3",
+      "target": "formula:cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3",
+      "target": "span:span-00055"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8",
+      "target": "formula:cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8",
+      "target": "span:span-00056"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124",
+      "target": "formula:cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124",
+      "target": "span:span-00057"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b",
+      "target": "formula:cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b",
+      "target": "span:span-00058"
+    },
+    {
+      "kind": "explained_by",
+      "source": "cost:cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec",
+      "target": "formula:cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec"
+    },
+    {
+      "kind": "observed_as",
+      "source": "cost:cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec",
+      "target": "span:span-00059"
+    },
+    {
+      "kind": "peaks_at",
+      "source": "metric:predicted-framework-peak-memory",
+      "target": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    },
+    {
+      "kind": "estimated_by",
+      "source": "metric:hardware-empirical-time-floor",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "vendor_theory_unavailable",
+      "source": "backend:huawei.ascend.910b2.resource-envelope",
+      "target": "capability:missing-fp32-flops-per-second"
+    },
+    {
+      "kind": "bounded_by",
+      "source": "metric:hardware-empirical-time-floor",
+      "target": "capability:measured:compute.fp32"
+    },
+    {
+      "kind": "bounded_by",
+      "source": "metric:hardware-empirical-time-floor",
+      "target": "capability:measured:memory.hbm"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+      "target": "implementation:hardware-candidate:f3d7bbe71a1670399853bb2f6addf1fb6f479cf5752e9b34fd3eab21909101cc"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:f3d7bbe71a1670399853bb2f6addf1fb6f479cf5752e9b34fd3eab21909101cc",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+      "target": "implementation:hardware-candidate:5bf45d69e9c3e24ff4a708e935b8b720e4523e5bbb2cd0a5785af19a27592912"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:5bf45d69e9c3e24ff4a708e935b8b720e4523e5bbb2cd0a5785af19a27592912",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+      "target": "implementation:hardware-candidate:62fdf22db3c5b3ce2160198ba41b8f2af18b7b95db71278a8d8ec00d8bc89502"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:62fdf22db3c5b3ce2160198ba41b8f2af18b7b95db71278a8d8ec00d8bc89502",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+      "target": "implementation:hardware-candidate:3d7d576f8feb4b4d57d5286ad07707e4e96730d7f82f49cf882cd730998f7af1"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:3d7d576f8feb4b4d57d5286ad07707e4e96730d7f82f49cf882cd730998f7af1",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+      "target": "implementation:hardware-candidate:5fb5b46d13e93ab1e2d05edfbf41f8964f1c39bcfc24d2e8a2ece353dbb88dcf"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:5fb5b46d13e93ab1e2d05edfbf41f8964f1c39bcfc24d2e8a2ece353dbb88dcf",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+      "target": "implementation:hardware-candidate:e7789440e4cacfe10b7b001ca0d5fbcc32de9024b256258bbce81c571edf2829"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:e7789440e4cacfe10b7b001ca0d5fbcc32de9024b256258bbce81c571edf2829",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+      "target": "implementation:hardware-candidate:35bdc71fcb1d6176b6cca6e19431f8e4c646b69c894201da11e535bda150a1a9"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:35bdc71fcb1d6176b6cca6e19431f8e4c646b69c894201da11e535bda150a1a9",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "lowered_to",
+      "source": "cost:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f",
+      "target": "implementation:hardware-candidate:e776cdfaa86a9cbb89f5dcdf578cd2562bf7029ad47058185dd42796fbde2fbe"
+    },
+    {
+      "kind": "provided_by",
+      "source": "implementation:hardware-candidate:e776cdfaa86a9cbb89f5dcdf578cd2562bf7029ad47058185dd42796fbde2fbe",
+      "target": "backend:huawei.ascend.910b2.resource-envelope"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:latency:matmul-q-proj",
+      "target": "metric:empirical-hardware-floor:matmul-q-proj"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:latency:matmul-q-proj",
+      "target": "metric:latency:matmul-q-proj"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:latency:rmsnorm-input",
+      "target": "metric:empirical-hardware-floor:rmsnorm-input"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:latency:rmsnorm-input",
+      "target": "metric:latency:rmsnorm-input"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:latency:softmax-attention",
+      "target": "metric:empirical-hardware-floor:softmax-attention"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:latency:softmax-attention",
+      "target": "metric:latency:softmax-attention"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:latency:transformer-layer",
+      "target": "metric:empirical-hardware-floor:transformer-layer"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:latency:transformer-layer",
+      "target": "metric:latency:transformer-layer"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:latency:two-layer-prefill",
+      "target": "metric:empirical-hardware-floor:two-layer-prefill"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:latency:two-layer-prefill",
+      "target": "metric:latency:two-layer-prefill"
+    },
+    {
+      "kind": "compares_prediction",
+      "source": "comparison:framework-peak-memory",
+      "target": "metric:predicted-framework-peak-memory"
+    },
+    {
+      "kind": "compares_observation",
+      "source": "comparison:framework-peak-memory",
+      "target": "metric:observed-framework-peak-memory"
+    }
+  ],
+  "entrypoints": {
+    "hardware_duration_bound": [
+      "metric:hardware-empirical-time-floor"
+    ],
+    "latency": [
+      "metric:latency:matmul-q-proj",
+      "metric:latency:rmsnorm-input",
+      "metric:latency:softmax-attention",
+      "metric:latency:transformer-layer",
+      "metric:latency:two-layer-prefill"
+    ],
+    "peak_memory": [
+      "metric:predicted-framework-peak-memory"
+    ],
+    "prediction_observation_comparison": [
+      "comparison:latency:matmul-q-proj",
+      "comparison:latency:rmsnorm-input",
+      "comparison:latency:softmax-attention",
+      "comparison:latency:transformer-layer",
+      "comparison:latency:two-layer-prefill",
+      "comparison:framework-peak-memory"
+    ],
+    "throughput": [
+      "metric:throughput:matmul-q-proj",
+      "metric:throughput:rmsnorm-input",
+      "metric:throughput:softmax-attention",
+      "metric:throughput:transformer-layer",
+      "metric:throughput:two-layer-prefill"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "metric:latency:matmul-q-proj",
+      "kind": "metric",
+      "name": "median latency",
+      "source": "benchmark-observation",
+      "unit": "ns",
+      "value": 44507.629499999995
+    },
+    {
+      "id": "metric:throughput:matmul-q-proj",
+      "kind": "metric",
+      "name": "throughput",
+      "source": "derived-from-latency",
+      "unit": "invocations/s",
+      "value": 22468.057976441996
+    },
+    {
+      "case_id": "matmul-q-proj",
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "id": "metric:latency:rmsnorm-input",
+      "kind": "metric",
+      "name": "median latency",
+      "source": "benchmark-observation",
+      "unit": "ns",
+      "value": 156569.8972835314
+    },
+    {
+      "id": "metric:throughput:rmsnorm-input",
+      "kind": "metric",
+      "name": "throughput",
+      "source": "derived-from-latency",
+      "unit": "invocations/s",
+      "value": 6386.923778771513
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "id": "metric:latency:softmax-attention",
+      "kind": "metric",
+      "name": "median latency",
+      "source": "benchmark-observation",
+      "unit": "ns",
+      "value": 41657.671
+    },
+    {
+      "id": "metric:throughput:softmax-attention",
+      "kind": "metric",
+      "name": "throughput",
+      "source": "derived-from-latency",
+      "unit": "invocations/s",
+      "value": 24005.182622907552
+    },
+    {
+      "case_id": "softmax-attention",
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "id": "metric:latency:transformer-layer",
+      "kind": "metric",
+      "name": "median latency",
+      "source": "benchmark-observation",
+      "unit": "ns",
+      "value": 1028740.0
+    },
+    {
+      "id": "metric:throughput:transformer-layer",
+      "kind": "metric",
+      "name": "throughput",
+      "source": "derived-from-latency",
+      "unit": "invocations/s",
+      "value": 972.062911911659
+    },
+    {
+      "case_id": "transformer-layer",
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "id": "metric:latency:two-layer-prefill",
+      "kind": "metric",
+      "name": "median latency",
+      "source": "benchmark-observation",
+      "unit": "ns",
+      "value": 1921530.0
+    },
+    {
+      "id": "metric:throughput:two-layer-prefill",
+      "kind": "metric",
+      "name": "throughput",
+      "source": "derived-from-latency",
+      "unit": "invocations/s",
+      "value": 520.4186247417423
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    },
+    {
+      "flops": 1049600,
+      "id": "cost:cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "operation": "RMSNorm",
+      "semantic_node_id": "semantic-op:b07d8f117182fced41488586b0704df3af21d2592acb28922f263ee1cc59c6a7",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "assumptions": [
+        "per row: square H, reduce H-1, divide 1, epsilon add 1, rsqrt 1, two multiplies H",
+        "rsqrt and divide each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "512 * (4 * 512 + 2) = 1049600",
+      "id": "formula:cost-op:cae668f1bd0d96667a898915928158cf738607981d9d25c09c2ab2807b613e5c",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.rmsnorm/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:e1a6c52a5779f67ead54aab9c78f113ef33cfb37e3fa54839a265c31092c4804",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:fcdfe9d75eac1af056a5c8ca06c619de9ffe56a370dd5d37ede2ad4431ddd28d",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:3cf3af47a10b3a7def39f792a063242245f43d0859bbb3b4812e286c1e47d995",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:60ad4249d02e7af1baedc2250e81b328a9441d984e481b3c2531c72f37ea8fae",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:456f823781d4a0f7975d7f82e2c8e9ff546257d790f77b2eee44ebd5e7ee9a89",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:a1711b935d29546ac1dd69303437e8a9c853f858aa678ba60ece2eef1c0557ed",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:affe6c2a6069cf16612c19cb3f8f823ad663106be702f500c04c16d6046284d0",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:b566aa157e7f6e1b054e6f9f1b6bce029200652c75b69f9a31de3c7ea146c301",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:71ce7decbb6b7509734deb7c24d58eda42ec86651912a615dd8f1ad39cba2add",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:4a8082cfc56e2bd908de5aee605cd0b6df3171ea635c7f841d3d12a8cf543a12",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:04c2545c26107030a4d67e13961bb20589974b4784fe3d0dd5540ff3f1a2598a",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:a20bca044668bb2b14093c72c685245f602e161e2d9af1a115ddb7f5bc98e2d8",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:451711a31b044dead2ed6ab0955c40197099af57c342e95ff96a411e8728a53e",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 8388608,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:c74353f11155e490806fc082cc826c3b41de9d7687f3b060893a2c6a3ff1d722",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 8 * 512 * 512 * 64 = 268435456",
+      "id": "formula:cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 2097152,
+      "id": "cost:cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 8388608,
+      "operation": "Mul",
+      "semantic_node_id": "semantic-op:dbd5c7009a7406e5725be732cbf376004d6fb86c5553967543d86be74dd89cc6",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    },
+    {
+      "assumptions": [
+        "one Mul arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 2097152",
+      "id": "formula:cost-op:1066fd2a3034bb1d5df83c3c33d9da071506062c8a5f1dffac46c1cd16aa5c72",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.mul/v1alpha1"
+    },
+    {
+      "flops": 2097152,
+      "id": "cost:cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c",
+      "kind": "cost-operation",
+      "logical_read_bytes": 9437184,
+      "logical_write_bytes": 8388608,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:e5736c005dbb8817bfed8cb7b14146f7a3cb955518a7201fdeca024e66ca95bd",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 2097152",
+      "id": "formula:cost-op:5ba77d487aa4a3a5c1a5fe6f575140e67a7fbe8f581e55814ae47c5df1105e0c",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "flops": 10477568,
+      "id": "cost:cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 8388608,
+      "operation": "Softmax",
+      "semantic_node_id": "semantic-op:6252cc128b77a2c7b75ea890ac7adce286c6077b63491f74dd09b7345b7806d2",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "assumptions": [
+        "per row: max N-1, subtract N, exp N, sum N-1, divide N",
+        "comparison and exp each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "4096 * (5 * 512 - 2) = 10477568",
+      "id": "formula:cost-op:204f7a3ed4f0511bac92f3f0786483f0edffde55167e49c722e081337d357c46",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.softmax/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:a5180872cd0db4032869ae30a1d7c9a260d26ee42ad17a6defc990171e0ac5c1",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:319a64cba18e51d72035eed891c35606cd8d0f93e3d1f76d2316a4cf97af0ed3",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:ffb5d65284fc690d5bf88529595324ebb3a7af2819c41c5952485b475cbd2507",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:8494da6695bcc0d30c17f69fe8be6e8a367ba6cfb990e268adcb39e334ac1cf9",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+      "kind": "cost-operation",
+      "logical_read_bytes": 9437184,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:727a7fff5f03375f1fb9c333c04a26f6036cffac667b8bf602cff74b6b673147",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+    },
+    {
+      "assumptions": [
+        "bhqk,bhkd->bqhd is one batched contraction written directly into sequence-major contiguous storage",
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 8 * 512 * 512 * 64 = 268435456",
+      "id": "formula:cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:44bc65c1a290ffcf74955b2c47ca67a983e7b33f425ab3f4454924cef05acb3d",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:a9a8165cd1a401e912662badbeb5f4773e1e4c2a9673f811d5914e694662663b",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:4ea603747cc10412d1c97532a75d49cfc6ab74eb55896baaa5c5819ce5b196a9",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 262144,
+      "id": "cost:cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:937fcd7d1359e33e964dad2fa708813d33f101aa1cd7bc02d77e0b34de6dfc71",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 262144",
+      "id": "formula:cost-op:0ebd86d370ae7ba8ba343d06e56211920c199a311e564373eb0715232bebae13",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "flops": 1049600,
+      "id": "cost:cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "operation": "RMSNorm",
+      "semantic_node_id": "semantic-op:d92848d027f7b18cfb3d0decf1ff97a0bc009314f71777ed966b7ffa3da2ffa7",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+    },
+    {
+      "assumptions": [
+        "per row: square H, reduce H-1, divide 1, epsilon add 1, rsqrt 1, two multiplies H",
+        "rsqrt and divide each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "512 * (4 * 512 + 2) = 1049600",
+      "id": "formula:cost-op:728010596aebd68c9aff4f81bb0bdf9c3a13d92c4e2f5f1c9b389b36a8b62d80",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.rmsnorm/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+      "kind": "cost-operation",
+      "logical_read_bytes": 5242880,
+      "logical_write_bytes": 4194304,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:48e878561825cd93f219f3d6b2d6dae1a7b4ebbf0977a36bb5a16e810c0e9428",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 2048 * 512 = 1073741824",
+      "id": "formula:cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+      "kind": "cost-operation",
+      "logical_read_bytes": 5242880,
+      "logical_write_bytes": 4194304,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:a4d8c7df89c0461b960cff97db73c7a083d75b7b5b6c8ab7b6eeb31922386c7f",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 2048 * 512 = 1073741824",
+      "id": "formula:cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 5242880,
+      "id": "cost:cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a",
+      "kind": "cost-operation",
+      "logical_read_bytes": 4194304,
+      "logical_write_bytes": 4194304,
+      "operation": "SiLU",
+      "semantic_node_id": "semantic-op:8be98683faa2d705c52c5a455f924a702c16237fc5a0b700eff417ff876c7f1c",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+    },
+    {
+      "assumptions": [
+        "negate, exp, add, divide, multiply each count as one",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "5 * 1048576 = 5242880",
+      "id": "formula:cost-op:803ca6f301e29dbaf7cd49305e33c22f18d90f0e12c4d3e8be965e27b1b8e92a",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.silu/v1alpha1"
+    },
+    {
+      "flops": 1048576,
+      "id": "cost:cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 4194304,
+      "operation": "Mul",
+      "semantic_node_id": "semantic-op:ff2be4522f300c87432b1428fdc7281fc95222745e9cf57f01839ca25ece92dd",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+    },
+    {
+      "assumptions": [
+        "one Mul arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 1048576",
+      "id": "formula:cost-op:1a4dc47cc8e409813be397860a1743b9aee4eb3fddd0f78213c5f35b29d84d9f",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.mul/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:2e06d01fc313dd8cb7f64ad410fe8b290a4230e617b3300ed901710a5bf04b92",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 2048 = 1073741824",
+      "id": "formula:cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 262144,
+      "id": "cost:cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:b2a99fde956a030ded3c6656a7904a23d9c482e19903d2b58bd027ca9f47c605",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 262144",
+      "id": "formula:cost-op:fe4f9ce10dd7cf3a71e2fe7b1238a3d59bbe2f17a0465d31aa0ee65cf867746e",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "flops": 1049600,
+      "id": "cost:cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "operation": "RMSNorm",
+      "semantic_node_id": "semantic-op:9274a5787c9bddd9f70e0bcc1b7ada6eb44eacda9000f033fe3a456ee73aa76b",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+    },
+    {
+      "assumptions": [
+        "per row: square H, reduce H-1, divide 1, epsilon add 1, rsqrt 1, two multiplies H",
+        "rsqrt and divide each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "512 * (4 * 512 + 2) = 1049600",
+      "id": "formula:cost-op:1c78b15eb296aff940947727b6d5a846c0e72b85b984f9728378517aca643fc4",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.rmsnorm/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:fad155f789f12af72c2aa2d908953c62609e1ef13f460a936471bbab456439bf",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:bbfd3d450dbbd7b8453158d84d48ddaaa33b4b5fafc94ef0942e9a24175e19ed",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:8eda054118c44c3ec02027522139f86c3d2c35e0dcf4ceafc63272fa1036877d",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:e233fa2fdb5d360496fdb27a97a417340411a032eb4f5e4300aaf00d2aaa67ca",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:fe2087e2971f54169e267ac3ae3f8d53631c98f916295b9a7dff3bf77948030f",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:a57281897ee9a95a48f58cbac8be28d1f337c868ecf119db7374845260afd661",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:272e8444378f681d0fe181ed15684d8f305088f79bb4bb1cb12e7e7e3f4d4c88",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:5f1dd86e44046790439df93fba7ecddee5d5724d8a5c9e217fe9b9e15fe43dd3",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:1ac3f52e75d0c72dbbabfcff252899d278910b721484a542cd746b976f828db4",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:d1233110bb4d6e83d0fbd16a1af9ce3a66cbfec1798c5c03ee1e3683b6ba1910",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:0e134d700e712e15d97b01587d83e307f7086987049598992f3a227ad9f36642",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:78a4eaaa44d7e1802fd529805843410f05af3eaf77a954356a8f55fdf6ba8267",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:c7cdf7f39ceefabd5ce0906632ab19f8083740680ee38f8979aa3998bb571ff0",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 8388608,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:ed6afeeb6c9d923c528df2a6c246b27fabd3983161cbd46ae0d78ebcbd3003c5",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 8 * 512 * 512 * 64 = 268435456",
+      "id": "formula:cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 2097152,
+      "id": "cost:cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 8388608,
+      "operation": "Mul",
+      "semantic_node_id": "semantic-op:0a60f491b0227bf708e5527e0eb9601c90e1d61e625da32a242aca6e3aceb5ee",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+    },
+    {
+      "assumptions": [
+        "one Mul arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 2097152",
+      "id": "formula:cost-op:7232864597e962a97fbe8c62d508cc9e2efbce016726d2e844f7f6bc9745310c",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.mul/v1alpha1"
+    },
+    {
+      "flops": 2097152,
+      "id": "cost:cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44",
+      "kind": "cost-operation",
+      "logical_read_bytes": 9437184,
+      "logical_write_bytes": 8388608,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:8a948ed736b82a754c4a2cb8e4b4ca2c7f455c2ab4ebb93b817145d54a8d8a80",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 2097152",
+      "id": "formula:cost-op:799cf6d6db9b0df8e04fb7d243c401eadb527cbaa916c2b0a702d9bbf0b7ff44",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "flops": 10477568,
+      "id": "cost:cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 8388608,
+      "operation": "Softmax",
+      "semantic_node_id": "semantic-op:48e2a0b0e80321f1545c17f3ead6cd2ce8d263c495c08c1a036d9f31628e47dc",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+    },
+    {
+      "assumptions": [
+        "per row: max N-1, subtract N, exp N, sum N-1, divide N",
+        "comparison and exp each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "4096 * (5 * 512 - 2) = 10477568",
+      "id": "formula:cost-op:827caaefa84eb0782dfec824475ec077419a05aa1764103bde2e2d3c90ad9c13",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.softmax/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:81fff1b85508c610ea35240df284358abdee60ca6813486dd5065987ca80b015",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:e7dc444776c4395a97fec4e8b20c4f7f5b1c98127a5a122509eca71007e94b57",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "semantic_node_id": "semantic-op:504a3ee2c4172a22250bffde6416c6791b1508e7cf5ac9507c0f295a21e9a4cb",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:3d98791fe90756ce26e3ce6f38124749ae9accbe51192181c69a5f5f4385f512",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3",
+      "kind": "cost-operation",
+      "logical_read_bytes": 9437184,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:a39399cacbba488f548dd4e9506a9be48c5cc21c628febccfcf9c24389b88628",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+    },
+    {
+      "assumptions": [
+        "bhqk,bhkd->bqhd is one batched contraction written directly into sequence-major contiguous storage",
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 8 * 512 * 512 * 64 = 268435456",
+      "id": "formula:cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 0,
+      "id": "cost:cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "semantic_node_id": "semantic-op:4c7a57a15078619286469ffd8a90d28ebdb2f721802917445ea81d709d404214",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+    },
+    {
+      "assumptions": [
+        "View/Transpose changes metadata and aliases storage",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "0",
+      "id": "formula:cost-op:c4c80479033f4691e3c176b362c56d83dd613a8b0437e8db6a762973550f2a9a",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.alias/v1alpha1"
+    },
+    {
+      "flops": 268435456,
+      "id": "cost:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:17ad0366f372e5dfd910887bce2710ba2dab840fcc65c6880790c828f9fd4268",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 512 = 268435456",
+      "id": "formula:cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 262144,
+      "id": "cost:cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:2535267a2edb103a786f336fbb98db07626549f0cc10b2db5faaaca769214cc5",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 262144",
+      "id": "formula:cost-op:f0fb95fdcc5b458a674ab89185b0ccad1164f132b0a06fb043e5751eb0746e35",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "flops": 1049600,
+      "id": "cost:cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443",
+      "kind": "cost-operation",
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "operation": "RMSNorm",
+      "semantic_node_id": "semantic-op:2cdad6462eea578d6449397dfac148128f31688f0ee0049593121dff559088b9",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+    },
+    {
+      "assumptions": [
+        "per row: square H, reduce H-1, divide 1, epsilon add 1, rsqrt 1, two multiplies H",
+        "rsqrt and divide each count as one equivalent FLOP",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "512 * (4 * 512 + 2) = 1049600",
+      "id": "formula:cost-op:b18eab12aa68f344dbebd8857b2186d7b95eb15a60d12b4ac56af4ec8f54b443",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.rmsnorm/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+      "kind": "cost-operation",
+      "logical_read_bytes": 5242880,
+      "logical_write_bytes": 4194304,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:f2ebc30d4a3c6928061cd5f3860f6101b2aee423b524d12104425c05bf45373d",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 2048 * 512 = 1073741824",
+      "id": "formula:cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3",
+      "kind": "cost-operation",
+      "logical_read_bytes": 5242880,
+      "logical_write_bytes": 4194304,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:31dadbbaa57327bae8b89a23efa735513bd58beeca2403fe8876b3767650c7ae",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 2048 * 512 = 1073741824",
+      "id": "formula:cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 5242880,
+      "id": "cost:cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8",
+      "kind": "cost-operation",
+      "logical_read_bytes": 4194304,
+      "logical_write_bytes": 4194304,
+      "operation": "SiLU",
+      "semantic_node_id": "semantic-op:863e206d5f49e10c76645a239ebfd91a713a55a7aeb20e5ae802f3cfd584436f",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+    },
+    {
+      "assumptions": [
+        "negate, exp, add, divide, multiply each count as one",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "5 * 1048576 = 5242880",
+      "id": "formula:cost-op:abde6d439d70e17d74c4f517b97de10ef2a92d33b0ab7359dcc17c03e6534ca8",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.silu/v1alpha1"
+    },
+    {
+      "flops": 1048576,
+      "id": "cost:cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 4194304,
+      "operation": "Mul",
+      "semantic_node_id": "semantic-op:83d63660e1d2a1afdf7fb39a2af9c83630a58530fa31407b4448cb949a6e37ad",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+    },
+    {
+      "assumptions": [
+        "one Mul arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 1048576",
+      "id": "formula:cost-op:6038442bddd302f70586508461d0ce4bcc53a1e553ad73a61a99b5bbe4196124",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.mul/v1alpha1"
+    },
+    {
+      "flops": 1073741824,
+      "id": "cost:cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b",
+      "kind": "cost-operation",
+      "logical_read_bytes": 8388608,
+      "logical_write_bytes": 1048576,
+      "operation": "MatMul",
+      "semantic_node_id": "semantic-op:dc7e128dbe9518b14635ed71388df6e60df1e2983fa90d7e385233d2f6a66286",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+    },
+    {
+      "assumptions": [
+        "one multiply and one add count as two FLOPs",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "2 * 1 * 512 * 512 * 2048 = 1073741824",
+      "id": "formula:cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.matmul/v1alpha1"
+    },
+    {
+      "flops": 262144,
+      "id": "cost:cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec",
+      "kind": "cost-operation",
+      "logical_read_bytes": 2097152,
+      "logical_write_bytes": 1048576,
+      "operation": "Add",
+      "semantic_node_id": "semantic-op:e232661dd0fb04c8d9ecc0d66edfbcc543412c9fc021c17cc9bc2bcfe77bdd39",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+    },
+    {
+      "assumptions": [
+        "one Add arithmetic operation per result element",
+        "logical bytes count tensor operands/results once and are not cache traffic",
+        "materialized bytes are zero for alias-only View/Transpose"
+      ],
+      "expression": "result_elements = 262144",
+      "id": "formula:cost-op:500de2995c72fecf6da8bc880d0184457b6a36be156f04671d93781a8f90f7ec",
+      "kind": "formula",
+      "rule_id": "core.cost-rule.add/v1alpha1"
+    },
+    {
+      "clock_domain": "host-synchronized-boundary",
+      "compiled_node_id": "semantic-region:917be47d4553a2e90e90805d1fc9534e8ecc790dc917fe2eb4b50373c859d501",
+      "duration_ns": 50840320,
+      "id": "span:span-00000",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:61d3a0f20e4ec56e42343c46f6421e5580ab814963c45f80327b2c647179c222",
+      "duration_ns": 49424650,
+      "id": "span:span-00001",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:0ab38d06b383bd6c3e3b7d4a875f7fac38de7642f213fe7b649f03ac985d5339",
+      "duration_ns": 23824090,
+      "id": "span:span-00002",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:b07d8f117182fced41488586b0704df3af21d2592acb28922f263ee1cc59c6a7",
+      "duration_ns": 299280,
+      "id": "span:span-00003",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:6ec849f352c5147862175170e06e6704d619ef33ae4d8e6590d065a290754d08",
+      "duration_ns": 14439290,
+      "id": "span:span-00004",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:e1a6c52a5779f67ead54aab9c78f113ef33cfb37e3fa54839a265c31092c4804",
+      "duration_ns": 89570,
+      "id": "span:span-00005",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:fcdfe9d75eac1af056a5c8ca06c619de9ffe56a370dd5d37ede2ad4431ddd28d",
+      "duration_ns": 85110,
+      "id": "span:span-00006",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:3cf3af47a10b3a7def39f792a063242245f43d0859bbb3b4812e286c1e47d995",
+      "duration_ns": 81170,
+      "id": "span:span-00007",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:60ad4249d02e7af1baedc2250e81b328a9441d984e481b3c2531c72f37ea8fae",
+      "duration_ns": 55420,
+      "id": "span:span-00008",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a1711b935d29546ac1dd69303437e8a9c853f858aa678ba60ece2eef1c0557ed",
+      "duration_ns": 51860,
+      "id": "span:span-00009",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:b566aa157e7f6e1b054e6f9f1b6bce029200652c75b69f9a31de3c7ea146c301",
+      "duration_ns": 42570,
+      "id": "span:span-00010",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:4a8082cfc56e2bd908de5aee605cd0b6df3171ea635c7f841d3d12a8cf543a12",
+      "duration_ns": 45900,
+      "id": "span:span-00011",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a20bca044668bb2b14093c72c685245f602e161e2d9af1a115ddb7f5bc98e2d8",
+      "duration_ns": 40780,
+      "id": "span:span-00012",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:c74353f11155e490806fc082cc826c3b41de9d7687f3b060893a2c6a3ff1d722",
+      "duration_ns": 97470,
+      "id": "span:span-00013",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:dbd5c7009a7406e5725be732cbf376004d6fb86c5553967543d86be74dd89cc6",
+      "duration_ns": 90540,
+      "id": "span:span-00014",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:e5736c005dbb8817bfed8cb7b14146f7a3cb955518a7201fdeca024e66ca95bd",
+      "duration_ns": 86760,
+      "id": "span:span-00015",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:6252cc128b77a2c7b75ea890ac7adce286c6077b63491f74dd09b7345b7806d2",
+      "duration_ns": 93080,
+      "id": "span:span-00016",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a5180872cd0db4032869ae30a1d7c9a260d26ee42ad17a6defc990171e0ac5c1",
+      "duration_ns": 44980,
+      "id": "span:span-00017",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:ffb5d65284fc690d5bf88529595324ebb3a7af2819c41c5952485b475cbd2507",
+      "duration_ns": 42920,
+      "id": "span:span-00018",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:727a7fff5f03375f1fb9c333c04a26f6036cffac667b8bf602cff74b6b673147",
+      "duration_ns": 124850,
+      "id": "span:span-00019",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:44bc65c1a290ffcf74955b2c47ca67a983e7b33f425ab3f4454924cef05acb3d",
+      "duration_ns": 48290,
+      "id": "span:span-00020",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:4ea603747cc10412d1c97532a75d49cfc6ab74eb55896baaa5c5819ce5b196a9",
+      "duration_ns": 80740,
+      "id": "span:span-00021",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:937fcd7d1359e33e964dad2fa708813d33f101aa1cd7bc02d77e0b34de6dfc71",
+      "duration_ns": 80470,
+      "id": "span:span-00022",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:d92848d027f7b18cfb3d0decf1ff97a0bc009314f71777ed966b7ffa3da2ffa7",
+      "duration_ns": 218290,
+      "id": "span:span-00023",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:6a22e6e8e18692bcd9c7015afb061c8063f71f9778f9e6f406704162e8038603",
+      "duration_ns": 4385770,
+      "id": "span:span-00024",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:48e878561825cd93f219f3d6b2d6dae1a7b4ebbf0977a36bb5a16e810c0e9428",
+      "duration_ns": 70050,
+      "id": "span:span-00025",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a4d8c7df89c0461b960cff97db73c7a083d75b7b5b6c8ab7b6eeb31922386c7f",
+      "duration_ns": 78940,
+      "id": "span:span-00026",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:8be98683faa2d705c52c5a455f924a702c16237fc5a0b700eff417ff876c7f1c",
+      "duration_ns": 83490,
+      "id": "span:span-00027",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:ff2be4522f300c87432b1428fdc7281fc95222745e9cf57f01839ca25ece92dd",
+      "duration_ns": 77940,
+      "id": "span:span-00028",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:2e06d01fc313dd8cb7f64ad410fe8b290a4230e617b3300ed901710a5bf04b92",
+      "duration_ns": 77470,
+      "id": "span:span-00029",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:b2a99fde956a030ded3c6656a7904a23d9c482e19903d2b58bd027ca9f47c605",
+      "duration_ns": 79350,
+      "id": "span:span-00030",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:8a0e9d765387e0c5c0b55a03432835455a131d29464e27db8feb80807c63b3b3",
+      "duration_ns": 24118390,
+      "id": "span:span-00031",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:9274a5787c9bddd9f70e0bcc1b7ada6eb44eacda9000f033fe3a456ee73aa76b",
+      "duration_ns": 198110,
+      "id": "span:span-00032",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:f4b613eaec1eca0a88f551028f26e4b9aad746fe5b8898b8f8c407c105064660",
+      "duration_ns": 14852340,
+      "id": "span:span-00033",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:fad155f789f12af72c2aa2d908953c62609e1ef13f460a936471bbab456439bf",
+      "duration_ns": 71720,
+      "id": "span:span-00034",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:bbfd3d450dbbd7b8453158d84d48ddaaa33b4b5fafc94ef0942e9a24175e19ed",
+      "duration_ns": 81960,
+      "id": "span:span-00035",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:8eda054118c44c3ec02027522139f86c3d2c35e0dcf4ceafc63272fa1036877d",
+      "duration_ns": 77960,
+      "id": "span:span-00036",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:e233fa2fdb5d360496fdb27a97a417340411a032eb4f5e4300aaf00d2aaa67ca",
+      "duration_ns": 42620,
+      "id": "span:span-00037",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a57281897ee9a95a48f58cbac8be28d1f337c868ecf119db7374845260afd661",
+      "duration_ns": 41840,
+      "id": "span:span-00038",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:5f1dd86e44046790439df93fba7ecddee5d5724d8a5c9e217fe9b9e15fe43dd3",
+      "duration_ns": 41060,
+      "id": "span:span-00039",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:d1233110bb4d6e83d0fbd16a1af9ce3a66cbfec1798c5c03ee1e3683b6ba1910",
+      "duration_ns": 40670,
+      "id": "span:span-00040",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:78a4eaaa44d7e1802fd529805843410f05af3eaf77a954356a8f55fdf6ba8267",
+      "duration_ns": 40490,
+      "id": "span:span-00041",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:ed6afeeb6c9d923c528df2a6c246b27fabd3983161cbd46ae0d78ebcbd3003c5",
+      "duration_ns": 105070,
+      "id": "span:span-00042",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:0a60f491b0227bf708e5527e0eb9601c90e1d61e625da32a242aca6e3aceb5ee",
+      "duration_ns": 89750,
+      "id": "span:span-00043",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:8a948ed736b82a754c4a2cb8e4b4ca2c7f455c2ab4ebb93b817145d54a8d8a80",
+      "duration_ns": 85950,
+      "id": "span:span-00044",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:48e2a0b0e80321f1545c17f3ead6cd2ce8d263c495c08c1a036d9f31628e47dc",
+      "duration_ns": 81500,
+      "id": "span:span-00045",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:81fff1b85508c610ea35240df284358abdee60ca6813486dd5065987ca80b015",
+      "duration_ns": 42570,
+      "id": "span:span-00046",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:504a3ee2c4172a22250bffde6416c6791b1508e7cf5ac9507c0f295a21e9a4cb",
+      "duration_ns": 40370,
+      "id": "span:span-00047",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:a39399cacbba488f548dd4e9506a9be48c5cc21c628febccfcf9c24389b88628",
+      "duration_ns": 116410,
+      "id": "span:span-00048",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:4c7a57a15078619286469ffd8a90d28ebdb2f721802917445ea81d709d404214",
+      "duration_ns": 46320,
+      "id": "span:span-00049",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:17ad0366f372e5dfd910887bce2710ba2dab840fcc65c6880790c828f9fd4268",
+      "duration_ns": 79930,
+      "id": "span:span-00050",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:2535267a2edb103a786f336fbb98db07626549f0cc10b2db5faaaca769214cc5",
+      "duration_ns": 81070,
+      "id": "span:span-00051",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:2cdad6462eea578d6449397dfac148128f31688f0ee0049593121dff559088b9",
+      "duration_ns": 210300,
+      "id": "span:span-00052",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-region:c60bc529990551221c2be0c2d96448c75ba032209c9f3d7d845937ebad3b3676",
+      "duration_ns": 4401600,
+      "id": "span:span-00053",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:f2ebc30d4a3c6928061cd5f3860f6101b2aee423b524d12104425c05bf45373d",
+      "duration_ns": 69100,
+      "id": "span:span-00054",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:31dadbbaa57327bae8b89a23efa735513bd58beeca2403fe8876b3767650c7ae",
+      "duration_ns": 78160,
+      "id": "span:span-00055",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:863e206d5f49e10c76645a239ebfd91a713a55a7aeb20e5ae802f3cfd584436f",
+      "duration_ns": 76870,
+      "id": "span:span-00056",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:83d63660e1d2a1afdf7fb39a2af9c83630a58530fa31407b4448cb949a6e37ad",
+      "duration_ns": 80120,
+      "id": "span:span-00057",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:dc7e128dbe9518b14635ed71388df6e60df1e2983fa90d7e385233d2f6a66286",
+      "duration_ns": 80080,
+      "id": "span:span-00058",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+    },
+    {
+      "clock_domain": "host-enqueue",
+      "compiled_node_id": "semantic-op:e232661dd0fb04c8d9ecc0d66edfbcc543412c9fc021c17cc9bc2bcfe77bdd39",
+      "duration_ns": 80140,
+      "id": "span:span-00059",
+      "kind": "observation-span",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+    },
+    {
+      "exclusions": [
+        "kernel-private workspace",
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "framework/runtime code and Python object memory"
+      ],
+      "id": "metric:predicted-framework-peak-memory",
+      "kind": "metric",
+      "name": "predicted framework peak memory",
+      "source": "semantic-live-set",
+      "unit": "bytes",
+      "value": 54534144
+    },
+    {
+      "id": "scope:semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+      "kind": "scope",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    },
+    {
+      "backend_id": "huawei.ascend.910b2.resource-envelope",
+      "backend_version": "v1alpha1",
+      "id": "backend:huawei.ascend.910b2.resource-envelope",
+      "kind": "hardware-backend",
+      "placement": "local-ascend-910b2/npu-0",
+      "prediction_complete": false,
+      "status": "partial-empirical-hardware-floor-exploratory"
+    },
+    {
+      "assumptions": [
+        "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+        "Compulsory bytes count each MatMul input and output once.",
+        "P80 rates are cross-Shape robust achieved resource capacities.",
+        "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+        "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+        "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+        "The complete uncalibrated implementation duration remains unknown."
+      ],
+      "compulsory_bytes": 37756928,
+      "compute_time_ns": null,
+      "formula": "unknown: complete program contains unsupported CostIR operations",
+      "id": "metric:hardware-empirical-time-floor",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": null,
+      "memory_time_ns": null,
+      "minimum_work_flops": 9710850048,
+      "name": "algorithm-independent empirical hardware floor",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": null
+    },
+    {
+      "evidence": [
+        {
+          "accessed_on": "2026-08-10",
+          "source_kind": "vendor_official",
+          "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+          "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+        }
+      ],
+      "id": "capability:missing-fp32-flops-per-second",
+      "kind": "missing-capability",
+      "name": "FP32 compute throughput",
+      "reason": "public_material_does_not_bind_a_per_card_910b2_fp32_rate",
+      "required_capability": "fp32_flops_per_second",
+      "status": "unknown",
+      "value_ns": null
+    },
+    {
+      "environment_eligible": true,
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "id": "capability:measured:compute.fp32",
+      "kind": "measured-hardware-capability",
+      "optimistic_rate": 36874878078646.97,
+      "resource": "compute.fp32",
+      "robust_achievable_rate": 19175995339398.254,
+      "selected_probe": "matrix-fp32-cube",
+      "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+      "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+      "unit": "FLOP/s"
+    },
+    {
+      "environment_eligible": true,
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "id": "capability:measured:memory.hbm",
+      "kind": "measured-hardware-capability",
+      "optimistic_rate": 1446064058559.804,
+      "resource": "memory.hbm",
+      "robust_achievable_rate": 1408047205172.7576,
+      "selected_probe": "hbm-fp32-copy",
+      "source_path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+      "source_sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+      "unit": "B/s"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:f3d7bbe71a1670399853bb2f6addf1fb6f479cf5752e9b34fd3eab21909101cc",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:5bf45d69e9c3e24ff4a708e935b8b720e4523e5bbb2cd0a5785af19a27592912",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:62fdf22db3c5b3ce2160198ba41b8f2af18b7b95db71278a8d8ec00d8bc89502",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:3d7d576f8feb4b4d57d5286ad07707e4e96730d7f82f49cf882cd730998f7af1",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:5fb5b46d13e93ab1e2d05edfbf41f8964f1c39bcfc24d2e8a2ece353dbb88dcf",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:e7789440e4cacfe10b7b001ca0d5fbcc32de9024b256258bbce81c571edf2829",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:35bdc71fcb1d6176b6cca6e19431f8e4c646b69c894201da11e535bda150a1a9",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "duration": {
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "compute_time_ns": 13998.514874921926,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "formula": "max(minimum_flops / measured_fp32_P80, compulsory_bytes / measured_hbm_copy_P80)",
+        "full_duration_ns": null,
+        "limiting_resource": "compute.fp32",
+        "memory_optimistic_lower_bound_ns": null,
+        "missing_capabilities": [],
+        "model": "algorithm-independent-resource-physical-floor",
+        "status": "empirical-hardware-floor-exploratory"
+      },
+      "flops": 268435456,
+      "id": "implementation:hardware-candidate:e776cdfaa86a9cbb89f5dcdf578cd2562bf7029ad47058185dd42796fbde2fbe",
+      "implementation": "ascend-npu-matmul-resource-physical-floor",
+      "kind": "implementation-candidate",
+      "materialized_bytes": 3145728,
+      "operation": "MatMul",
+      "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    {
+      "compulsory_bytes": 3145728,
+      "compute_time_ns": 13998.514874921926,
+      "id": "metric:empirical-hardware-floor:matmul-q-proj",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": "compute.fp32",
+      "memory_time_ns": 2234.1069166172174,
+      "minimum_work_flops": 268435456,
+      "name": "scope empirical hardware floor",
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": 13998.514874921926
+    },
+    {
+      "case_id": "matmul-q-proj",
+      "error_status": "not-evaluable-hardware-floor",
+      "id": "comparison:latency:matmul-q-proj",
+      "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+      "kind": "metric-comparison",
+      "metric": "latency",
+      "observed_minus_hardware_floor_ns": 30509.11462507807,
+      "observed_to_hardware_floor_ratio": 3.1794536704557546,
+      "relative_prediction_error": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "compulsory_bytes": 2099200,
+      "compute_time_ns": null,
+      "id": "metric:empirical-hardware-floor:rmsnorm-input",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": null,
+      "memory_time_ns": null,
+      "minimum_work_flops": 1049600,
+      "name": "scope empirical hardware floor",
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": null
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "error_status": "not-evaluable-unmapped-prediction",
+      "id": "comparison:latency:rmsnorm-input",
+      "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+      "kind": "metric-comparison",
+      "metric": "latency",
+      "observed_minus_hardware_floor_ns": null,
+      "observed_to_hardware_floor_ratio": null,
+      "relative_prediction_error": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "compulsory_bytes": 16777216,
+      "compute_time_ns": null,
+      "id": "metric:empirical-hardware-floor:softmax-attention",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": null,
+      "memory_time_ns": null,
+      "minimum_work_flops": 10477568,
+      "name": "scope empirical hardware floor",
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": null
+    },
+    {
+      "case_id": "softmax-attention",
+      "error_status": "not-evaluable-unmapped-prediction",
+      "id": "comparison:latency:softmax-attention",
+      "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+      "kind": "metric-comparison",
+      "metric": "latency",
+      "observed_minus_hardware_floor_ns": null,
+      "observed_to_hardware_floor_ratio": null,
+      "relative_prediction_error": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "compulsory_bytes": 19927040,
+      "compute_time_ns": null,
+      "id": "metric:empirical-hardware-floor:transformer-layer",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": null,
+      "memory_time_ns": null,
+      "minimum_work_flops": 4855425024,
+      "name": "scope empirical hardware floor",
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": null
+    },
+    {
+      "case_id": "transformer-layer",
+      "error_status": "not-evaluable-unmapped-prediction",
+      "id": "comparison:latency:transformer-layer",
+      "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+      "kind": "metric-comparison",
+      "metric": "latency",
+      "observed_minus_hardware_floor_ns": null,
+      "observed_to_hardware_floor_ratio": null,
+      "relative_prediction_error": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "compulsory_bytes": 37756928,
+      "compute_time_ns": null,
+      "id": "metric:empirical-hardware-floor:two-layer-prefill",
+      "is_full_duration_prediction": false,
+      "kind": "metric",
+      "limiting_resource": null,
+      "memory_time_ns": null,
+      "minimum_work_flops": 9710850048,
+      "name": "scope empirical hardware floor",
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer",
+      "source": "hardware-backend-prediction",
+      "status": "partial-empirical-hardware-floor-exploratory",
+      "unit": "ns",
+      "value": null
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "error_status": "not-evaluable-unmapped-prediction",
+      "id": "comparison:latency:two-layer-prefill",
+      "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+      "kind": "metric-comparison",
+      "metric": "latency",
+      "observed_minus_hardware_floor_ns": null,
+      "observed_to_hardware_floor_ratio": null,
+      "relative_prediction_error": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    },
+    {
+      "id": "metric:observed-framework-peak-memory",
+      "kind": "metric",
+      "name": "observed framework peak memory",
+      "source": "memory-observation",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+      "unit": "bytes",
+      "value": 69214208
+    },
+    {
+      "absolute_error_bytes": 14680064,
+      "absolute_relative_error": 0.212096106048053,
+      "error_status": "evaluated",
+      "id": "comparison:framework-peak-memory",
+      "kind": "metric-comparison",
+      "metric": "framework-peak-memory",
+      "predicted_minus_observed_bytes": -14680064,
+      "predicted_to_observed_ratio": 0.7879038939519469
+    }
+  ],
+  "schema": "groundupscale.dev/explanation-graph/v1alpha1"
+}

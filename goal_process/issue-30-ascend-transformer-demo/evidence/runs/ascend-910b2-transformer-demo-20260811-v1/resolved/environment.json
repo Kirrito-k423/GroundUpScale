@@ -1,0 +1,36 @@
+{
+  "accelerator_runtime": {
+    "allocator_peak_reset_before_run": true,
+    "cpu_fallback_policy": "warning-is-compatibility-failure",
+    "device_name": "Ascend910B2",
+    "logical_device": "npu:0",
+    "runtime": "torch-npu",
+    "torch_npu_version": "2.7.1",
+    "torch_version": "2.7.1+cpu"
+  },
+  "captured_at": "2026-08-11T03:12:20.831555+00:00",
+  "device": "npu:0",
+  "measurement_preflight": {
+    "eligible": null,
+    "reason_codes": [
+      "preflight-not-requested"
+    ],
+    "schema": "groundupscale.dev/environment-validity/v1alpha1",
+    "status": "not-collected"
+  },
+  "platform": {
+    "machine": "aarch64",
+    "release": "5.10.0-60.18.0.50.oe2203.aarch64",
+    "system": "Linux"
+  },
+  "policy": "allowlisted fields only; no unrestricted environment dump",
+  "python": "3.11.14",
+  "schema": "groundupscale.dev/environment/v1alpha1",
+  "torch": {
+    "mps_available": false,
+    "mps_built": false,
+    "num_interop_threads": 256,
+    "num_threads": 256,
+    "version": "2.7.1+cpu"
+  }
+}

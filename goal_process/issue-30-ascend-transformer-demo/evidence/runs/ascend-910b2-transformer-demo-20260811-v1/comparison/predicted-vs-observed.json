@@ -1,0 +1,263 @@
+{
+  "base_prediction": {
+    "hardware_backend_id": "huawei.ascend.910b2.resource-envelope",
+    "hardware_compilation_fingerprint": "48d9fb875532ef2cacbea820a9622a923ec6491263e132138ae9a0ef25ffc46d",
+    "prediction_complete": false
+  },
+  "comparison_fingerprint": "2414200d201ac2f9980c6e2fd14d8892d92f1abb4d56234cb176d481252fa669",
+  "latency_cases": [
+    {
+      "case_id": "matmul-q-proj",
+      "comparison": {
+        "error_status": "not-evaluable-hardware-floor",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": 30509.11462507807,
+        "observed_to_hardware_floor_ratio": 3.1794536704557546,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "iqr_over_median": 0.012362807369914096,
+        "kind": "benchmark-median",
+        "median_ns": 44507.629499999995,
+        "q1_ns": 44410.734249999994,
+        "q3_ns": 44960.9735,
+        "throughput_per_second": 22468.057976441996
+      },
+      "predicted": {
+        "aggregation": "max(sum(minimum_work)/compute_P80, unique_scope_boundary_bytes/memory_P80)",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 1,
+        "compulsory_bytes": 3145728,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "full_duration_ns": null,
+        "kind": "algorithm-independent-empirical-hardware-floor",
+        "limiting_resource": "compute.fp32",
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "comparison": {
+        "error_status": "not-evaluable-unmapped-prediction",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "iqr_over_median": 0.007389790092448825,
+        "kind": "benchmark-median",
+        "median_ns": 156569.8972835314,
+        "q1_ns": 156170.19312393887,
+        "q3_ns": 157327.21179966044,
+        "throughput_per_second": 6386.923778771513
+      },
+      "predicted": {
+        "aggregation": "max(sum(minimum_work)/compute_P80, unique_scope_boundary_bytes/memory_P80)",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compulsory_bytes": 2099200,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "kind": "algorithm-independent-empirical-hardware-floor",
+        "limiting_resource": null,
+        "minimum_work_flops": 1049600,
+        "operation_count": 1,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "case_id": "softmax-attention",
+      "comparison": {
+        "error_status": "not-evaluable-unmapped-prediction",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "iqr_over_median": 0.005591653215562682,
+        "kind": "benchmark-median",
+        "median_ns": 41657.671,
+        "q1_ns": 41548.361,
+        "q3_ns": 41781.29625,
+        "throughput_per_second": 24005.182622907552
+      },
+      "predicted": {
+        "aggregation": "max(sum(minimum_work)/compute_P80, unique_scope_boundary_bytes/memory_P80)",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compulsory_bytes": 16777216,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "kind": "algorithm-independent-empirical-hardware-floor",
+        "limiting_resource": null,
+        "minimum_work_flops": 10477568,
+        "operation_count": 1,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "case_id": "transformer-layer",
+      "comparison": {
+        "error_status": "not-evaluable-unmapped-prediction",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "relative_prediction_error": null
+      },
+      "mode": "module",
+      "observed": {
+        "iqr_over_median": 0.004748527324688454,
+        "kind": "benchmark-median",
+        "median_ns": 1028740.0,
+        "q1_ns": 1025350.0,
+        "q3_ns": 1030235.0,
+        "throughput_per_second": 972.062911911659
+      },
+      "predicted": {
+        "aggregation": "max(sum(minimum_work)/compute_P80, unique_scope_boundary_bytes/memory_P80)",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 4,
+        "compulsory_bytes": 19927040,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "kind": "algorithm-independent-empirical-hardware-floor",
+        "limiting_resource": null,
+        "minimum_work_flops": 4855425024,
+        "operation_count": 26,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "comparison": {
+        "error_status": "not-evaluable-unmapped-prediction",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "relative_prediction_error": null
+      },
+      "mode": "e2e",
+      "observed": {
+        "iqr_over_median": 0.006851311194725037,
+        "kind": "benchmark-median",
+        "median_ns": 1921530.0,
+        "q1_ns": 1911720.0,
+        "q3_ns": 1924885.0,
+        "throughput_per_second": 520.4186247417423
+      },
+      "predicted": {
+        "aggregation": "max(sum(minimum_work)/compute_P80, unique_scope_boundary_bytes/memory_P80)",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 8,
+        "compulsory_bytes": 37756928,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "kind": "algorithm-independent-empirical-hardware-floor",
+        "limiting_resource": null,
+        "minimum_work_flops": 9710850048,
+        "operation_count": 52,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    }
+  ],
+  "memory": {
+    "comparison": {
+      "absolute_error_bytes": 14680064,
+      "absolute_relative_error": 0.212096106048053,
+      "error_status": "evaluated",
+      "predicted_minus_observed_bytes": -14680064,
+      "predicted_to_observed_ratio": 0.7879038939519469
+    },
+    "observed": {
+      "exclusions": [
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "kernel-private workspace",
+        "framework/runtime code and Python RSS"
+      ],
+      "framework_peak_bytes": 69214208,
+      "kind": "weakref-live-unique-tensor-storage",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    "predicted": {
+      "exclusions": [
+        "kernel-private workspace",
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "framework/runtime code and Python object memory"
+      ],
+      "framework_peak_bytes": 54534144,
+      "kind": "semantic-live-set",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    }
+  },
+  "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha1",
+  "status": "partial-base-prediction",
+  "summary": {
+    "aligned_latency_cases": 1,
+    "evaluable_latency_errors": 0,
+    "evaluable_memory_errors": 1
+  }
+}

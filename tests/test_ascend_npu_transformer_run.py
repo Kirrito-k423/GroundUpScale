@@ -19,6 +19,11 @@ from groundupscale.run_bundle import verify_run_bundle
 REPOSITORY_ROOT = Path(__file__).parents[1]
 ASCEND_DEMO_PLAN = REPOSITORY_ROOT / "specs/plans/ascend-npu-transformer-demo.yaml"
 ASCEND_PROFILE_COHORT = "ascend-npu-23b93a89d5fecc79"
+ASCEND_REAL_RUN = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-30-ascend-transformer-demo/evidence/runs"
+    / "ascend-910b2-transformer-demo-20260811-v1"
+)
 
 
 def _semantic_operations(compiled: object) -> list[tuple[str, str]]:
@@ -70,6 +75,53 @@ def test_ascend_demo_reuses_m4_logical_specs_shape_and_benchmark_cases() -> None
     assert {candidate.operation for candidate in ascend.hardware_prediction.candidates} == {
         "MatMul"
     }
+
+
+def test_frozen_ascend_demo_run_proves_the_complete_model_ran_on_npu() -> None:
+    verification = verify_run_bundle(ASCEND_REAL_RUN)
+    assert verification == {
+        "schema": "groundupscale.dev/run-verification/v1alpha1",
+        "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+        "passed": True,
+        "artifact_count": 22,
+        "failures": [],
+    }
+
+    manifest = json.loads(
+        (ASCEND_REAL_RUN / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["status"] == "completed"
+    assert manifest["device"] == "npu:0"
+    assert manifest["hardware_cohort"] == ASCEND_PROFILE_COHORT
+    assert manifest["stages"]["compatibility"] == "passed"
+    assert manifest["stages"]["benchmark"] == "completed"
+    assert manifest["stages"]["trace"] == "completed"
+
+    correctness = json.loads(
+        (ASCEND_REAL_RUN / "observation/correctness.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert correctness["passed"] is True
+    assert correctness["max_absolute_error"] == pytest.approx(9.5367431640625e-07)
+    assert correctness["target_audit"]["semantic_leaf_count"] == 52
+    assert correctness["target_audit"]["fallback_enabled"] is False
+    assert set(correctness["target_audit"]["leaf_output_devices"].values()) == {
+        "npu:0"
+    }
+
+    benchmark = json.loads(
+        (ASCEND_REAL_RUN / "observation/raw/benchmark.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert len(benchmark["cases"]) == 5
+    assert all(case["samples"] == 20 for case in benchmark["cases"])
+    assert all(
+        case["timing_boundaries"]["primary_timer"]
+        == "torch.npu.Event.elapsed_time"
+        for case in benchmark["cases"]
+    )
 
 
 class _UnavailableAscendAdapter:

@@ -1,0 +1,1022 @@
+{
+  "atol": 0.001,
+  "cpu_output_sha256": "fd43804458ea45a2a595e73391dc55e05fe5c0d9e270cceb15e06f993075d4f7",
+  "max_absolute_error": 9.5367431640625e-07,
+  "max_relative_error": 7.047830763440288e-07,
+  "oracle": "cpu-float32-same-seed-same-weights",
+  "passed": true,
+  "rtol": 0.001,
+  "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+  "target_audit": {
+    "alias_checks": [
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "Transpose",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "aliases_input_storage": true,
+        "operation": "View",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      }
+    ],
+    "buffer_bytes": 2097152,
+    "buffer_devices": [
+      "npu:0"
+    ],
+    "fallback_enabled": false,
+    "input_contract": {
+      "device": "npu:0",
+      "dtype": "float32",
+      "is_contiguous": true,
+      "shape": [
+        1,
+        512,
+        512
+      ],
+      "stride": [
+        262144,
+        512,
+        1
+      ]
+    },
+    "input_device": "npu:0",
+    "leaf_output_contracts": {
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          64,
+          512
+        ],
+        "stride": [
+          262144,
+          64,
+          1,
+          512
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          64,
+          512
+        ],
+        "stride": [
+          262144,
+          64,
+          1,
+          512
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": false,
+        "shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "stride": [
+          262144,
+          64,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2": {
+        "device": "npu:0",
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      }
+    },
+    "leaf_output_devices": {
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1": "npu:0",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2": "npu:0"
+    },
+    "output_contract": {
+      "device": "npu:0",
+      "dtype": "float32",
+      "is_contiguous": true,
+      "shape": [
+        1,
+        512,
+        512
+      ],
+      "stride": [
+        262144,
+        512,
+        1
+      ]
+    },
+    "output_device": "npu:0",
+    "parameter_bytes": 33562624,
+    "parameter_devices": [
+      "npu:0"
+    ],
+    "requested_device": "npu:0",
+    "semantic_leaf_count": 52
+  },
+  "target_output_sha256": "523199175e4c10b90b2e3abc8c683c34c14182591925dc7609879c8309522739"
+}

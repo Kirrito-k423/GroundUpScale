@@ -1,0 +1,116 @@
+{
+  "cases": [
+    {
+      "case_id": "matmul-q-proj",
+      "iqr_over_median": 0.012362807369914096,
+      "median_ns": 44507.629499999995,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+      "throughput_per_second": 22468.057976441996
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "iqr_over_median": 0.007389790092448825,
+      "median_ns": 156569.8972835314,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+      "throughput_per_second": 6386.923778771513
+    },
+    {
+      "case_id": "softmax-attention",
+      "iqr_over_median": 0.005591653215562682,
+      "median_ns": 41657.671,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+      "throughput_per_second": 24005.182622907552
+    },
+    {
+      "case_id": "transformer-layer",
+      "iqr_over_median": 0.004748527324688454,
+      "median_ns": 1028740.0,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0",
+      "throughput_per_second": 972.062911911659
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "iqr_over_median": 0.006851311194725037,
+      "median_ns": 1921530.0,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer",
+      "throughput_per_second": 520.4186247417423
+    }
+  ],
+  "comparison_status": "partial-base-prediction",
+  "device": "npu:0",
+  "duration_status": "partial-empirical-hardware-floor-exploratory",
+  "explanation_graph": "/home/t00906153/GroundUpScale-issue30-20260811/goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1/prediction/explanation.graph.json",
+  "full_duration_ns": null,
+  "hardware_capability_environment_eligible": true,
+  "hardware_empirical_floor_ns": null,
+  "latency_comparisons": [
+    {
+      "case_id": "matmul-q-proj",
+      "empirical_compute_time_ns": 13998.514874921926,
+      "empirical_hardware_floor_ns": 13998.514874921926,
+      "empirical_memory_time_ns": 2234.1069166172174,
+      "error_status": "not-evaluable-hardware-floor",
+      "limiting_resource": "compute.fp32",
+      "observed_median_ns": 44507.629499999995,
+      "observed_to_hardware_floor_ratio": 3.1794536704557546,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "empirical_compute_time_ns": null,
+      "empirical_hardware_floor_ns": null,
+      "empirical_memory_time_ns": null,
+      "error_status": "not-evaluable-unmapped-prediction",
+      "limiting_resource": null,
+      "observed_median_ns": 156569.8972835314,
+      "observed_to_hardware_floor_ratio": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "case_id": "softmax-attention",
+      "empirical_compute_time_ns": null,
+      "empirical_hardware_floor_ns": null,
+      "empirical_memory_time_ns": null,
+      "error_status": "not-evaluable-unmapped-prediction",
+      "limiting_resource": null,
+      "observed_median_ns": 41657.671,
+      "observed_to_hardware_floor_ratio": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "case_id": "transformer-layer",
+      "empirical_compute_time_ns": null,
+      "empirical_hardware_floor_ns": null,
+      "empirical_memory_time_ns": null,
+      "error_status": "not-evaluable-unmapped-prediction",
+      "limiting_resource": null,
+      "observed_median_ns": 1028740.0,
+      "observed_to_hardware_floor_ratio": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "empirical_compute_time_ns": null,
+      "empirical_hardware_floor_ns": null,
+      "empirical_memory_time_ns": null,
+      "error_status": "not-evaluable-unmapped-prediction",
+      "limiting_resource": null,
+      "observed_median_ns": 1921530.0,
+      "observed_to_hardware_floor_ratio": null,
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    }
+  ],
+  "memory_comparison": {
+    "absolute_error_bytes": 14680064,
+    "absolute_relative_error": 0.212096106048053,
+    "error_status": "evaluated",
+    "observed_framework_peak_bytes": 69214208,
+    "predicted_framework_peak_bytes": 54534144,
+    "predicted_minus_observed_bytes": -14680064,
+    "predicted_to_observed_ratio": 0.7879038939519469
+  },
+  "predicted_framework_peak_bytes": 54534144,
+  "report": "/home/t00906153/GroundUpScale-issue30-20260811/goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1/reports/report.html",
+  "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+  "schema": "groundupscale.dev/explain-summary/v1alpha1"
+}

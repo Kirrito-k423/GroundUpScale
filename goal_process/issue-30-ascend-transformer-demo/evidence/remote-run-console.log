@@ -1,0 +1,11 @@
+{
+  "artifact_count": 22,
+  "device": "npu:0",
+  "digests_verified": true,
+  "reason_codes": [],
+  "report": "/home/t00906153/GroundUpScale-issue30-20260811/goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1/reports/report.html",
+  "run_bundle": "/home/t00906153/GroundUpScale-issue30-20260811/goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+  "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+  "schema": "groundupscale.dev/run-summary/v1alpha1",
+  "status": "completed"
+}
