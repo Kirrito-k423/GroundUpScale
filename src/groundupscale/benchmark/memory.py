@@ -10,6 +10,7 @@ from torch import Tensor, nn
 
 from groundupscale.benchmark.measurement import synchronize
 from groundupscale.benchmark.reference import SemanticLeaf
+from groundupscale.execution_runtime import ExecutionRuntime
 
 
 def _tensors(value: Any) -> list[Tensor]:
@@ -25,6 +26,7 @@ def observe_tensor_storage_peak(
     inputs: tuple[Tensor, ...],
     *,
     device: str,
+    execution_runtime: ExecutionRuntime | None = None,
 ) -> dict[str, Any]:
     """Observe live Tensor storages without retaining Tensor payloads.
 
@@ -41,7 +43,12 @@ def observe_tensor_storage_peak(
 
     def register(tensor: Tensor) -> None:
         storage = tensor.untyped_storage()
-        key = (str(tensor.device), storage.data_ptr(), storage.nbytes())
+        tensor_device = (
+            execution_runtime.tensor_device(tensor)
+            if execution_runtime is not None
+            else str(tensor.device)
+        )
+        key = (tensor_device, storage.data_ptr(), storage.nbytes())
         storage_refs.setdefault(key, []).append(weakref.ref(tensor))
 
     for parameter in model.parameters():
@@ -77,7 +84,7 @@ def observe_tensor_storage_peak(
     try:
         with torch.inference_mode():
             output = model(*inputs)
-            synchronize(device)
+            synchronize(device, execution_runtime)
     finally:
         for handle in handles:
             handle.remove()

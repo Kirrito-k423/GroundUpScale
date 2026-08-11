@@ -29,6 +29,7 @@ from groundupscale.benchmark.explanation import (
 )
 from groundupscale.benchmark.prediction import predict_live_set
 from groundupscale.ir import canonical_data
+from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
 from groundupscale.pipeline import CompiledAnalysis
 from groundupscale.physical_floor_report import render_physical_floor_report
@@ -84,6 +85,47 @@ PHYSICAL_FLOOR_COMPARISON_REQUIRED_ROLES = frozenset(
         "explanation-graph",
         "html-report",
     }
+)
+
+TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
+    {
+        "resolved-input-lock",
+        "environment",
+        "measurement-capability-manifest",
+        "hardware-cohort",
+        "measurement-preflight",
+        "model-ir",
+        "workload-ir",
+        "semantic-ir",
+        "cost-ir",
+        "hardware-backend-prediction",
+        "prediction",
+        "benchmark-observation",
+        "observation-trace",
+        "alignment-map",
+        "memory-observation",
+        "prediction-observation-comparison",
+        "correctness-observation",
+        "execution-contract",
+        "transfer-observation",
+        "error-attribution",
+        "explanation-graph",
+        "html-report",
+    }
+)
+
+TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES = frozenset(
+    {
+        "resolved-input-lock",
+        "measurement-capability-manifest",
+        "hardware-cohort",
+        "measurement-preflight",
+        "execution-failure",
+    }
+)
+
+TRANSFORMER_DEMO_FAILED_REQUIRED_ROLES = (
+    TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES | {"transfer-observation"}
 )
 
 
@@ -209,10 +251,163 @@ class EnvironmentValidityError(RuntimeError):
     pass
 
 
+def write_blocked_transformer_run(
+    compiled: CompiledAnalysis,
+    artifact_store: str | Path,
+    *,
+    run_id: str,
+    capabilities: dict[str, object],
+    cohort: dict[str, object],
+    preflight: dict[str, object],
+) -> Path:
+    """Publish immutable compatibility evidence when an NPU run cannot start."""
+
+    if not RUN_ID_PATTERN.fullmatch(run_id):
+        raise ValueError(f"unsafe run_id: {run_id!r}")
+    runs_root = Path(artifact_store).resolve() / "runs"
+    runs_root.mkdir(parents=True, exist_ok=True)
+    destination = runs_root / run_id
+    if destination.exists():
+        raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+    temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_root))
+    artifacts: list[dict[str, Any]] = []
+
+    def write_json(
+        role: str,
+        relative: str,
+        value: object,
+        schema: str,
+        inputs: tuple[str, ...] = (),
+    ) -> None:
+        path = temporary / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(_json_bytes(value))
+        artifacts.append(
+            {
+                "role": role,
+                "path": relative,
+                "media_type": "application/json",
+                "schema": schema,
+                "sha256": _sha256(path),
+                "produced_by": "groundupscale@0.1.0",
+                "inputs": list(inputs),
+            }
+        )
+
+    reason_code_values: list[object] = []
+    for document in (capabilities, cohort, preflight):
+        document_reasons = document.get("reason_codes")
+        if isinstance(document_reasons, list):
+            reason_code_values.extend(document_reasons)
+    reason_codes = sorted({str(reason) for reason in reason_code_values}) or [
+        "ascend-npu-compatibility-failed"
+    ]
+    bundle = compiled.bundle
+    inputs_lock = {
+        "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+        "sources": bundle.sources,
+        "documents": {
+            "analysis_plan": bundle.plan,
+            "workload": bundle.workload,
+            "analysis_case": bundle.analysis_case,
+            "deployment_intent": bundle.deployment_intent,
+            "hardware": bundle.hardware,
+            "hardware_capability_profiles": bundle.hardware_capability_profiles,
+            "fabric_graph": bundle.fabric_graph,
+            "benchmark_cases": bundle.benchmark_cases,
+            "models": bundle.models,
+        },
+    }
+    failure = {
+        "schema": "groundupscale.dev/transformer-execution-failure/v1alpha1",
+        "status": "compatibility-failed",
+        "device": preflight.get("logical_device", "npu:0"),
+        "reason_codes": reason_codes,
+        "failed_before_execution": True,
+        "preserved_evidence": [
+            "measurement-capability-manifest",
+            "hardware-cohort",
+            "measurement-preflight",
+        ],
+    }
+    write_json(
+        "resolved-input-lock",
+        "resolved/inputs.lock.json",
+        inputs_lock,
+        inputs_lock["schema"],
+    )
+    write_json(
+        "measurement-capability-manifest",
+        "adapter/capabilities.json",
+        capabilities,
+        str(capabilities["schema"]),
+    )
+    write_json(
+        "hardware-cohort",
+        "adapter/cohort.json",
+        cohort,
+        str(cohort["schema"]),
+        ("measurement-capability-manifest",),
+    )
+    write_json(
+        "measurement-preflight",
+        "adapter/preflight.json",
+        preflight,
+        str(preflight["schema"]),
+        ("measurement-capability-manifest", "hardware-cohort"),
+    )
+    write_json(
+        "execution-failure",
+        "observation/execution-failure.json",
+        failure,
+        str(failure["schema"]),
+        ("measurement-preflight", "resolved-input-lock"),
+    )
+    manifest = {
+        "schema": "groundupscale.dev/run-manifest/v1alpha1",
+        "bundle_kind": "transformer-demo",
+        "run_id": run_id,
+        "status": "blocked",
+        "created_at": datetime.now(UTC).isoformat(),
+        "compilation_fingerprint": compiled.semantic.compilation_fingerprint,
+        "cost_compilation_fingerprint": compiled.cost.compilation_fingerprint,
+        "hardware_compilation_fingerprint": (
+            compiled.hardware_prediction.compilation_fingerprint
+            if compiled.hardware_prediction is not None
+            else None
+        ),
+        "hardware_cohort": cohort.get("cohort_id"),
+        "device": preflight.get("logical_device", "npu:0"),
+        "reason_codes": reason_codes,
+        "stages": {
+            "compilation": "completed",
+            "compatibility": "failed",
+            "benchmark": "not-started",
+            "trace": "not-started",
+        },
+        "artifacts": artifacts,
+        "immutability": (
+            "writer refuses an existing run_id; artifact digests are authoritative"
+        ),
+    }
+    (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
+    os.replace(temporary, destination)
+    return destination
+
+
 class RunBundleWriter:
-    def __init__(self, compiled: CompiledAnalysis, seed: int = 20260806) -> None:
+    def __init__(
+        self,
+        compiled: CompiledAnalysis,
+        seed: int = 20260806,
+        *,
+        execution_runtime: ExecutionRuntime | None = None,
+        npu_evidence: dict[str, dict[str, object]] | None = None,
+    ) -> None:
         self.compiled = compiled
         self.seed = seed
+        self.execution_runtime = execution_runtime
+        self.npu_evidence = npu_evidence
 
     def run(
         self,
@@ -226,7 +421,11 @@ class RunBundleWriter:
         environment_validity: dict[str, Any] | None = None,
         require_valid_environment: bool = False,
     ) -> Path:
-        benchmark_runner = BenchmarkRunner(self.compiled.bundle, seed=self.seed)
+        benchmark_runner = BenchmarkRunner(
+            self.compiled.bundle,
+            seed=self.seed,
+            execution_runtime=self.execution_runtime,
+        )
         device = benchmark_runner.device
         selected_run_id = run_id or _default_run_id(
             device, self.compiled.cost.compilation_fingerprint
@@ -332,6 +531,7 @@ class RunBundleWriter:
                 inputs=inputs,
             )
 
+        current_stage = "benchmark"
         try:
             benchmark = benchmark_runner.run(
                 samples_override=samples_override,
@@ -339,18 +539,25 @@ class RunBundleWriter:
                 windows_per_sample=windows_per_sample,
                 target_window_ns=target_window_ns,
             )
+            current_stage = "trace"
             trace = TraceRunner(
                 self.compiled.bundle,
                 self.compiled.semantic.semantic_ir,
                 seed=self.seed,
+                execution_runtime=self.execution_runtime,
             ).run()
+            current_stage = "memory-observation"
             memory_model, memory_input = benchmark_runner._model_and_input()
             tensor_storage_memory = observe_tensor_storage_peak(
-                memory_model, (memory_input,), device=device
+                memory_model,
+                (memory_input,),
+                device=device,
+                execution_runtime=self.execution_runtime,
             )
             live_set = predict_live_set(
                 self.compiled.semantic.semantic_ir, self.compiled.cost.cost_ir
             )
+            current_stage = "comparison"
             comparison = build_prediction_observation_comparison(
                 hardware_prediction=self.compiled.hardware_prediction,
                 benchmark=benchmark,
@@ -365,10 +572,41 @@ class RunBundleWriter:
                 self.compiled.hardware_prediction,
                 comparison,
             )
+            current_stage = "correctness"
             reference_runner = ReferenceRunner.from_analysis_bundle(
                 self.compiled.bundle, seed=self.seed
             )
-            if device == "mps":
+            if self.execution_runtime is not None:
+                correctness_result = reference_runner.compare_cpu_target(
+                    self.execution_runtime, atol=0.001, rtol=0.001
+                )
+                target_audit = canonical_data(correctness_result.mps.audit)
+                target_audit["leaf_output_devices"] = dict(
+                    correctness_result.mps.audit.leaf_output_devices
+                )
+                target_audit["leaf_output_contracts"] = {
+                    path: canonical_data(contract)
+                    for path, contract in (
+                        correctness_result.mps.audit.leaf_output_contracts
+                    )
+                }
+                correctness = {
+                    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+                    "passed": correctness_result.passed,
+                    "max_absolute_error": correctness_result.max_absolute_error,
+                    "max_relative_error": correctness_result.max_relative_error,
+                    "atol": correctness_result.atol,
+                    "rtol": correctness_result.rtol,
+                    "oracle": "cpu-float32-same-seed-same-weights",
+                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
+                    "target_output_sha256": correctness_result.mps.output_sha256,
+                    "target_audit": target_audit,
+                }
+                if not correctness_result.passed:
+                    raise RuntimeError("cpu-correctness-oracle-failed")
+                if correctness_result.mps.audit.fallback_enabled:
+                    raise RuntimeError("cpu-fallback-detected")
+            elif device == "mps":
                 correctness_result = reference_runner.compare_cpu_mps(
                     atol=1e-4, rtol=1e-3
                 )
@@ -392,6 +630,7 @@ class RunBundleWriter:
                     "target_audit": canonical_data(target_run.audit),
                 }
 
+            current_stage = "publication"
             bundle = self.compiled.bundle
             resolved_documents = {
                 "analysis_plan": bundle.plan,
@@ -431,6 +670,10 @@ class RunBundleWriter:
                 "measurement_preflight": preflight_artifact,
                 "policy": "allowlisted fields only; no unrestricted environment dump",
             }
+            if self.execution_runtime is not None:
+                environment["accelerator_runtime"] = (
+                    self.execution_runtime.environment()
+                )
             model_payload: Any = (
                 self.compiled.models[0]
                 if len(self.compiled.models) == 1
@@ -438,6 +681,31 @@ class RunBundleWriter:
             )
             write_json("resolved-input-lock", "resolved/inputs.lock.json", inputs_lock, inputs_lock["schema"])
             write_json("environment", "resolved/environment.json", environment, environment["schema"])
+            if self.npu_evidence is not None:
+                capabilities = self.npu_evidence["capabilities"]
+                cohort = self.npu_evidence["cohort"]
+                preflight = self.npu_evidence["preflight"]
+                write_json(
+                    "measurement-capability-manifest",
+                    "adapter/capabilities.json",
+                    capabilities,
+                    str(capabilities["schema"]),
+                    ("resolved-input-lock",),
+                )
+                write_json(
+                    "hardware-cohort",
+                    "adapter/cohort.json",
+                    cohort,
+                    str(cohort["schema"]),
+                    ("measurement-capability-manifest",),
+                )
+                write_json(
+                    "measurement-preflight",
+                    "adapter/preflight.json",
+                    preflight,
+                    str(preflight["schema"]),
+                    ("measurement-capability-manifest", "hardware-cohort"),
+                )
             write_json("model-ir", "ir/model.ir.json", model_payload, "groundupscale.dev/model-ir/v1alpha1", ("resolved-input-lock",))
             write_json("workload-ir", "ir/workload.ir.json", self.compiled.workload, "groundupscale.dev/workload-ir/v1alpha1", ("resolved-input-lock",))
             write_json("semantic-ir", "ir/semantic.ir.json", self.compiled.semantic.semantic_ir, self.compiled.semantic.semantic_ir.schema, ("model-ir", "workload-ir"))
@@ -492,6 +760,31 @@ class RunBundleWriter:
                 "runtime_point_samples": trace["memory_observation"],
                 "authoritative_gate_metric": "framework_tensor_storage.peak_framework_tensor_bytes",
             }
+            if self.execution_runtime is not None:
+                runtime_memory = self.execution_runtime.memory_snapshot()
+                memory_observation.update(
+                    {
+                        "logical_tensor_live_set": tensor_storage_memory,
+                        "framework_device_memory": {
+                            "current_allocated_bytes": runtime_memory.get(
+                                "framework_current_allocated_bytes"
+                            ),
+                            "reserved_bytes": runtime_memory.get(
+                                "framework_reserved_bytes"
+                            ),
+                            "peak_allocated_bytes": runtime_memory.get(
+                                "framework_max_allocated_bytes"
+                            ),
+                            "attribution": "framework-owned-device-allocator",
+                        },
+                        "process_memory": {
+                            "peak_rss_bytes": runtime_memory.get(
+                                "process_rss_bytes"
+                            ),
+                            "attribution": "process-wide-host-rss",
+                        },
+                    }
+                )
             write_json("memory-observation", "observation/memory.json", memory_observation, memory_observation["schema"], ("observation-trace", "semantic-ir"))
             write_json(
                 "prediction-observation-comparison",
@@ -510,6 +803,56 @@ class RunBundleWriter:
                 ),
             )
             write_json("correctness-observation", "observation/correctness.json", correctness, correctness["schema"], ("resolved-input-lock", "environment"))
+            if self.execution_runtime is not None:
+                execution_contract = {
+                    "schema": "groundupscale.dev/transformer-execution-contract/v1alpha1",
+                    "device": device,
+                    "semantic_leaf_count": correctness["target_audit"][
+                        "semantic_leaf_count"
+                    ],
+                    "semantic_operations": sorted(
+                        {
+                            operation.operation
+                            for operation in self.compiled.semantic.semantic_ir.walk_operations()
+                        }
+                    ),
+                    "dtype": self.compiled.bundle.analysis_case.spec.shape.dtype,
+                    "shape": self.compiled.bundle.analysis_case.spec.shape,
+                    "baseline_timing": {
+                        "timer_source": self.execution_runtime.timer_source,
+                        "timer_resolution_ns": (
+                            self.execution_runtime.timer_resolution_ns
+                        ),
+                        "completion_protocol": (
+                            self.execution_runtime.completion_protocol
+                        ),
+                        "warmup": "outside-timed-region",
+                        "per_module_synchronization": False,
+                    },
+                    "diagnostic_profiling": {
+                        "lane": "separate",
+                        "timing_is_frontier_eligible": False,
+                    },
+                }
+                write_json(
+                    "execution-contract",
+                    "resolved/execution-contract.json",
+                    execution_contract,
+                    execution_contract["schema"],
+                    (
+                        "resolved-input-lock",
+                        "measurement-preflight",
+                        "benchmark-observation",
+                    ),
+                )
+                transfers = self.execution_runtime.transfer_evidence()
+                write_json(
+                    "transfer-observation",
+                    "observation/transfers.json",
+                    transfers,
+                    str(transfers["schema"]),
+                    ("execution-contract",),
+                )
             write_json("error-attribution", "comparison/error-attribution.json", trace["error_attribution"], trace["error_attribution"]["schema"], ("benchmark-observation", "alignment-map"))
             report = render_report_html(
                 run_id=selected_run_id,
@@ -519,6 +862,7 @@ class RunBundleWriter:
                 live_set=live_set,
                 explanation=explanation,
                 comparison=comparison,
+                memory_observation=memory_observation,
             )
             write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha1", inputs=("explanation-graph", "prediction-observation-comparison"))
 
@@ -527,6 +871,11 @@ class RunBundleWriter:
             )
             manifest = {
                 "schema": "groundupscale.dev/run-manifest/v1alpha1",
+                **(
+                    {"bundle_kind": "transformer-demo"}
+                    if self.execution_runtime is not None
+                    else {}
+                ),
                 "run_id": selected_run_id,
                 "status": "completed",
                 "created_at": datetime.now(UTC).isoformat(),
@@ -538,14 +887,23 @@ class RunBundleWriter:
                     else None
                 ),
                 "hardware_cohort": (
-                    f"{hardware_names}-{platform.release()}-torch{torch.__version__}-"
-                    f"{device}-env-{environment_policy_id}"
+                    self.npu_evidence["cohort"].get("cohort_id")
+                    if self.npu_evidence is not None
+                    else (
+                        f"{hardware_names}-{platform.release()}-torch{torch.__version__}-"
+                        f"{device}-env-{environment_policy_id}"
+                    )
                 ),
                 "device": device,
                 "environment_validity": preflight_status,
                 "seed": self.seed,
                 "stages": {
                     "compilation": "completed",
+                    **(
+                        {"compatibility": "passed"}
+                        if self.execution_runtime is not None
+                        else {}
+                    ),
                     "structural_prediction": "completed",
                     "duration_prediction": duration_status,
                     "prediction_observation_comparison": "completed",
@@ -559,9 +917,158 @@ class RunBundleWriter:
             (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
             os.replace(temporary, destination)
             return destination
-        except Exception:
-            # A failed temporary bundle is intentionally not published as completed evidence.
-            # Its path is preserved for diagnosis and cannot collide with a future Run ID.
+        except Exception as error:
+            if self.execution_runtime is not None:
+                existing_roles = {
+                    artifact["role"]
+                    for artifact in artifacts
+                    if isinstance(artifact, dict) and "role" in artifact
+                }
+
+                def write_json_once(
+                    role: str,
+                    relative: str,
+                    value: object,
+                    schema: str,
+                    inputs: tuple[str, ...] = (),
+                ) -> None:
+                    if role not in existing_roles:
+                        write_json(role, relative, value, schema, inputs)
+                        existing_roles.add(role)
+
+                bundle = self.compiled.bundle
+                inputs_lock = {
+                    "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+                    "sources": bundle.sources,
+                    "documents": {
+                        "analysis_plan": bundle.plan,
+                        "workload": bundle.workload,
+                        "analysis_case": bundle.analysis_case,
+                        "deployment_intent": bundle.deployment_intent,
+                        "hardware": bundle.hardware,
+                        "hardware_capability_profiles": (
+                            bundle.hardware_capability_profiles
+                        ),
+                        "fabric_graph": bundle.fabric_graph,
+                        "benchmark_cases": bundle.benchmark_cases,
+                        "models": bundle.models,
+                    },
+                }
+                write_json_once(
+                    "resolved-input-lock",
+                    "resolved/inputs.lock.json",
+                    inputs_lock,
+                    inputs_lock["schema"],
+                )
+                if self.npu_evidence is not None:
+                    capabilities = self.npu_evidence["capabilities"]
+                    cohort = self.npu_evidence["cohort"]
+                    preflight = self.npu_evidence["preflight"]
+                    write_json_once(
+                        "measurement-capability-manifest",
+                        "adapter/capabilities.json",
+                        capabilities,
+                        str(capabilities["schema"]),
+                        ("resolved-input-lock",),
+                    )
+                    write_json_once(
+                        "hardware-cohort",
+                        "adapter/cohort.json",
+                        cohort,
+                        str(cohort["schema"]),
+                        ("measurement-capability-manifest",),
+                    )
+                    write_json_once(
+                        "measurement-preflight",
+                        "adapter/preflight.json",
+                        preflight,
+                        str(preflight["schema"]),
+                        (
+                            "measurement-capability-manifest",
+                            "hardware-cohort",
+                        ),
+                    )
+                transfers = self.execution_runtime.transfer_evidence()
+                write_json_once(
+                    "transfer-observation",
+                    "observation/transfers.json",
+                    transfers,
+                    str(transfers["schema"]),
+                    ("resolved-input-lock",),
+                )
+                raw_reason = str(error).strip()
+                reason = (
+                    raw_reason
+                    if raw_reason
+                    and len(raw_reason) <= 160
+                    and all(character.isprintable() for character in raw_reason)
+                    else f"execution-failed:{type(error).__name__}"
+                )
+                failure = {
+                    "schema": (
+                        "groundupscale.dev/transformer-execution-failure/"
+                        "v1alpha1"
+                    ),
+                    "run_id": selected_run_id,
+                    "status": "compatibility-failed",
+                    "device": device,
+                    "failed_stage": current_stage,
+                    "failed_before_execution": False,
+                    "reason_codes": [reason],
+                    "error_type": type(error).__name__,
+                    "captured_at": datetime.now(UTC).isoformat(),
+                }
+                write_json_once(
+                    "execution-failure",
+                    "observation/execution-failure.json",
+                    failure,
+                    failure["schema"],
+                    (
+                        "resolved-input-lock",
+                        "measurement-preflight",
+                        "transfer-observation",
+                    ),
+                )
+                manifest = {
+                    "schema": "groundupscale.dev/run-manifest/v1alpha1",
+                    "bundle_kind": "transformer-demo",
+                    "run_id": selected_run_id,
+                    "status": "compatibility-failed",
+                    "created_at": datetime.now(UTC).isoformat(),
+                    "compilation_fingerprint": (
+                        self.compiled.semantic.compilation_fingerprint
+                    ),
+                    "cost_compilation_fingerprint": (
+                        self.compiled.cost.compilation_fingerprint
+                    ),
+                    "hardware_compilation_fingerprint": (
+                        self.compiled.hardware_prediction.compilation_fingerprint
+                        if self.compiled.hardware_prediction is not None
+                        else None
+                    ),
+                    "hardware_cohort": (
+                        self.npu_evidence["cohort"].get("cohort_id")
+                        if self.npu_evidence is not None
+                        else None
+                    ),
+                    "device": device,
+                    "reason_codes": [reason],
+                    "stages": {
+                        "compilation": "completed",
+                        "compatibility": "failed",
+                        current_stage: "failed",
+                    },
+                    "artifacts": artifacts,
+                    "immutability": (
+                        "writer refuses an existing run_id; artifact digests "
+                        "are authoritative"
+                    ),
+                }
+                (temporary / "run.manifest.json").write_bytes(
+                    _json_bytes(manifest)
+                )
+                os.replace(temporary, destination)
+                return destination
             failure = {
                 "schema": "groundupscale.dev/run-failure/v1alpha1",
                 "run_id": selected_run_id,
@@ -585,7 +1092,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     floor_comparison = (
         manifest.get("bundle_kind") == "physical-floor-observation-comparison"
     )
-    structured_bundle = exact_shape or floor_comparison
+    transformer_demo = manifest.get("bundle_kind") == "transformer-demo"
+    structured_bundle = exact_shape or floor_comparison or transformer_demo
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
     if structured_bundle:
@@ -593,7 +1101,14 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             if isinstance(artifact, dict):
                 role = artifact.get("role")
                 role_counts[role] = role_counts.get(role, 0) + 1
-        if floor_comparison:
+        if transformer_demo:
+            if manifest.get("status") == "completed":
+                required_roles = TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES
+            elif manifest.get("status") == "blocked":
+                required_roles = TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES
+            else:
+                required_roles = TRANSFORMER_DEMO_FAILED_REQUIRED_ROLES
+        elif floor_comparison:
             required_roles = PHYSICAL_FLOOR_COMPARISON_REQUIRED_ROLES
         else:
             required_roles = (
@@ -1466,4 +1981,5 @@ __all__ = [
     "RunBundleExistsError",
     "RunBundleWriter",
     "verify_run_bundle",
+    "write_blocked_transformer_run",
 ]

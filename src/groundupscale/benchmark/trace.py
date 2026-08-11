@@ -12,11 +12,14 @@ from torch import Tensor, nn
 
 from groundupscale.benchmark.measurement import BenchmarkRunner, synchronize
 from groundupscale.benchmark.reference import SemanticLeaf
+from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.ir import SemanticOperation, SemanticProgram, SemanticRegion
 from groundupscale.specs import AnalysisBundle
 
 
-def _tensor_metadata(value: Any) -> list[dict[str, Any]]:
+def _tensor_metadata(
+    value: Any, execution_runtime: ExecutionRuntime | None = None
+) -> list[dict[str, Any]]:
     tensors: list[Tensor] = []
     if isinstance(value, Tensor):
         tensors.append(value)
@@ -26,7 +29,11 @@ def _tensor_metadata(value: Any) -> list[dict[str, Any]]:
         {
             "shape": list(tensor.shape),
             "dtype": str(tensor.dtype).removeprefix("torch."),
-            "device": str(tensor.device),
+            "device": (
+                execution_runtime.tensor_device(tensor)
+                if execution_runtime is not None
+                else str(tensor.device)
+            ),
             "layout": str(tensor.layout).removeprefix("torch."),
             "is_contiguous": tensor.is_contiguous(),
         }
@@ -34,7 +41,11 @@ def _tensor_metadata(value: Any) -> list[dict[str, Any]]:
     ]
 
 
-def _memory_snapshot(device: str) -> dict[str, int]:
+def _memory_snapshot(
+    device: str, execution_runtime: ExecutionRuntime | None = None
+) -> dict[str, int]:
+    if execution_runtime is not None:
+        return execution_runtime.memory_snapshot()
     result = {"process_rss_bytes": psutil.Process().memory_info().rss}
     if device == "mps":
         result.update(
@@ -87,13 +98,21 @@ class TraceRunner:
         bundle: AnalysisBundle,
         semantic: SemanticProgram,
         seed: int = 20260806,
+        *,
+        execution_runtime: ExecutionRuntime | None = None,
     ) -> None:
         self.bundle = bundle
         self.semantic = semantic
         self.seed = seed
+        self.execution_runtime = execution_runtime
 
     def run(self) -> dict[str, Any]:
-        benchmark = BenchmarkRunner(self.bundle, seed=self.seed)
+        benchmark = BenchmarkRunner(
+            self.bundle,
+            seed=self.seed,
+            execution_runtime=self.execution_runtime,
+            lane="diagnostic-profiling",
+        )
         device = benchmark.device
         model, hidden = benchmark._model_and_input()
         identities = _semantic_identities(self.semantic)
@@ -120,7 +139,7 @@ class TraceRunner:
                 parent_span_id=stack[-1],
                 stable_path=str(module.stable_path),
                 started_ns=time.perf_counter_ns(),
-                inputs=_tensor_metadata(inputs),
+                inputs=_tensor_metadata(inputs, self.execution_runtime),
             )
             frames[id(module)] = frame
             stack.append(span_id)
@@ -155,8 +174,8 @@ class TraceRunner:
                         "host-synchronous" if device == "cpu" else "host-enqueue"
                     ),
                     "inputs": frame.inputs,
-                    "outputs": _tensor_metadata(output),
-                    "memory": _memory_snapshot(device),
+                    "outputs": _tensor_metadata(output, self.execution_runtime),
+                    "memory": _memory_snapshot(device, self.execution_runtime),
                     "instrumentation_profile": "trace",
                 }
             )
@@ -166,18 +185,18 @@ class TraceRunner:
                 handles.append(module.register_forward_pre_hook(pre_hook))
                 handles.append(module.register_forward_hook(post_hook, always_call=True))
 
-        before_memory = _memory_snapshot(device)
-        synchronize(device)
+        before_memory = _memory_snapshot(device, self.execution_runtime)
+        synchronize(device, self.execution_runtime)
         e2e_started = time.perf_counter_ns()
         try:
             with torch.inference_mode():
                 output = model(hidden)
-                synchronize(device)
+                synchronize(device, self.execution_runtime)
         finally:
             for handle in handles:
                 handle.remove()
         e2e_ended = time.perf_counter_ns()
-        after_memory = _memory_snapshot(device)
+        after_memory = _memory_snapshot(device, self.execution_runtime)
         if frames or stack != ["span-00000"]:
             raise RuntimeError("trace hooks did not close cleanly")
         events.append(
@@ -194,8 +213,8 @@ class TraceRunner:
                 "host_ended_ns": e2e_ended,
                 "host_duration_ns": e2e_ended - e2e_started,
                 "clock_domain": "host-synchronized-boundary",
-                "inputs": _tensor_metadata(hidden),
-                "outputs": _tensor_metadata(output),
+                "inputs": _tensor_metadata(hidden, self.execution_runtime),
+                "outputs": _tensor_metadata(output, self.execution_runtime),
                 "memory": after_memory,
                 "instrumentation_profile": "trace",
             }
@@ -225,7 +244,7 @@ class TraceRunner:
         e2e_duration = e2e_ended - e2e_started
         memory_key = (
             "framework_current_allocated_bytes"
-            if device == "mps"
+            if device == "mps" or self.execution_runtime is not None
             else "process_rss_bytes"
         )
         peak_observed = max(event["memory"][memory_key] for event in events)
@@ -248,22 +267,23 @@ class TraceRunner:
                 "leaf_host_interval_union_ns": leaf_union,
                 "unattributed_host_ns": max(0, e2e_duration - leaf_union),
                 "unattributed_reason": (
-                    "Python/composite/runtime overhead plus device wait; MPS leaf spans are "
-                    "host enqueue ranges and are not treated as device durations"
+                    "Python/composite/runtime overhead plus device wait; accelerator leaf "
+                    "spans are host enqueue ranges and are not treated as device durations"
                 ),
                 "alignment_coverage": matched / len(alignment_entries),
             },
             "memory_observation": {
                 "observer": (
-                    "torch_mps_current_allocated"
-                    if device == "mps"
+                    "framework_device_current_allocated"
+                    if device == "mps" or self.execution_runtime is not None
                     else "process_rss"
                 ),
                 "before": before_memory,
                 "after": after_memory,
                 "peak_observed_bytes": peak_observed,
                 "attribution": (
-                    "framework-attributed point samples" if device == "mps" else
+                    "framework-attributed point samples"
+                    if device == "mps" or self.execution_runtime is not None else
                     "process-wide diagnostic; not framework-attributed"
                 ),
             },

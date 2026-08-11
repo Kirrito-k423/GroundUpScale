@@ -1,0 +1,16 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: AnalysisPlan
+metadata:
+  name: ascend-npu-transformer-demo
+  version: 0.1.0
+spec:
+  workload: {path: specs/workloads/prefill.yaml, version: 0.1.0}
+  analysis_case: {path: specs/analysis-cases/fixed-prefill.yaml, version: 0.1.0}
+  deployment_intent: {path: specs/deployment-intents/ascend-npu.yaml, version: 0.1.0}
+  hardware:
+    - {path: specs/hardware/ascend-910b2.yaml, version: 0.1.0}
+  hardware_capability_profiles:
+    - {path: specs/hardware-capabilities/ascend-910b2-npu-local.yaml, version: 0.1.0}
+  fabric_graph: {path: specs/fabrics/local-ascend-910b2.yaml, version: 0.1.0}
+  benchmark_cases:
+    - {path: specs/benchmarks/core-prefill.yaml, version: 0.1.0}

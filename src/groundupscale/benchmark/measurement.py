@@ -6,7 +6,7 @@ import math
 import os
 import statistics
 import time
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 import psutil
 import torch
@@ -17,6 +17,7 @@ from groundupscale.benchmark.reference import (
     SemanticLeaf,
     TwoLayerTransformer,
 )
+from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.schemas.v1alpha1 import BenchmarkDefinition
 from groundupscale.specs import AnalysisBundle
 
@@ -30,9 +31,20 @@ def resolve_device(bundle: AnalysisBundle) -> str:
             kind = fabric_nodes[placement].device
         except KeyError as error:
             raise ValueError(f"deployment placement {placement!r} is absent from FabricGraph") from error
-        devices.add("mps" if kind == "gpu" else kind)
-    if len(devices) != 1 or next(iter(devices)) not in {"cpu", "mps"}:
-        raise ValueError(f"reference slice requires exactly one CPU/MPS placement: {devices}")
+        if kind == "gpu":
+            devices.add("mps")
+        elif kind.startswith("npu-"):
+            devices.add(kind.replace("npu-", "npu:", 1))
+        else:
+            devices.add(kind)
+    if len(devices) != 1 or not (
+        next(iter(devices)) in {"cpu", "mps"}
+        or next(iter(devices)).startswith("npu:")
+    ):
+        raise ValueError(
+            "reference slice requires exactly one CPU, MPS, or NPU placement: "
+            f"{devices}"
+        )
     device = next(iter(devices))
     if device == "mps":
         fallback = os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK", "0").lower()
@@ -43,7 +55,12 @@ def resolve_device(bundle: AnalysisBundle) -> str:
     return device
 
 
-def synchronize(device: str) -> None:
+def synchronize(
+    device: str, execution_runtime: ExecutionRuntime | None = None
+) -> None:
+    if execution_runtime is not None:
+        execution_runtime.synchronize()
+        return
     if device == "mps":
         torch.mps.synchronize()
 
@@ -57,15 +74,23 @@ def _case_definitions(bundle: AnalysisBundle) -> tuple[BenchmarkDefinition, ...]
 
 
 def resolve_module_scope(model: nn.Module, scope: str) -> nn.Module:
-    modules = [module for module in model.modules() if hasattr(module, "stable_path")]
-    exact = [module for module in modules if module.stable_path == scope]
+    modules = [
+        (module, stable_path)
+        for module in model.modules()
+        if isinstance((stable_path := getattr(module, "stable_path", None)), str)
+    ]
+    exact = [module for module, stable_path in modules if stable_path == scope]
     if len(exact) == 1:
         return exact[0]
     if scope.startswith("model/"):
         parts = scope.split("/", 2)
         if len(parts) == 3:
             suffix = f"/model/{parts[2]}"
-            matches = [module for module in modules if module.stable_path.endswith(suffix)]
+            matches = [
+                module
+                for module, stable_path in modules
+                if stable_path.endswith(suffix)
+            ]
             if len(matches) == 1:
                 return matches[0]
     raise KeyError(f"benchmark scope {scope!r} does not resolve to one runtime module")
@@ -97,7 +122,11 @@ def _latency_summary(
     }
 
 
-def _memory_snapshot(device: str) -> dict[str, int | str]:
+def _memory_snapshot(
+    device: str, execution_runtime: ExecutionRuntime | None = None
+) -> dict[str, int | str]:
+    if execution_runtime is not None:
+        return dict(execution_runtime.memory_snapshot())
     snapshot: dict[str, int | str] = {
         "process_rss_bytes": psutil.Process().memory_info().rss,
     }
@@ -116,15 +145,32 @@ def _memory_snapshot(device: str) -> dict[str, int | str]:
 class BenchmarkRunner:
     """Runs authored Benchmark Cases without per-operation synchronization."""
 
-    def __init__(self, bundle: AnalysisBundle, seed: int = 20260806) -> None:
+    def __init__(
+        self,
+        bundle: AnalysisBundle,
+        seed: int = 20260806,
+        *,
+        execution_runtime: ExecutionRuntime | None = None,
+        lane: str = "baseline-timing",
+    ) -> None:
         self.bundle = bundle
         self.seed = seed
         self.config = ReferenceConfig.from_analysis_bundle(bundle)
         self.device = resolve_device(bundle)
+        self.execution_runtime = execution_runtime
+        self.lane = lane
+        if self.device.startswith("npu:") and execution_runtime is None:
+            raise RuntimeError("NPU execution requires an explicit ExecutionRuntime")
+        if (
+            execution_runtime is not None
+            and execution_runtime.logical_device != self.device
+        ):
+            raise ValueError(
+                "ExecutionRuntime logical device does not match Deployment Intent"
+            )
 
     def _model_and_input(self) -> tuple[TwoLayerTransformer, Tensor]:
-        target = torch.device(self.device)
-        model = TwoLayerTransformer(self.config, self.seed).to(target).eval()
+        model = TwoLayerTransformer(self.config, self.seed)
         generator = torch.Generator(device="cpu").manual_seed(self.seed + 1)
         hidden = torch.randn(
             self.config.batch_size,
@@ -132,8 +178,43 @@ class BenchmarkRunner:
             self.config.hidden_size,
             generator=generator,
             dtype=self.config.dtype,
-        ).to(target)
+        )
+        if self.execution_runtime is not None:
+            model = cast(
+                TwoLayerTransformer,
+                self.execution_runtime.prepare_model(model, lane=self.lane).eval(),
+            )
+            hidden = self.execution_runtime.prepare_tensor(
+                hidden, lane=self.lane, role="input"
+            )
+        else:
+            target = torch.device(self.device)
+            model = model.to(target).eval()
+            hidden = hidden.to(target)
         return model, hidden
+
+    def _synchronize(self) -> None:
+        synchronize(self.device, self.execution_runtime)
+
+    def _execute_timed(
+        self, invoke: Callable[[], Tensor], *, iterations: int
+    ) -> dict[str, int]:
+        if self.execution_runtime is not None:
+            return self.execution_runtime.execute_timed(
+                invoke, iterations=iterations
+            )
+        self._synchronize()
+        started = time.perf_counter_ns()
+        for _ in range(iterations):
+            invoke()
+        self._synchronize()
+        elapsed = max(1, time.perf_counter_ns() - started)
+        return {
+            "primary_elapsed_ns": elapsed,
+            "host_launch_ns": elapsed,
+            "device_completion_wait_ns": 0,
+            "host_completion_ns": elapsed,
+        }
 
     def _invocations(
         self, model: TwoLayerTransformer, hidden: Tensor
@@ -165,7 +246,7 @@ class BenchmarkRunner:
         try:
             with torch.inference_mode():
                 model(hidden)
-                synchronize(self.device)
+                self._synchronize()
         finally:
             for handle in handles:
                 handle.remove()
@@ -173,16 +254,29 @@ class BenchmarkRunner:
         invocations: dict[str, tuple[str, Callable[[], Tensor]]] = {}
         for case in definitions:
             if case.mode == "e2e":
+                def invoke_model(
+                    model: TwoLayerTransformer = model,
+                    hidden: Tensor = hidden,
+                ) -> Tensor:
+                    return model(hidden)
+
                 invocations[case.id] = (
                     model.stable_path,
-                    lambda model=model, hidden=hidden: model(hidden),
+                    invoke_model,
                 )
                 continue
             target = targets[case.id]
             inputs = captured[case.id]
+
+            def invoke_target(
+                target: nn.Module = target,
+                inputs: tuple[Tensor, ...] = inputs,
+            ) -> Tensor:
+                return cast(Tensor, target(*inputs))
+
             invocations[case.id] = (
                 str(target.stable_path),
-                lambda target=target, inputs=inputs: target(*inputs),
+                invoke_target,
             )
         return invocations
 
@@ -214,17 +308,15 @@ class BenchmarkRunner:
                 samples = definition.samples if samples_override is None else samples_override
                 for _ in range(warmup):
                     invoke()
-                synchronize(self.device)
+                self._synchronize()
 
                 pilot_iterations = 10
-                synchronize(self.device)
-                calibration_start = time.perf_counter_ns()
-                for _ in range(pilot_iterations):
-                    invoke()
-                synchronize(self.device)
+                pilot = self._execute_timed(
+                    invoke, iterations=pilot_iterations
+                )
                 single_ns = max(
                     1,
-                    (time.perf_counter_ns() - calibration_start) // pilot_iterations,
+                    pilot["primary_elapsed_ns"] // pilot_iterations,
                 )
                 inner_iterations = (
                     max(
@@ -237,21 +329,29 @@ class BenchmarkRunner:
                     if definition.mode == "operator"
                     else 1
                 )
-                before_memory = _memory_snapshot(self.device)
+                before_memory = _memory_snapshot(
+                    self.device, self.execution_runtime
+                )
                 windows: list[list[int]] = []
+                timing_boundaries: dict[str, list[int]] = {
+                    "host_launch_ns": [],
+                    "device_completion_wait_ns": [],
+                    "host_completion_ns": [],
+                }
                 for _ in range(samples):
                     sample_windows: list[int] = []
                     for _ in range(windows_per_sample):
-                        synchronize(self.device)
-                        started = time.perf_counter_ns()
-                        for _ in range(inner_iterations):
-                            invoke()
-                        synchronize(self.device)
-                        sample_windows.append(time.perf_counter_ns() - started)
+                        timing = self._execute_timed(
+                            invoke, iterations=inner_iterations
+                        )
+                        sample_windows.append(timing["primary_elapsed_ns"])
+                        for field in timing_boundaries:
+                            timing_boundaries[field].append(timing[field])
                     windows.append(sample_windows)
-                after_memory = _memory_snapshot(self.device)
-                results.append(
-                    {
+                after_memory = _memory_snapshot(
+                    self.device, self.execution_runtime
+                )
+                result = {
                         "case_id": definition.id,
                         "authored_scope": definition.scope,
                         "resolved_scope": resolved_scope,
@@ -269,16 +369,46 @@ class BenchmarkRunner:
                             ),
                         },
                     }
-                )
-        return {
+                if self.execution_runtime is not None:
+                    result["timing_boundaries"] = {
+                        "primary_timer": self.execution_runtime.timer_source,
+                        "timer_resolution_ns": (
+                            self.execution_runtime.timer_resolution_ns
+                        ),
+                        "completion_protocol": (
+                            self.execution_runtime.completion_protocol
+                        ),
+                        **timing_boundaries,
+                    }
+                results.append(result)
+        observation: dict[str, Any] = {
             "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
             "device": self.device,
-            "instrumentation_profile": "benchmark",
+            "instrumentation_profile": (
+                "baseline-timing"
+                if self.execution_runtime is not None
+                else "benchmark"
+            ),
             "synchronization": "measurement-boundaries-only",
             "seed": self.seed,
             "torch_num_threads": torch.get_num_threads(),
             "cases": results,
         }
+        if self.execution_runtime is not None:
+            observation.update(
+                {
+                    "lane": "baseline-timing",
+                    "diagnostic_profiling": "separate-artifact",
+                    "primary_timer": self.execution_runtime.timer_source,
+                    "completion_boundary": {
+                        "kind": "device-event-stream-completion",
+                        "closed": True,
+                        "protocol": self.execution_runtime.completion_protocol,
+                        "per_module_synchronization": False,
+                    },
+                }
+            )
+        return observation
 
 
 __all__ = [

@@ -649,6 +649,20 @@ class AscendNpuMeasurementAdapter:
             "cohort_id": cohort["cohort_id"],
             "device": "ascend-npu",
             "logical_device": f"npu:{self.logical_device_index}",
+            "supported_execution_profiles": [
+                "exact-shape-matmul",
+                "two-layer-transformer-demo",
+            ],
+            "supported_operations": [
+                "MatMul",
+                "Add",
+                "RMSNorm",
+                "Softmax",
+                "SiLU",
+                "Mul",
+                "View",
+                "Transpose",
+            ],
             "fields": [
                 field(
                     "timer.primary",

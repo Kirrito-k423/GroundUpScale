@@ -299,7 +299,19 @@ class NpuDedicatedMemoryCapability(StrictModel):
 
 class NpuHardwareCapabilities(StrictModel):
     architecture: Literal["ascend"]
-    supported_operations: tuple[Literal["MatMul"], ...] = Field(min_length=1)
+    supported_operations: tuple[
+        Literal[
+            "MatMul",
+            "Add",
+            "RMSNorm",
+            "Softmax",
+            "SiLU",
+            "Mul",
+            "View",
+            "Transpose",
+        ],
+        ...,
+    ] = Field(min_length=1)
     supported_dtypes: tuple[Literal["float32"], ...] = Field(min_length=1)
     theoretical_compute: NpuTheoreticalCompute
     dedicated_memory: NpuDedicatedMemoryCapability

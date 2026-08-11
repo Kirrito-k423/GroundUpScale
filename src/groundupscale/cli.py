@@ -18,6 +18,10 @@ from groundupscale.calibration import (
     write_calibration_yaml,
 )
 from groundupscale.environment import collect_environment_validity
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    create_execution_runtime,
+)
 from groundupscale.diagnostics import (
     diagnose_run_bundle,
     render_diagnostic_report,
@@ -26,6 +30,7 @@ from groundupscale.benchmark.hardware_microbenchmark import (
     HardwareMicrobenchmarkRunner,
     aggregate_capability_envelope,
 )
+from groundupscale.benchmark.measurement import resolve_device
 from groundupscale.benchmark.ascend_hardware_microbenchmark import (
     AscendNpuHardwareMicrobenchmarkRunner,
 )
@@ -35,10 +40,15 @@ from groundupscale.measurement_adapters import (
     create_measurement_adapter,
 )
 from groundupscale.measurement_run import MeasurementRunBundleWriter
+from groundupscale.measurement_contract import MeasurementAdapter
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.physical_floor_bundle import PhysicalFloorComparisonBundleWriter
 from groundupscale.probe import run_environment_probe
-from groundupscale.run_bundle import RunBundleWriter, verify_run_bundle
+from groundupscale.run_bundle import (
+    RunBundleWriter,
+    verify_run_bundle,
+    write_blocked_transformer_run,
+)
 from groundupscale.schemas.v1alpha1 import (
     HardwareBenchmarkSuiteDocument,
     HardwareCapabilityProfileDocument,
@@ -447,9 +457,118 @@ def _run_analysis(
     environment_collector: Callable[..., dict[str, object]] = (
         collect_environment_validity
     ),
+    measurement_adapter_factory: Callable[..., MeasurementAdapter] = (
+        create_measurement_adapter
+    ),
+    execution_runtime_factory: Callable[[str], ExecutionRuntime] = (
+        create_execution_runtime
+    ),
 ) -> int:
     repository_root = Path(args.repository_root).resolve()
     compiled = compile_analysis_plan(repository_root, Path(args.plan))
+    device = resolve_device(compiled.bundle)
+    execution_runtime: ExecutionRuntime | None = None
+    npu_evidence: dict[str, dict[str, object]] | None = None
+    if device.startswith("npu:"):
+        logical_device_index = int(device.partition(":")[2])
+        adapter = measurement_adapter_factory(
+            "ascend-npu", logical_device_index=logical_device_index
+        )
+        capabilities = dict(adapter.discover_capabilities())
+        cohort = dict(adapter.fingerprint_cohort())
+        preflight = dict(adapter.preflight())
+        profile_cohorts = {
+            profile.spec.hardware_cohort
+            for profile in compiled.bundle.hardware_capability_profiles
+        }
+        if (
+            profile_cohorts
+            and cohort.get("status") == "completed"
+            and cohort.get("cohort_id") not in profile_cohorts
+        ):
+            preflight.update(
+                {
+                    "status": "blocked",
+                    "eligible": False,
+                    "reason_codes": ["hardware-cohort-profile-mismatch"],
+                    "expected_hardware_cohorts": sorted(profile_cohorts),
+                    "observed_hardware_cohort": cohort.get("cohort_id"),
+                }
+            )
+
+        def publish_blocked_npu_run() -> int:
+            selected_run_id = args.run_id or (
+                f"blocked-{device.replace(':', '-')}-"
+                f"{compiled.cost.compilation_fingerprint[:8]}"
+            )
+            blocked_run = write_blocked_transformer_run(
+                compiled,
+                Path(args.artifact_store),
+                run_id=selected_run_id,
+                capabilities=capabilities,
+                cohort=cohort,
+                preflight=preflight,
+            )
+            verification = verify_run_bundle(blocked_run)
+            manifest = json.loads(
+                (blocked_run / "run.manifest.json").read_text(encoding="utf-8")
+            )
+            summary = {
+                "schema": "groundupscale.dev/run-summary/v1alpha1",
+                "run_id": manifest["run_id"],
+                "status": manifest["status"],
+                "device": manifest["device"],
+                "reason_codes": manifest["reason_codes"],
+                "artifact_count": verification["artifact_count"],
+                "digests_verified": verification["passed"],
+                "run_bundle": str(blocked_run),
+                "report": None,
+            }
+            if args.as_json:
+                print(
+                    json.dumps(
+                        summary, ensure_ascii=False, indent=2, sort_keys=True
+                    )
+                )
+            else:
+                print(
+                    f"run {summary['run_id']}: blocked on {summary['device']}"
+                )
+                print(f"  reasons: {', '.join(summary['reason_codes'])}")
+                print(f"  bundle: {summary['run_bundle']}")
+            return 2 if verification["passed"] else 1
+
+        if (
+            capabilities.get("status") != "completed"
+            or cohort.get("status") != "completed"
+            or preflight.get("eligible") is not True
+        ):
+            return publish_blocked_npu_run()
+        try:
+            execution_runtime = execution_runtime_factory(device)
+        except Exception as error:
+            raw_reason = str(error).strip()
+            reason = (
+                raw_reason
+                if raw_reason
+                and len(raw_reason) <= 160
+                and all(character.isprintable() for character in raw_reason)
+                else f"runtime-initialization-failed:{type(error).__name__}"
+            )
+            preflight.update(
+                {
+                    "status": "blocked",
+                    "eligible": False,
+                    "reason_codes": [reason],
+                    "runtime_initialization_error_type": type(error).__name__,
+                }
+            )
+            return publish_blocked_npu_run()
+        npu_evidence = {
+            "capabilities": capabilities,
+            "cohort": cohort,
+            "preflight": preflight,
+        }
     environment_validity = (
         environment_collector(
             sample_interval_seconds=args.preflight_sample_interval_seconds,
@@ -463,19 +582,29 @@ def _run_analysis(
         and environment_validity is not None
         and environment_validity.get("eligible") is not True
     ):
+        raw_rejection_reasons = environment_validity.get("reason_codes")
+        rejection_reasons = (
+            list(raw_rejection_reasons)
+            if isinstance(raw_rejection_reasons, list)
+            else []
+        )
         rejection = {
             "schema": "groundupscale.dev/run-rejection/v1alpha1",
             "status": "rejected-before-benchmark",
-            "reason_codes": environment_validity.get("reason_codes", []),
+            "reason_codes": rejection_reasons,
             "environment_validity": environment_validity,
         }
         if args.as_json:
             print(json.dumps(rejection, ensure_ascii=False, indent=2, sort_keys=True))
         else:
             print("trusted measurement rejected before benchmark")
-            print(f"  reasons: {', '.join(rejection['reason_codes'])}")
+            print(f"  reasons: {', '.join(str(reason) for reason in rejection_reasons)}")
         return 2
-    run = RunBundleWriter(compiled).run(
+    run = RunBundleWriter(
+        compiled,
+        execution_runtime=execution_runtime,
+        npu_evidence=npu_evidence,
+    ).run(
         Path(args.artifact_store),
         run_id=args.run_id,
         samples_override=args.samples,
@@ -495,15 +624,25 @@ def _run_analysis(
         "artifact_count": verification["artifact_count"],
         "digests_verified": verification["passed"],
         "run_bundle": str(run),
-        "report": str(run / "reports/report.html"),
+        "report": (
+            str(run / "reports/report.html")
+            if (run / "reports/report.html").is_file()
+            else None
+        ),
+        "reason_codes": manifest.get("reason_codes", []),
     }
     if args.as_json:
         print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(f"run {summary['run_id']}: {summary['status']} on {summary['device']}")
         print(f"  bundle: {summary['run_bundle']}")
-        print(f"  report: {summary['report']}")
-    return 0 if verification["passed"] else 1
+        if summary["report"] is not None:
+            print(f"  report: {summary['report']}")
+        if summary["reason_codes"]:
+            print(f"  reasons: {', '.join(summary['reason_codes'])}")
+    if not verification["passed"]:
+        return 1
+    return 0 if manifest["status"] == "completed" else 2
 
 
 def _run_verify(args: argparse.Namespace) -> int:
@@ -895,6 +1034,12 @@ def main(
     environment_collector: Callable[..., dict[str, object]] = (
         collect_environment_validity
     ),
+    measurement_adapter_factory: Callable[..., MeasurementAdapter] = (
+        create_measurement_adapter
+    ),
+    execution_runtime_factory: Callable[[str], ExecutionRuntime] = (
+        create_execution_runtime
+    ),
 ) -> int:
     args = _parser().parse_args(argv)
     if args.command == "probe":
@@ -908,7 +1053,12 @@ def main(
     if args.command == "compile":
         return _run_compile(args)
     if args.command == "run":
-        return _run_analysis(args, environment_collector=environment_collector)
+        return _run_analysis(
+            args,
+            environment_collector=environment_collector,
+            measurement_adapter_factory=measurement_adapter_factory,
+            execution_runtime_factory=execution_runtime_factory,
+        )
     if args.command == "measure":
         return _run_measurement(args)
     if args.command == "compare-measurement":

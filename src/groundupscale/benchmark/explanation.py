@@ -381,6 +381,7 @@ def render_report_html(
     live_set: dict[str, Any],
     explanation: dict[str, Any],
     comparison: dict[str, Any] | None = None,
+    memory_observation: dict[str, Any] | None = None,
 ) -> str:
     rows = "".join(
         "<tr>"
@@ -414,9 +415,15 @@ def render_report_html(
             and all(node["environment_eligible"] for node in measured_capabilities)
             else "exploratory（能力测量环境门禁未通过）"
         )
+        floor_value = hardware_floor.get("value")
+        floor_text = (
+            f"{floor_value / 1_000_000:.3f} ms"
+            if isinstance(floor_value, (int, float))
+            else "unknown（后端仅提供部分算子地板）"
+        )
         hardware_metric = (
-            '<div class="metric">M4 CPU 经验硬件地板：'
-            f"{hardware_floor['value'] / 1_000_000:.3f} ms"
+            f'<div class="metric">{html.escape(device)} 经验硬件地板：'
+            f"{floor_text}"
             "（跨算子 P80 能力包络，不是当前实现耗时预测；"
             f"evidence={capability_quality}）</div>"
         )
@@ -450,6 +457,33 @@ def render_report_html(
 <div class="metric">实测 framework peak：{memory['observed']['framework_peak_bytes']:,} B</div>
 <div class="metric">绝对相对误差：{memory['comparison']['absolute_relative_error']:.2%}</div>
 """
+    memory_section = ""
+    if memory_observation is not None and all(
+        key in memory_observation
+        for key in (
+            "logical_tensor_live_set",
+            "framework_device_memory",
+            "process_memory",
+        )
+    ):
+        logical_bytes = memory_observation["logical_tensor_live_set"].get(
+            "peak_framework_tensor_bytes"
+        )
+        framework_bytes = memory_observation["framework_device_memory"].get(
+            "peak_allocated_bytes"
+        )
+        process_bytes = memory_observation["process_memory"].get("peak_rss_bytes")
+
+        def byte_text(value: Any) -> str:
+            return f"{value:,} B" if isinstance(value, int) else "N/A"
+
+        memory_section = f"""
+<h2>内存归因</h2>
+<p>以下三项分别报告逻辑张量存储、框架设备分配器峰值和进程级主机 RSS，口径不混算。</p>
+<div class="metric">逻辑张量 live set：{byte_text(logical_bytes)}</div>
+<div class="metric">框架设备内存：{byte_text(framework_bytes)}</div>
+<div class="metric">进程 RSS：{byte_text(process_bytes)}</div>
+"""
     return f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -468,6 +502,7 @@ th{{background:#f6f8fa}}code{{font-size:.85em}}.metric{{display:inline-block;mar
 <h2>Benchmark Cases</h2>
 <table><thead><tr><th>Case</th><th>Stable Path</th><th>Median (ms)</th><th>IQR/median</th><th>吞吐 (/s)</th></tr></thead><tbody>{rows}</tbody></table>
 {comparison_section}
+{memory_section}
 <h2>下钻入口</h2>
 <p>完整节点、公式、Stable Path、span 和连边保存在 <code>prediction/explanation.graph.json</code>；本页内嵌同一份图，供 Web 读取。</p>
 <script id="explanation-graph" type="application/json">{graph_json}</script>

@@ -96,6 +96,11 @@ uv run groundupscale run specs/plans/mac-cpu-prefill.yaml \
   --repository-root . --run-id example-cpu \
   --target-window-ms 100 --windows-per-sample 9 --json
 uv run groundupscale explain .groundupscale/runs/example-cpu
+
+# 在已安装匹配 torch/torch_npu 的 Ascend 910B2 受信环境中运行
+uv run groundupscale run specs/plans/ascend-npu-transformer-demo.yaml \
+  --repository-root . --run-id example-ascend-npu --json
+uv run groundupscale verify-run .groundupscale/runs/example-ascend-npu --json
 ```
 
 For calibration-grade local evidence, use
@@ -109,6 +114,7 @@ marked `environment_validity=not-required` and cannot enter calibration.
 - [Semantic compilation](docs/architecture/semantic-compilation.md)
 - [Cost formulas and worked example](docs/methods/cost-model-formulas.md)
 - [Apple M4 CPU public-capability backend](docs/methods/apple-m4-cpu-backend.md)
+- [Ascend NPU two-layer Transformer demo](docs/methods/ascend-transformer-demo.md)
 - [Prediction-versus-observation comparison](docs/methods/prediction-observation-comparison.md)
 - [Apple M4 CPU primary-source capability research](docs/research/apple-m4-cpu-capabilities.md)
 - [Explainability architecture](docs/architecture/explainability.md)

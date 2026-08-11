@@ -5,13 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import os
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import Tensor, nn
 
 from groundupscale.schemas.v1alpha1 import ModuleRepeatSpec
 from groundupscale.specs import AnalysisBundle
+from groundupscale.execution_runtime import ExecutionRuntime
 
 
 @dataclass(frozen=True)
@@ -124,7 +125,7 @@ class CausalMaskAdd(SemanticLeaf):
         self.register_buffer("mask", mask, persistent=True)
 
     def forward(self, scores: Tensor) -> Tensor:
-        return torch.add(scores, self.mask)
+        return torch.add(scores, cast(Tensor, self.mask))
 
 
 class RMSNormOp(SemanticLeaf):
@@ -347,6 +348,15 @@ class AliasAudit:
 
 
 @dataclass(frozen=True)
+class TensorExecutionContract:
+    device: str
+    dtype: str
+    shape: tuple[int, ...]
+    stride: tuple[int, ...]
+    is_contiguous: bool
+
+
+@dataclass(frozen=True)
 class DeviceExecutionAudit:
     requested_device: str
     input_device: str
@@ -354,6 +364,9 @@ class DeviceExecutionAudit:
     parameter_devices: tuple[str, ...]
     buffer_devices: tuple[str, ...]
     leaf_output_devices: tuple[tuple[str, str], ...]
+    input_contract: TensorExecutionContract
+    output_contract: TensorExecutionContract
+    leaf_output_contracts: tuple[tuple[str, TensorExecutionContract], ...]
     alias_checks: tuple[AliasAudit, ...]
     semantic_leaf_count: int
     parameter_bytes: int
@@ -405,9 +418,17 @@ class ReferenceRunner:
         data = tensor.detach().cpu().contiguous().numpy().tobytes()
         return sha256(data).hexdigest()
 
-    def run_device(self, device: str) -> DeviceRun:
-        if device not in {"cpu", "mps"}:
+    def run_device(
+        self,
+        device: str,
+        *,
+        execution_runtime: ExecutionRuntime | None = None,
+        lane: str = "correctness",
+    ) -> DeviceRun:
+        if device not in {"cpu", "mps"} and not device.startswith("npu:"):
             raise ValueError(f"unsupported reference device: {device}")
+        if device.startswith("npu:") and execution_runtime is None:
+            raise RuntimeError("NPU correctness requires an explicit ExecutionRuntime")
         fallback_enabled = os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK", "0").lower() in {
             "1",
             "true",
@@ -418,17 +439,47 @@ class ReferenceRunner:
                 raise RuntimeError("refusing MPS correctness run with fallback enabled")
             if not torch.backends.mps.is_available():
                 raise RuntimeError("MPS is not available")
-        target = torch.device(device)
-        model = TwoLayerTransformer(self.config, self.seed).to(target).eval()
-        hidden = self._input().to(target)
+        model = TwoLayerTransformer(self.config, self.seed)
+        hidden = self._input()
+        if execution_runtime is not None:
+            model = cast(
+                TwoLayerTransformer,
+                execution_runtime.prepare_model(model, lane=lane).eval(),
+            )
+            hidden = execution_runtime.prepare_tensor(
+                hidden, lane=lane, role="input"
+            )
+        else:
+            target = torch.device(device)
+            model = model.to(target).eval()
+            hidden = hidden.to(target)
         leaf_devices: dict[str, str] = {}
+        leaf_contracts: dict[str, TensorExecutionContract] = {}
         alias_checks: list[AliasAudit] = []
         handles: list[Any] = []
+
+        def tensor_contract(tensor: Tensor) -> TensorExecutionContract:
+            return TensorExecutionContract(
+                device=(
+                    execution_runtime.tensor_device(tensor)
+                    if execution_runtime is not None
+                    else str(tensor.device)
+                ),
+                dtype=str(tensor.dtype).removeprefix("torch."),
+                shape=tuple(tensor.shape),
+                stride=tuple(tensor.stride()),
+                is_contiguous=tensor.is_contiguous(),
+            )
 
         def audit_hook(module: SemanticLeaf, inputs: tuple[Any, ...], output: Any) -> None:
             if not isinstance(output, Tensor):
                 raise RuntimeError(f"semantic leaf {module.stable_path} returned non-Tensor")
-            leaf_devices[module.stable_path] = str(output.device)
+            leaf_devices[module.stable_path] = (
+                execution_runtime.tensor_device(output)
+                if execution_runtime is not None
+                else str(output.device)
+            )
+            leaf_contracts[module.stable_path] = tensor_contract(output)
             if module.operation in {"View", "Transpose"}:
                 input_tensor = inputs[0]
                 if not isinstance(input_tensor, Tensor):
@@ -451,13 +502,23 @@ class ReferenceRunner:
         try:
             with torch.inference_mode():
                 output = model(hidden)
-                if device == "mps":
+                if execution_runtime is not None:
+                    execution_runtime.synchronize()
+                elif device == "mps":
                     torch.mps.synchronize()
         finally:
             for handle in handles:
                 handle.remove()
-        output_device = str(output.device)
-        cpu_output = output.detach().cpu()
+        output_device = (
+            execution_runtime.tensor_device(output)
+            if execution_runtime is not None
+            else str(output.device)
+        )
+        cpu_output = (
+            execution_runtime.copy_to_cpu(output, lane=lane, role="output")
+            if execution_runtime is not None
+            else output.detach().cpu()
+        )
         parameter_bytes = sum(
             parameter.numel() * parameter.element_size()
             for parameter in model.parameters()
@@ -470,20 +531,53 @@ class ReferenceRunner:
         )
         audit = DeviceExecutionAudit(
             requested_device=device,
-            input_device=str(hidden.device),
+            input_device=(
+                execution_runtime.tensor_device(hidden)
+                if execution_runtime is not None
+                else str(hidden.device)
+            ),
             output_device=output_device,
             parameter_devices=tuple(
-                sorted({str(parameter.device) for parameter in model.parameters()})
+                sorted(
+                    {
+                        execution_runtime.tensor_device(parameter)
+                        if execution_runtime is not None
+                        else str(parameter.device)
+                        for parameter in model.parameters()
+                    }
+                )
             ),
             buffer_devices=tuple(
-                sorted({str(buffer.device) for buffer in model.buffers()})
+                sorted(
+                    {
+                        execution_runtime.tensor_device(buffer)
+                        if execution_runtime is not None
+                        else str(buffer.device)
+                        for buffer in model.buffers()
+                    }
+                )
             ),
             leaf_output_devices=tuple(sorted(leaf_devices.items())),
+            input_contract=tensor_contract(hidden),
+            output_contract=tensor_contract(output),
+            leaf_output_contracts=tuple(sorted(leaf_contracts.items())),
             alias_checks=tuple(alias_checks),
             semantic_leaf_count=semantic_leaf_count,
             parameter_bytes=parameter_bytes,
             buffer_bytes=buffer_bytes,
-            fallback_enabled=fallback_enabled,
+            fallback_enabled=(
+                fallback_enabled
+                if execution_runtime is None
+                else any(
+                    execution_runtime.tensor_device_type(value) != "npu"
+                    for value in (
+                        hidden,
+                        output,
+                        *model.parameters(),
+                        *model.buffers(),
+                    )
+                )
+            ),
         )
         return DeviceRun(
             output=cpu_output,
@@ -502,6 +596,71 @@ class ReferenceRunner:
             cpu=cpu,
             mps=mps,
             passed=bool(torch.allclose(cpu.output, mps.output, atol=atol, rtol=rtol)),
+            max_absolute_error=float(absolute.max().item()),
+            max_relative_error=float(relative.max().item()),
+            atol=atol,
+            rtol=rtol,
+        )
+
+    def compare_cpu_target(
+        self,
+        execution_runtime: ExecutionRuntime,
+        *,
+        atol: float,
+        rtol: float,
+    ) -> CorrectnessReport:
+        cpu = self.run_device("cpu")
+        target = self.run_device(
+            execution_runtime.logical_device,
+            execution_runtime=execution_runtime,
+        )
+        cpu_leaf_contracts = dict(cpu.audit.leaf_output_contracts)
+        target_leaf_contracts = dict(target.audit.leaf_output_contracts)
+        if (
+            cpu.audit.semantic_leaf_count != target.audit.semantic_leaf_count
+            or cpu_leaf_contracts.keys() != target_leaf_contracts.keys()
+        ):
+            raise RuntimeError("semantic-operation-coverage-failed")
+
+        def layout_signature(
+            contract: TensorExecutionContract,
+        ) -> tuple[str, tuple[int, ...], tuple[int, ...], bool]:
+            return (
+                contract.dtype,
+                contract.shape,
+                contract.stride,
+                contract.is_contiguous,
+            )
+
+        contracts_match = (
+            layout_signature(cpu.audit.input_contract)
+            == layout_signature(target.audit.input_contract)
+            and layout_signature(cpu.audit.output_contract)
+            == layout_signature(target.audit.output_contract)
+            and all(
+                layout_signature(cpu_leaf_contracts[path])
+                == layout_signature(target_leaf_contracts[path])
+                for path in cpu_leaf_contracts
+            )
+        )
+        if not contracts_match:
+            raise RuntimeError("dtype-layout-substitution-detected")
+        if target.audit.fallback_enabled:
+            raise RuntimeError("cpu-fallback-detected")
+        absolute = (cpu.output - target.output).abs()
+        significant = cpu.output.abs() >= (
+            atol / rtol if rtol > 0 else float("inf")
+        )
+        relative = torch.zeros_like(absolute)
+        relative[significant] = absolute[significant] / cpu.output[
+            significant
+        ].abs()
+        return CorrectnessReport(
+            cpu=cpu,
+            mps=target,
+            passed=bool(
+                torch.allclose(cpu.output, target.output, atol=atol, rtol=rtol)
+            ),
             max_absolute_error=float(absolute.max().item()),
             max_relative_error=float(relative.max().item()),
             atol=atol,
