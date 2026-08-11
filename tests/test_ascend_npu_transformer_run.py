@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import time
 from typing import Mapping
+import warnings
 
 import pytest
 import torch
@@ -260,7 +261,8 @@ class _FakeNpuExecutionRuntime:
 
     def memory_snapshot(self) -> dict[str, int]:
         return {
-            "process_rss_bytes": 123_000_000,
+            "process_current_rss_bytes": 120_000_000,
+            "process_peak_observed_rss_bytes": 123_000_000,
             "framework_current_allocated_bytes": 64_000_000,
             "framework_reserved_bytes": 96_000_000,
             "framework_max_allocated_bytes": 80_000_000,
@@ -320,6 +322,7 @@ def test_ascend_demo_runs_complete_model_and_replays_verified_artifacts(
     assert manifest["device"] == "npu:0"
     assert manifest["hardware_cohort"] == ASCEND_PROFILE_COHORT
     assert manifest["stages"]["compatibility"] == "passed"
+    assert manifest["producer_lineage"]["producer"] == "groundupscale@0.1.0"
     roles = {artifact["role"] for artifact in manifest["artifacts"]}
     assert {
         "measurement-capability-manifest",
@@ -398,6 +401,7 @@ def test_ascend_demo_runs_complete_model_and_replays_verified_artifacts(
     )
     assert memory["logical_tensor_live_set"]["peak_framework_tensor_bytes"] > 0
     assert memory["framework_device_memory"]["peak_allocated_bytes"] == 80_000_000
+    assert memory["process_memory"]["current_rss_bytes"] == 120_000_000
     assert memory["process_memory"]["peak_rss_bytes"] == 123_000_000
     report = (run / "reports/report.html").read_text(encoding="utf-8")
     assert "逻辑张量 live set" in report
@@ -423,6 +427,17 @@ def test_ascend_demo_runs_complete_model_and_replays_verified_artifacts(
     assert len(explain_summary["cases"]) == 5
     assert explain_summary["comparison_status"]
 
+    manifest["producer_lineage"]["producer"] = "tampered-producer"
+    (run / "run.manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    lineage_tampered = verify_run_bundle(run)
+    assert lineage_tampered["passed"] is False
+    assert "invalid transformer demo producer lineage" in lineage_tampered[
+        "failures"
+    ]
+    manifest["producer_lineage"]["producer"] = "groundupscale@0.1.0"
     manifest["artifacts"] = [
         artifact
         for artifact in manifest["artifacts"]
@@ -450,6 +465,17 @@ class _DtypeSubstitutingRuntime(_FakeNpuExecutionRuntime):
 
     def prepare_tensor(self, tensor: Tensor, *, lane: str, role: str) -> Tensor:
         return super().prepare_tensor(tensor, lane=lane, role=role).double()
+
+
+class _HiddenCpuFallbackRuntime(_FakeNpuExecutionRuntime):
+    def execute_timed(self, invoke: object, *, iterations: int) -> dict[str, int]:
+        warnings.warn(
+            "CAUTION: The operator 'aten::unsupported' is not currently supported "
+            "on the NPU backend and will fall back to run on the CPU. "
+            "(function npu_cpu_fallback)",
+            UserWarning,
+        )
+        return super().execute_timed(invoke, iterations=iterations)
 
 
 class _MismatchedCohortAdapter(_AvailableAscendAdapter):
@@ -599,10 +625,62 @@ def test_ascend_demo_rejects_dtype_or_layout_substitution(
     assert summary["status"] == "compatibility-failed"
     assert summary["reason_codes"] == ["dtype-layout-substitution-detected"]
     run = Path(summary["run_bundle"])
+    manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
     failure = json.loads(
         (run / "observation/execution-failure.json").read_text(encoding="utf-8")
     )
     assert failure["failed_stage"] == "correctness"
+    roles = {artifact["role"] for artifact in manifest["artifacts"]}
+    assert {
+        "benchmark-observation",
+        "observation-trace",
+        "alignment-map",
+        "memory-observation",
+        "prediction-observation-comparison",
+    } <= roles
+    assert verify_run_bundle(run)["passed"] is True
+
+
+def test_ascend_demo_rejects_hidden_torch_npu_cpu_fallback_warning(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    exit_code = main(
+        [
+            "run",
+            str(ASCEND_DEMO_PLAN),
+            "--repository-root",
+            str(REPOSITORY_ROOT),
+            "--artifact-store",
+            str(tmp_path),
+            "--run-id",
+            "hidden-cpu-fallback-demo",
+            "--samples",
+            "4",
+            "--warmup",
+            "0",
+            "--windows-per-sample",
+            "1",
+            "--target-window-ms",
+            "0.000001",
+            "--json",
+        ],
+        measurement_adapter_factory=lambda *_args, **_kwargs: (
+            _AvailableAscendAdapter()
+        ),
+        execution_runtime_factory=lambda *_args, **_kwargs: (
+            _HiddenCpuFallbackRuntime()
+        ),
+    )
+
+    assert exit_code == 2
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["reason_codes"] == ["cpu-fallback-detected"]
+    run = Path(summary["run_bundle"])
+    failure = json.loads(
+        (run / "observation/execution-failure.json").read_text(encoding="utf-8")
+    )
+    assert failure["failed_stage"] == "benchmark"
     assert verify_run_bundle(run)["passed"] is True
 
 

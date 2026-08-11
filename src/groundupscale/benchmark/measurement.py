@@ -17,7 +17,10 @@ from groundupscale.benchmark.reference import (
     SemanticLeaf,
     TwoLayerTransformer,
 )
-from groundupscale.execution_runtime import ExecutionRuntime
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    execute_with_npu_cpu_fallback_guard,
+)
 from groundupscale.schemas.v1alpha1 import BenchmarkDefinition
 from groundupscale.specs import AnalysisBundle
 
@@ -200,8 +203,11 @@ class BenchmarkRunner:
         self, invoke: Callable[[], Tensor], *, iterations: int
     ) -> dict[str, int]:
         if self.execution_runtime is not None:
-            return self.execution_runtime.execute_timed(
-                invoke, iterations=iterations
+            execution_runtime = self.execution_runtime
+            return execute_with_npu_cpu_fallback_guard(
+                lambda: execution_runtime.execute_timed(
+                    invoke, iterations=iterations
+                )
             )
         self._synchronize()
         started = time.perf_counter_ns()
@@ -245,7 +251,10 @@ class BenchmarkRunner:
             handles.append(target.register_forward_pre_hook(capture))
         try:
             with torch.inference_mode():
-                model(hidden)
+                if self.execution_runtime is not None:
+                    execute_with_npu_cpu_fallback_guard(lambda: model(hidden))
+                else:
+                    model(hidden)
                 self._synchronize()
         finally:
             for handle in handles:
@@ -307,7 +316,10 @@ class BenchmarkRunner:
                 )
                 samples = definition.samples if samples_override is None else samples_override
                 for _ in range(warmup):
-                    invoke()
+                    if self.execution_runtime is not None:
+                        execute_with_npu_cpu_fallback_guard(invoke)
+                    else:
+                        invoke()
                 self._synchronize()
 
                 pilot_iterations = 10

@@ -127,6 +127,15 @@ TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES = frozenset(
 TRANSFORMER_DEMO_FAILED_REQUIRED_ROLES = (
     TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES | {"transfer-observation"}
 )
+TRANSFORMER_DEMO_PRODUCER = "groundupscale@0.1.0"
+
+
+def _transformer_demo_producer_lineage() -> dict[str, object]:
+    return {
+        "producer": TRANSFORMER_DEMO_PRODUCER,
+        "source": "python://groundupscale.run_bundle",
+        "artifact_lineage": "manifest.artifacts[].produced_by",
+    }
 
 
 def _json_bytes(value: Any) -> bytes:
@@ -366,6 +375,7 @@ def write_blocked_transformer_run(
     manifest = {
         "schema": "groundupscale.dev/run-manifest/v1alpha1",
         "bundle_kind": "transformer-demo",
+        "producer_lineage": _transformer_demo_producer_lineage(),
         "run_id": run_id,
         "status": "blocked",
         "created_at": datetime.now(UTC).isoformat(),
@@ -531,6 +541,12 @@ class RunBundleWriter:
                 inputs=inputs,
             )
 
+        benchmark: dict[str, Any] | None = None
+        trace: dict[str, Any] | None = None
+        memory_observation: dict[str, Any] | None = None
+        comparison: dict[str, Any] | None = None
+        explanation: dict[str, Any] | None = None
+        correctness: dict[str, Any] | None = None
         current_stage = "benchmark"
         try:
             benchmark = benchmark_runner.run(
@@ -554,6 +570,56 @@ class RunBundleWriter:
                 device=device,
                 execution_runtime=self.execution_runtime,
             )
+            memory_observation = {
+                "schema": "groundupscale.dev/memory-observation/v1alpha1",
+                "framework_tensor_storage": tensor_storage_memory,
+                "runtime_point_samples": trace["memory_observation"],
+                "authoritative_gate_metric": (
+                    "framework_tensor_storage.peak_framework_tensor_bytes"
+                ),
+            }
+            if self.execution_runtime is not None:
+                runtime_memory = self.execution_runtime.memory_snapshot()
+                current_rss_bytes = runtime_memory.get(
+                    "process_current_rss_bytes",
+                    runtime_memory.get("process_rss_bytes"),
+                )
+                peak_rss_bytes = runtime_memory.get(
+                    "process_peak_observed_rss_bytes",
+                    current_rss_bytes,
+                )
+                memory_observation.update(
+                    {
+                        "logical_tensor_live_set": tensor_storage_memory,
+                        "framework_device_memory": {
+                            "current_allocated_bytes": runtime_memory.get(
+                                "framework_current_allocated_bytes"
+                            ),
+                            "reserved_bytes": runtime_memory.get(
+                                "framework_reserved_bytes"
+                            ),
+                            "peak_allocated_bytes": runtime_memory.get(
+                                "framework_max_allocated_bytes"
+                            ),
+                            "peak_reset_before_run": bool(
+                                getattr(
+                                    self.execution_runtime,
+                                    "allocator_peak_reset_before_run",
+                                    False,
+                                )
+                            ),
+                            "attribution": (
+                                "framework-owned-device-allocator"
+                            ),
+                        },
+                        "process_memory": {
+                            "current_rss_bytes": current_rss_bytes,
+                            "peak_rss_bytes": peak_rss_bytes,
+                            "peak_kind": "maximum-observed-point-sample",
+                            "attribution": "process-wide-host-rss",
+                        },
+                    }
+                )
             live_set = predict_live_set(
                 self.compiled.semantic.semantic_ir, self.compiled.cost.cost_ir
             )
@@ -630,6 +696,12 @@ class RunBundleWriter:
                     "target_audit": canonical_data(target_run.audit),
                 }
 
+            assert benchmark is not None
+            assert trace is not None
+            assert memory_observation is not None
+            assert comparison is not None
+            assert explanation is not None
+            assert correctness is not None
             current_stage = "publication"
             bundle = self.compiled.bundle
             resolved_documents = {
@@ -754,37 +826,6 @@ class RunBundleWriter:
             )
             write_bytes("observation-trace", "observation/observation.trace.jsonl", trace_lines, media_type="application/x-ndjson", schema="groundupscale.dev/observation-span/v1alpha1", inputs=("resolved-input-lock", "environment"))
             write_json("alignment-map", "observation/alignment.map.json", trace["alignment_map"], trace["alignment_map"]["schema"], ("semantic-ir", "observation-trace"))
-            memory_observation = {
-                "schema": "groundupscale.dev/memory-observation/v1alpha1",
-                "framework_tensor_storage": tensor_storage_memory,
-                "runtime_point_samples": trace["memory_observation"],
-                "authoritative_gate_metric": "framework_tensor_storage.peak_framework_tensor_bytes",
-            }
-            if self.execution_runtime is not None:
-                runtime_memory = self.execution_runtime.memory_snapshot()
-                memory_observation.update(
-                    {
-                        "logical_tensor_live_set": tensor_storage_memory,
-                        "framework_device_memory": {
-                            "current_allocated_bytes": runtime_memory.get(
-                                "framework_current_allocated_bytes"
-                            ),
-                            "reserved_bytes": runtime_memory.get(
-                                "framework_reserved_bytes"
-                            ),
-                            "peak_allocated_bytes": runtime_memory.get(
-                                "framework_max_allocated_bytes"
-                            ),
-                            "attribution": "framework-owned-device-allocator",
-                        },
-                        "process_memory": {
-                            "peak_rss_bytes": runtime_memory.get(
-                                "process_rss_bytes"
-                            ),
-                            "attribution": "process-wide-host-rss",
-                        },
-                    }
-                )
             write_json("memory-observation", "observation/memory.json", memory_observation, memory_observation["schema"], ("observation-trace", "semantic-ir"))
             write_json(
                 "prediction-observation-comparison",
@@ -872,7 +913,12 @@ class RunBundleWriter:
             manifest = {
                 "schema": "groundupscale.dev/run-manifest/v1alpha1",
                 **(
-                    {"bundle_kind": "transformer-demo"}
+                    {
+                        "bundle_kind": "transformer-demo",
+                        "producer_lineage": (
+                            _transformer_demo_producer_lineage()
+                        ),
+                    }
                     if self.execution_runtime is not None
                     else {}
                 ),
@@ -936,6 +982,26 @@ class RunBundleWriter:
                         write_json(role, relative, value, schema, inputs)
                         existing_roles.add(role)
 
+                def write_bytes_once(
+                    role: str,
+                    relative: str,
+                    value: bytes,
+                    *,
+                    media_type: str,
+                    schema: str,
+                    inputs: tuple[str, ...] = (),
+                ) -> None:
+                    if role not in existing_roles:
+                        write_bytes(
+                            role,
+                            relative,
+                            value,
+                            media_type=media_type,
+                            schema=schema,
+                            inputs=inputs,
+                        )
+                        existing_roles.add(role)
+
                 bundle = self.compiled.bundle
                 inputs_lock = {
                     "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
@@ -988,6 +1054,74 @@ class RunBundleWriter:
                             "hardware-cohort",
                         ),
                     )
+                if benchmark is not None:
+                    write_json_once(
+                        "benchmark-observation",
+                        "observation/raw/benchmark.json",
+                        benchmark,
+                        str(benchmark["schema"]),
+                        ("resolved-input-lock",),
+                    )
+                if trace is not None:
+                    trace_lines = b"".join(
+                        _json_line_bytes(event) for event in trace["events"]
+                    )
+                    write_bytes_once(
+                        "observation-trace",
+                        "observation/observation.trace.jsonl",
+                        trace_lines,
+                        media_type="application/x-ndjson",
+                        schema="groundupscale.dev/observation-span/v1alpha1",
+                        inputs=("resolved-input-lock",),
+                    )
+                    alignment = trace["alignment_map"]
+                    write_json_once(
+                        "alignment-map",
+                        "observation/alignment.map.json",
+                        alignment,
+                        str(alignment["schema"]),
+                        ("observation-trace",),
+                    )
+                    attribution = trace["error_attribution"]
+                    write_json_once(
+                        "error-attribution",
+                        "comparison/error-attribution.json",
+                        attribution,
+                        str(attribution["schema"]),
+                        ("benchmark-observation", "alignment-map"),
+                    )
+                if memory_observation is not None:
+                    write_json_once(
+                        "memory-observation",
+                        "observation/memory.json",
+                        memory_observation,
+                        str(memory_observation["schema"]),
+                        ("observation-trace",),
+                    )
+                if comparison is not None:
+                    write_json_once(
+                        "prediction-observation-comparison",
+                        "comparison/predicted-vs-observed.json",
+                        comparison,
+                        str(comparison["schema"]),
+                        ("benchmark-observation", "memory-observation"),
+                    )
+                if explanation is not None:
+                    write_json_once(
+                        "explanation-graph",
+                        "prediction/explanation.graph.json",
+                        explanation,
+                        str(explanation["schema"]),
+                        ("prediction-observation-comparison",),
+                    )
+                if correctness is not None:
+                    write_json_once(
+                        "correctness-observation",
+                        "observation/correctness.json",
+                        correctness,
+                        str(correctness["schema"]),
+                        ("resolved-input-lock",),
+                    )
                 transfers = self.execution_runtime.transfer_evidence()
                 write_json_once(
                     "transfer-observation",
@@ -1032,6 +1166,7 @@ class RunBundleWriter:
                 manifest = {
                     "schema": "groundupscale.dev/run-manifest/v1alpha1",
                     "bundle_kind": "transformer-demo",
+                    "producer_lineage": _transformer_demo_producer_lineage(),
                     "run_id": selected_run_id,
                     "status": "compatibility-failed",
                     "created_at": datetime.now(UTC).isoformat(),
@@ -1127,6 +1262,19 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         }
         for role in sorted(required_roles - present_roles):
             failures.append(f"missing required artifact role: {role}")
+        if transformer_demo:
+            lineage = manifest.get("producer_lineage")
+            if (
+                not isinstance(lineage, dict)
+                or lineage.get("producer") != TRANSFORMER_DEMO_PRODUCER
+                or any(
+                    isinstance(artifact, dict)
+                    and artifact.get("produced_by")
+                    != TRANSFORMER_DEMO_PRODUCER
+                    for artifact in artifacts
+                )
+            ):
+                failures.append("invalid transformer demo producer lineage")
 
     documents_by_role: dict[str, dict[str, object]] = {}
     paths_by_role: dict[str, str] = {}

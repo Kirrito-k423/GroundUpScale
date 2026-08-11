@@ -573,6 +573,40 @@ def test_capability_discovery_and_cohort_fingerprint_share_identity() -> None:
     assert fields["profiling.operator_timeline"].status.value == (
         "not_requested"
     )
+    profiles = {
+        profile["profile_id"]: profile
+        for profile in capabilities["execution_profiles"]
+    }
+    demo = profiles["two-layer-transformer-demo"]
+    assert demo["protocol_id"] == "two-layer-transformer-demo"
+    assert demo["execution_domain"] == {
+        "model": "two-layer-transformer",
+        "workload": "transformer-prefill",
+        "shape": {"B": 1, "S": 512, "H": 512, "NH": 8, "D": 64, "I": 2048},
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "semantic_operations": [
+            "MatMul",
+            "Add",
+            "RMSNorm",
+            "Softmax",
+            "SiLU",
+            "Mul",
+            "View",
+            "Transpose",
+        ],
+    }
+    assert demo["correctness"] == {
+        "oracle": "cpu-float32-same-seed-same-weights",
+        "atol": 0.001,
+        "rtol": 0.001,
+        "cpu_fallback_policy": "warning-is-compatibility-failure",
+        "dtype_layout_substitution": "compatibility-failure",
+    }
+    assert demo["instrumentation"] == {
+        "baseline_timing": "npu-event",
+        "diagnostic_profiling": "separate-non-frontier-lane",
+    }
 
 
 def test_collection_packages_exact_shape_evidence_from_npu_boundary() -> None:

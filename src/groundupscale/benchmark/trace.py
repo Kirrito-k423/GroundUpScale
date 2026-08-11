@@ -12,7 +12,10 @@ from torch import Tensor, nn
 
 from groundupscale.benchmark.measurement import BenchmarkRunner, synchronize
 from groundupscale.benchmark.reference import SemanticLeaf
-from groundupscale.execution_runtime import ExecutionRuntime
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    execute_with_npu_cpu_fallback_guard,
+)
 from groundupscale.ir import SemanticOperation, SemanticProgram, SemanticRegion
 from groundupscale.specs import AnalysisBundle
 
@@ -190,7 +193,11 @@ class TraceRunner:
         e2e_started = time.perf_counter_ns()
         try:
             with torch.inference_mode():
-                output = model(hidden)
+                output = (
+                    execute_with_npu_cpu_fallback_guard(lambda: model(hidden))
+                    if self.execution_runtime is not None
+                    else model(hidden)
+                )
                 synchronize(device, self.execution_runtime)
         finally:
             for handle in handles:

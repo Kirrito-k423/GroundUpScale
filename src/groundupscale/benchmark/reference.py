@@ -12,7 +12,10 @@ from torch import Tensor, nn
 
 from groundupscale.schemas.v1alpha1 import ModuleRepeatSpec
 from groundupscale.specs import AnalysisBundle
-from groundupscale.execution_runtime import ExecutionRuntime
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    execute_with_npu_cpu_fallback_guard,
+)
 
 
 @dataclass(frozen=True)
@@ -501,7 +504,11 @@ class ReferenceRunner:
                 handles.append(module.register_forward_hook(audit_hook))
         try:
             with torch.inference_mode():
-                output = model(hidden)
+                output = (
+                    execute_with_npu_cpu_fallback_guard(lambda: model(hidden))
+                    if execution_runtime is not None
+                    else model(hidden)
+                )
                 if execution_runtime is not None:
                     execution_runtime.synchronize()
                 elif device == "mps":

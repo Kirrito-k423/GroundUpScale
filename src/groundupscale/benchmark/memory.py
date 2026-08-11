@@ -10,7 +10,10 @@ from torch import Tensor, nn
 
 from groundupscale.benchmark.measurement import synchronize
 from groundupscale.benchmark.reference import SemanticLeaf
-from groundupscale.execution_runtime import ExecutionRuntime
+from groundupscale.execution_runtime import (
+    ExecutionRuntime,
+    execute_with_npu_cpu_fallback_guard,
+)
 
 
 def _tensors(value: Any) -> list[Tensor]:
@@ -83,7 +86,11 @@ def observe_tensor_storage_peak(
     snapshot("before-forward")
     try:
         with torch.inference_mode():
-            output = model(*inputs)
+            output = (
+                execute_with_npu_cpu_fallback_guard(lambda: model(*inputs))
+                if execution_runtime is not None
+                else model(*inputs)
+            )
             synchronize(device, execution_runtime)
     finally:
         for handle in handles:

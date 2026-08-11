@@ -663,6 +663,67 @@ class AscendNpuMeasurementAdapter:
                 "View",
                 "Transpose",
             ],
+            "execution_profiles": [
+                {
+                    "profile_id": "exact-shape-matmul",
+                    "protocol_id": "exact-shape-measurement",
+                    "execution_domain": {
+                        "operation": "MatMul",
+                        "dtype": "float32",
+                        "layout": "row-major-contiguous",
+                    },
+                    "correctness": {
+                        "oracle": "cpu-float64-matmul",
+                        "atol": 0.001,
+                        "rtol": 0.001,
+                    },
+                },
+                {
+                    "profile_id": "two-layer-transformer-demo",
+                    "protocol_id": "two-layer-transformer-demo",
+                    "execution_domain": {
+                        "model": "two-layer-transformer",
+                        "workload": "transformer-prefill",
+                        "shape": {
+                            "B": 1,
+                            "S": 512,
+                            "H": 512,
+                            "NH": 8,
+                            "D": 64,
+                            "I": 2048,
+                        },
+                        "dtype": "float32",
+                        "layout": "row-major-contiguous",
+                        "semantic_operations": [
+                            "MatMul",
+                            "Add",
+                            "RMSNorm",
+                            "Softmax",
+                            "SiLU",
+                            "Mul",
+                            "View",
+                            "Transpose",
+                        ],
+                    },
+                    "correctness": {
+                        "oracle": "cpu-float32-same-seed-same-weights",
+                        "atol": 0.001,
+                        "rtol": 0.001,
+                        "cpu_fallback_policy": (
+                            "warning-is-compatibility-failure"
+                        ),
+                        "dtype_layout_substitution": (
+                            "compatibility-failure"
+                        ),
+                    },
+                    "instrumentation": {
+                        "baseline_timing": "npu-event",
+                        "diagnostic_profiling": (
+                            "separate-non-frontier-lane"
+                        ),
+                    },
+                },
+            ],
             "fields": [
                 field(
                     "timer.primary",

@@ -48,5 +48,9 @@ uv run groundupscale explain .groundupscale/runs/<run-id> --json
 
 缺少 `torch_npu`、cohort 不匹配、算子不支持、CPU fallback、dtype/layout 替换或
 执行异常都会返回非零状态，并发布 `blocked` 或 `compatibility-failed` Run Bundle。
+执行边界会把 torch_npu 对不支持 eager 算子的
+[CPU fallback 警告](https://github.com/Ascend/pytorch/blob/v2.7.1/docs/zh/user_guide/troubleshooting/troubleshooting_cases/unsupported_op_called.md)
+提升为 `cpu-fallback-detected` 失败；仅检查最终输出位于 NPU 不足以证明中间没有
+回落。
 失败 Bundle 保留已解析输入、adapter 证据、已发生的传输和结构化 reason code，仍可
 由 `verify-run` 校验；不会用 CPU 结果伪装成 NPU 成功运行。

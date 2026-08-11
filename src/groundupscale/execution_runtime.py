@@ -5,10 +5,41 @@ from __future__ import annotations
 from collections.abc import Callable
 import importlib
 import time
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
+import warnings
 
 import psutil
 from torch import Tensor, nn
+
+
+_ResultT = TypeVar("_ResultT")
+_CPU_FALLBACK_WARNING = (
+    r".*not currently supported on the NPU backend.*"
+    r"fall back to run on the CPU.*"
+)
+
+
+def execute_with_npu_cpu_fallback_guard(
+    invoke: Callable[[], _ResultT],
+) -> _ResultT:
+    """Turn torch_npu's eager CPU-fallback warning into a closed failure."""
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "error",
+            message=_CPU_FALLBACK_WARNING,
+            category=UserWarning,
+        )
+        try:
+            return invoke()
+        except UserWarning as error:
+            message = str(error)
+            if (
+                "not currently supported on the NPU backend" in message
+                and "fall back to run on the CPU" in message
+            ):
+                raise RuntimeError("cpu-fallback-detected") from error
+            raise
 
 
 class ExecutionRuntime(Protocol):
@@ -17,6 +48,7 @@ class ExecutionRuntime(Protocol):
     timer_source: str
     timer_resolution_ns: float
     completion_protocol: str
+    allocator_peak_reset_before_run: bool
 
     def prepare_model(self, model: nn.Module, *, lane: str) -> nn.Module: ...
 
@@ -48,6 +80,7 @@ class AscendNpuExecutionRuntime:
     timer_source = "torch.npu.Event.elapsed_time"
     timer_resolution_ns = 20.0
     completion_protocol = "end-event-synchronize-plus-device-synchronize"
+    allocator_peak_reset_before_run = True
 
     def __init__(self, logical_device_index: int = 0) -> None:
         if logical_device_index < 0:
@@ -57,6 +90,10 @@ class AscendNpuExecutionRuntime:
         self._index = logical_device_index
         self.logical_device = f"npu:{logical_device_index}"
         self._torch.npu.set_device(logical_device_index)
+        self._torch.npu.reset_peak_memory_stats()
+        self._process_peak_observed_rss_bytes = (
+            psutil.Process().memory_info().rss
+        )
         self._transfers: list[dict[str, object]] = []
 
     @staticmethod
@@ -121,7 +158,7 @@ class AscendNpuExecutionRuntime:
         host_started = time.perf_counter_ns()
         start_event.record()
         for _ in range(iterations):
-            result = invoke()
+            result = execute_with_npu_cpu_fallback_guard(invoke)
             if self.tensor_device_type(result) != "npu":
                 raise RuntimeError("cpu-fallback-detected")
         end_event.record()
@@ -150,8 +187,17 @@ class AscendNpuExecutionRuntime:
         return str(tensor.device.type)
 
     def memory_snapshot(self) -> dict[str, int]:
+        current_rss_bytes = psutil.Process().memory_info().rss
+        self._process_peak_observed_rss_bytes = max(
+            self._process_peak_observed_rss_bytes,
+            current_rss_bytes,
+        )
         return {
-            "process_rss_bytes": psutil.Process().memory_info().rss,
+            "process_rss_bytes": current_rss_bytes,
+            "process_current_rss_bytes": current_rss_bytes,
+            "process_peak_observed_rss_bytes": (
+                self._process_peak_observed_rss_bytes
+            ),
             "framework_current_allocated_bytes": int(
                 self._torch.npu.memory_allocated()
             ),
@@ -168,6 +214,8 @@ class AscendNpuExecutionRuntime:
             "torch_npu_version": str(self._torch_npu.__version__),
             "device_name": str(self._torch.npu.get_device_name(self._index)),
             "logical_device": self.logical_device,
+            "allocator_peak_reset_before_run": True,
+            "cpu_fallback_policy": "warning-is-compatibility-failure",
         }
 
     def transfer_evidence(self) -> dict[str, object]:
@@ -188,4 +236,5 @@ __all__ = [
     "AscendNpuExecutionRuntime",
     "ExecutionRuntime",
     "create_execution_runtime",
+    "execute_with_npu_cpu_fallback_guard",
 ]
