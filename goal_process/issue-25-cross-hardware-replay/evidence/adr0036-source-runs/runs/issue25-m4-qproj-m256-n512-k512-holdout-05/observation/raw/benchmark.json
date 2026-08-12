@@ -1,0 +1,584 @@
+{
+  "cases": [
+    {
+      "authored_scope": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+      "candidate_identity": {
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "dispatch_mode": "eager",
+        "dispatch_provider_binaries": [
+          {
+            "name": "libtorch_cpu.dylib",
+            "role": "cpu-dispatch-provider",
+            "sha256": "f1584a65a2a09b5ddbe90a4e195ba824087b430a9f21cb1df9b8894177b99987"
+          }
+        ],
+        "family": "torch.matmul.cpu.fp32",
+        "module_class": "groundupscale.benchmark.reference.StateMatMul",
+        "module_source_sha256": "011848b16aeee03e573a50a38239b2bd3cf5823c431b4f92102fac3d70254837",
+        "operation": "torch.matmul",
+        "provider": "pytorch",
+        "runtime": {
+          "dispatch_provider_binaries": [
+            {
+              "name": "libtorch_cpu.dylib",
+              "role": "cpu-dispatch-provider",
+              "sha256": "f1584a65a2a09b5ddbe90a4e195ba824087b430a9f21cb1df9b8894177b99987"
+            }
+          ],
+          "runtime_binary": "_C.cpython-311-darwin.so",
+          "runtime_binary_sha256": "06b303bc0e60a65552970fa2e2ca395a6f32a70ea167e3dbba7be82d2d6cbc4f",
+          "torch_build_config_sha256": "1943041ad11240ec18f123ae0f5aa98ed16a9ebf53b479bb4f0c11ea4c6f12f1",
+          "torch_version": "2.13.0"
+        },
+        "schema": "groundupscale.dev/operator-candidate-identity/v1alpha1",
+        "status": "resolved",
+        "workspace_policy": "framework-managed-stable-after-warmup"
+      },
+      "case_id": "matmul-q-proj",
+      "execution_contract": {
+        "cache_state": "warm-reused-inputs-and-weights",
+        "concurrency": "single-operator-no-overlap",
+        "execution_contract_digest": "0d80ad6a60b2877ef661c2f247c8a904f419b5e51c0cf1461140d88004f58789",
+        "execution_mode": "eager",
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "row-major-contiguous",
+            "minimum_alignment_bytes": 64,
+            "shape": [
+              1,
+              256,
+              512
+            ],
+            "stride": [
+              131072,
+              512,
+              1
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "row-major-contiguous",
+            "minimum_alignment_bytes": 64,
+            "shape": [
+              512,
+              512
+            ],
+            "stride": [
+              512,
+              1
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "row-major-contiguous",
+          "minimum_alignment_bytes": 64,
+          "shape": [
+            1,
+            256,
+            512
+          ],
+          "stride": [
+            131072,
+            512,
+            1
+          ]
+        },
+        "schema": "groundupscale.dev/operator-execution-contract/v1alpha1",
+        "status": "resolved",
+        "working_set_bytes": 2097152
+      },
+      "input_corpus": {
+        "distribution": "deterministic-normal-fp32",
+        "generator": "groundupscale.reference.TwoLayerTransformer",
+        "input_corpus_digest": "591fb12a90fab5c332de16adf89e353358b97aa89a0a4488503fa760de4156c5",
+        "schema": "groundupscale.dev/input-corpus-identity/v1alpha1",
+        "seed": 20260806,
+        "status": "resolved",
+        "tensor_sha256": [
+          "f315ee88a3fb65022c4b0589c0a2ae58bcfca535af8f28eaaa30d1b707a69b27",
+          "0cb26cd3b0cdc83dce2e3b695efa4b04db6f73e8b09c8a0e63bd81b9d15048e6"
+        ]
+      },
+      "latency": {
+        "inner_iterations": 250,
+        "iqr_ns": 149.95500000000175,
+        "iqr_over_median": 0.0018718617714060229,
+        "median_ns": 80110.082,
+        "normalized_window_samples_ns": [
+          [
+            80501.668,
+            82959.332,
+            81049.5,
+            81107.168,
+            80128.5
+          ],
+          [
+            79920.668,
+            79959.0,
+            80014.0,
+            80033.5,
+            80047.0
+          ],
+          [
+            80021.5,
+            80044.336,
+            80159.0,
+            80513.0,
+            82772.668
+          ],
+          [
+            81312.0,
+            80897.0,
+            79846.332,
+            79929.168,
+            79921.168
+          ],
+          [
+            79948.0,
+            79916.668,
+            80065.332,
+            80141.832,
+            80023.168
+          ],
+          [
+            80003.0,
+            80527.832,
+            80052.832,
+            80119.0,
+            80100.336
+          ],
+          [
+            80195.832,
+            80194.168,
+            80188.0,
+            80517.836,
+            80757.668
+          ],
+          [
+            80958.5,
+            80918.668,
+            80810.5,
+            80826.664,
+            80809.5
+          ],
+          [
+            80981.0,
+            83068.832,
+            80182.0,
+            80818.832,
+            81078.668
+          ],
+          [
+            80264.5,
+            80940.336,
+            80071.836,
+            80027.836,
+            80061.664
+          ],
+          [
+            80487.668,
+            80130.168,
+            80073.0,
+            79969.5,
+            79989.836
+          ],
+          [
+            79947.168,
+            80029.0,
+            80471.668,
+            79875.5,
+            79897.336
+          ],
+          [
+            79899.664,
+            79966.164,
+            79978.668,
+            79977.164,
+            80108.5
+          ],
+          [
+            80251.836,
+            80218.0,
+            80331.0,
+            80251.0,
+            80247.664
+          ],
+          [
+            80251.332,
+            80289.164,
+            80928.836,
+            80860.168,
+            80280.0
+          ],
+          [
+            80179.5,
+            80205.0,
+            80284.5,
+            80100.664,
+            80093.168
+          ],
+          [
+            80065.332,
+            80110.832,
+            80085.668,
+            80204.168,
+            80137.0
+          ],
+          [
+            80192.832,
+            80077.668,
+            80064.332,
+            80142.0,
+            80131.0
+          ],
+          [
+            80142.668,
+            80109.332,
+            80328.664,
+            80063.664,
+            80003.668
+          ],
+          [
+            80136.168,
+            80081.668,
+            80106.332,
+            80177.336,
+            80097.5
+          ]
+        ],
+        "q1_ns": 80059.669,
+        "q3_ns": 80209.624,
+        "samples_ns": [
+          81049.5,
+          80014.0,
+          80159.0,
+          79929.168,
+          80023.168,
+          80100.336,
+          80195.832,
+          80826.664,
+          80981.0,
+          80071.836,
+          80073.0,
+          79947.168,
+          79977.164,
+          80251.0,
+          80289.164,
+          80179.5,
+          80110.832,
+          80131.0,
+          80109.332,
+          80106.332
+        ],
+        "throughput_per_second": 12482.823323036919,
+        "window_samples_ns": [
+          [
+            20125417,
+            20739833,
+            20262375,
+            20276792,
+            20032125
+          ],
+          [
+            19980167,
+            19989750,
+            20003500,
+            20008375,
+            20011750
+          ],
+          [
+            20005375,
+            20011084,
+            20039750,
+            20128250,
+            20693167
+          ],
+          [
+            20328000,
+            20224250,
+            19961583,
+            19982292,
+            19980292
+          ],
+          [
+            19987000,
+            19979167,
+            20016333,
+            20035458,
+            20005792
+          ],
+          [
+            20000750,
+            20131958,
+            20013208,
+            20029750,
+            20025084
+          ],
+          [
+            20048958,
+            20048542,
+            20047000,
+            20129459,
+            20189417
+          ],
+          [
+            20239625,
+            20229667,
+            20202625,
+            20206666,
+            20202375
+          ],
+          [
+            20245250,
+            20767208,
+            20045500,
+            20204708,
+            20269667
+          ],
+          [
+            20066125,
+            20235084,
+            20017959,
+            20006959,
+            20015416
+          ],
+          [
+            20121917,
+            20032542,
+            20018250,
+            19992375,
+            19997459
+          ],
+          [
+            19986792,
+            20007250,
+            20117917,
+            19968875,
+            19974334
+          ],
+          [
+            19974916,
+            19991541,
+            19994667,
+            19994291,
+            20027125
+          ],
+          [
+            20062959,
+            20054500,
+            20082750,
+            20062750,
+            20061916
+          ],
+          [
+            20062833,
+            20072291,
+            20232209,
+            20215042,
+            20070000
+          ],
+          [
+            20044875,
+            20051250,
+            20071125,
+            20025166,
+            20023292
+          ],
+          [
+            20016333,
+            20027708,
+            20021417,
+            20051042,
+            20034250
+          ],
+          [
+            20048208,
+            20019417,
+            20016083,
+            20035500,
+            20032750
+          ],
+          [
+            20035667,
+            20027333,
+            20082166,
+            20015916,
+            20000917
+          ],
+          [
+            20034042,
+            20020417,
+            20026583,
+            20044334,
+            20024375
+          ]
+        ],
+        "windows_per_sample": 5
+      },
+      "memory_observation": {
+        "after": {
+          "process_rss_bytes": 281788416
+        },
+        "attribution": "point-in-time allocator/RSS diagnostic; peak live-set is modeled and separately observed in trace mode",
+        "before": {
+          "process_rss_bytes": 281755648
+        }
+      },
+      "mode": "operator",
+      "operator_correctness": {
+        "actual_output_sha256": "60a447158f77e5b78ff621a9cf03d87949c206366916ee6c923dd30bd1531392",
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "candidate_family": "torch.matmul.cpu.fp32",
+        "finite": true,
+        "input_corpus_digest": "591fb12a90fab5c332de16adf89e353358b97aa89a0a4488503fa760de4156c5",
+        "max_absolute_error": 1.905578929761731e-06,
+        "max_relative_error": 0.005299488588825703,
+        "oracle": {
+          "accumulation_dtype": "float64",
+          "atol": 1e-05,
+          "invariants": [
+            "shape-exact",
+            "finite-output"
+          ],
+          "policy_id": "matmul-fp32-float64-oracle-v1",
+          "provider": "torch.float64.matmul",
+          "rtol": 0.0001,
+          "version": "1.0.0"
+        },
+        "reference_output_sha256": "347e0e0805b6bcd9ccf7fbb06abe72c2c32afa18527b06fc0ad804ac0d712704",
+        "schema": "groundupscale.dev/operator-correctness-evidence/v1alpha1",
+        "shape_matches": true,
+        "status": "passed"
+      },
+      "pilot_iterations": 10,
+      "resolved_scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+      "samples": 20,
+      "timing_contract": {
+        "completion_boundary": "synchronous-cpu-call-return",
+        "exclusions": [],
+        "instrumentation_profile": "benchmark",
+        "policy": {
+          "convergence_iterations_per_window": 20,
+          "convergence_window_count": 7,
+          "maximum_warmup_median_drift": 0.05,
+          "minimum_samples": 20,
+          "minimum_timed_duration_ns": 100000000,
+          "minimum_warmup_iterations": 500,
+          "minimum_windows_per_sample": 5,
+          "policy_id": "local-m4-exact-shape-timing-v1",
+          "version": "1.0.0"
+        },
+        "timer": {
+          "monotonic": true,
+          "resolution_ns": 41.66666666666667,
+          "source": "time.perf_counter_ns"
+        },
+        "timing_scope": "host_visible_completion"
+      },
+      "warmup_convergence": {
+        "converged": true,
+        "median_drift": 0.019215704603879374,
+        "policy": {
+          "convergence_iterations_per_window": 20,
+          "convergence_window_count": 7,
+          "maximum_warmup_median_drift": 0.05,
+          "minimum_samples": 20,
+          "minimum_timed_duration_ns": 100000000,
+          "minimum_warmup_iterations": 500,
+          "minimum_windows_per_sample": 5,
+          "policy_id": "local-m4-exact-shape-timing-v1",
+          "version": "1.0.0"
+        },
+        "warmup_iterations": 500,
+        "window_samples_ns": [
+          87322.95,
+          81772.95,
+          80252.1,
+          80477.05,
+          80179.2,
+          80235.45,
+          80231.25
+        ]
+      },
+      "warmup_iterations": 500
+    }
+  ],
+  "device": "cpu",
+  "hardware_validity_cohort": {
+    "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "device": {
+      "device": "cpu",
+      "hardware": [
+        "apple-m4"
+      ],
+      "identity_sha256": "2fecc1c0c23b7886f97c053d939bc3a0349ba73b84d480b32577b7d9b94aa0f2",
+      "observed_identity": {
+        "cpu_brand": "Apple M4",
+        "logical_cpu": 10,
+        "model": "Mac16,12",
+        "performance_levels": {
+          "efficiency_cores": 6,
+          "performance_cores": 4
+        },
+        "physical_cpu": 10,
+        "source": "sysctl",
+        "status": "resolved"
+      },
+      "partition": "whole-device",
+      "topology": "single-socket-unified-memory"
+    },
+    "numeric_execution": {
+      "affinity": "os-managed-unpinned",
+      "concurrency": "single-operator-no-overlap",
+      "context": "single-process-cpu",
+      "dtype": "float32",
+      "execution_mode": "eager",
+      "interop_threads": 10,
+      "numa": "single-socket-unified-memory",
+      "stream": "not-applicable-cpu",
+      "threads": 4
+    },
+    "power_clock": {
+      "clock_policy": "macos-default-managed",
+      "policy_id": "local-apple-silicon-v2",
+      "power_source": "ac",
+      "thermal_status": "nominal"
+    },
+    "schema": "groundupscale.dev/hardware-validity-cohort/v1alpha1",
+    "software": {
+      "kernel": "24.6.0",
+      "machine": "arm64",
+      "operator_library": "pytorch-aten",
+      "os": "Darwin",
+      "python": "3.11.15",
+      "torch": "2.13.0",
+      "torch_build_sha256": "710de3d730799028424190066aa9e3b79a4acac2bcba370fbaee2f384c09b597"
+    },
+    "timing": {
+      "adapter": {
+        "name": "groundupscale-run-bundle",
+        "version": "1.0.0"
+      },
+      "completion_boundary": "synchronous-cpu-call-return",
+      "instrumentation_profile": "benchmark",
+      "measurement_protocol": {
+        "protocol_id": "groundupscale-cpu-baseline-timing",
+        "version": "1.0.0"
+      },
+      "timer_monotonic": true,
+      "timer_source": "time.perf_counter_ns",
+      "timing_scope": "host_visible_completion"
+    }
+  },
+  "instrumentation_profile": "benchmark",
+  "measurement_protocol": {
+    "protocol_id": "groundupscale-cpu-baseline-timing",
+    "version": "1.0.0"
+  },
+  "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+  "seed": 20260806,
+  "synchronization": "measurement-boundaries-only",
+  "torch_num_threads": 4
+}

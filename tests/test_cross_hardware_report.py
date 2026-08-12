@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from groundupscale.run_bundle import verify_run_bundle
+from groundupscale.diagnostics import diagnose_run_bundle
 from groundupscale.cross_hardware import (
     CROSS_HARDWARE_REPORT_SCHEMA,
     compare_cross_hardware,
@@ -19,7 +20,11 @@ M4_DIAGNOSTIC_BUNDLE = (
 )
 M4_SOURCE_BUNDLES = (
     REPOSITORY_ROOT
-    / "goal_process/issue-25-cross-hardware-replay/evidence/modern-source-runs/runs"
+    / "goal_process/issue-25-cross-hardware-replay/evidence/adr0036-source-runs/runs"
+)
+M4_CONFIRMATION_BUNDLES = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/adr0036-confirmation-runs/runs"
 )
 ASCEND_DIAGNOSTIC_BUNDLE = (
     REPOSITORY_ROOT
@@ -178,6 +183,19 @@ def test_compare_cross_hardware_rejects_stable_path_mismatch() -> None:
     assert "semantic-operation-mismatch" in report["gate"]["reason_codes"]
 
 
+def test_compare_cross_hardware_requires_a_portable_semantic_identity() -> None:
+    m4 = _diagnosis(cohort="m4-cohort", device="Apple M4 CPU")
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    m4["evidence"]["resolved_ir"] = {"operation": "MatMul"}
+    npu["evidence"]["resolved_ir"] = {"operation": "MatMul"}
+
+    report = compare_cross_hardware(m4, npu)
+
+    assert report["status"] == "insufficient_evidence"
+    assert report["semantic_comparison"]["status"] == "unknown"
+    assert "semantic-operation-mismatch" in report["gate"]["reason_codes"]
+
+
 def test_compare_cross_hardware_fails_closed_when_required_evidence_is_missing() -> None:
     npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
     npu["evidence"].pop("measurement_capability_manifest")
@@ -268,7 +286,8 @@ def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
     assert verify_run_bundle(ASCEND_DIAGNOSTIC_BUNDLE)["passed"] is True
     assert all(
         verify_run_bundle(bundle)["passed"] is True
-        for bundle in M4_SOURCE_BUNDLES.iterdir()
+        for root in (M4_SOURCE_BUNDLES, M4_CONFIRMATION_BUNDLES)
+        for bundle in root.iterdir()
         if bundle.is_dir()
     )
 
@@ -278,6 +297,11 @@ def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
     )
 
     assert report["status"] == "complete"
+    assert report["semantic_comparison"] == {
+        "status": "matched",
+        "operation": "MatMul",
+        "identity": "transformer/layer-0/attention/q-proj",
+    }
     assert report["shape_comparison"] == {
         "status": "matched",
         "shape": {"m": 512, "k": 512, "n": 512},
@@ -299,6 +323,33 @@ def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
     )
     assert report["cross_hardware_comparison"]["absolute_latency_comparison"] == (
         "not-a-fair-efficiency-metric"
+    )
+    m4_result = diagnose_run_bundle(M4_DIAGNOSTIC_BUNDLE)
+    diagnostic_lane = m4_result["evidence"]["diagnostic_profiling_lane"]
+    assert diagnostic_lane["status"] == "not_requested"
+    assert diagnostic_lane["timing_used_for_frontier"] is False
+    assert "raw_samples_ns" not in diagnostic_lane
+    assert "observation_validity" not in diagnostic_lane
+    assert m4_result["adapter_contract"]["lanes"]["reason_code"] == (
+        "diagnostic-lane-not-requested"
+    )
+    surface = m4_result["capability_surfaces"][0]
+    assert surface["anchor_ids"] == [
+        "issue25-m4-qproj-256",
+        "issue25-m4-qproj-512",
+    ]
+    queries = {
+        query["query_id"]: query
+        for query in m4_result["capability_surface_queries"]
+    }
+    exact = queries["issue25-m4-qproj-512-exact"]
+    interpolated = queries["issue25-m4-qproj-384-interpolation"]
+    assert exact["status"] == "exact_anchor"
+    assert interpolated["status"] == "interpolated"
+    assert exact["response"]["primary_response"] == "latency_ns"
+    assert interpolated["query_shape"] == {"m": 384}
+    assert interpolated["work_rate_latency"]["declared_work"] == (
+        2 * 384 * 512 * 512
     )
     assert all(
         report["evidence_index"][side][key]

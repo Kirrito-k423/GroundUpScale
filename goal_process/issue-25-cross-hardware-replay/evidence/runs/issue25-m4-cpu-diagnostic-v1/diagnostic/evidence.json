@@ -219,15 +219,17 @@
             "threads": 4,
             "working_set_regime": "m4-unified-memory-q-projection"
           },
-          "effective_rate": 1328148097100.2646,
+          "effective_rate": 1640913569188.024,
           "evidence_ref": "artifact://issue-25/issue25-m4-qproj-256",
           "frontier_role": "ACTIVE",
+          "latency_ns": 81794.5140562249,
           "observation_validity": "QUALIFIED",
           "rate_unit": "FLOP/s",
           "shape": {
-            "s": 256
+            "m": 256
           },
-          "standard_uncertainty_rate": 805894465.4809324,
+          "standard_uncertainty_ns": 1034.544463809967,
+          "standard_uncertainty_rate": 20754424281.159103,
           "state_transitions": [
             {
               "axis": "frontier_role",
@@ -281,11 +283,13 @@
           "effective_rate": 1738970629826.237,
           "evidence_ref": "artifact://issue-25/issue25-m4-qproj-512",
           "frontier_role": "ACTIVE",
+          "latency_ns": 154364.57142857142,
           "observation_validity": "QUALIFIED",
           "rate_unit": "FLOP/s",
           "shape": {
-            "s": 512
+            "m": 512
           },
+          "standard_uncertainty_ns": 2612.1308332893736,
           "standard_uncertainty_rate": 29426563092.267925,
           "state_transitions": [
             {
@@ -328,18 +332,24 @@
             "issue25-m4-qproj-256",
             "issue25-m4-qproj-512"
           ],
-          "cell_id": "issue25-m4-qproj-s256-s512",
+          "cell_id": "issue25-m4-qproj-m256-m512-fixed-nk512",
           "confirmation_evidence_refs": [
-            "artifact://issue-25/m4-surface-confirmation"
+            "artifact://issue-25/m4-384-confirmation-issue25-m4-qproj-m384-n512-k512-confirmation-04",
+            "artifact://issue-25/m4-384-confirmation-issue25-m4-qproj-m384-n512-k512-confirmation-05",
+            "artifact://issue-25/m4-384-confirmation-issue25-m4-qproj-m384-n512-k512-confirmation-06"
           ],
-          "interpolation_standard_uncertainty_rate": 0.0,
-          "regime_id": "m4-qproj-eager-fp32-v1",
+          "confirmation_observed_latency_ns": 117330.65497076022,
+          "confirmation_shape": {
+            "m": 384
+          },
+          "interpolation_standard_uncertainty_ns": 680.6516790039623,
+          "regime_id": "m4-qproj-fixed-nk-eager-fp32-v1",
           "status": "retained"
         }
       ],
       "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
       "coordinate": {
-        "axis": "s",
+        "axis": "m",
         "transform": "identity",
         "transform_version": "v1"
       },
@@ -357,18 +367,29 @@
       "evidence_refs": [
         "artifact://issue-25/m4-surface-build"
       ],
-      "input_digest": "bb7c98641068a3084ac2f6cd553334911ce4b8064c6ffe1c9e68deae523d5138",
+      "input_digest": "7a24362ee3de9a55f6eea9666264cc8c4e375b4597296aac03772385f5e8f9ac",
       "previous_version": null,
+      "response_model": {
+        "fixed_dimensions": {
+          "k": 512,
+          "n": 512
+        },
+        "kind": "piecewise-linear-latency",
+        "primary_response": "latency_ns",
+        "response_identity": "m4-q-proj-duration-v1",
+        "shape_regime_identity": "m4-q-proj-fixed-nk-ramp-v1",
+        "version": "v1"
+      },
       "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
       "uncertainty_policy": {
-        "anchor_covariance": [
+        "anchor_covariance_ns2": [
           [
-            6.494658894927977e+17,
+            1070282.2475998523,
             0.0
           ],
           [
             0.0,
-            8.659226154232248e+20
+            6823227.4902210375
           ]
         ],
         "calibration_evidence_refs": [
@@ -376,7 +397,7 @@
         ],
         "change_reason": "ticket #25 real cross-hardware replay",
         "combination": "root-sum-of-squares",
-        "instrumentation_standard_uncertainty_rate": 0.0,
+        "instrumentation_standard_uncertainty_ns": 0.0,
         "policy_id": "issue25-m4-surface-uncertainty",
         "revalidation": "on policy, cohort, execution contract, or evidence change",
         "scope": "M4 q-proj Surface",
@@ -385,8 +406,10 @@
       },
       "version": "v1",
       "work_formula": {
-        "kind": "square-matmul-2s3",
-        "version": "v1",
+        "fixed_k": 512,
+        "fixed_n": 512,
+        "kind": "matmul-2mnk",
+        "version": "v2",
         "work_unit": "FLOP"
       }
     }
@@ -485,13 +508,7 @@
   "diagnostic_profiling_lane": {
     "candidate_id": "torch.matmul.cpu.fp32",
     "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
-    "completion_boundary": {
-      "closed": true,
-      "kind": "synchronous-cpu-call-return",
-      "threadpool_joined": true
-    },
     "evidence_ref": "artifact://issue-25/m4-diagnostic-lane-not-requested",
-    "excluded_samples": [],
     "execution_domain": {
       "affinity": "os-managed-unpinned",
       "alignment_bytes": 64,
@@ -509,48 +526,17 @@
       "stream": "not-applicable-cpu",
       "threads": 4
     },
-    "frontier_role": "NONE",
     "instrumentation_profile": "not-requested/v1",
     "lane_id": "issue25-m4-diagnostic",
-    "observation_validity": "QUALIFIED",
     "pair_id": "issue25-m4-paired-lanes",
     "paired_baseline_lane_id": "issue25-m4-baseline",
-    "raw_samples_ns": [
-      154345.21428571426,
-      154464.2857142857,
-      154541.64285714284,
-      154312.57142857142,
-      154523.7857142857,
-      154550.57142857142,
-      154514.85714285716,
-      154619.07142857142,
-      154523.85714285716,
-      154336.28571428574,
-      154357.14285714284,
-      154642.7857142857,
-      154631.0,
-      154577.35714285716,
-      154559.57142857142,
-      154440.5,
-      154568.5,
-      154550.64285714284,
-      154360.14285714284,
-      154595.14285714284
-    ],
-    "timer": {
-      "monotonic": true,
-      "resolution_ns": 41.66666666666667,
-      "source": "time.perf_counter_ns"
-    },
-    "timing_used_for_frontier": false,
-    "warmup": {
-      "converged": true,
-      "iterations": 500
-    }
+    "reason_code": "platform-counters-not-requested",
+    "status": "not_requested",
+    "timing_used_for_frontier": false
   },
   "digests": {
-    "evidence_sha256": "b7643456b2d439ca4304efad6dfa7e646549d29577c43db1fbbe9dd9588ea1e7",
-    "input_sha256": "41cf31f7b12fe8cb11b14734e570384462e5b96185c41af67624c36ce0d9e617"
+    "evidence_sha256": "96b7d71510de8e86aa883255d183a32b715fc5b6eb37e78ecac2dc56b2ca9951",
+    "input_sha256": "b28b8699e7ed1deddde6e468c4313869128654ed62ae6cb77636cdaaf697507d"
   },
   "environment": {
     "eligible": true,
@@ -894,6 +880,7 @@
   },
   "resolved_ir": {
     "operation": "MatMul",
+    "semantic_identity": "transformer/layer-0/attention/q-proj",
     "semantic_node": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
   },
   "resource_physical_floor": {
@@ -956,33 +943,48 @@
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-01",
-      "run_id": "issue25-m4-modern-qproj-cube256-search-01"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-search-02",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-search-02"
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-02",
-      "run_id": "issue25-m4-modern-qproj-cube256-search-02"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-search-03",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-search-03"
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-03",
-      "run_id": "issue25-m4-modern-qproj-cube256-search-03"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-search-05",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-search-05"
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-01",
-      "run_id": "issue25-m4-modern-qproj-cube256-holdout-01"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-01",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-holdout-01"
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-02",
-      "run_id": "issue25-m4-modern-qproj-cube256-holdout-02"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-03",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-holdout-03"
     },
     {
       "role": "surface-anchor-session",
-      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-03",
-      "run_id": "issue25-m4-modern-qproj-cube256-holdout-03"
+      "run_bundle": "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-05",
+      "run_id": "issue25-m4-qproj-m256-n512-k512-holdout-05"
+    },
+    {
+      "role": "surface-confirmation-session",
+      "run_bundle": "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-04",
+      "run_id": "issue25-m4-qproj-m384-n512-k512-confirmation-04"
+    },
+    {
+      "role": "surface-confirmation-session",
+      "run_bundle": "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-05",
+      "run_id": "issue25-m4-qproj-m384-n512-k512-confirmation-05"
+    },
+    {
+      "role": "surface-confirmation-session",
+      "run_bundle": "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-06",
+      "run_id": "issue25-m4-qproj-m384-n512-k512-confirmation-06"
     }
   ],
   "surface_queries": [
@@ -1000,7 +1002,7 @@
       },
       "query_id": "issue25-m4-qproj-512-exact",
       "shape": {
-        "s": 512
+        "m": 512
       },
       "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
       "surface_version": "v1"
@@ -1019,7 +1021,7 @@
       },
       "query_id": "issue25-m4-qproj-384-interpolation",
       "shape": {
-        "s": 384
+        "m": 384
       },
       "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
       "surface_version": "v1"

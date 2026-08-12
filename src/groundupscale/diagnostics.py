@@ -81,6 +81,7 @@ class _SelectedSurfaceCell:
     weights: tuple[float, ...]
     exact_anchor: bool
     effective_rate: float
+    primary_latency_ns: float | None = None
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,16 @@ class _SurfaceUncertainty:
     combined_standard_rate: float
     rate_low: float
     rate_high: float
+
+
+@dataclass(frozen=True)
+class _LatencyUncertainty:
+    anchor_standard_ns: float
+    interpolation_standard_ns: float
+    instrumentation_standard_ns: float
+    combined_standard_ns: float
+    latency_low_ns: float
+    latency_high_ns: float
 
 
 def _canonical_digest(value: object) -> str:
@@ -6658,21 +6669,43 @@ def _adapter_contract(
     lanes: dict[str, Any] | None = None
     if isinstance(diagnostic, dict):
         pair_id = diagnostic.get("pair_id")
-        if (
-            not isinstance(baseline, dict)
-            or not _nonempty_string(pair_id)
-            or baseline.get("pair_id") != pair_id
-            or diagnostic.get("paired_baseline_lane_id")
-            != baseline.get("lane_id")
-            or diagnostic.get("cohort_id") != document.get("cohort_id")
-            or diagnostic.get("cohort_id") != baseline.get("cohort_id")
-            or diagnostic.get("candidate_id") != baseline.get("candidate_id")
-            or diagnostic.get("execution_domain")
-            != baseline.get("execution_domain")
-            or diagnostic.get("execution_domain")
-            != document.get("execution_domain")
-            or not _nonempty_string(diagnostic.get("lane_id"))
-            or not _nonempty_string(diagnostic.get("instrumentation_profile"))
+        common_lane_identity_valid = (
+            isinstance(baseline, dict)
+            and _nonempty_string(pair_id)
+            and baseline.get("pair_id") == pair_id
+            and diagnostic.get("paired_baseline_lane_id")
+            == baseline.get("lane_id")
+            and diagnostic.get("cohort_id") == document.get("cohort_id")
+            and diagnostic.get("cohort_id") == baseline.get("cohort_id")
+            and diagnostic.get("candidate_id") == baseline.get("candidate_id")
+            and diagnostic.get("execution_domain")
+            == baseline.get("execution_domain")
+            and diagnostic.get("execution_domain")
+            == document.get("execution_domain")
+            and _nonempty_string(diagnostic.get("lane_id"))
+            and _nonempty_string(diagnostic.get("instrumentation_profile"))
+            and _nonempty_string(diagnostic.get("evidence_ref"))
+        )
+        diagnostic_not_requested = (
+            diagnostic.get("status") == "not_requested"
+            and diagnostic.get("timing_used_for_frontier") is False
+            and _nonempty_string(diagnostic.get("reason_code"))
+            and "raw_samples_ns" not in diagnostic
+            and "observation_validity" not in diagnostic
+            and "frontier_role" not in diagnostic
+            and "timer" not in diagnostic
+            and "completion_boundary" not in diagnostic
+        )
+        if common_lane_identity_valid and diagnostic_not_requested:
+            lanes = {
+                "pair_id": pair_id,
+                "baseline_lane_id": baseline["lane_id"],
+                "diagnostic_lane_id": diagnostic["lane_id"],
+                "diagnostic_frontier_eligible": False,
+                "reason_code": "diagnostic-lane-not-requested",
+            }
+        elif (
+            not common_lane_identity_valid
             or not _completion_boundary_valid(
                 diagnostic.get("completion_boundary")
             )
@@ -6686,7 +6719,6 @@ def _adapter_contract(
                 _finite_number(sample) and sample >= 0
                 for sample in diagnostic["raw_samples_ns"]
             )
-            or not _nonempty_string(diagnostic.get("evidence_ref"))
         ):
             lanes = {
                 "pair_id": pair_id,
@@ -6785,6 +6817,7 @@ def _surface_summary(
         "anchor_lifecycle_policy": surface.get(
             "anchor_lifecycle_policy"
         ),
+        "response_model": surface.get("response_model"),
         "anchor_ids": [
             anchor.get("anchor_id")
             for anchor in anchors
@@ -6928,6 +6961,13 @@ def _eligible_surface_anchor(
     lifecycle_mode = _surface_anchor_lifecycle_mode(surface)
     shape = anchor.get("shape")
     rate = anchor.get("effective_rate")
+    response_model = surface.get("response_model")
+    latency_primary = (
+        isinstance(response_model, dict)
+        and response_model.get("kind") == "piecewise-linear-latency"
+        and response_model.get("primary_response") == "latency_ns"
+    )
+    latency = anchor.get("latency_ns")
     if lifecycle_mode == "strict-v2":
         history_compatible = _anchor_state_history_valid(anchor)
     else:
@@ -6944,8 +6984,14 @@ def _eligible_surface_anchor(
         and isinstance(shape, dict)
         and set(shape) == set(axes)
         and all(_finite_number(shape[axis]) and shape[axis] > 0 for axis in axes)
-        and _finite_number(rate)
-        and rate > 0
+        and (
+            _finite_number(latency)
+            and latency > 0
+            and _finite_number(rate)
+            and rate > 0
+            if latency_primary
+            else _finite_number(rate) and rate > 0
+        )
         and anchor.get("rate_unit") == "FLOP/s"
         and _nonempty_string(anchor.get("candidate_id"))
         and anchor.get("candidate_family") == surface.get("candidate_family")
@@ -7189,10 +7235,33 @@ def _select_surface_cell(
     if not candidates:
         return None
     _, _, cell, anchors, weights = min(candidates, key=lambda item: item[:2])
-    effective_rate = sum(
-        weight * float(anchor["effective_rate"])
-        for weight, anchor in zip(weights, anchors, strict=True)
+    response_model = surface.get("response_model")
+    latency_primary = (
+        isinstance(response_model, dict)
+        and response_model.get("kind") == "piecewise-linear-latency"
+        and response_model.get("primary_response") == "latency_ns"
     )
+    primary_latency_ns = (
+        sum(
+            weight * float(anchor["latency_ns"])
+            for weight, anchor in zip(weights, anchors, strict=True)
+        )
+        if latency_primary
+        else None
+    )
+    if primary_latency_ns is not None:
+        point_map = {
+            axis: value for axis, value in zip(axes, point, strict=True)
+        }
+        declared_work = _declared_work(surface, point_map)
+        if declared_work is None or primary_latency_ns <= 0:
+            return None
+        effective_rate = declared_work / primary_latency_ns * 1_000_000_000.0
+    else:
+        effective_rate = sum(
+            weight * float(anchor["effective_rate"])
+            for weight, anchor in zip(weights, anchors, strict=True)
+        )
     return _SelectedSurfaceCell(
         cell=cell,
         anchors=anchors,
@@ -7203,6 +7272,77 @@ def _select_surface_cell(
             for anchor in anchors
         ),
         effective_rate=effective_rate,
+        primary_latency_ns=primary_latency_ns,
+    )
+
+
+def _derive_latency_uncertainty(
+    policy: dict[str, Any],
+    all_anchors: list[Any],
+    selected: _SelectedSurfaceCell,
+) -> tuple[_LatencyUncertainty | None, str | None]:
+    covariance = policy.get("anchor_covariance_ns2")
+    if (
+        selected.primary_latency_ns is None
+        or not isinstance(covariance, list)
+        or len(covariance) != len(all_anchors)
+        or any(
+            not isinstance(row, list) or len(row) != len(all_anchors)
+            for row in covariance
+        )
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_indices = [all_anchors.index(anchor) for anchor in selected.anchors]
+    anchor_variance = 0.0
+    for row_index, row_weight in zip(
+        anchor_indices, selected.weights, strict=True
+    ):
+        for column_index, column_weight in zip(
+            anchor_indices, selected.weights, strict=True
+        ):
+            covariance_value = covariance[row_index][column_index]
+            if not _finite_number(covariance_value):
+                return None, "insufficient_uncertainty_evidence"
+            anchor_variance += row_weight * column_weight * covariance_value
+    interpolation_standard = (
+        0.0
+        if selected.exact_anchor
+        else selected.cell.get("interpolation_standard_uncertainty_ns")
+    )
+    instrumentation_standard = policy.get(
+        "instrumentation_standard_uncertainty_ns"
+    )
+    if (
+        not isfinite(anchor_variance)
+        or anchor_variance < 0
+        or not _finite_number(interpolation_standard)
+        or interpolation_standard < 0
+        or not _finite_number(instrumentation_standard)
+        or instrumentation_standard < 0
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_standard = anchor_variance**0.5
+    combined_standard = hypot(
+        anchor_standard,
+        float(interpolation_standard),
+        float(instrumentation_standard),
+    )
+    latency_low = selected.primary_latency_ns - combined_standard
+    latency_high = selected.primary_latency_ns + combined_standard
+    if not all(isfinite(item) for item in (latency_low, latency_high)):
+        return None, "invalid_nonfinite_latency_interval"
+    if latency_low <= 0:
+        return None, "invalid_nonpositive_latency_interval"
+    return (
+        _LatencyUncertainty(
+            anchor_standard_ns=anchor_standard,
+            interpolation_standard_ns=float(interpolation_standard),
+            instrumentation_standard_ns=float(instrumentation_standard),
+            combined_standard_ns=combined_standard,
+            latency_low_ns=latency_low,
+            latency_high_ns=latency_high,
+        ),
+        None,
     )
 
 
@@ -7280,12 +7420,10 @@ def _derive_surface_uncertainty(
     )
 
 
-def _derive_work_rate_latency(
+def _declared_work(
     surface: dict[str, Any],
     point: dict[str, float],
-    effective_rate: float,
-    uncertainty: _SurfaceUncertainty,
-) -> tuple[dict[str, Any], dict[str, float]] | None:
+) -> float | None:
     work_formula = surface.get("work_formula")
     if not isinstance(work_formula, dict) or not _nonempty_string(
         work_formula.get("version")
@@ -7295,6 +7433,20 @@ def _derive_work_rate_latency(
         declared_work = 2.0 * point["s"] ** 3
     elif (
         work_formula.get("kind") == "matmul-2mnk"
+        and set(point) == {"m"}
+        and _finite_number(work_formula.get("fixed_n"))
+        and work_formula["fixed_n"] > 0
+        and _finite_number(work_formula.get("fixed_k"))
+        and work_formula["fixed_k"] > 0
+    ):
+        declared_work = (
+            2.0
+            * point["m"]
+            * work_formula["fixed_n"]
+            * work_formula["fixed_k"]
+        )
+    elif (
+        work_formula.get("kind") == "matmul-2mnk"
         and set(point) == {"m", "n"}
         and _finite_number(work_formula.get("fixed_k"))
         and work_formula["fixed_k"] > 0
@@ -7302,7 +7454,17 @@ def _derive_work_rate_latency(
         declared_work = 2.0 * point["m"] * point["n"] * work_formula["fixed_k"]
     else:
         return None
-    if not isfinite(declared_work) or not isfinite(effective_rate):
+    return declared_work if isfinite(declared_work) else None
+
+
+def _derive_work_rate_latency(
+    surface: dict[str, Any],
+    point: dict[str, float],
+    effective_rate: float,
+    uncertainty: _SurfaceUncertainty,
+) -> tuple[dict[str, Any], dict[str, float]] | None:
+    declared_work = _declared_work(surface, point)
+    if declared_work is None or not isfinite(effective_rate):
         return None
     latency = {
         "declared_work": declared_work,
@@ -7314,6 +7476,42 @@ def _derive_work_rate_latency(
         "upper_ns": declared_work / uncertainty.rate_low * 1_000_000_000,
     }
     return latency, latency_interval
+
+
+def _latency_primary_response_model(
+    surface: dict[str, Any], axes: tuple[str, ...]
+) -> dict[str, Any] | None:
+    response = surface.get("response_model")
+    work_formula = surface.get("work_formula")
+    if response is None:
+        return None
+    if (
+        not isinstance(response, dict)
+        or response.get("kind") != "piecewise-linear-latency"
+        or response.get("primary_response") != "latency_ns"
+        or not all(
+            _nonempty_string(response.get(key))
+            for key in (
+                "response_identity",
+                "shape_regime_identity",
+                "version",
+            )
+        )
+        or axes != ("m",)
+        or response.get("fixed_dimensions")
+        != {
+            "n": work_formula.get("fixed_n")
+            if isinstance(work_formula, dict)
+            else None,
+            "k": work_formula.get("fixed_k")
+            if isinstance(work_formula, dict)
+            else None,
+        }
+        or not isinstance(work_formula, dict)
+        or work_formula.get("kind") != "matmul-2mnk"
+    ):
+        return {}
+    return response
 
 
 def _query_capability_surface(
@@ -7341,6 +7539,11 @@ def _query_capability_surface(
             query, surface, "invalid_surface_coordinate_policy"
         )
     axes = tuple(axes_value)
+    latency_response = _latency_primary_response_model(surface, axes)
+    if latency_response == {}:
+        return _unknown_surface_query(
+            query, surface, "invalid_latency_response_model"
+        )
     anchors_value = surface.get("anchors")
     if len(axes) == 2 and (
         not _nonempty_string(surface.get("candidate_family"))
@@ -7457,24 +7660,94 @@ def _query_capability_surface(
         return _unknown_surface_query(
             query, surface, "insufficient_uncertainty_evidence"
         )
-    uncertainty, uncertainty_reason = _derive_surface_uncertainty(
-        policy, anchors_value, selected
-    )
-    if uncertainty is None:
-        return _unknown_surface_query(
-            query,
-            surface,
-            uncertainty_reason or "insufficient_uncertainty_evidence",
+    point_map = {
+        axis: value for axis, value in zip(axes, point, strict=True)
+    }
+    if latency_response is not None:
+        latency_uncertainty, uncertainty_reason = (
+            _derive_latency_uncertainty(policy, anchors_value, selected)
         )
-    latency_derivation = _derive_work_rate_latency(
-        surface,
-        {axis: value for axis, value in zip(axes, point, strict=True)},
-        selected.effective_rate,
-        uncertainty,
-    )
-    if latency_derivation is None:
-        return _unknown_surface_query(query, surface, "invalid_work_formula")
-    latency, latency_interval = latency_derivation
+        if latency_uncertainty is None:
+            return _unknown_surface_query(
+                query,
+                surface,
+                uncertainty_reason or "insufficient_uncertainty_evidence",
+            )
+        declared_work = _declared_work(surface, point_map)
+        if declared_work is None or selected.primary_latency_ns is None:
+            return _unknown_surface_query(
+                query, surface, "invalid_work_formula"
+            )
+        latency = {
+            "declared_work": declared_work,
+            "work_unit": "FLOP",
+            "value_ns": selected.primary_latency_ns,
+        }
+        latency_interval = {
+            "lower_ns": latency_uncertainty.latency_low_ns,
+            "upper_ns": latency_uncertainty.latency_high_ns,
+        }
+        uncertainty_result = {
+            "components": {
+                "anchor_standard_ns": (
+                    latency_uncertainty.anchor_standard_ns
+                ),
+                "interpolation_standard_ns": (
+                    latency_uncertainty.interpolation_standard_ns
+                ),
+                "instrumentation_standard_ns": (
+                    latency_uncertainty.instrumentation_standard_ns
+                ),
+            },
+            "combined_standard_ns": (
+                latency_uncertainty.combined_standard_ns
+            ),
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "latency_interval": latency_interval,
+        }
+    else:
+        uncertainty, uncertainty_reason = _derive_surface_uncertainty(
+            policy, anchors_value, selected
+        )
+        if uncertainty is None:
+            return _unknown_surface_query(
+                query,
+                surface,
+                uncertainty_reason or "insufficient_uncertainty_evidence",
+            )
+        latency_derivation = _derive_work_rate_latency(
+            surface,
+            point_map,
+            selected.effective_rate,
+            uncertainty,
+        )
+        if latency_derivation is None:
+            return _unknown_surface_query(
+                query, surface, "invalid_work_formula"
+            )
+        latency, latency_interval = latency_derivation
+        uncertainty_result = {
+            "components": {
+                "anchor_standard_rate": uncertainty.anchor_standard_rate,
+                "interpolation_standard_rate": (
+                    uncertainty.interpolation_standard_rate
+                ),
+                "instrumentation_standard_rate": (
+                    uncertainty.instrumentation_standard_rate
+                ),
+            },
+            "combined_standard_rate": uncertainty.combined_standard_rate,
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "rate_interval": {
+                "lower": uncertainty.rate_low,
+                "upper": uncertainty.rate_high,
+            },
+            "latency_interval": latency_interval,
+        }
     evidence_refs = [
         *(anchor["evidence_ref"] for anchor in selected.anchors),
         *confirmation_refs,
@@ -7513,6 +7786,11 @@ def _query_capability_surface(
                 "anchor_version": anchor["anchor_version"],
                 "shape": anchor["shape"],
                 "effective_rate": anchor["effective_rate"],
+                **(
+                    {"latency_ns": anchor["latency_ns"]}
+                    if latency_response is not None
+                    else {}
+                ),
                 "evidence_ref": anchor["evidence_ref"],
             }
             for anchor in selected.anchors
@@ -7523,26 +7801,23 @@ def _query_capability_surface(
             "unit": "FLOP/s",
         },
         "work_rate_latency": latency,
-        "uncertainty": {
-            "components": {
-                "anchor_standard_rate": uncertainty.anchor_standard_rate,
-                "interpolation_standard_rate": (
-                    uncertainty.interpolation_standard_rate
-                ),
-                "instrumentation_standard_rate": (
-                    uncertainty.instrumentation_standard_rate
-                ),
-            },
-            "combined_standard_rate": uncertainty.combined_standard_rate,
-            "target_coverage": policy.get("target_coverage"),
-            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
-            "calibration_evidence_refs": list(calibration_refs),
-            "rate_interval": {
-                "lower": uncertainty.rate_low,
-                "upper": uncertainty.rate_high,
-            },
-            "latency_interval": latency_interval,
-        },
+        **(
+            {
+                "response": {
+                    "primary_response": "latency_ns",
+                    "response_identity": latency_response[
+                        "response_identity"
+                    ],
+                    "shape_regime_identity": latency_response[
+                        "shape_regime_identity"
+                    ],
+                    "value_ns": selected.primary_latency_ns,
+                }
+            }
+            if latency_response is not None
+            else {}
+        ),
+        "uncertainty": uncertainty_result,
         "evidence_refs": evidence_refs,
     }
 
@@ -7838,6 +8113,7 @@ def _validated_candidate_envelopes(
             ]
             coordinate = surfaces[0].get("coordinate")
             work_formula = surfaces[0].get("work_formula")
+            response_model = surfaces[0].get("response_model")
             if (
                 len(set(candidate_families)) != len(candidate_families)
                 or any(
@@ -7848,6 +8124,7 @@ def _validated_candidate_envelopes(
                     != envelope.get("domain_policy")
                     or surface.get("coordinate") != coordinate
                     or surface.get("work_formula") != work_formula
+                    or surface.get("response_model") != response_model
                     for surface in surfaces
                 )
             ):
@@ -7930,6 +8207,7 @@ def _validated_surface_lineage(
                         "anchor_lifecycle_policy",
                         "coordinate",
                         "work_formula",
+                        "response_model",
                     )
                 ):
                     continue
@@ -8604,6 +8882,15 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                 f"; candidate-family={query['selected_candidate_family']}"
             )
             winner_text = ""
+        response = query.get("response")
+        response_text = (
+            f"primary-response={response['primary_response']}; "
+            f"response={response['value_ns']:.6f} ns; "
+            f"response-identity={response['response_identity']}; "
+            f"shape-regime={response['shape_regime_identity']}; "
+            if isinstance(response, dict)
+            else ""
+        )
         lines.append(
             f"{prefix}: {query['status']}; "
             f"cohort={query['cohort_id']}; "
@@ -8611,6 +8898,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"{candidate_text.lstrip('; ')}"
             f"{winner_text}"
             f"{domain_policy_text}; "
+            f"{response_text}"
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
             f"latency={latency['value_ns']:.6f} ns; "
             f"cell={query['cell_id']}; "

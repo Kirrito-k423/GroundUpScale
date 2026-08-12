@@ -1,0 +1,1214 @@
+{
+  "base_prediction": {
+    "hardware_backend_id": "apple.m4.cpu.resource-envelope",
+    "hardware_compilation_fingerprint": "534739b30211998607e3510561b5be9a5b9a52e9a688570a00559691a81081b6",
+    "prediction_complete": false,
+    "provisional_estimate_ns": null,
+    "provisional_evidence_tier": null
+  },
+  "comparison_fingerprint": "e0b3be4edbc58adbf84a586432dd85500e3b44231f6c4a026f9498f0cdbf7d8a",
+  "latency_cases": [
+    {
+      "case_id": "matmul-q-proj",
+      "comparison": {
+        "error_status": "not-evaluable-hardware-floor",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor for the declared serialized-unfused schedule, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": 3845.3677648465236,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": 3845.3677648465236,
+        "observed_to_hardware_floor_ratio": 1.0500934854535302,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": 1.0500934854535302,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "environment_evidence_tier": "qualified",
+        "environment_reason_codes": [],
+        "evidence_tier": "qualified",
+        "execution_contract_digest": "0d80ad6a60b2877ef661c2f247c8a904f419b5e51c0cf1461140d88004f58789",
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "qualified"
+        },
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": "591fb12a90fab5c332de16adf89e353358b97aa89a0a4488503fa760de4156c5",
+        "iqr_over_median": 0.011434720577605823,
+        "kind": "benchmark-median",
+        "median_ns": 80609.19703389831,
+        "q1_ns": 80206.65572033898,
+        "q3_ns": 81128.39936440678,
+        "reason_codes": [],
+        "throughput_per_second": 12405.532331248423
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 1,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 2097152,
+        "critical_path_hardware_floor_ns": 76763.82926905178,
+        "empirical_compute_time_ns": 76763.82926905178,
+        "empirical_hardware_floor_ns": 76763.82926905178,
+        "empirical_memory_time_ns": 16534.804207967405,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 76763.82926905178,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": "serialized.events",
+        "materialized_bytes": 2097152,
+        "minimum_work_flops": 134217728,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [
+          "operator-frontier-profile-not-configured"
+        ],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": 76763.82926905178,
+        "provisional_evidence_tier": "exploratory",
+        "provisional_reason_codes": [
+          "load-above-policy",
+          "total-competing-cpu-above-policy"
+        ],
+        "resource_hardware_floor_ns": 76763.82926905178,
+        "resource_limiting_resource": "compute.fp32",
+        "resource_physical_floor_ns": 76763.82926905178,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": 76763.82926905178,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    }
+  ],
+  "latency_decomposition": {
+    "comparison_role": "diagnostic-comparison",
+    "joined": [
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 6,
+        "observed_share_of_e2e": 0.06317127424481421,
+        "observed_time_ns": 521750.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 5,
+        "observed_share_of_e2e": 0.06821105247277853,
+        "observed_time_ns": 563375.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 10,
+        "observed_share_of_e2e": 0.023165787091678075,
+        "observed_time_ns": 191333.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "SiLU",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 4,
+        "observed_share_of_e2e": 0.07142960922074193,
+        "observed_time_ns": 589958.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 8,
+        "observed_share_of_e2e": 0.026757741462585413,
+        "observed_time_ns": 221000.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 9,
+        "observed_share_of_e2e": 0.025082900568232726,
+        "observed_time_ns": 207167.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "Softmax",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 7,
+        "observed_share_of_e2e": 0.05217856445806735,
+        "observed_time_ns": 430958.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 3,
+        "observed_share_of_e2e": 0.07302381366344718,
+        "observed_time_ns": 603125.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 2,
+        "observed_share_of_e2e": 0.07873955782166317,
+        "observed_time_ns": 650333.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "evidence_quality": "unattributed-evidence-boundary",
+        "frontier_anchor_id": null,
+        "frontier_observation_reason_codes": [],
+        "frontier_observation_status": null,
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 1,
+        "observed_share_of_e2e": 0.17554991396356975,
+        "observed_time_ns": 1449918.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "UnattributedHostTime",
+        "predicted_evidence": null,
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "unattributed://host-runtime"
+      }
+    ],
+    "largest_discrepancy": null,
+    "observed": {
+      "all_items": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; accelerator leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.17554991396356975,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 1449918.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589283337541,
+          "host_started_ns": 1456589282687208,
+          "operation": "MatMul",
+          "rank": 2,
+          "share_of_e2e": 0.07873955782166317,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 650333.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589282673125,
+          "host_started_ns": 1456589282070000,
+          "operation": "MatMul",
+          "rank": 3,
+          "share_of_e2e": 0.07302381366344718,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 603125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279095166,
+          "host_started_ns": 1456589278505208,
+          "operation": "MatMul",
+          "rank": 4,
+          "share_of_e2e": 0.07142960922074193,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 589958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589278491250,
+          "host_started_ns": 1456589277927875,
+          "operation": "MatMul",
+          "rank": 5,
+          "share_of_e2e": 0.06821105247277853,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 563375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280045416,
+          "host_started_ns": 1456589279523666,
+          "operation": "MatMul",
+          "rank": 6,
+          "share_of_e2e": 0.06317127424481421,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 521750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589284086291,
+          "host_started_ns": 1456589283655333,
+          "operation": "MatMul",
+          "rank": 7,
+          "share_of_e2e": 0.05217856445806735,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 430958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281039916,
+          "host_started_ns": 1456589280818916,
+          "operation": "MatMul",
+          "rank": 8,
+          "share_of_e2e": 0.026757741462585413,
+          "source_id": "span-00042",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "time_ns": 221000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281448250,
+          "host_started_ns": 1456589281241083,
+          "operation": "Softmax",
+          "rank": 9,
+          "share_of_e2e": 0.025082900568232726,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 207167.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279328291,
+          "host_started_ns": 1456589279136958,
+          "operation": "SiLU",
+          "rank": 10,
+          "share_of_e2e": 0.023165787091678075,
+          "source_id": "span-00027",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "time_ns": 191333.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276902125,
+          "host_started_ns": 1456589276721416,
+          "operation": "MatMul",
+          "rank": 11,
+          "share_of_e2e": 0.021879478289422386,
+          "source_id": "span-00013",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "time_ns": 180709.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589283531416,
+          "host_started_ns": 1456589283352875,
+          "operation": "SiLU",
+          "rank": 12,
+          "share_of_e2e": 0.021616986056431954,
+          "source_id": "span-00056",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+          "time_ns": 178541.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277267958,
+          "host_started_ns": 1456589277106041,
+          "operation": "Softmax",
+          "rank": 13,
+          "share_of_e2e": 0.019604222734830055,
+          "source_id": "span-00016",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "time_ns": 161917.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277494166,
+          "host_started_ns": 1456589277334625,
+          "operation": "MatMul",
+          "rank": 14,
+          "share_of_e2e": 0.019316546745168955,
+          "source_id": "span-00019",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+          "time_ns": 159541.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277664666,
+          "host_started_ns": 1456589277531541,
+          "operation": "MatMul",
+          "rank": 15,
+          "share_of_e2e": 0.016118209647994042,
+          "source_id": "span-00021",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+          "time_ns": 133125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276505416,
+          "host_started_ns": 1456589276372625,
+          "operation": "MatMul",
+          "rank": 16,
+          "share_of_e2e": 0.0160777703464171,
+          "source_id": "span-00006",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+          "time_ns": 132791.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280735375,
+          "host_started_ns": 1456589280607458,
+          "operation": "MatMul",
+          "rank": 17,
+          "share_of_e2e": 0.01548764712520153,
+          "source_id": "span-00036",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+          "time_ns": 127917.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279474958,
+          "host_started_ns": 1456589279352791,
+          "operation": "Mul",
+          "rank": 18,
+          "share_of_e2e": 0.014791461544161413,
+          "source_id": "span-00028",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+          "time_ns": 122167.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281614000,
+          "host_started_ns": 1456589281492125,
+          "operation": "MatMul",
+          "rank": 19,
+          "share_of_e2e": 0.014756107424219896,
+          "source_id": "span-00048",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+          "time_ns": 121875.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276209583,
+          "host_started_ns": 1456589276091875,
+          "operation": "RMSNorm",
+          "rank": 20,
+          "share_of_e2e": 0.014251584760533953,
+          "source_id": "span-00003",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+          "time_ns": 117708.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276356708,
+          "host_started_ns": 1456589276239958,
+          "operation": "MatMul",
+          "rank": 21,
+          "share_of_e2e": 0.014135594188945009,
+          "source_id": "span-00005",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+          "time_ns": 116750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281770916,
+          "host_started_ns": 1456589281658750,
+          "operation": "MatMul",
+          "rank": 22,
+          "share_of_e2e": 0.013580582936164504,
+          "source_id": "span-00050",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+          "time_ns": 112166.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276631833,
+          "host_started_ns": 1456589276520500,
+          "operation": "MatMul",
+          "rank": 23,
+          "share_of_e2e": 0.013479726833728606,
+          "source_id": "span-00007",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+          "time_ns": 111333.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277907708,
+          "host_started_ns": 1456589277796583,
+          "operation": "RMSNorm",
+          "rank": 24,
+          "share_of_e2e": 0.013454543077057938,
+          "source_id": "span-00023",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+          "time_ns": 111125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280476791,
+          "host_started_ns": 1456589280371916,
+          "operation": "MatMul",
+          "rank": 25,
+          "share_of_e2e": 0.012697819619405634,
+          "source_id": "span-00034",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+          "time_ns": 104875.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280594875,
+          "host_started_ns": 1456589280490416,
+          "operation": "MatMul",
+          "rank": 26,
+          "share_of_e2e": 0.012647452106064296,
+          "source_id": "span-00035",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+          "time_ns": 104459.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589282050250,
+          "host_started_ns": 1456589281953458,
+          "operation": "RMSNorm",
+          "rank": 27,
+          "share_of_e2e": 0.011719164306093065,
+          "source_id": "span-00052",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+          "time_ns": 96792.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280343166,
+          "host_started_ns": 1456589280249000,
+          "operation": "RMSNorm",
+          "rank": 28,
+          "share_of_e2e": 0.011401219378125873,
+          "source_id": "span-00032",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+          "time_ns": 94166.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277086583,
+          "host_started_ns": 1456589277005875,
+          "operation": "Add",
+          "rank": 29,
+          "share_of_e2e": 0.009771781891232324,
+          "source_id": "span-00015",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+          "time_ns": 80708.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281133250,
+          "host_started_ns": 1456589281056833,
+          "operation": "Mul",
+          "rank": 30,
+          "share_of_e2e": 0.009252245834146558,
+          "source_id": "span-00043",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+          "time_ns": 76417.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589283629208,
+          "host_started_ns": 1456589283553125,
+          "operation": "Mul",
+          "rank": 31,
+          "share_of_e2e": 0.00921180653256962,
+          "source_id": "span-00057",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+          "time_ns": 76083.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281223250,
+          "host_started_ns": 1456589281153416,
+          "operation": "Add",
+          "rank": 32,
+          "share_of_e2e": 0.008455204150670541,
+          "source_id": "span-00044",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+          "time_ns": 69834.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276976833,
+          "host_started_ns": 1456589276914875,
+          "operation": "Mul",
+          "rank": 33,
+          "share_of_e2e": 0.0075016115182754165,
+          "source_id": "span-00014",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+          "time_ns": 61958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589284194375,
+          "host_started_ns": 1456589284158458,
+          "operation": "Add",
+          "rank": 34,
+          "share_of_e2e": 0.004348677828559639,
+          "source_id": "span-00059",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2",
+          "time_ns": 35917.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280175166,
+          "host_started_ns": 1456589280139916,
+          "operation": "Add",
+          "rank": 35,
+          "share_of_e2e": 0.0042679203011589855,
+          "source_id": "span-00030",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+          "time_ns": 35250.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277762541,
+          "host_started_ns": 1456589277735000,
+          "operation": "Add",
+          "rank": 36,
+          "share_of_e2e": 0.0033345473195523297,
+          "source_id": "span-00022",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+          "time_ns": 27541.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281932291,
+          "host_started_ns": 1456589281907625,
+          "operation": "Add",
+          "rank": 37,
+          "share_of_e2e": 0.0029864545290322706,
+          "source_id": "span-00051",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+          "time_ns": 24666.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281642291,
+          "host_started_ns": 1456589281636666,
+          "operation": "View",
+          "rank": 38,
+          "share_of_e2e": 0.0006810511118870722,
+          "source_id": "span-00049",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+          "time_ns": 5625.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277305250,
+          "host_started_ns": 1456589277300125,
+          "operation": "View",
+          "rank": 39,
+          "share_of_e2e": 0.000620513235274888,
+          "source_id": "span-00017",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+          "time_ns": 5125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276668333,
+          "host_started_ns": 1456589276663291,
+          "operation": "Transpose",
+          "rank": 40,
+          "share_of_e2e": 0.0006104639477572654,
+          "source_id": "span-00009",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+          "time_ns": 5042.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276650250,
+          "host_started_ns": 1456589276645541,
+          "operation": "View",
+          "rank": 41,
+          "share_of_e2e": 0.0005701457219335507,
+          "source_id": "span-00008",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+          "time_ns": 4709.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280768041,
+          "host_started_ns": 1456589280763833,
+          "operation": "Transpose",
+          "rank": 42,
+          "share_of_e2e": 0.0005094867695681421,
+          "source_id": "span-00038",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+          "time_ns": 4208.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277518583,
+          "host_started_ns": 1456589277515166,
+          "operation": "View",
+          "rank": 43,
+          "share_of_e2e": 0.00041371584876766676,
+          "source_id": "span-00020",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+          "time_ns": 3417.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276696625,
+          "host_started_ns": 1456589276693250,
+          "operation": "Transpose",
+          "rank": 44,
+          "share_of_e2e": 0.00040863066713224327,
+          "source_id": "span-00011",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+          "time_ns": 3375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280752541,
+          "host_started_ns": 1456589280749291,
+          "operation": "View",
+          "rank": 45,
+          "share_of_e2e": 0.00039349619797919723,
+          "source_id": "span-00037",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+          "time_ns": 3250.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281467375,
+          "host_started_ns": 1456589281464291,
+          "operation": "View",
+          "rank": 46,
+          "share_of_e2e": 0.0003733976229439521,
+          "source_id": "span-00046",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+          "time_ns": 3084.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589277322083,
+          "host_started_ns": 1456589277319041,
+          "operation": "Transpose",
+          "rank": 47,
+          "share_of_e2e": 0.0003683124413085286,
+          "source_id": "span-00018",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+          "time_ns": 3042.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281480708,
+          "host_started_ns": 1456589281478166,
+          "operation": "Transpose",
+          "rank": 48,
+          "share_of_e2e": 0.00030777456469634445,
+          "source_id": "span-00047",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+          "time_ns": 2542.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276682500,
+          "host_started_ns": 1456589276680041,
+          "operation": "View",
+          "rank": 49,
+          "share_of_e2e": 0.00029772527717872186,
+          "source_id": "span-00010",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+          "time_ns": 2459.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589276710375,
+          "host_started_ns": 1456589276708125,
+          "operation": "Transpose",
+          "rank": 50,
+          "share_of_e2e": 0.0002724204447548289,
+          "source_id": "span-00012",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+          "time_ns": 2250.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280781666,
+          "host_started_ns": 1456589280779500,
+          "operation": "View",
+          "rank": 51,
+          "share_of_e2e": 0.0002622500814839819,
+          "source_id": "span-00039",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+          "time_ns": 2166.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280806208,
+          "host_started_ns": 1456589280804333,
+          "operation": "Transpose",
+          "rank": 52,
+          "share_of_e2e": 0.00022701703729569072,
+          "source_id": "span-00041",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+          "time_ns": 1875.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280793708,
+          "host_started_ns": 1456589280791833,
+          "operation": "Transpose",
+          "rank": 53,
+          "share_of_e2e": 0.00022701703729569072,
+          "source_id": "span-00040",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+          "time_ns": 1875.0
+        }
+      ],
+      "available": true,
+      "e2e_ns": 8259292.0,
+      "instrumentation_profile": "trace",
+      "kind": "host-synchronous-operation-time",
+      "mandatory": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; accelerator leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.17554991396356975,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 1449918.0
+        }
+      ],
+      "reconciliation": {
+        "all_leaf_span_sum_ns": 6809374,
+        "attributed_coverage": 0.8244500860364302,
+        "attributed_interval_union_ns": 6809374,
+        "coverage": 1.0,
+        "other_ns": 2830375.0,
+        "overlap_ns": 0,
+        "reconciled_total_ns": 8259292.0,
+        "selected_accounted_ns": 5428917.0,
+        "unattributed_ns": 1449918.0
+      },
+      "selected": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; accelerator leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "selection_reasons": [
+            "top10",
+            "at-least-10%-of-e2e"
+          ],
+          "share_of_e2e": 0.17554991396356975,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 1449918.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589283337541,
+          "host_started_ns": 1456589282687208,
+          "operation": "MatMul",
+          "rank": 2,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.07873955782166317,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 650333.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589282673125,
+          "host_started_ns": 1456589282070000,
+          "operation": "MatMul",
+          "rank": 3,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.07302381366344718,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 603125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279095166,
+          "host_started_ns": 1456589278505208,
+          "operation": "MatMul",
+          "rank": 4,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.07142960922074193,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 589958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589278491250,
+          "host_started_ns": 1456589277927875,
+          "operation": "MatMul",
+          "rank": 5,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.06821105247277853,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 563375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280045416,
+          "host_started_ns": 1456589279523666,
+          "operation": "MatMul",
+          "rank": 6,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.06317127424481421,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 521750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589284086291,
+          "host_started_ns": 1456589283655333,
+          "operation": "MatMul",
+          "rank": 7,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.05217856445806735,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 430958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281039916,
+          "host_started_ns": 1456589280818916,
+          "operation": "MatMul",
+          "rank": 8,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.026757741462585413,
+          "source_id": "span-00042",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "time_ns": 221000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281448250,
+          "host_started_ns": 1456589281241083,
+          "operation": "Softmax",
+          "rank": 9,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.025082900568232726,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 207167.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279328291,
+          "host_started_ns": 1456589279136958,
+          "operation": "SiLU",
+          "rank": 10,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.023165787091678075,
+          "source_id": "span-00027",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "time_ns": 191333.0
+        }
+      ],
+      "statistic": "single-diagnostic-trace",
+      "top10": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; accelerator leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.17554991396356975,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 1449918.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589283337541,
+          "host_started_ns": 1456589282687208,
+          "operation": "MatMul",
+          "rank": 2,
+          "share_of_e2e": 0.07873955782166317,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 650333.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589282673125,
+          "host_started_ns": 1456589282070000,
+          "operation": "MatMul",
+          "rank": 3,
+          "share_of_e2e": 0.07302381366344718,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 603125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279095166,
+          "host_started_ns": 1456589278505208,
+          "operation": "MatMul",
+          "rank": 4,
+          "share_of_e2e": 0.07142960922074193,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 589958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589278491250,
+          "host_started_ns": 1456589277927875,
+          "operation": "MatMul",
+          "rank": 5,
+          "share_of_e2e": 0.06821105247277853,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 563375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589280045416,
+          "host_started_ns": 1456589279523666,
+          "operation": "MatMul",
+          "rank": 6,
+          "share_of_e2e": 0.06317127424481421,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 521750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589284086291,
+          "host_started_ns": 1456589283655333,
+          "operation": "MatMul",
+          "rank": 7,
+          "share_of_e2e": 0.05217856445806735,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 430958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281039916,
+          "host_started_ns": 1456589280818916,
+          "operation": "MatMul",
+          "rank": 8,
+          "share_of_e2e": 0.026757741462585413,
+          "source_id": "span-00042",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "time_ns": 221000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589281448250,
+          "host_started_ns": 1456589281241083,
+          "operation": "Softmax",
+          "rank": 9,
+          "share_of_e2e": 0.025082900568232726,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 207167.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1456589279328291,
+          "host_started_ns": 1456589279136958,
+          "operation": "SiLU",
+          "rank": 10,
+          "share_of_e2e": 0.023165787091678075,
+          "source_id": "span-00027",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "time_ns": 191333.0
+        }
+      ]
+    },
+    "predicted": {
+      "all_items": [],
+      "available": false,
+      "mandatory": [],
+      "reason": "selected hardware floor is unavailable",
+      "selected": [],
+      "top10": []
+    },
+    "schema": "groundupscale.dev/latency-decomposition/v1alpha1",
+    "visibility_rule": {
+      "mandatory_share_of_e2e": 0.1,
+      "selection": "top-k union every item at or above the E2E share threshold",
+      "top_k": 10
+    }
+  },
+  "memory": {
+    "comparison": {
+      "absolute_error_bytes": 4194304,
+      "absolute_relative_error": 0.0930063578564941,
+      "error_status": "evaluated",
+      "predicted_minus_observed_bytes": -4194304,
+      "predicted_to_observed_ratio": 0.9069936421435059
+    },
+    "observed": {
+      "exclusions": [
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "kernel-private workspace",
+        "framework/runtime code and Python RSS"
+      ],
+      "framework_peak_bytes": 45096960,
+      "kind": "weakref-live-unique-tensor-storage",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+    },
+    "predicted": {
+      "exclusions": [
+        "kernel-private workspace",
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "framework/runtime code and Python object memory"
+      ],
+      "framework_peak_bytes": 40902656,
+      "kind": "semantic-live-set",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+    }
+  },
+  "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+  "status": "exploratory-estimate-with-observation",
+  "summary": {
+    "aligned_latency_cases": 1,
+    "evaluable_latency_errors": 0,
+    "evaluable_memory_errors": 1,
+    "provisional_latency_comparisons": 1,
+    "qualified_frontier_comparisons": 0
+  }
+}

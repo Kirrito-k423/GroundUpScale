@@ -1,0 +1,8 @@
+{
+  "alignment_coverage": 1.0,
+  "e2e_trace_host_ns": 12709583,
+  "leaf_host_interval_union_ns": 10639086,
+  "schema": "groundupscale.dev/error-attribution/v1alpha1",
+  "unattributed_host_ns": 2070497,
+  "unattributed_reason": "Python/composite/runtime overhead plus device wait; accelerator leaf spans are host enqueue ranges and are not treated as device durations"
+}

@@ -1,0 +1,224 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/inputs.lock.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "resolved-input-lock",
+      "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+      "sha256": "a75435bb8f4d714656857afbb966d2522daa7daaf8e9bfbec987a866fda53c6e"
+    },
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/environment.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "15867e57a730aa955836be74e17684bcb3b494938a221e492051a4de39de769e"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "ir/model.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-ir",
+      "schema": "groundupscale.dev/model-ir/v1alpha1",
+      "sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "ir/workload.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "workload-ir",
+      "schema": "groundupscale.dev/workload-ir/v1alpha1",
+      "sha256": "58c0bde67e3233b5de0d867adbdf8e62f117afd92fb8d6b6c1a10cf41cc3ccf8"
+    },
+    {
+      "inputs": [
+        "model-ir",
+        "workload-ir"
+      ],
+      "media_type": "application/json",
+      "path": "ir/semantic.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "semantic-ir",
+      "schema": "groundupscale.dev/semantic-ir/v1alpha1",
+      "sha256": "5312180be802e5bd866ea6307bb4be4f3285831947e216337f7820d969d8f400"
+    },
+    {
+      "inputs": [
+        "semantic-ir"
+      ],
+      "media_type": "application/json",
+      "path": "ir/cost.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "cost-ir",
+      "schema": "groundupscale.dev/cost-ir/v1alpha2",
+      "sha256": "42b26e8c2558fb29843ae6c4fc4a51d203e3c29429b85178a2018079319b4df0"
+    },
+    {
+      "inputs": [
+        "cost-ir",
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/hardware-backend.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "hardware-backend-prediction",
+      "schema": "groundupscale.dev/hardware-backend-prediction/v1alpha2",
+      "sha256": "b825e24bd819fb456913deb47c93b585b1a4d1e6e26e0842d65bf54cc29d66a2"
+    },
+    {
+      "inputs": [
+        "cost-ir"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/metrics.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction",
+      "schema": "groundupscale.dev/prediction/v1alpha2",
+      "sha256": "b0cafdc1aa2b8e3687f59c7b1c4672a6e7ecc137347d5d18ae517f129406ddcf"
+    },
+    {
+      "inputs": [
+        "prediction",
+        "prediction-observation-comparison",
+        "benchmark-observation",
+        "alignment-map"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/explanation.graph.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "explanation-graph",
+      "schema": "groundupscale.dev/explanation-graph/v1alpha2",
+      "sha256": "9b767377616eca63ca9c86bcab3850b35acc385fe1b45d9462588136749fc0b8"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/json",
+      "path": "observation/raw/benchmark.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "benchmark-observation",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "ce9144acc3e4c6b2f1c6475e3be932cf94270d21ea052f4b043f4518b88c035f"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/x-ndjson",
+      "path": "observation/observation.trace.jsonl",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "observation-trace",
+      "schema": "groundupscale.dev/observation-span/v1alpha1",
+      "sha256": "f38b20520d27194e442b265330e8ac706cd85414c1b02853e22f394ef02ed532"
+    },
+    {
+      "inputs": [
+        "semantic-ir",
+        "observation-trace"
+      ],
+      "media_type": "application/json",
+      "path": "observation/alignment.map.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "alignment-map",
+      "schema": "groundupscale.dev/alignment-map/v1alpha1",
+      "sha256": "7de01a2b86fae54badde4cd3d47a95535ff7c2f7ae4ddd54264049a1b91b9237"
+    },
+    {
+      "inputs": [
+        "observation-trace",
+        "semantic-ir"
+      ],
+      "media_type": "application/json",
+      "path": "observation/memory.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "memory-observation",
+      "schema": "groundupscale.dev/memory-observation/v1alpha1",
+      "sha256": "e9ac2d7adf5823e2370ff8266c5bfaefe2b1be4ad349e77ae5c61a94fc15fe70"
+    },
+    {
+      "inputs": [
+        "prediction",
+        "hardware-backend-prediction",
+        "benchmark-observation",
+        "observation-trace",
+        "memory-observation"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/predicted-vs-observed.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+      "sha256": "1ad3d85fdbd7b996f5de9a014a2c6a23b49f05e6a4021a24274a4415220038a6"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/json",
+      "path": "observation/correctness.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "correctness-observation",
+      "schema": "groundupscale.dev/correctness-observation/v1alpha2",
+      "sha256": "418cb99544d4af97efac995c566f49a67204a8572cca14774d21d51d15c8fecf"
+    },
+    {
+      "inputs": [
+        "benchmark-observation",
+        "alignment-map"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/error-attribution.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "error-attribution",
+      "schema": "groundupscale.dev/error-attribution/v1alpha1",
+      "sha256": "5fdb1b4c320793526a84051dc3d440729ec57aa98ba0db12d6c839e845425965"
+    },
+    {
+      "inputs": [
+        "explanation-graph",
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/html-report/v1alpha2",
+      "sha256": "9dbcf1ac65452d86ec5212ad9aa46a563d25c667db2287d91742590b34c1694d"
+    }
+  ],
+  "compilation_fingerprint": "d6656500c7ea136eefa527306d50e4ba97b878f18d44cf732ec1d0124276fdf6",
+  "cost_compilation_fingerprint": "e5cd6df0d3c6010588c070fd5fbda3a1bf82be444cd367dfb101cec04e9bd383",
+  "created_at": "2026-08-12T03:34:14.052484+00:00",
+  "device": "cpu",
+  "environment_validity": "passed",
+  "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+  "hardware_compilation_fingerprint": "534739b30211998607e3510561b5be9a5b9a52e9a688570a00559691a81081b6",
+  "immutability": "writer refuses an existing run_id; artifact digests are authoritative",
+  "run_id": "issue25-m4-qproj-m256-n512-k512-search-02",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "seed": 20260806,
+  "stages": {
+    "benchmark": "completed",
+    "calibration": "skipped-not-requested",
+    "compilation": "completed",
+    "duration_prediction": "phase-capabilities-incomplete",
+    "prediction_observation_comparison": "completed",
+    "structural_prediction": "completed",
+    "trace": "completed"
+  },
+  "status": "completed"
+}

@@ -68,6 +68,32 @@ def _shape(value: object) -> dict[str, int] | None:
     return result
 
 
+def _semantic_identity(value: object) -> str | None:
+    """Project backend-specific IR paths onto one portable operator identity."""
+    if not isinstance(value, Mapping):
+        return None
+    for key in ("semantic_identity", "stable_path", "semantic_node"):
+        raw = value.get(key)
+        if not _string(raw):
+            continue
+        parts = [
+            part.replace("_", "-").lower()
+            for part in str(raw).strip("/").split("/")
+            if part
+        ]
+        transformer_indices = [
+            index for index, part in enumerate(parts) if part == "transformer"
+        ]
+        if transformer_indices:
+            parts = parts[transformer_indices[-1] :]
+        elif parts and parts[0] == "semantic":
+            parts = parts[1:]
+        identity = "/".join(parts)
+        if identity:
+            return identity
+    return None
+
+
 def _refs(value: object) -> list[str]:
     found: list[str] = []
     if isinstance(value, Mapping):
@@ -420,17 +446,14 @@ def compare_cross_hardware(
     semantic_ascend = ascend_evidence.get("resolved_ir", {}) if isinstance(ascend_evidence, Mapping) else {}
     semantic_operation_m4 = semantic_m4.get("operation") if isinstance(semantic_m4, Mapping) else None
     semantic_operation_ascend = semantic_ascend.get("operation") if isinstance(semantic_ascend, Mapping) else None
-    stable_path_m4 = semantic_m4.get("stable_path") if isinstance(semantic_m4, Mapping) else None
-    stable_path_ascend = semantic_ascend.get("stable_path") if isinstance(semantic_ascend, Mapping) else None
+    semantic_identity_m4 = _semantic_identity(semantic_m4)
+    semantic_identity_ascend = _semantic_identity(semantic_ascend)
     semantic_match = (
         isinstance(semantic_m4, Mapping) and isinstance(semantic_ascend, Mapping)
         and _string(semantic_operation_m4)
         and semantic_operation_m4 == semantic_operation_ascend
-        and (
-            not _string(stable_path_m4)
-            or not _string(stable_path_ascend)
-            or stable_path_m4 == stable_path_ascend
-        )
+        and _string(semantic_identity_m4)
+        and semantic_identity_m4 == semantic_identity_ascend
     )
     if not domain_match:
         shape = {"status": "unknown", "reason_code": "execution-domain-mismatch", "evidence_refs": []}
@@ -448,7 +471,13 @@ def compare_cross_hardware(
         "schema": CROSS_HARDWARE_REPORT_SCHEMA,
         "status": status,
         "shape_comparison": shape,
-        "semantic_comparison": {"status": "matched" if semantic_match else "unknown", "operation": semantic_operation_m4},
+        "semantic_comparison": {
+            "status": "matched" if semantic_match else "unknown",
+            "operation": semantic_operation_m4,
+            "identity": (
+                semantic_identity_m4 if semantic_match else None
+            ),
+        },
         "cohorts": {
             "m4": {"cohort_id": m4["cohort_id"], "independent": True},
             "ascend": {"cohort_id": ascend["cohort_id"], "independent": ascend["independent"], **({"reason_code": ascend["reason_code"]} if "reason_code" in ascend else {})},

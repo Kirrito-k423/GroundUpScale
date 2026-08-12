@@ -1,12 +1,12 @@
 apiVersion: groundupscale.dev/v1alpha1
 kind: AnalysisCase
 metadata:
-  name: issue25-m4-m256
+  name: issue25-m4-m256-fixed-nk512
   version: 1.0.0
 spec:
   shape:
     kind: fixed
-    bindings: {B: 1, S: 256, H: 256, NH: 4, D: 64, I: 1024}
+    bindings: {B: 1, S: 256, H: 512, NH: 8, D: 64, I: 2048}
     dtype: float32
   driver:
     kind: fixed_iterations

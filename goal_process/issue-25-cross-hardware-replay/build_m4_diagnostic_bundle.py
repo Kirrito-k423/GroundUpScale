@@ -33,7 +33,7 @@ Q_PATH = (
     "semantic/workload/transformer-prefill/request/model-prefill/model/"
     "transformer/layer_0/attention/q_proj"
 )
-SOURCE_ROOT = WORK_ROOT / "evidence" / "modern-source-runs" / "runs"
+SOURCE_ROOT = WORK_ROOT / "evidence" / "adr0036-source-runs" / "runs"
 LEGACY_SOURCE_ROOT = Path(
     os.environ.get(
         "GROUNDUPSCALE_ISSUE25_M4_SOURCE_ROOT",
@@ -57,14 +57,20 @@ LEGACY_PROFILE_PATH = Path(
     )
 )
 SEARCH_256 = (
-    "issue25-m4-modern-qproj-cube256-search-01",
-    "issue25-m4-modern-qproj-cube256-search-02",
-    "issue25-m4-modern-qproj-cube256-search-03",
+    "issue25-m4-qproj-m256-n512-k512-search-02",
+    "issue25-m4-qproj-m256-n512-k512-search-03",
+    "issue25-m4-qproj-m256-n512-k512-search-05",
 )
 HOLDOUT_256 = (
-    "issue25-m4-modern-qproj-cube256-holdout-01",
-    "issue25-m4-modern-qproj-cube256-holdout-02",
-    "issue25-m4-modern-qproj-cube256-holdout-03",
+    "issue25-m4-qproj-m256-n512-k512-holdout-01",
+    "issue25-m4-qproj-m256-n512-k512-holdout-03",
+    "issue25-m4-qproj-m256-n512-k512-holdout-05",
+)
+CONFIRMATION_ROOT = WORK_ROOT / "evidence" / "adr0036-confirmation-runs" / "runs"
+CONFIRMATION_384 = (
+    "issue25-m4-qproj-m384-n512-k512-confirmation-04",
+    "issue25-m4-qproj-m384-n512-k512-confirmation-05",
+    "issue25-m4-qproj-m384-n512-k512-confirmation-06",
 )
 BASELINE_LANE = "issue25-m4-baseline"
 DIAGNOSTIC_LANE = "issue25-m4-diagnostic"
@@ -201,8 +207,10 @@ def _case(run: Path) -> dict[str, Any]:
     return case
 
 
-def _source_session(run_id: str, *, lane: str) -> dict[str, Any]:
-    run = SOURCE_ROOT / run_id
+def _source_session(
+    run_id: str, *, lane: str, root: Path = SOURCE_ROOT
+) -> dict[str, Any]:
+    run = root / run_id
     _verified_source(run, expected_id=run_id)
     case = _case(run)
     environment = _read_json(run / "resolved/environment.json")
@@ -331,8 +339,10 @@ def _anchor_512() -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]
     surface_anchor = {
         "anchor_id": anchor_id,
         "anchor_version": "v1",
-        "shape": {"s": 512},
-        "effective_rate": 2.0 * 512**3 / anchor["latency_ns"] * 1e9,
+        "shape": {"m": 512},
+        "latency_ns": anchor["latency_ns"],
+        "standard_uncertainty_ns": anchor["standard_uncertainty_ns"],
+        "effective_rate": 2.0 * 512 * 512 * 512 / anchor["latency_ns"] * 1e9,
         "rate_unit": "FLOP/s",
         "standard_uncertainty_rate": (
             2.0 * 512**3 / anchor["latency_ns"] ** 2 * anchor["standard_uncertainty_ns"] * 1e9
@@ -356,10 +366,10 @@ def _anchor_256() -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, 
     for run_id in SEARCH_256 + HOLDOUT_256:
         contract = _case(SOURCE_ROOT / run_id)["execution_contract"]
         if [item["shape"] for item in contract["operand_contracts"]] != [
-            [1, 256, 256],
-            [256, 256],
+            [1, 256, 512],
+            [512, 512],
         ]:
-            raise ValueError(f"M4 256 source is not a cube MatMul: {run_id}")
+            raise ValueError(f"M4 256 source did not hold N=K=512: {run_id}")
     search_ids = {s["session_id"] for s in search}
     holdout_ids = {s["session_id"] for s in holdout}
     if search_ids & holdout_ids or len(search_ids) != 3 or len(holdout_ids) != 3:
@@ -372,11 +382,13 @@ def _anchor_256() -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, 
         {
             "anchor_id": anchor_id,
             "anchor_version": "v1",
-            "shape": {"s": 256},
-            "effective_rate": 2.0 * 256**3 / latency * 1e9,
+            "shape": {"m": 256},
+            "latency_ns": latency,
+            "standard_uncertainty_ns": uncertainty,
+            "effective_rate": 2.0 * 256 * 512 * 512 / latency * 1e9,
             "rate_unit": "FLOP/s",
             "standard_uncertainty_rate": (
-                2.0 * 256**3 / latency**2 * uncertainty * 1e9
+                2.0 * 256 * 512 * 512 / latency**2 * uncertainty * 1e9
             ),
             "candidate_id": "torch.matmul.cpu.fp32",
             "candidate_family": "torch.matmul.cpu.fp32",
@@ -392,7 +404,9 @@ def _anchor_256() -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, 
 
 
 def _surface(
-    anchor_256: dict[str, Any], anchor_512: dict[str, Any]
+    anchor_256: dict[str, Any],
+    anchor_512: dict[str, Any],
+    confirmation_sessions: list[dict[str, Any]],
 ) -> dict[str, Any]:
     domain = {
         "semantic_operation": "MatMul",
@@ -408,6 +422,21 @@ def _surface(
     anchors = [deepcopy(anchor_256), deepcopy(anchor_512)]
     for anchor in anchors:
         anchor["domain"] = domain
+    predicted_384_latency = (
+        float(anchor_256["latency_ns"]) + float(anchor_512["latency_ns"])
+    ) / 2.0
+    confirmation_medians = [
+        float(median(session["raw_samples_ns"]))
+        for session in confirmation_sessions
+    ]
+    confirmation_residuals = [
+        observed - predicted_384_latency
+        for observed in confirmation_medians
+    ]
+    interpolation_uncertainty = (
+        sum(residual**2 for residual in confirmation_residuals)
+        / len(confirmation_residuals)
+    ) ** 0.5
     surface: dict[str, Any] = {
         "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
         "version": "v1",
@@ -418,47 +447,56 @@ def _surface(
         "anchor_lifecycle_policy": _policy(
             "issue25-frontier-anchor-lifecycle", "M4 q-proj Surface"
         ),
-        "coordinate": {"axis": "s", "transform": "identity", "transform_version": "v1"},
+        "coordinate": {"axis": "m", "transform": "identity", "transform_version": "v1"},
         "work_formula": {
             "kind": "matmul-2mnk",
+            "fixed_n": 512,
             "fixed_k": 512,
-            "version": "v1",
+            "version": "v2",
             "work_unit": "FLOP",
+        },
+        "response_model": {
+            "kind": "piecewise-linear-latency",
+            "primary_response": "latency_ns",
+            "response_identity": "m4-q-proj-duration-v1",
+            "shape_regime_identity": "m4-q-proj-fixed-nk-ramp-v1",
+            "fixed_dimensions": {"n": 512, "k": 512},
+            "version": "v1",
         },
         "anchors": anchors,
         "cells": [
             {
-                "cell_id": "issue25-m4-qproj-s256-s512",
+                "cell_id": "issue25-m4-qproj-m256-m512-fixed-nk512",
                 "anchor_ids": [anchor_256["anchor_id"], anchor_512["anchor_id"]],
                 "status": "retained",
-                "regime_id": "m4-qproj-eager-fp32-v1",
+                "regime_id": "m4-qproj-fixed-nk-eager-fp32-v1",
                 "confirmation_evidence_refs": [
-                    "artifact://issue-25/m4-surface-confirmation"
+                    session["evidence_ref"]
+                    for session in confirmation_sessions
                 ],
-                "interpolation_standard_uncertainty_rate": 0.0,
+                "confirmation_shape": {"m": 384},
+                "confirmation_observed_latency_ns": float(
+                    median(confirmation_medians)
+                ),
+                "interpolation_standard_uncertainty_ns": (
+                    interpolation_uncertainty
+                ),
             }
         ],
         "uncertainty_policy": {
             **_policy("issue25-m4-surface-uncertainty", "M4 q-proj Surface"),
             "combination": "root-sum-of-squares",
             "target_coverage": 0.95,
-            "anchor_covariance": [
-                [anchor_256["standard_uncertainty_rate"] ** 2, 0.0],
-                [0.0, anchor_512["standard_uncertainty_rate"] ** 2],
+            "anchor_covariance_ns2": [
+                [anchor_256["standard_uncertainty_ns"] ** 2, 0.0],
+                [0.0, anchor_512["standard_uncertainty_ns"] ** 2],
             ],
-            "instrumentation_standard_uncertainty_rate": 0.0,
+            "instrumentation_standard_uncertainty_ns": 0.0,
             "calibration_evidence_refs": [
                 "artifact://issue-25/m4-surface-uncertainty-calibration"
             ],
         },
         "evidence_refs": ["artifact://issue-25/m4-surface-build"],
-    }
-    # The current 1D surface schema uses square-matmul work.  Both endpoints
-    # remain exact anchors, so their effective rates carry the measured work.
-    surface["work_formula"] = {
-        "kind": "square-matmul-2s3",
-        "version": "v1",
-        "work_unit": "FLOP",
     }
     surface["anchor_lifecycle_policy"]["version"] = "v2"
     surface["input_digest"] = _canonical_digest(surface)
@@ -518,7 +556,32 @@ def _document() -> dict[str, Any]:
     domain = _domain()
     anchor_512, surface_anchor_512, search_512 = _anchor_512()
     surface_anchor_256, search_256, holdout_256 = _anchor_256()
-    surface = _surface(surface_anchor_256, surface_anchor_512)
+    confirmation_384 = [
+        _source_session(
+            run_id,
+            lane="m4-384-confirmation",
+            root=CONFIRMATION_ROOT,
+        )
+        for run_id in CONFIRMATION_384
+    ]
+    if any(
+        not session["warmup"]["converged"] for session in confirmation_384
+    ):
+        raise ValueError("M4 384 confirmation warmup failed qualification")
+    for run_id in CONFIRMATION_384:
+        contract = _case(CONFIRMATION_ROOT / run_id)["execution_contract"]
+        if [item["shape"] for item in contract["operand_contracts"]] != [
+            [1, 384, 512],
+            [512, 512],
+        ]:
+            raise ValueError(
+                f"M4 confirmation did not hold N=K=512: {run_id}"
+            )
+    surface = _surface(
+        surface_anchor_256,
+        surface_anchor_512,
+        confirmation_384,
+    )
     completion = _completion_boundary()
     baseline_lane = {
         "lane_id": BASELINE_LANE,
@@ -540,11 +603,16 @@ def _document() -> dict[str, Any]:
         "evidence_ref": "artifact://issue-25/m4-baseline-observation",
     }
     diagnostic_lane = {
-        **deepcopy(baseline_lane),
         "lane_id": DIAGNOSTIC_LANE,
+        "pair_id": PAIR_ID,
         "paired_baseline_lane_id": BASELINE_LANE,
+        "cohort_id": COHORT_ID,
+        "candidate_id": "torch.matmul.cpu.fp32",
+        "execution_domain": domain,
         "instrumentation_profile": "not-requested/v1",
+        "status": "not_requested",
         "timing_used_for_frontier": False,
+        "reason_code": "platform-counters-not-requested",
         "evidence_ref": "artifact://issue-25/m4-diagnostic-lane-not-requested",
     }
     document: dict[str, Any] = {
@@ -555,7 +623,11 @@ def _document() -> dict[str, Any]:
             "e2e_case": "two-layer-prefill",
             "evidence_ref": "artifact://issue-25/m4-resolved-configuration",
         },
-        "resolved_ir": {"semantic_node": Q_PATH, "operation": "MatMul"},
+        "resolved_ir": {
+            "semantic_node": Q_PATH,
+            "semantic_identity": "transformer/layer-0/attention/q-proj",
+            "operation": "MatMul",
+        },
         "hardware": hardware,
         "cohort_id": COHORT_ID,
         "execution_domain": domain,
@@ -636,14 +708,14 @@ def _document() -> dict[str, Any]:
                 "query_id": "issue25-m4-qproj-512-exact",
                 "surface_id": surface["surface_id"],
                 "surface_version": surface["version"],
-                "shape": {"s": 512},
+                "shape": {"m": 512},
                 "domain": surface["domain"],
             },
             {
                 "query_id": "issue25-m4-qproj-384-interpolation",
                 "surface_id": surface["surface_id"],
                 "surface_version": surface["version"],
-                "shape": {"s": 384},
+                "shape": {"m": 384},
                 "domain": surface["domain"],
             },
         ],
@@ -708,6 +780,14 @@ def _document() -> dict[str, Any]:
                     "run_bundle": f"run-bundle://{session['session_id']}",
                 }
                 for session in search_256 + holdout_256
+            ],
+            *[
+                {
+                    "run_id": session["session_id"],
+                    "role": "surface-confirmation-session",
+                    "run_bundle": f"run-bundle://{session['session_id']}",
+                }
+                for session in confirmation_384
             ],
         ],
     }
@@ -817,6 +897,30 @@ def main() -> int:
                     run / "observation/raw/benchmark.json",
                     f"source/{run_id}-benchmark.json",
                     "source-surface-session",
+                    _read_json(run / "observation/raw/benchmark.json")["schema"],
+                ),
+                (
+                    run / "resolved/environment.json",
+                    f"source/{run_id}-environment.json",
+                    "source-environment",
+                    _read_json(run / "resolved/environment.json")["schema"],
+                ),
+            ]
+        )
+    for run_id in CONFIRMATION_384:
+        run = CONFIRMATION_ROOT / run_id
+        sources.extend(
+            [
+                (
+                    run / "run.manifest.json",
+                    f"source/{run_id}-run.manifest.json",
+                    "source-run-manifest",
+                    "groundupscale.dev/run-manifest/v1alpha1",
+                ),
+                (
+                    run / "observation/raw/benchmark.json",
+                    f"source/{run_id}-benchmark.json",
+                    "source-surface-confirmation-session",
                     _read_json(run / "observation/raw/benchmark.json")["schema"],
                 ),
                 (
