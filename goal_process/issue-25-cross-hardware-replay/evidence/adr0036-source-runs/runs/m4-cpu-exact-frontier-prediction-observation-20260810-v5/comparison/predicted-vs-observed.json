@@ -1,0 +1,2254 @@
+{
+  "base_prediction": {
+    "hardware_backend_id": "apple.m4.cpu.resource-envelope",
+    "hardware_compilation_fingerprint": "5cd4492f4ae27c1f9d0c9e831ae5fc885083938a15e0325ba45a57d20217a1da",
+    "prediction_complete": false,
+    "provisional_estimate_ns": null,
+    "provisional_evidence_tier": null
+  },
+  "comparison_fingerprint": "4a7cc78797cf6b6aac5da4dee6ec1cdfbfbcb920b3a34bb45bf17f3f3f4e2df3",
+  "latency_cases": [
+    {
+      "case_id": "matmul-q-proj",
+      "comparison": {
+        "error_status": "not-evaluable-hardware-floor",
+        "frontier_efficiency_status": "qualified",
+        "interpretation": "The exact-Shape Operator Frontier and Observation share the declared Shape, execution domain, candidate family, and hardware cohort. Frontier Efficiency compares achieved capability with that Frontier; it is not prediction error. Gap status: within-combined-uncertainty.",
+        "observed_minus_hardware_floor_ns": 1005.0914618964307,
+        "observed_minus_operator_frontier_ns": 168.17857142857974,
+        "observed_minus_provisional_ns": 1005.0914618964307,
+        "observed_to_hardware_floor_ratio": 1.0065466474996554,
+        "observed_to_operator_frontier_ratio": 1.001089489446135,
+        "observed_to_provisional_ratio": 1.0065466474996554,
+        "operator_frontier_combined_uncertainty_ns": 8156.6867322850185,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": 0.9989116962493155,
+        "operator_frontier_gap_status": "within-combined-uncertainty",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": 2612.1308332893736,
+          "current_observation_iqr_half_width": 75.15178571428987,
+          "session_repeatability_budget": 7726.637500000001,
+          "timer_resolution": 41.66666666666667
+        },
+        "operator_frontier_uncertainty_policy": {
+          "composition": "root-sum-square",
+          "coverage_basis": "six-session-qualification-bound-and-current-IQR",
+          "maximum_session_repeatability_fraction": 0.05,
+          "policy_id": "exact-frontier-observation-combined-uncertainty",
+          "version": "1.0.0"
+        },
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "evidence_tier": "qualified",
+        "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+        "iqr_over_median": 0.0009726324771194439,
+        "kind": "benchmark-median",
+        "median_ns": 154532.75,
+        "q1_ns": 154420.4107142857,
+        "q3_ns": 154570.7142857143,
+        "reason_codes": [],
+        "throughput_per_second": 6471.120199439924
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 1,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 3145728,
+        "critical_path_hardware_floor_ns": 153527.65853810357,
+        "empirical_compute_time_ns": 153527.65853810357,
+        "empirical_hardware_floor_ns": 153527.65853810357,
+        "empirical_memory_time_ns": 24802.206311951108,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 153527.65853810357,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": "serialized.events",
+        "materialized_bytes": 3145728,
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": 154364.57142857142,
+        "operator_frontier_anchor_ids": [
+          "apple-m4-cpu-matmul-512-matmul-q-proj-3.0.0"
+        ],
+        "operator_frontier_candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "operator_frontier_execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+        "operator_frontier_hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "operator_frontier_input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+        "operator_frontier_match_status": "exact-anchor",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": 2612.1308332893736,
+        "provisional_estimate_ns": 153527.65853810357,
+        "provisional_evidence_tier": "exploratory",
+        "provisional_reason_codes": [
+          "load-above-policy",
+          "total-competing-cpu-above-policy"
+        ],
+        "resource_hardware_floor_ns": 153527.65853810357,
+        "resource_limiting_resource": "compute.fp32",
+        "resource_physical_floor_ns": 153527.65853810357,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": 153527.65853810357,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "evidence_tier": "qualified",
+        "execution_contract_digest": null,
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.008086293312111132,
+        "kind": "benchmark-median",
+        "median_ns": 69289.42857142858,
+        "q1_ns": 68956.46428571429,
+        "q3_ns": 69516.75892857143,
+        "reason_codes": [],
+        "throughput_per_second": 14432.216004915199
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 1,
+        "compound_phase_schedule": {
+          "assumptions": [
+            "phase dependencies come from the Cost IR Operator Phase Graph",
+            "each phase uses only its exact operation-class compute and memory capabilities",
+            "each exact compute probe measures the complete phase invocation, including its data movement",
+            "the memory-pattern probe is an independent lower-bound constraint, so the phase local floor is max(compute probe, memory floor) rather than their duplicate sum",
+            "the two capability-profile references on a known phase make this same-invocation composition auditable",
+            "no cross-phase or cross-chunk overlap is permitted without a Chunk Pipeline Contract",
+            "missing phase capability evidence makes the compound duration unknown"
+          ],
+          "chunk_pipeline_contract_id": null,
+          "critical_path_duration_ns": null,
+          "formula": "sum(phase.local_hardware_floor_ns)",
+          "missing_capabilities": [
+            "compute.elementwise.multiply.fp32",
+            "compute.elementwise.square.fp32",
+            "compute.reduction.sum.fp32",
+            "compute.scalar.add.fp32",
+            "compute.scalar.divide.fp32",
+            "compute.transcendental.rsqrt.fp32",
+            "memory.broadcast-read-write.fp32",
+            "memory.elementwise-read-write.fp32",
+            "memory.row-reduction.fp32",
+            "memory.row-scalar-read-write.fp32"
+          ],
+          "phases": [
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1048576,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.square.fp32",
+                "memory.elementwise-read-write.fp32"
+              ],
+              "operation_class": "elementwise.square.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1",
+              "phase_name": "square",
+              "predecessor_phase_ids": [],
+              "required_compute_capability": "compute.elementwise.square.fp32",
+              "required_memory_capability": "memory.elementwise-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1048576,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 261632,
+              "missing_capabilities": [
+                "compute.reduction.sum.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.sum.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499",
+              "phase_name": "reduce_sum",
+              "predecessor_phase_ids": [
+                "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1"
+              ],
+              "required_compute_capability": "compute.reduction.sum.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.scalar.divide.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "elementwise.divide.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847",
+              "phase_name": "mean_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499"
+              ],
+              "required_compute_capability": "compute.scalar.divide.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.scalar.add.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "elementwise.add.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4",
+              "phase_name": "epsilon_add",
+              "predecessor_phase_ids": [
+                "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847"
+              ],
+              "required_compute_capability": "compute.scalar.add.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.transcendental.rsqrt.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "transcendental.rsqrt.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616",
+              "phase_name": "rsqrt",
+              "predecessor_phase_ids": [
+                "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4"
+              ],
+              "required_compute_capability": "compute.transcendental.rsqrt.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1050624,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.multiply.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.multiply.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823",
+              "phase_name": "input_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616"
+              ],
+              "required_compute_capability": "compute.elementwise.multiply.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1050624,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.multiply.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.multiply.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:7f070b5b28cf71213936830262ca2138fb9606862724207f8ef1afbcd8929f19",
+              "phase_name": "weight_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823"
+              ],
+              "required_compute_capability": "compute.elementwise.multiply.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            }
+          ],
+          "policy": "serialized-no-chunk",
+          "selected_duration_ns": null,
+          "serialized_duration_ns": null,
+          "status": "unknown"
+        },
+        "compound_provisional_phase_schedule": {
+          "assumptions": [
+            "phase dependencies come from the Cost IR Operator Phase Graph",
+            "each phase uses only its exact operation-class compute and memory capabilities",
+            "each exact compute probe measures the complete phase invocation, including its data movement",
+            "the memory-pattern probe is an independent lower-bound constraint, so the phase local floor is max(compute probe, memory floor) rather than their duplicate sum",
+            "the two capability-profile references on a known phase make this same-invocation composition auditable",
+            "no cross-phase or cross-chunk overlap is permitted without a Chunk Pipeline Contract",
+            "missing phase capability evidence makes the compound duration unknown"
+          ],
+          "chunk_pipeline_contract_id": null,
+          "critical_path_duration_ns": null,
+          "formula": "sum(phase.local_hardware_floor_ns)",
+          "missing_capabilities": [
+            "compute.elementwise.multiply.fp32",
+            "compute.elementwise.square.fp32",
+            "compute.reduction.sum.fp32",
+            "compute.scalar.add.fp32",
+            "compute.scalar.divide.fp32",
+            "compute.transcendental.rsqrt.fp32",
+            "memory.broadcast-read-write.fp32",
+            "memory.elementwise-read-write.fp32",
+            "memory.row-reduction.fp32",
+            "memory.row-scalar-read-write.fp32"
+          ],
+          "phases": [
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1048576,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.square.fp32",
+                "memory.elementwise-read-write.fp32"
+              ],
+              "operation_class": "elementwise.square.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1",
+              "phase_name": "square",
+              "predecessor_phase_ids": [],
+              "required_compute_capability": "compute.elementwise.square.fp32",
+              "required_memory_capability": "memory.elementwise-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1048576,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 261632,
+              "missing_capabilities": [
+                "compute.reduction.sum.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.sum.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499",
+              "phase_name": "reduce_sum",
+              "predecessor_phase_ids": [
+                "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1"
+              ],
+              "required_compute_capability": "compute.reduction.sum.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.scalar.divide.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "elementwise.divide.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847",
+              "phase_name": "mean_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499"
+              ],
+              "required_compute_capability": "compute.scalar.divide.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.scalar.add.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "elementwise.add.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4",
+              "phase_name": "epsilon_add",
+              "predecessor_phase_ids": [
+                "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847"
+              ],
+              "required_compute_capability": "compute.scalar.add.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 2048,
+              "logical_write_bytes": 2048,
+              "memory_time_ns": null,
+              "minimum_flops": 512,
+              "missing_capabilities": [
+                "compute.transcendental.rsqrt.fp32",
+                "memory.row-scalar-read-write.fp32"
+              ],
+              "operation_class": "transcendental.rsqrt.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616",
+              "phase_name": "rsqrt",
+              "predecessor_phase_ids": [
+                "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4"
+              ],
+              "required_compute_capability": "compute.transcendental.rsqrt.fp32",
+              "required_memory_capability": "memory.row-scalar-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1050624,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.multiply.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.multiply.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823",
+              "phase_name": "input_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616"
+              ],
+              "required_compute_capability": "compute.elementwise.multiply.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 1050624,
+              "logical_write_bytes": 1048576,
+              "memory_time_ns": null,
+              "minimum_flops": 262144,
+              "missing_capabilities": [
+                "compute.elementwise.multiply.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.multiply.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:7f070b5b28cf71213936830262ca2138fb9606862724207f8ef1afbcd8929f19",
+              "phase_name": "weight_scale",
+              "predecessor_phase_ids": [
+                "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823"
+              ],
+              "required_compute_capability": "compute.elementwise.multiply.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            }
+          ],
+          "policy": "serialized-no-chunk",
+          "selected_duration_ns": null,
+          "serialized_duration_ns": null,
+          "status": "unknown"
+        },
+        "compulsory_bytes": 2099200,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": 600.3030777036902,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": 16550.951477701747,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 16550.951477701747,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 2099200,
+        "minimum_work_flops": 1049600,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "unknown",
+        "operator_frontier_reason_codes": [
+          "exact-shape-operator-frontier-not-found"
+        ],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": 16550.951477701747,
+        "resource_limiting_resource": "memory.shared",
+        "resource_physical_floor_ns": 16550.951477701747,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": null,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "case_id": "softmax-attention",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "evidence_tier": "qualified",
+        "execution_contract_digest": null,
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.003325978046721081,
+        "kind": "benchmark-median",
+        "median_ns": 1110312.5,
+        "q1_ns": 1108864.625,
+        "q3_ns": 1112557.5,
+        "reason_codes": [],
+        "throughput_per_second": 900.6473402758232
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 1,
+        "compound_phase_schedule": {
+          "assumptions": [
+            "phase dependencies come from the Cost IR Operator Phase Graph",
+            "each phase uses only its exact operation-class compute and memory capabilities",
+            "each exact compute probe measures the complete phase invocation, including its data movement",
+            "the memory-pattern probe is an independent lower-bound constraint, so the phase local floor is max(compute probe, memory floor) rather than their duplicate sum",
+            "the two capability-profile references on a known phase make this same-invocation composition auditable",
+            "no cross-phase or cross-chunk overlap is permitted without a Chunk Pipeline Contract",
+            "missing phase capability evidence makes the compound duration unknown"
+          ],
+          "chunk_pipeline_contract_id": null,
+          "critical_path_duration_ns": null,
+          "formula": "sum(phase.local_hardware_floor_ns)",
+          "missing_capabilities": [
+            "compute.elementwise.divide.fp32",
+            "compute.elementwise.subtract.fp32",
+            "compute.reduction.max.fp32",
+            "compute.reduction.sum.fp32",
+            "compute.transcendental.exp.fp32",
+            "memory.broadcast-read-write.fp32",
+            "memory.elementwise-read-write.fp32",
+            "memory.row-reduction.fp32"
+          ],
+          "phases": [
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 16384,
+              "memory_time_ns": null,
+              "minimum_flops": 2093056,
+              "missing_capabilities": [
+                "compute.reduction.max.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.max.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:3f70b819e1f5b0195d19319965a10354638b3a6ad6345c65e0084d4d880cb893",
+              "phase_name": "max_reduce",
+              "predecessor_phase_ids": [],
+              "required_compute_capability": "compute.reduction.max.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8404992,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.elementwise.subtract.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.subtract.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:f89c9a68d477fadfce6b3de2d246447b5ecc0584b4ba1d42d729ab31fe4408a2",
+              "phase_name": "subtract",
+              "predecessor_phase_ids": [
+                "cost-phase:3f70b819e1f5b0195d19319965a10354638b3a6ad6345c65e0084d4d880cb893"
+              ],
+              "required_compute_capability": "compute.elementwise.subtract.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.transcendental.exp.fp32",
+                "memory.elementwise-read-write.fp32"
+              ],
+              "operation_class": "transcendental.exp.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:8c89e67b0b4dffad41de7846524814d2b6fcc0f76f24f5b61e1290b74e920eb4",
+              "phase_name": "exp",
+              "predecessor_phase_ids": [
+                "cost-phase:f89c9a68d477fadfce6b3de2d246447b5ecc0584b4ba1d42d729ab31fe4408a2"
+              ],
+              "required_compute_capability": "compute.transcendental.exp.fp32",
+              "required_memory_capability": "memory.elementwise-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 16384,
+              "memory_time_ns": null,
+              "minimum_flops": 2093056,
+              "missing_capabilities": [
+                "compute.reduction.sum.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.sum.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:b32154c8eaf78b9f1ed386a8dce8371a2835c96467592f990a45a3909aba55ba",
+              "phase_name": "sum_reduce",
+              "predecessor_phase_ids": [
+                "cost-phase:8c89e67b0b4dffad41de7846524814d2b6fcc0f76f24f5b61e1290b74e920eb4"
+              ],
+              "required_compute_capability": "compute.reduction.sum.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8404992,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.elementwise.divide.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.divide.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:43a87dcd1f3914e6134f91fa48da9d7c0f2ef7579763911faaa0dffe4f337a89",
+              "phase_name": "normalize",
+              "predecessor_phase_ids": [
+                "cost-phase:b32154c8eaf78b9f1ed386a8dce8371a2835c96467592f990a45a3909aba55ba"
+              ],
+              "required_compute_capability": "compute.elementwise.divide.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            }
+          ],
+          "policy": "serialized-no-chunk",
+          "selected_duration_ns": null,
+          "serialized_duration_ns": null,
+          "status": "unknown"
+        },
+        "compound_provisional_phase_schedule": {
+          "assumptions": [
+            "phase dependencies come from the Cost IR Operator Phase Graph",
+            "each phase uses only its exact operation-class compute and memory capabilities",
+            "each exact compute probe measures the complete phase invocation, including its data movement",
+            "the memory-pattern probe is an independent lower-bound constraint, so the phase local floor is max(compute probe, memory floor) rather than their duplicate sum",
+            "the two capability-profile references on a known phase make this same-invocation composition auditable",
+            "no cross-phase or cross-chunk overlap is permitted without a Chunk Pipeline Contract",
+            "missing phase capability evidence makes the compound duration unknown"
+          ],
+          "chunk_pipeline_contract_id": null,
+          "critical_path_duration_ns": null,
+          "formula": "sum(phase.local_hardware_floor_ns)",
+          "missing_capabilities": [
+            "compute.elementwise.divide.fp32",
+            "compute.elementwise.subtract.fp32",
+            "compute.reduction.max.fp32",
+            "compute.reduction.sum.fp32",
+            "compute.transcendental.exp.fp32",
+            "memory.broadcast-read-write.fp32",
+            "memory.elementwise-read-write.fp32",
+            "memory.row-reduction.fp32"
+          ],
+          "phases": [
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 16384,
+              "memory_time_ns": null,
+              "minimum_flops": 2093056,
+              "missing_capabilities": [
+                "compute.reduction.max.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.max.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:3f70b819e1f5b0195d19319965a10354638b3a6ad6345c65e0084d4d880cb893",
+              "phase_name": "max_reduce",
+              "predecessor_phase_ids": [],
+              "required_compute_capability": "compute.reduction.max.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8404992,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.elementwise.subtract.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.subtract.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:f89c9a68d477fadfce6b3de2d246447b5ecc0584b4ba1d42d729ab31fe4408a2",
+              "phase_name": "subtract",
+              "predecessor_phase_ids": [
+                "cost-phase:3f70b819e1f5b0195d19319965a10354638b3a6ad6345c65e0084d4d880cb893"
+              ],
+              "required_compute_capability": "compute.elementwise.subtract.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.transcendental.exp.fp32",
+                "memory.elementwise-read-write.fp32"
+              ],
+              "operation_class": "transcendental.exp.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:8c89e67b0b4dffad41de7846524814d2b6fcc0f76f24f5b61e1290b74e920eb4",
+              "phase_name": "exp",
+              "predecessor_phase_ids": [
+                "cost-phase:f89c9a68d477fadfce6b3de2d246447b5ecc0584b4ba1d42d729ab31fe4408a2"
+              ],
+              "required_compute_capability": "compute.transcendental.exp.fp32",
+              "required_memory_capability": "memory.elementwise-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8388608,
+              "logical_write_bytes": 16384,
+              "memory_time_ns": null,
+              "minimum_flops": 2093056,
+              "missing_capabilities": [
+                "compute.reduction.sum.fp32",
+                "memory.row-reduction.fp32"
+              ],
+              "operation_class": "reduction.sum.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:b32154c8eaf78b9f1ed386a8dce8371a2835c96467592f990a45a3909aba55ba",
+              "phase_name": "sum_reduce",
+              "predecessor_phase_ids": [
+                "cost-phase:8c89e67b0b4dffad41de7846524814d2b6fcc0f76f24f5b61e1290b74e920eb4"
+              ],
+              "required_compute_capability": "compute.reduction.sum.fp32",
+              "required_memory_capability": "memory.row-reduction.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            },
+            {
+              "capability_evidence_refs": [],
+              "compute_time_ns": null,
+              "limiting_resource": null,
+              "local_hardware_floor_ns": null,
+              "logical_read_bytes": 8404992,
+              "logical_write_bytes": 8388608,
+              "memory_time_ns": null,
+              "minimum_flops": 2097152,
+              "missing_capabilities": [
+                "compute.elementwise.divide.fp32",
+                "memory.broadcast-read-write.fp32"
+              ],
+              "operation_class": "elementwise.divide.fp32",
+              "overlap_evidence_refs": [],
+              "phase_id": "cost-phase:43a87dcd1f3914e6134f91fa48da9d7c0f2ef7579763911faaa0dffe4f337a89",
+              "phase_name": "normalize",
+              "predecessor_phase_ids": [
+                "cost-phase:b32154c8eaf78b9f1ed386a8dce8371a2835c96467592f990a45a3909aba55ba"
+              ],
+              "required_compute_capability": "compute.elementwise.divide.fp32",
+              "required_memory_capability": "memory.broadcast-read-write.fp32",
+              "resource_composition": "max",
+              "status": "unknown"
+            }
+          ],
+          "policy": "serialized-no-chunk",
+          "selected_duration_ns": null,
+          "serialized_duration_ns": null,
+          "status": "unknown"
+        },
+        "compulsory_bytes": 16777216,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": 5992.488869330886,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": 132278.43366373924,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 132278.43366373924,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 16777216,
+        "minimum_work_flops": 10477568,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "unknown",
+        "operator_frontier_reason_codes": [
+          "exact-shape-operator-frontier-not-found"
+        ],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": 132278.43366373924,
+        "resource_limiting_resource": "memory.shared",
+        "resource_physical_floor_ns": 132278.43366373924,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": null,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "case_id": "transformer-layer",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "module",
+      "observed": {
+        "candidate_digest": null,
+        "evidence_tier": "qualified",
+        "execution_contract_digest": null,
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.016732800812649443,
+        "kind": "benchmark-median",
+        "median_ns": 11061104.0,
+        "q1_ns": 10982448.125,
+        "q3_ns": 11167531.375,
+        "reason_codes": [],
+        "throughput_per_second": 90.40688886028013
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 26,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 19927040,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": 2776987.9815803296,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": 1140933.7848892198,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 2776987.9815803296,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 144707584,
+        "minimum_work_flops": 4855425024,
+        "operation_count": 26,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "unknown",
+        "operator_frontier_reason_codes": [
+          "multi-candidate-frontier-composition-not-defined"
+        ],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": 2776987.9815803296,
+        "resource_limiting_resource": "compute.fp32",
+        "resource_physical_floor_ns": 3416654.9144400456,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": null,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "e2e",
+      "observed": {
+        "candidate_digest": null,
+        "evidence_tier": "qualified",
+        "execution_contract_digest": null,
+        "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.005947261715556628,
+        "kind": "benchmark-median",
+        "median_ns": 22196854.0,
+        "q1_ns": 22145661.625,
+        "q3_ns": 22277672.125,
+        "reason_codes": [],
+        "throughput_per_second": 45.05142936021474
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+          "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+          "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+          "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+          "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+          "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+          "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+          "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+          "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+          "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+        ],
+        "candidate_count": 52,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 37756928,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": 5553975.963160659,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": 2281867.569778439,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 5553975.963160659,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 289415168,
+        "minimum_work_flops": 9710850048,
+        "operation_count": 52,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "unknown",
+        "operator_frontier_reason_codes": [
+          "multi-candidate-frontier-composition-not-defined"
+        ],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": 5553975.963160659,
+        "resource_limiting_resource": "compute.fp32",
+        "resource_physical_floor_ns": 6833309.828880091,
+        "schedule": "serialized-unfused",
+        "serialized_hardware_floor_ns": null,
+        "status": "phase-capabilities-incomplete"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    }
+  ],
+  "latency_decomposition": {
+    "comparison_role": "diagnostic-comparison",
+    "joined": [
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 8,
+        "observed_share_of_e2e": 0.04533155543443349,
+        "observed_time_ns": 1164375.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 9,
+        "observed_share_of_e2e": 0.03910728711445062,
+        "observed_time_ns": 1004500.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "Softmax",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 3,
+        "observed_share_of_e2e": 0.0607243315846335,
+        "observed_time_ns": 1559750.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 6,
+        "observed_share_of_e2e": 0.05874525758445831,
+        "observed_time_ns": 1508916.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 5,
+        "observed_share_of_e2e": 0.05916381651304712,
+        "observed_time_ns": 1519667.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 10,
+        "observed_share_of_e2e": 0.03847464060811929,
+        "observed_time_ns": 988250.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "Softmax",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 7,
+        "observed_share_of_e2e": 0.04838932092697313,
+        "observed_time_ns": 1242916.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 2,
+        "observed_share_of_e2e": 0.060803830917921416,
+        "observed_time_ns": 1561792.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "evidence_quality": "not-modeled",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 4,
+        "observed_share_of_e2e": 0.060695132515110516,
+        "observed_time_ns": 1559000.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "MatMul",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "evidence_quality": "unattributed-evidence-boundary",
+        "observed_minus_predicted_ns": null,
+        "observed_rank": 1,
+        "observed_share_of_e2e": 0.16456762991152682,
+        "observed_time_ns": 4227043.0,
+        "observed_to_predicted_ratio": null,
+        "operation": "UnattributedHostTime",
+        "predicted_rank": null,
+        "predicted_share_of_e2e": null,
+        "predicted_time_ns": null,
+        "stable_path": "unattributed://host-runtime"
+      }
+    ],
+    "largest_discrepancy": null,
+    "observed": {
+      "all_items": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; MPS leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.16456762991152682,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 4227043.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635540905375,
+          "host_started_ns": 1363635539343583,
+          "operation": "MatMul",
+          "rank": 2,
+          "share_of_e2e": 0.060803830917921416,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 1561792.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635532546000,
+          "host_started_ns": 1363635530986250,
+          "operation": "MatMul",
+          "rank": 3,
+          "share_of_e2e": 0.0607243315846335,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 1559750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635542489041,
+          "host_started_ns": 1363635540930041,
+          "operation": "MatMul",
+          "rank": 4,
+          "share_of_e2e": 0.060695132515110516,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 1559000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635530171333,
+          "host_started_ns": 1363635528651666,
+          "operation": "MatMul",
+          "rank": 5,
+          "share_of_e2e": 0.05916381651304712,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 1519667.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635528630916,
+          "host_started_ns": 1363635527122000,
+          "operation": "MatMul",
+          "rank": 6,
+          "share_of_e2e": 0.05874525758445831,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 1508916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635544489916,
+          "host_started_ns": 1363635543247000,
+          "operation": "MatMul",
+          "rank": 7,
+          "share_of_e2e": 0.04838932092697313,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 1242916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635522330166,
+          "host_started_ns": 1363635521165791,
+          "operation": "MatMul",
+          "rank": 8,
+          "share_of_e2e": 0.04533155543443349,
+          "source_id": "span-00013",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "time_ns": 1164375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635524834833,
+          "host_started_ns": 1363635523830333,
+          "operation": "Softmax",
+          "rank": 9,
+          "share_of_e2e": 0.03910728711445062,
+          "source_id": "span-00016",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "time_ns": 1004500.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635537380875,
+          "host_started_ns": 1363635536392625,
+          "operation": "Softmax",
+          "rank": 10,
+          "share_of_e2e": 0.03847464060811929,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 988250.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635535247291,
+          "host_started_ns": 1363635534322625,
+          "operation": "MatMul",
+          "rank": 11,
+          "share_of_e2e": 0.03599918242605336,
+          "source_id": "span-00042",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "time_ns": 924666.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635523094083,
+          "host_started_ns": 1363635522357041,
+          "operation": "Mul",
+          "rank": 12,
+          "share_of_e2e": 0.028694587465812757,
+          "source_id": "span-00014",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+          "time_ns": 737042.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635536320166,
+          "host_started_ns": 1363635535673791,
+          "operation": "Add",
+          "rank": 13,
+          "share_of_e2e": 0.025164731417225503,
+          "source_id": "span-00044",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+          "time_ns": 646375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635538054500,
+          "host_started_ns": 1363635537453375,
+          "operation": "MatMul",
+          "rank": 14,
+          "share_of_e2e": 0.023403054222672103,
+          "source_id": "span-00048",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+          "time_ns": 601125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635523735125,
+          "host_started_ns": 1363635523144208,
+          "operation": "Add",
+          "rank": 15,
+          "share_of_e2e": 0.023005635420417937,
+          "source_id": "span-00015",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+          "time_ns": 590917.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635525508166,
+          "host_started_ns": 1363635524941583,
+          "operation": "MatMul",
+          "rank": 16,
+          "share_of_e2e": 0.022058261876721528,
+          "source_id": "span-00019",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+          "time_ns": 566583.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635530626000,
+          "host_started_ns": 1363635530197791,
+          "operation": "SiLU",
+          "rank": 17,
+          "share_of_e2e": 0.01667107248182358,
+          "source_id": "span-00027",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "time_ns": 428209.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635542939208,
+          "host_started_ns": 1363635542511625,
+          "operation": "SiLU",
+          "rank": 18,
+          "share_of_e2e": 0.016646700991795063,
+          "source_id": "span-00056",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+          "time_ns": 427583.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635535649583,
+          "host_started_ns": 1363635535279041,
+          "operation": "Mul",
+          "rank": 19,
+          "share_of_e2e": 0.014425975492247648,
+          "source_id": "span-00043",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+          "time_ns": 370542.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635520646500,
+          "host_started_ns": 1363635520285916,
+          "operation": "MatMul",
+          "rank": 20,
+          "share_of_e2e": 0.014038289713167807,
+          "source_id": "span-00006",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+          "time_ns": 360584.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635525918833,
+          "host_started_ns": 1363635525569083,
+          "operation": "MatMul",
+          "rank": 21,
+          "share_of_e2e": 0.01361649942088512,
+          "source_id": "span-00021",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+          "time_ns": 349750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635538465166,
+          "host_started_ns": 1363635538117041,
+          "operation": "MatMul",
+          "rank": 22,
+          "share_of_e2e": 0.013553234770251988,
+          "source_id": "span-00050",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+          "time_ns": 348125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521010916,
+          "host_started_ns": 1363635520673083,
+          "operation": "MatMul",
+          "rank": 23,
+          "share_of_e2e": 0.013152545672211245,
+          "source_id": "span-00007",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+          "time_ns": 337833.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534197250,
+          "host_started_ns": 1363635533886541,
+          "operation": "MatMul",
+          "rank": 24,
+          "share_of_e2e": 0.012096551589889336,
+          "source_id": "span-00036",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+          "time_ns": 310709.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635533868125,
+          "host_started_ns": 1363635533560250,
+          "operation": "MatMul",
+          "rank": 25,
+          "share_of_e2e": 0.011986218039185152,
+          "source_id": "span-00035",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+          "time_ns": 307875.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635520259125,
+          "host_started_ns": 1363635519966041,
+          "operation": "MatMul",
+          "rank": 26,
+          "share_of_e2e": 0.0114103734560992,
+          "source_id": "span-00005",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+          "time_ns": 293084.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635519890500,
+          "host_started_ns": 1363635519625666,
+          "operation": "RMSNorm",
+          "rank": 27,
+          "share_of_e2e": 0.010310541837400114,
+          "source_id": "span-00003",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+          "time_ns": 264834.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635533541458,
+          "host_started_ns": 1363635533279333,
+          "operation": "MatMul",
+          "rank": 28,
+          "share_of_e2e": 0.010205074798283094,
+          "source_id": "span-00034",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+          "time_ns": 262125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635530917875,
+          "host_started_ns": 1363635530672208,
+          "operation": "Mul",
+          "rank": 29,
+          "share_of_e2e": 0.009564330416670722,
+          "source_id": "span-00028",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+          "time_ns": 245667.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635543179666,
+          "host_started_ns": 1363635542968041,
+          "operation": "Mul",
+          "rank": 30,
+          "share_of_e2e": 0.008239004117068802,
+          "source_id": "span-00057",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+          "time_ns": 211625.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635533242916,
+          "host_started_ns": 1363635533104833,
+          "operation": "RMSNorm",
+          "rank": 31,
+          "share_of_e2e": 0.005375860155923031,
+          "source_id": "span-00032",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+          "time_ns": 138083.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635539312083,
+          "host_started_ns": 1363635539174250,
+          "operation": "RMSNorm",
+          "rank": 32,
+          "share_of_e2e": 0.005366127132748703,
+          "source_id": "span-00052",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+          "time_ns": 137833.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635527092208,
+          "host_started_ns": 1363635526971333,
+          "operation": "RMSNorm",
+          "rank": 33,
+          "share_of_e2e": 0.0047059167047876745,
+          "source_id": "span-00023",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+          "time_ns": 120875.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635532817583,
+          "host_started_ns": 1363635532729125,
+          "operation": "Add",
+          "rank": 34,
+          "share_of_e2e": 0.0034438550558188877,
+          "source_id": "span-00030",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+          "time_ns": 88458.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635544966708,
+          "host_started_ns": 1363635544900000,
+          "operation": "Add",
+          "rank": 35,
+          "share_of_e2e": 0.0025970820396523362,
+          "source_id": "span-00059",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2",
+          "time_ns": 66708.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635526945041,
+          "host_started_ns": 1363635526878750,
+          "operation": "Add",
+          "rank": 36,
+          "share_of_e2e": 0.002580847356997557,
+          "source_id": "span-00022",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+          "time_ns": 66291.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635539149333,
+          "host_started_ns": 1363635539085208,
+          "operation": "Add",
+          "rank": 37,
+          "share_of_e2e": 0.0024965204442151776,
+          "source_id": "span-00051",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+          "time_ns": 64125.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635524888666,
+          "host_started_ns": 1363635524878583,
+          "operation": "View",
+          "rank": 38,
+          "share_of_e2e": 0.0003925522906670041,
+          "source_id": "span-00017",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+          "time_ns": 10083.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521071666,
+          "host_started_ns": 1363635521064625,
+          "operation": "Transpose",
+          "rank": 39,
+          "share_of_e2e": 0.0002741208646817788,
+          "source_id": "span-00009",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+          "time_ns": 7041.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635524920750,
+          "host_started_ns": 1363635524914208,
+          "operation": "Transpose",
+          "rank": 40,
+          "share_of_e2e": 0.00025469375042581975,
+          "source_id": "span-00018",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+          "time_ns": 6542.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521040291,
+          "host_started_ns": 1363635521033791,
+          "operation": "View",
+          "rank": 41,
+          "share_of_e2e": 0.0002530586025325326,
+          "source_id": "span-00008",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+          "time_ns": 6500.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635538097750,
+          "host_started_ns": 1363635538091958,
+          "operation": "View",
+          "rank": 42,
+          "share_of_e2e": 0.00022549468090283522,
+          "source_id": "span-00049",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+          "time_ns": 5792.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521120791,
+          "host_started_ns": 1363635521115083,
+          "operation": "Transpose",
+          "rank": 43,
+          "share_of_e2e": 0.00022222438511626096,
+          "source_id": "span-00011",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+          "time_ns": 5708.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635537409375,
+          "host_started_ns": 1363635537404541,
+          "operation": "View",
+          "rank": 44,
+          "share_of_e2e": 0.00018819773609880965,
+          "source_id": "span-00046",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+          "time_ns": 4834.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635525550416,
+          "host_started_ns": 1363635525545583,
+          "operation": "View",
+          "rank": 45,
+          "share_of_e2e": 0.00018815880400611235,
+          "source_id": "span-00020",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+          "time_ns": 4833.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635537434541,
+          "host_started_ns": 1363635537429833,
+          "operation": "Transpose",
+          "rank": 46,
+          "share_of_e2e": 0.00018329229241894826,
+          "source_id": "span-00047",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+          "time_ns": 4708.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534242833,
+          "host_started_ns": 1363635534238375,
+          "operation": "Transpose",
+          "rank": 47,
+          "share_of_e2e": 0.00017355926924462006,
+          "source_id": "span-00038",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+          "time_ns": 4458.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534221083,
+          "host_started_ns": 1363635534216666,
+          "operation": "View",
+          "rank": 48,
+          "share_of_e2e": 0.00017196305344403025,
+          "source_id": "span-00037",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+          "time_ns": 4417.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521096083,
+          "host_started_ns": 1363635521092125,
+          "operation": "View",
+          "rank": 49,
+          "share_of_e2e": 0.0001540932228959637,
+          "source_id": "span-00010",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+          "time_ns": 3958.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635521145791,
+          "host_started_ns": 1363635521142333,
+          "operation": "Transpose",
+          "rank": 50,
+          "share_of_e2e": 0.00013462717654730736,
+          "source_id": "span-00012",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+          "time_ns": 3458.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534264125,
+          "host_started_ns": 1363635534260791,
+          "operation": "View",
+          "rank": 51,
+          "share_of_e2e": 0.0001297995970528406,
+          "source_id": "span-00039",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+          "time_ns": 3334.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534304666,
+          "host_started_ns": 1363635534301500,
+          "operation": "Transpose",
+          "rank": 52,
+          "share_of_e2e": 0.00012325900547969205,
+          "source_id": "span-00041",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+          "time_ns": 3166.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635534283958,
+          "host_started_ns": 1363635534280875,
+          "operation": "Transpose",
+          "rank": 53,
+          "share_of_e2e": 0.00012002764178581509,
+          "source_id": "span-00040",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+          "time_ns": 3083.0
+        }
+      ],
+      "available": true,
+      "e2e_ns": 25685750.0,
+      "instrumentation_profile": "trace",
+      "kind": "host-synchronous-operation-time",
+      "mandatory": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; MPS leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.16456762991152682,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 4227043.0
+        }
+      ],
+      "reconciliation": {
+        "all_leaf_span_sum_ns": 21458707,
+        "attributed_coverage": 0.8354323700884732,
+        "attributed_interval_union_ns": 21458707,
+        "coverage": 1.0,
+        "other_ns": 9349541.0,
+        "overlap_ns": 0,
+        "reconciled_total_ns": 25685750.0,
+        "selected_accounted_ns": 16336209.0,
+        "unattributed_ns": 4227043.0
+      },
+      "selected": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; MPS leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "selection_reasons": [
+            "top10",
+            "at-least-10%-of-e2e"
+          ],
+          "share_of_e2e": 0.16456762991152682,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 4227043.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635540905375,
+          "host_started_ns": 1363635539343583,
+          "operation": "MatMul",
+          "rank": 2,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.060803830917921416,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 1561792.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635532546000,
+          "host_started_ns": 1363635530986250,
+          "operation": "MatMul",
+          "rank": 3,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.0607243315846335,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 1559750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635542489041,
+          "host_started_ns": 1363635540930041,
+          "operation": "MatMul",
+          "rank": 4,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.060695132515110516,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 1559000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635530171333,
+          "host_started_ns": 1363635528651666,
+          "operation": "MatMul",
+          "rank": 5,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.05916381651304712,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 1519667.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635528630916,
+          "host_started_ns": 1363635527122000,
+          "operation": "MatMul",
+          "rank": 6,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.05874525758445831,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 1508916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635544489916,
+          "host_started_ns": 1363635543247000,
+          "operation": "MatMul",
+          "rank": 7,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.04838932092697313,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 1242916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635522330166,
+          "host_started_ns": 1363635521165791,
+          "operation": "MatMul",
+          "rank": 8,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.04533155543443349,
+          "source_id": "span-00013",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "time_ns": 1164375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635524834833,
+          "host_started_ns": 1363635523830333,
+          "operation": "Softmax",
+          "rank": 9,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.03910728711445062,
+          "source_id": "span-00016",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "time_ns": 1004500.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635537380875,
+          "host_started_ns": 1363635536392625,
+          "operation": "Softmax",
+          "rank": 10,
+          "selection_reasons": [
+            "top10"
+          ],
+          "share_of_e2e": 0.03847464060811929,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 988250.0
+        }
+      ],
+      "statistic": "single-diagnostic-trace",
+      "top10": [
+        {
+          "evidence": "Python/composite/runtime overhead plus device wait; MPS leaf spans are host enqueue ranges and are not treated as device durations",
+          "host_ended_ns": null,
+          "host_started_ns": null,
+          "operation": "UnattributedHostTime",
+          "rank": 1,
+          "share_of_e2e": 0.16456762991152682,
+          "source_id": null,
+          "stable_path": "unattributed://host-runtime",
+          "time_ns": 4227043.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635540905375,
+          "host_started_ns": 1363635539343583,
+          "operation": "MatMul",
+          "rank": 2,
+          "share_of_e2e": 0.060803830917921416,
+          "source_id": "span-00054",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "time_ns": 1561792.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635532546000,
+          "host_started_ns": 1363635530986250,
+          "operation": "MatMul",
+          "rank": 3,
+          "share_of_e2e": 0.0607243315846335,
+          "source_id": "span-00029",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "time_ns": 1559750.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635542489041,
+          "host_started_ns": 1363635540930041,
+          "operation": "MatMul",
+          "rank": 4,
+          "share_of_e2e": 0.060695132515110516,
+          "source_id": "span-00055",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "time_ns": 1559000.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635530171333,
+          "host_started_ns": 1363635528651666,
+          "operation": "MatMul",
+          "rank": 5,
+          "share_of_e2e": 0.05916381651304712,
+          "source_id": "span-00026",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "time_ns": 1519667.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635528630916,
+          "host_started_ns": 1363635527122000,
+          "operation": "MatMul",
+          "rank": 6,
+          "share_of_e2e": 0.05874525758445831,
+          "source_id": "span-00025",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "time_ns": 1508916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635544489916,
+          "host_started_ns": 1363635543247000,
+          "operation": "MatMul",
+          "rank": 7,
+          "share_of_e2e": 0.04838932092697313,
+          "source_id": "span-00058",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "time_ns": 1242916.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635522330166,
+          "host_started_ns": 1363635521165791,
+          "operation": "MatMul",
+          "rank": 8,
+          "share_of_e2e": 0.04533155543443349,
+          "source_id": "span-00013",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "time_ns": 1164375.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635524834833,
+          "host_started_ns": 1363635523830333,
+          "operation": "Softmax",
+          "rank": 9,
+          "share_of_e2e": 0.03910728711445062,
+          "source_id": "span-00016",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "time_ns": 1004500.0
+        },
+        {
+          "evidence": "single-diagnostic-trace-span",
+          "host_ended_ns": 1363635537380875,
+          "host_started_ns": 1363635536392625,
+          "operation": "Softmax",
+          "rank": 10,
+          "share_of_e2e": 0.03847464060811929,
+          "source_id": "span-00045",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "time_ns": 988250.0
+        }
+      ]
+    },
+    "predicted": {
+      "all_items": [],
+      "available": false,
+      "mandatory": [],
+      "reason": "selected hardware floor is unavailable",
+      "selected": [],
+      "top10": []
+    },
+    "schema": "groundupscale.dev/latency-decomposition/v1alpha1",
+    "visibility_rule": {
+      "mandatory_share_of_e2e": 0.1,
+      "selection": "top-k union every item at or above the E2E share threshold",
+      "top_k": 10
+    }
+  },
+  "memory": {
+    "comparison": {
+      "absolute_error_bytes": 14680064,
+      "absolute_relative_error": 0.212096106048053,
+      "error_status": "evaluated",
+      "predicted_minus_observed_bytes": -14680064,
+      "predicted_to_observed_ratio": 0.7879038939519469
+    },
+    "observed": {
+      "exclusions": [
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "kernel-private workspace",
+        "framework/runtime code and Python RSS"
+      ],
+      "framework_peak_bytes": 69214208,
+      "kind": "weakref-live-unique-tensor-storage",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    "predicted": {
+      "exclusions": [
+        "kernel-private workspace",
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "framework/runtime code and Python object memory"
+      ],
+      "framework_peak_bytes": 54534144,
+      "kind": "semantic-live-set",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    }
+  },
+  "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+  "status": "exploratory-estimate-with-observation",
+  "summary": {
+    "aligned_latency_cases": 1,
+    "evaluable_latency_errors": 0,
+    "evaluable_memory_errors": 1,
+    "provisional_latency_comparisons": 1,
+    "qualified_frontier_comparisons": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "payload": {
+    "counterexample_id": "performance-gap-only",
+    "reason_codes": [
+      "performance-gap-is-not-direct-defect-evidence"
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

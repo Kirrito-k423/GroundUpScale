@@ -1,0 +1,9 @@
+{
+  "lane": "holdout",
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+  "session_refs": [
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-01",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-02",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-03"
+  ]
+}

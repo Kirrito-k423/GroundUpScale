@@ -1,0 +1,12 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: BenchmarkCase
+metadata:
+  name: issue25-m4-q-proj-only
+  version: 1.0.0
+spec:
+  cases:
+    - id: matmul-q-proj
+      scope: model/two-layer-transformer/transformer/layer_0/attention/q_proj
+      mode: operator
+      warmup_iterations: 500
+      samples: 20

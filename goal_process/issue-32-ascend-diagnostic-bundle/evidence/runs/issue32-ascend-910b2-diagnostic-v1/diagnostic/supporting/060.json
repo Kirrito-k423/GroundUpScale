@@ -1,0 +1,31 @@
+{
+  "payload": {
+    "adapter_id": "ascend-npu",
+    "adapter_version": "v1",
+    "operation_evidence": [
+      {
+        "evidence_ref": "artifact://issue-32/adapter-discover_capabilities",
+        "operation": "discover_capabilities"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/adapter-fingerprint_cohort",
+        "operation": "fingerprint_cohort"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/adapter-preflight",
+        "operation": "preflight"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/adapter-build_timing_plan",
+        "operation": "build_timing_plan"
+      },
+      {
+        "evidence_ref": "artifact://issue-32/adapter-collect",
+        "operation": "collect"
+      }
+    ],
+    "protocol_id": "issue32-exact-shape-diagnostic",
+    "protocol_version": "v1"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

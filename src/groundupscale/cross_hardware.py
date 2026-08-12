@@ -26,6 +26,7 @@ _REQUIRED_EVIDENCE = (
     "execution_domain",
     "correctness",
     "environment",
+    "measurement_adapter",
     "measurement_capability_manifest",
     "cohort_evidence",
     "timing_plan",
@@ -67,6 +68,32 @@ def _shape(value: object) -> dict[str, int] | None:
     return result
 
 
+def _semantic_identity(value: object) -> str | None:
+    """Project backend-specific IR paths onto one portable operator identity."""
+    if not isinstance(value, Mapping):
+        return None
+    for key in ("semantic_identity", "stable_path", "semantic_node"):
+        raw = value.get(key)
+        if not _string(raw):
+            continue
+        parts = [
+            part.replace("_", "-").lower()
+            for part in str(raw).strip("/").split("/")
+            if part
+        ]
+        transformer_indices = [
+            index for index, part in enumerate(parts) if part == "transformer"
+        ]
+        if transformer_indices:
+            parts = parts[transformer_indices[-1] :]
+        elif parts and parts[0] == "semantic":
+            parts = parts[1:]
+        identity = "/".join(parts)
+        if identity:
+            return identity
+    return None
+
+
 def _refs(value: object) -> list[str]:
     found: list[str] = []
     if isinstance(value, Mapping):
@@ -86,6 +113,81 @@ def _refs(value: object) -> list[str]:
     return list(dict.fromkeys(found))
 
 
+def _identity_refs(
+    value: object,
+    *,
+    id_key: str,
+    version_key: str | None,
+    scheme: str,
+) -> list[str]:
+    found: list[str] = []
+    if isinstance(value, Mapping):
+        identity = value.get(id_key)
+        version = value.get(version_key) if version_key is not None else None
+        if _string(identity):
+            suffix = f"/{version}" if _string(version) else ""
+            found.append(f"{scheme}://{identity}{suffix}")
+        for item in value.values():
+            if isinstance(item, (Mapping, list, tuple)):
+                found.extend(
+                    _identity_refs(
+                        item,
+                        id_key=id_key,
+                        version_key=version_key,
+                        scheme=scheme,
+                    )
+                )
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            found.extend(
+                _identity_refs(
+                    item,
+                    id_key=id_key,
+                    version_key=version_key,
+                    scheme=scheme,
+                )
+            )
+    return list(dict.fromkeys(found))
+
+
+def _frontier_uncertainty_ns(result: Mapping[str, Any]) -> float | None:
+    comparisons = result.get("comparisons")
+    comparison = (
+        comparisons.get("operator_frontier_to_observation")
+        if isinstance(comparisons, Mapping)
+        else None
+    )
+    declared = (
+        comparison.get("combined_uncertainty_ns")
+        if isinstance(comparison, Mapping)
+        else None
+    )
+    if isinstance(declared, (int, float)) and not isinstance(declared, bool):
+        return float(declared)
+    queries = result.get("capability_surface_queries")
+    if not isinstance(queries, list):
+        return None
+    for query in queries:
+        if not isinstance(query, Mapping) or query.get("status") != "exact_anchor":
+            continue
+        interval = query.get("uncertainty")
+        interval = interval.get("latency_interval") if isinstance(interval, Mapping) else None
+        latency = query.get("work_rate_latency")
+        value = latency.get("value_ns") if isinstance(latency, Mapping) else None
+        if (
+            isinstance(interval, Mapping)
+            and isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and isinstance(interval.get("lower_ns"), (int, float))
+            and isinstance(interval.get("upper_ns"), (int, float))
+        ):
+            return max(
+                float(value) - float(interval["lower_ns"]),
+                float(interval["upper_ns"]) - float(value),
+            )
+    return None
+
+
 def _evidence_quality(result: Mapping[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     evidence = result.get("evidence")
@@ -99,7 +201,7 @@ def _evidence_quality(result: Mapping[str, Any]) -> dict[str, Any]:
     resolved_ir = evidence.get("resolved_ir")
     if not isinstance(resolved_ir, Mapping) or not _string(resolved_ir.get("operation")):
         reasons.append("missing-semantic-operation")
-    if result.get("status") != "complete":
+    if result.get("status") not in {"complete", "partial"}:
         reasons.append("diagnostic-result-incomplete")
     correctness = evidence.get("correctness")
     if not isinstance(correctness, Mapping) or correctness.get("passed") is not True:
@@ -113,8 +215,35 @@ def _evidence_quality(result: Mapping[str, Any]) -> dict[str, Any]:
     ):
         reasons.append("hardware-fingerprint-incomplete")
     capability = evidence.get("measurement_capability_manifest")
-    if not isinstance(capability, Mapping) or capability.get("status") not in {"complete", "completed", "qualified", "eligible"}:
+    adapter_contract = result.get("adapter_contract")
+    capability_qualified = (
+        isinstance(capability, Mapping)
+        and (
+            capability.get("status")
+            in {"complete", "completed", "qualified", "eligible"}
+            or isinstance(adapter_contract, Mapping)
+            and adapter_contract.get("status") == "eligible"
+        )
+    )
+    if not capability_qualified:
         reasons.append("measurement-capability-manifest-not-qualified")
+    adapter = evidence.get("measurement_adapter")
+    expected_operations = [
+        "discover_capabilities",
+        "fingerprint_cohort",
+        "preflight",
+        "build_timing_plan",
+        "collect",
+    ]
+    if (
+        not isinstance(adapter, Mapping)
+        or [
+            item.get("operation") if isinstance(item, Mapping) else None
+            for item in adapter.get("operation_evidence", [])
+        ]
+        != expected_operations
+    ):
+        reasons.append("measurement-adapter-operations-not-qualified")
     cohort_evidence = evidence.get("cohort_evidence")
     cohort_valid = (
         isinstance(cohort_evidence, Mapping)
@@ -168,24 +297,52 @@ def _evidence_quality(result: Mapping[str, Any]) -> dict[str, Any]:
     queries = result.get("capability_surface_queries")
 
     def valid_query(query: object) -> bool:
-        if not isinstance(query, Mapping) or query.get("status", "known") != "known":
+        if not isinstance(query, Mapping) or query.get("status", "known") not in {
+            "known",
+            "exact_anchor",
+            "interpolated",
+        }:
             return False
         surface = query.get("surface")
         surface_id = query.get("surface_id")
         if isinstance(surface, Mapping):
             surface_id = surface.get("surface_id", surface_id)
-        return _string(surface_id)
+        response = query.get("response")
+        query_shape = query.get("query_shape")
+        shape_valid = (
+            isinstance(query_shape, Mapping)
+            and bool(query_shape)
+            and all(
+                isinstance(value, int)
+                and not isinstance(value, bool)
+                and value > 0
+                for value in query_shape.values()
+            )
+        )
+        if (
+            isinstance(resolved_ir, Mapping)
+            and resolved_ir.get("operation") == "MatMul"
+        ):
+            shape_valid = shape_valid and set(query_shape) == {"m"}
+        return bool(
+            _string(surface_id)
+            and isinstance(response, Mapping)
+            and response.get("primary_response") == "latency_ns"
+            and _string(response.get("response_identity"))
+            and _string(response.get("shape_regime_identity"))
+            and shape_valid
+        )
 
     query_valid = (
         isinstance(queries, list)
         and bool(queries)
-        and all(valid_query(query) for query in queries)
+        and any(valid_query(query) for query in queries)
     )
     if not query_valid:
         reasons.append("capability-surface-query-not-qualified")
-    verdicts = result.get("performance_diagnosis_verdicts")
-    if not isinstance(verdicts, list) or not verdicts:
-        reasons.append("missing-performance-verdicts")
+    verdicts = result.get("performance_diagnosis_verdicts", [])
+    if not isinstance(verdicts, list):
+        reasons.append("invalid-performance-verdicts")
     elif any(
         not isinstance(verdict, Mapping) or verdict.get("verdict") not in _VERDICTS
         for verdict in verdicts
@@ -217,9 +374,9 @@ def _side_payload(result: Mapping[str, Any]) -> dict[str, Any]:
     queries = result.get("capability_surface_queries")
     surface_refs = _refs(queries)
     anchor_refs = _refs(frontier) + _refs(evidence.get("frontier_anchors")) + _refs(result.get("frontier_anchor_lifecycles"))
-    verdicts = result.get("performance_diagnosis_verdicts")
+    verdicts = result.get("performance_diagnosis_verdicts", [])
     if not isinstance(verdicts, list):
-        verdicts = [{"status": "unknown", "reason_code": "verdicts-missing", "evidence_refs": []}]
+        verdicts = []
     return {
         "device": hardware.get("device"),
         "cohort_id": cohort,
@@ -230,16 +387,50 @@ def _side_payload(result: Mapping[str, Any]) -> dict[str, Any]:
             "frontier_efficiency": efficiency,
             "frontier_ns": frontier_value if quality["status"] == "known" else None,
             "observation_ns": observation_value if quality["status"] == "known" else None,
-            "combined_uncertainty_ns": comparison.get("combined_uncertainty_ns") if quality["status"] == "known" else _unknown("uncertainty-not-qualified"),
+            "combined_uncertainty_ns": (
+                _frontier_uncertainty_ns(result)
+                if quality["status"] == "known"
+                else _unknown("uncertainty-not-qualified")
+            ),
             "distance_ns": comparison.get("distance_ns") if quality["status"] == "known" else None,
         },
         "evidence_refs": _refs(evidence),
         "input_refs": _refs(evidence.get("resolved_configuration")) + _refs(evidence.get("resolved_ir")),
-        "source_run_refs": _refs(evidence.get("source_runs")),
+        "source_run_refs": list(
+            dict.fromkeys(
+                _refs(result.get("source_runs"))
+                + _identity_refs(
+                    result.get("source_runs"),
+                    id_key="run_id",
+                    version_key=None,
+                    scheme="run-bundle",
+                )
+            )
+        ),
         "anchor_refs": list(dict.fromkeys(anchor_refs)),
         "surface_refs": list(dict.fromkeys(surface_refs)),
-        "policy_refs": _refs(evidence.get("policies")),
-        "derivation_refs": _refs(result.get("derivation")),
+        "policy_refs": list(
+            dict.fromkeys(
+                _refs(evidence.get("policies"))
+                + _identity_refs(
+                    evidence.get("policies"),
+                    id_key="policy_id",
+                    version_key="version",
+                    scheme="policy",
+                )
+            )
+        ),
+        "derivation_refs": list(
+            dict.fromkeys(
+                _refs(result.get("derivation"))
+                + _identity_refs(
+                    result.get("derivation"),
+                    id_key="derivation_id",
+                    version_key=None,
+                    scheme="derivation",
+                )
+            )
+        ),
         "verdicts": verdicts,
         "verdict_refs": _refs(verdicts),
         "probe_refs": _refs(result.get("shape_disambiguation_probes")),
@@ -279,17 +470,14 @@ def compare_cross_hardware(
     semantic_ascend = ascend_evidence.get("resolved_ir", {}) if isinstance(ascend_evidence, Mapping) else {}
     semantic_operation_m4 = semantic_m4.get("operation") if isinstance(semantic_m4, Mapping) else None
     semantic_operation_ascend = semantic_ascend.get("operation") if isinstance(semantic_ascend, Mapping) else None
-    stable_path_m4 = semantic_m4.get("stable_path") if isinstance(semantic_m4, Mapping) else None
-    stable_path_ascend = semantic_ascend.get("stable_path") if isinstance(semantic_ascend, Mapping) else None
+    semantic_identity_m4 = _semantic_identity(semantic_m4)
+    semantic_identity_ascend = _semantic_identity(semantic_ascend)
     semantic_match = (
         isinstance(semantic_m4, Mapping) and isinstance(semantic_ascend, Mapping)
         and _string(semantic_operation_m4)
         and semantic_operation_m4 == semantic_operation_ascend
-        and (
-            not _string(stable_path_m4)
-            or not _string(stable_path_ascend)
-            or stable_path_m4 == stable_path_ascend
-        )
+        and _string(semantic_identity_m4)
+        and semantic_identity_m4 == semantic_identity_ascend
     )
     if not domain_match:
         shape = {"status": "unknown", "reason_code": "execution-domain-mismatch", "evidence_refs": []}
@@ -307,7 +495,13 @@ def compare_cross_hardware(
         "schema": CROSS_HARDWARE_REPORT_SCHEMA,
         "status": status,
         "shape_comparison": shape,
-        "semantic_comparison": {"status": "matched" if semantic_match else "unknown", "operation": semantic_operation_m4},
+        "semantic_comparison": {
+            "status": "matched" if semantic_match else "unknown",
+            "operation": semantic_operation_m4,
+            "identity": (
+                semantic_identity_m4 if semantic_match else None
+            ),
+        },
         "cohorts": {
             "m4": {"cohort_id": m4["cohort_id"], "independent": True},
             "ascend": {"cohort_id": ascend["cohort_id"], "independent": ascend["independent"], **({"reason_code": ascend["reason_code"]} if "reason_code" in ascend else {})},

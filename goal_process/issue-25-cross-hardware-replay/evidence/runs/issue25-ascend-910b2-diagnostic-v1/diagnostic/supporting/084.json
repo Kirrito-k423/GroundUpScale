@@ -1,0 +1,37 @@
+{
+  "payload": {
+    "baseline_lane_id": "issue32-ascend-baseline",
+    "case": {
+      "benchmark_case": "ascend-910b2-q-projection-512",
+      "execution_domain": {
+        "affinity": "192-223",
+        "alignment_bytes": 512,
+        "concurrency": 1,
+        "context": "pytorch-eager",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numa": "6",
+        "shape": {
+          "k": 512,
+          "m": 512,
+          "n": 512
+        },
+        "stream": "default-npu-stream",
+        "threads": 1
+      },
+      "semantic_node": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj"
+    },
+    "completion_boundary": {
+      "absolute_timestamps_subtracted": false,
+      "closed": true,
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event-stream-completion",
+      "stream_id": "default-npu-stream",
+      "stream_synchronized": true
+    },
+    "diagnostic_lane_id": "issue32-ascend-diagnostic",
+    "pair_id": "issue32-ascend-paired-lanes"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,9 @@
+{
+  "payload": {
+    "counterexample_id": "proxy-anomaly-only",
+    "reason_codes": [
+      "proxy-anomaly-is-not-direct-defect-evidence"
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,3954 @@
+{
+  "compilation_fingerprint": "d6656500c7ea136eefa527306d50e4ba97b878f18d44cf732ec1d0124276fdf6",
+  "name": "transformer-prefill:issue25-m4-m256-fixed-nk512",
+  "root": {
+    "attributes": [
+      [
+        "driver_kind",
+        "fixed_iterations"
+      ],
+      [
+        "measured_iterations",
+        20
+      ],
+      [
+        "observation_iterations",
+        20
+      ],
+      [
+        "warmup_iterations",
+        10
+      ]
+    ],
+    "definition_id": "analysis-definition/issue25-m4-m256-fixed-nk512@1.0.0",
+    "derivation_ids": [
+      "derivation:61413fc0e716cab0f680cf1416725e8797f9292bd81f3ce44d8487c71a15f42e"
+    ],
+    "inputs": [],
+    "items": [
+      {
+        "attributes": [],
+        "definition_id": "workload-definition/WorkloadSpec/transformer-prefill@0.1.0/workload/transformer-prefill/request",
+        "derivation_ids": [
+          "derivation:7ddcd491710452e987a36a7951e1674384916dc93d94d41e76119b581910dc5c"
+        ],
+        "inputs": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+        ],
+        "items": [
+          {
+            "attributes": [
+              [
+                "entrypoint",
+                "prefill"
+              ],
+              [
+                "model",
+                "two-layer-transformer"
+              ],
+              [
+                "model_version",
+                "0.1.0"
+              ]
+            ],
+            "definition_id": "workload-definition/WorkloadSpec/transformer-prefill@0.1.0/workload/transformer-prefill/request/model-prefill",
+            "derivation_ids": [
+              "derivation:7cee2715f1f7d064ca46a8f4140b4f6ed3684ea3f71f3c3daa3941f5780a265a"
+            ],
+            "inputs": [
+              "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+            ],
+            "items": [
+              {
+                "attributes": [
+                  [
+                    "entrypoint",
+                    "prefill"
+                  ]
+                ],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer",
+                "derivation_ids": [
+                  "derivation:90791d8ffd581d54fe6a3089c13cc87504b3cd1d8cb6df579a3d9b2ee75eab74"
+                ],
+                "inputs": [
+                  "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+                ],
+                "items": [
+                  {
+                    "attributes": [
+                      [
+                        "entrypoint",
+                        "forward"
+                      ]
+                    ],
+                    "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]",
+                    "derivation_ids": [
+                      "derivation:16bc8485ddbec4f1953ae3f60eacdf3b38d0a53e538e4f5b2020a7f55e6773c7"
+                    ],
+                    "inputs": [
+                      "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+                    ],
+                    "items": [
+                      {
+                        "attributes": [
+                          [
+                            "epsilon",
+                            1e-06
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/input_norm",
+                        "derivation_ids": [
+                          "derivation:bf08a87f20e45339a44572b03df96a4db16a8c0a60c4a5c7ab0387ba90e7569d"
+                        ],
+                        "local_id": "input_norm",
+                        "node_id": "semantic-op:d15bb0a43457d5074b83c03935467ed117ed54bc65a9b65705e9798dd05f83b0",
+                        "operands": [
+                          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+                          "semantic-value:104baa86209387ae5e8b431028cc2e958eab84a8dc5f57309537bef083c067dc"
+                        ],
+                        "operation": "RMSNorm",
+                        "results": [
+                          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+                        "state_effect_ids": [
+                          "semantic-state-effect:b12e543e193583eaa13770bdec707ee413a1e0aa0dbea73ef8a3907845c38861"
+                        ]
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "entrypoint",
+                            "forward"
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention",
+                        "derivation_ids": [
+                          "derivation:37037bb8cb9e952530b355f4c44462fb692247857b8faf87b6c3e0b7e6b55721"
+                        ],
+                        "inputs": [
+                          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b"
+                        ],
+                        "items": [
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_proj",
+                            "derivation_ids": [
+                              "derivation:22dca9e68b01ba4455849faea82b68e5dc774919ad02079cca88cefd9cc1c9a9"
+                            ],
+                            "local_id": "q_proj",
+                            "node_id": "semantic-op:cc68e840d0f609a9f28ce6ebc685f89eb232a584f854fdb37915106c93160b26",
+                            "operands": [
+                              "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+                              "semantic-value:508644b93d3b02da07368bc4a14334098199b79757641154b11592e74a3b9425"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:8e5740eb30080579ecbc414f0f48d70b88b8e5e01933b99a158535aeb6a57a33"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_proj",
+                            "derivation_ids": [
+                              "derivation:394c3262b5ffd849616348e863e756eb0e69d609346c3e829c4474b416426fbd"
+                            ],
+                            "local_id": "k_proj",
+                            "node_id": "semantic-op:9bce308c86991dd93f19a431d753e4741303e604a7722122368f0f77b6665100",
+                            "operands": [
+                              "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+                              "semantic-value:cb0f0d637a48022434d5d1b9bb19187de9f69f1850d3bc5ab3d015201330afbe"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:fc7efcc996683394703058c8f083aad131235b4539bed9885650d44ec096118a"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_proj",
+                            "derivation_ids": [
+                              "derivation:70c14b673b4ce4d76049e2c182981f032544e024cb99709de2e6eafd8b9005de"
+                            ],
+                            "local_id": "v_proj",
+                            "node_id": "semantic-op:75c7860918742d9eb2192c6826c60a76fa63e092815fea8adec15f4646d3ac1f",
+                            "operands": [
+                              "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+                              "semantic-value:1fbcb33fb027a42b3634b9a54bc05322a5ce0f73bb96819abaedf4ec12a76ec5"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:52d1d922e2214f9f7220c4342018f7c26ac0fc656586be2a584c51d8bdffde22"
+                            ]
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_view",
+                            "derivation_ids": [
+                              "derivation:8bf45a99369bfcaf286c54c774c158dc3ed6375c3884d970a3b1c9705f628a85"
+                            ],
+                            "local_id": "q_view",
+                            "node_id": "semantic-op:7108694c732af0c0af0561477e9b70b5e9898134ce20f5ff5c36637eab276161",
+                            "operands": [
+                              "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_transpose",
+                            "derivation_ids": [
+                              "derivation:def757fd2b2c56c9581272f283866f8589e3953ed1d798dae26679d398eda12f"
+                            ],
+                            "local_id": "q_transpose",
+                            "node_id": "semantic-op:1f537b0f9c9146862cdfb471614f8e66f9ab0357523c19fe6f31f4c5bc096e93",
+                            "operands": [
+                              "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:dbf5b4761dc133afde66af72392ecd1a9f657c69d0179d05e254375981cfe5e0"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_view",
+                            "derivation_ids": [
+                              "derivation:b6fa791c65751e6add95a21e3448c7adb9b3b8b988295989031383afbf2788a3"
+                            ],
+                            "local_id": "k_view",
+                            "node_id": "semantic-op:90daf2e08ccf3499b5689a782c2e3da32ec91728b21533dcb9efe8d124ee0165",
+                            "operands": [
+                              "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_transpose",
+                            "derivation_ids": [
+                              "derivation:1b32fa8deac5d6759f11344850df9ce7b74f5fd0395262d2baeb409b1f1d9e84"
+                            ],
+                            "local_id": "k_transpose",
+                            "node_id": "semantic-op:f8e99e219aa258ffa23ab232f17b7b9c169fc760b7bbbd8481a4805197f72904",
+                            "operands": [
+                              "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,1,3,2"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_key_transpose",
+                            "derivation_ids": [
+                              "derivation:de96181ae84c021c0113fc244485dbb525ffa7476af1e82713b25af6863636d5"
+                            ],
+                            "local_id": "k_key_transpose",
+                            "node_id": "semantic-op:a716ceb6a879ab6779d640807cfd644e2b676b47a0fffbf58531173acea91793",
+                            "operands": [
+                              "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:90184383a2fa48b20c76532107d516aac2263dbe580802a6e18a002350e86e1c"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/qk_matmul",
+                            "derivation_ids": [
+                              "derivation:336e5bede99a119fa967635c586cf24e26ffab1151f6ca0e8cb50edb2aef9a72"
+                            ],
+                            "local_id": "qk_matmul",
+                            "node_id": "semantic-op:dcd31c669aa01d27358b3f9d1dc507f2ee9083c45c14d657c64a1f48ed9a0f2d",
+                            "operands": [
+                              "semantic-value:dbf5b4761dc133afde66af72392ecd1a9f657c69d0179d05e254375981cfe5e0",
+                              "semantic-value:90184383a2fa48b20c76532107d516aac2263dbe580802a6e18a002350e86e1c"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "scalar",
+                                0.125
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/scale",
+                            "derivation_ids": [
+                              "derivation:d02a1a7bfb72083c6621afbc211f4f37bea59d93539716f963c157e6c13754be"
+                            ],
+                            "local_id": "scale",
+                            "node_id": "semantic-op:d78e1cb07d7cebe48ca96e74e87b5fc7d32f3453b84d132e70000038c2fed99a",
+                            "operands": [
+                              "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8"
+                            ],
+                            "operation": "Mul",
+                            "results": [
+                              "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/causal_mask",
+                            "derivation_ids": [
+                              "derivation:d389612f5453024ff8551037f3e3648c90820303d109ca1c4a51839f0bc9ca70"
+                            ],
+                            "local_id": "causal_mask",
+                            "node_id": "semantic-op:5cb3d0681e1b09452464b6b347bdbbecf97fb01d86a2ec9c3209adcdabc7f981",
+                            "operands": [
+                              "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e",
+                              "semantic-value:09d2b417eef7bb72dbc7fc5e3b111f68579fc58c76201cc80c548c7d28d5766d"
+                            ],
+                            "operation": "Add",
+                            "results": [
+                              "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+                            "state_effect_ids": [
+                              "semantic-state-effect:51e13ff95b16d8ff1f5809da6173b4b59639d203e872aa7065d57c017fac19fa"
+                            ]
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "dimension",
+                                -1
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/softmax",
+                            "derivation_ids": [
+                              "derivation:44bb51abdf31092aa421e18c750c0cb37639067a09ab48ef6a4ee90440f3e876"
+                            ],
+                            "local_id": "softmax",
+                            "node_id": "semantic-op:9651a4c7c257d8a791ed341726dafbbd089853c39b5bf2caaa5970dab76176e6",
+                            "operands": [
+                              "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec"
+                            ],
+                            "operation": "Softmax",
+                            "results": [
+                              "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_view",
+                            "derivation_ids": [
+                              "derivation:f40f6f2ade46109a562e988b57a5269564dadb0a00f7200b3ae527004063d0f3"
+                            ],
+                            "local_id": "v_view",
+                            "node_id": "semantic-op:3e99f39eeb41aca52ff2c0d13c73b3cbca785913bd11b85351650d54708e8070",
+                            "operands": [
+                              "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_transpose",
+                            "derivation_ids": [
+                              "derivation:1531ce45e0c13c7cc1bc362ce6f55a3630595d36a495052899ab233a9ccdb8ec"
+                            ],
+                            "local_id": "v_transpose",
+                            "node_id": "semantic-op:90b8aa25ae4a711d59e0430cc22cb8c92db8700f08245422d4f7041ae977ed91",
+                            "operands": [
+                              "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:019dd373e01e2901e653e96e30b221e7c041127e6b6f9b7ee759fbbf49616e7f"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "equation",
+                                "bhqk,bhkd->bqhd"
+                              ],
+                              [
+                                "output_layout",
+                                "sequence_major_contiguous"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_matmul",
+                            "derivation_ids": [
+                              "derivation:685e647e20eded6877d52fa23aac37237620464f42d8c8edc1d20ee474af43ef"
+                            ],
+                            "local_id": "context_matmul",
+                            "node_id": "semantic-op:0a70dcca566a8515d23f1900b59a8d793e9520606dd5fb4626c3ae6f0b857e90",
+                            "operands": [
+                              "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0",
+                              "semantic-value:019dd373e01e2901e653e96e30b221e7c041127e6b6f9b7ee759fbbf49616e7f"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,H"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_view",
+                            "derivation_ids": [
+                              "derivation:cecbaf1610187d8da86fb2be60bd48a4a67548dff64e5bd7e67a894ecff5c18b"
+                            ],
+                            "local_id": "context_view",
+                            "node_id": "semantic-op:97508d72d8e5ad90531349bcacf443431acfcd1e1e55e37b27fc4f05f6f538fe",
+                            "operands": [
+                              "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:02c7db8d38bec224070aebe5bfe271202d595feaebaa16eff545097162f7691f"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/out_proj",
+                            "derivation_ids": [
+                              "derivation:9ac1848f2ed40410fbfc8791a7a51319da2233bad62ccdd81ef0744b43e04f5c"
+                            ],
+                            "local_id": "out_proj",
+                            "node_id": "semantic-op:4c31c39902bdaa9fdc4b82c3fb2df2a6c06fb3c9af1dbc4aa3631b719c34d3ea",
+                            "operands": [
+                              "semantic-value:02c7db8d38bec224070aebe5bfe271202d595feaebaa16eff545097162f7691f",
+                              "semantic-value:cbd6f336edfad9ac9259d02227dbddc66d1f0a69c8b5ee30a09c5afa9535f656"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:0653bed33b022e5e3a27bfc7228bd84f8cbc3c6f838b7dbb63def20290bf1375"
+                            ]
+                          }
+                        ],
+                        "kind": "model_entrypoint",
+                        "local_id": "attention",
+                        "node_id": "semantic-region:56952b912f607ea3ee7cb2f941086482058682cab2ea379918582b27270a8656",
+                        "outputs": [
+                          "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_1",
+                        "derivation_ids": [
+                          "derivation:7bb43965dc815c23cbe6d4bacfa1c73f0aa10d853916f25fdb18887e9a65882e"
+                        ],
+                        "local_id": "residual_1",
+                        "node_id": "semantic-op:3172d8e9a2f831db6d42522d0f861c14611e12bc0ced74e61a47cf9d52f45faa",
+                        "operands": [
+                          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+                          "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+                        ],
+                        "operation": "Add",
+                        "results": [
+                          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "epsilon",
+                            1e-06
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/post_norm",
+                        "derivation_ids": [
+                          "derivation:f5deb38a626370cabe5688b0691eeb1dde07df183f658bbaf3c044e118faa43e"
+                        ],
+                        "local_id": "post_norm",
+                        "node_id": "semantic-op:3f4fb41271bf9b0c6f706b2efa51b6b6670400eed57ac74c91207ec951d2c896",
+                        "operands": [
+                          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+                          "semantic-value:dc70c83a2eac51a040a583545c8590f30e1a573e6d8917f9e239ee509acc3748"
+                        ],
+                        "operation": "RMSNorm",
+                        "results": [
+                          "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+                        "state_effect_ids": [
+                          "semantic-state-effect:be4409ab91b68e8a93d4c0cfe3a3d36d38f0fc1e855e18024c03c9e94f36e228"
+                        ]
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "entrypoint",
+                            "forward"
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp",
+                        "derivation_ids": [
+                          "derivation:3dd4672f282691d84a37c0745eb9d2ee0d032aaeaedc24e3d828338166bdd920"
+                        ],
+                        "inputs": [
+                          "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96"
+                        ],
+                        "items": [
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_proj",
+                            "derivation_ids": [
+                              "derivation:8a2ca881e78fa03695af7cfb15837aa57655f3c8b297714cf5bab50a60662a87"
+                            ],
+                            "local_id": "gate_proj",
+                            "node_id": "semantic-op:12dbe8bb2a03b61451f4e2c8f968c2b04a952634e938138ecc390f5d8bfb9eb9",
+                            "operands": [
+                              "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96",
+                              "semantic-value:a6d9cf60abed797df95f73335fe0c273cb7afb5fac29f061ad0dcb2a2e93ae93"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:637c49d17a574cd33eef658e3d0453025eb747176d0edd46fc8f241ebbe0d962"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/up_proj",
+                            "derivation_ids": [
+                              "derivation:7150ab34269eed9c151da0ff518922d26484348392af56868190958591b77ebf"
+                            ],
+                            "local_id": "up_proj",
+                            "node_id": "semantic-op:fb6e779cd3dfa26ac4fa1aa009499332a365ec3a4f572589f9a5735fd4459bf8",
+                            "operands": [
+                              "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96",
+                              "semantic-value:c0872d3d7339353f1cead4f12b7f99417f1333142b861f789042f06fc40fef07"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:5051796fbb66915ece200b58ff611059eb0fbb72f5648f481d07947cc1aa4197"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/silu",
+                            "derivation_ids": [
+                              "derivation:e17f2a0cd272430d0c88574fbeb0896fa68e680e1c82f1f06730792174c9b300"
+                            ],
+                            "local_id": "silu",
+                            "node_id": "semantic-op:11fc51a7ac0f0dd9f47b36eaed4ae1eb408e3669462b851c2f5f5bd2fd9caf4f",
+                            "operands": [
+                              "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e"
+                            ],
+                            "operation": "SiLU",
+                            "results": [
+                              "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_mul",
+                            "derivation_ids": [
+                              "derivation:aff827dc5a38b363575ef91233a7ee0b6fb98e1a4534979fc1d3eb5b9eff3acd"
+                            ],
+                            "local_id": "gate_mul",
+                            "node_id": "semantic-op:97c1bc23cfa085ffe3436530c61e557b71fe91f3bf7be234d92c96e4e52ef579",
+                            "operands": [
+                              "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3",
+                              "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca"
+                            ],
+                            "operation": "Mul",
+                            "results": [
+                              "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/down_proj",
+                            "derivation_ids": [
+                              "derivation:065dd1915cc70e9de64a7119fab73983612f9a5a3e5338e2f00ad3cc76c2c791"
+                            ],
+                            "local_id": "down_proj",
+                            "node_id": "semantic-op:175fe4bea83f996436b2cff6a98c6ce4e360cca9d24ca8e481fbc3fc30a7aa47",
+                            "operands": [
+                              "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8",
+                              "semantic-value:7d2dda52c5c03f9a616dc1f5e2ac7ca260889e4bb6526bf0460a3641fb04cb2f"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:c76ca26a4f3c4a60fc507b7c2b82952b0eecd6c9d464d6c230a2bddce1ea8cb2"
+                            ]
+                          }
+                        ],
+                        "kind": "model_entrypoint",
+                        "local_id": "mlp",
+                        "node_id": "semantic-region:b2c1e240c719f0955b77a61f8a2a44386c2b0506f7f7894eab3253ce6a6bfc7b",
+                        "outputs": [
+                          "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_2",
+                        "derivation_ids": [
+                          "derivation:c190f272b784cb9580303866bdb097ab336e08e47c8ef609a1b5a66ccc506637"
+                        ],
+                        "local_id": "residual_2",
+                        "node_id": "semantic-op:6d8c096ac55923debc31926ac554119961512748c0e91307b9b96aa2bc53541f",
+                        "operands": [
+                          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+                          "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+                        ],
+                        "operation": "Add",
+                        "results": [
+                          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+                        "state_effect_ids": []
+                      }
+                    ],
+                    "kind": "model_entrypoint",
+                    "local_id": "layer_0",
+                    "node_id": "semantic-region:d2f849e33775923ae38c16894a74fe4f6235b7cc13f84183d80a24bdaf10a5a4",
+                    "outputs": [
+                      "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+                    ],
+                    "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0",
+                    "state_effect_ids": []
+                  },
+                  {
+                    "attributes": [
+                      [
+                        "entrypoint",
+                        "forward"
+                      ]
+                    ],
+                    "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]",
+                    "derivation_ids": [
+                      "derivation:e5950a90c103e24f4bc3138ede593f83306772901daebc33ad1b9b3e39cf8ff6"
+                    ],
+                    "inputs": [
+                      "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+                    ],
+                    "items": [
+                      {
+                        "attributes": [
+                          [
+                            "epsilon",
+                            1e-06
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/input_norm",
+                        "derivation_ids": [
+                          "derivation:f6b880de27fc6c1da46f6985484c8575096806b03175633eceb0810970898bce"
+                        ],
+                        "local_id": "input_norm",
+                        "node_id": "semantic-op:e3b6bf5536e221cd713edbff7d897c0afbcf32de3ca6e6b4b92d1a4470d52586",
+                        "operands": [
+                          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+                          "semantic-value:f20755e27f29c6f6daf492e4c420bc15ce58cbcee916177a0ab7b13c899bf9e6"
+                        ],
+                        "operation": "RMSNorm",
+                        "results": [
+                          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+                        "state_effect_ids": [
+                          "semantic-state-effect:08916102bd0f75f4de437d1e73611c7462bb0e264bf4cd332e3c11d2a23626e4"
+                        ]
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "entrypoint",
+                            "forward"
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention",
+                        "derivation_ids": [
+                          "derivation:0e3d78d8438400132ef7a824aa9a9d3bf400647261ec4dfabc9b59e073b97116"
+                        ],
+                        "inputs": [
+                          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a"
+                        ],
+                        "items": [
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_proj",
+                            "derivation_ids": [
+                              "derivation:dbe64153a49adaa58177b314717ed712e1a2a0c7a22f13f6103a7a478e72abfe"
+                            ],
+                            "local_id": "q_proj",
+                            "node_id": "semantic-op:1523148ce18e3a46a24cab2fede91400dad16442e46ec7fa10890cb50c0c1911",
+                            "operands": [
+                              "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+                              "semantic-value:916a32977bf17ee6028a2308f2c23edea63b99b650eed7ecabe8870ba6dd88da"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:20de56ea353a8845a7e9c450fe4ceee38e3b9e67e9d3b23a4381773a75d26082"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_proj",
+                            "derivation_ids": [
+                              "derivation:261cbd2ac148d7ae294220c886f0ff966985f14723d7ba71efa46c92e2d8d98c"
+                            ],
+                            "local_id": "k_proj",
+                            "node_id": "semantic-op:5d9c8b18c1bbaa0e814f3034cfc7644e984f3dda6719626ffeb90860a5f6bad6",
+                            "operands": [
+                              "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+                              "semantic-value:e14cabf43f2f628681dbce40cb0988c608d8ffe49cd58f70ed0af0cb585a817e"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:6ef616931880683d7dbc80b30bed78aca6add16f4d4701b5f83fd49783f823a6"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_proj",
+                            "derivation_ids": [
+                              "derivation:5c083be0b1f36091a1d98a59b0b41b79dabde560c6fe3dc2e5c84cb39e627da6"
+                            ],
+                            "local_id": "v_proj",
+                            "node_id": "semantic-op:f10ff0db9be81226814c44eba5658ce47786d08eee01b8ced9be4a2ec7162cda",
+                            "operands": [
+                              "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+                              "semantic-value:7afbb31aa15b85a2d68bd57237728e73d1ef3343ced3c958e94c5c5fcd692c5c"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:1108ee72c3ed0e631039f3be3b06940d8dfc7c017b0a09e3390aaaf434ea5249"
+                            ]
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_view",
+                            "derivation_ids": [
+                              "derivation:3d2a566d1507280d1f4c2808b138bfd3ab579bef43eaa2ea6ce3d7276b059d8d"
+                            ],
+                            "local_id": "q_view",
+                            "node_id": "semantic-op:9bc2a8956bc80a4a6ad9ae2c8d62ce86d86bd991cad6847b02dcd339c475465f",
+                            "operands": [
+                              "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_transpose",
+                            "derivation_ids": [
+                              "derivation:f4e89294d9221c53ec8b1dedc0aad493ff8010e19cd444a8bdc383670488a24f"
+                            ],
+                            "local_id": "q_transpose",
+                            "node_id": "semantic-op:9914a3e2cfa2f3067638e9fde262cce28d870c5f3274fdb1adc446230609dfc1",
+                            "operands": [
+                              "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:a24f02c88b5a2d4a91a15fd61e316e71399013f5a747532513d69f507c0023a1"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_view",
+                            "derivation_ids": [
+                              "derivation:38c82e8089345c24426a74af640ac40ea81c45818b666c25afa37fe69630030b"
+                            ],
+                            "local_id": "k_view",
+                            "node_id": "semantic-op:ece8be357f5d1b83f7ff7bc29fc11b24b21a476e1f327945fd2792ab52ff7816",
+                            "operands": [
+                              "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_transpose",
+                            "derivation_ids": [
+                              "derivation:705db98e1276687f4bbe9a95aa94b716e196d1791da461f649e476a5d9f16f10"
+                            ],
+                            "local_id": "k_transpose",
+                            "node_id": "semantic-op:d66fb9119887804a770ffe58e525ff3a98be8813ab47ce995f85997f458b1f5b",
+                            "operands": [
+                              "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,1,3,2"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_key_transpose",
+                            "derivation_ids": [
+                              "derivation:42b50d028a482741de1d635ecc0d209d00e7285ece890fc46282bd6399f14e93"
+                            ],
+                            "local_id": "k_key_transpose",
+                            "node_id": "semantic-op:5f6367aa3ec951667f75e360a677d89068c848c82ad6794cced0f208c87836c5",
+                            "operands": [
+                              "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:a2b5b21ad671f437b12861fab6ac906916df30cb2ffb0df18e4ee80849a90e56"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/qk_matmul",
+                            "derivation_ids": [
+                              "derivation:73f5d2904287415a7c112f5542e2432fb33c1d74046dd57773b4159b92d89c53"
+                            ],
+                            "local_id": "qk_matmul",
+                            "node_id": "semantic-op:2e0d45dee4b6ea890d4d219f837d24a2779abb0c240e236ceec9f5760bc7e3f6",
+                            "operands": [
+                              "semantic-value:a24f02c88b5a2d4a91a15fd61e316e71399013f5a747532513d69f507c0023a1",
+                              "semantic-value:a2b5b21ad671f437b12861fab6ac906916df30cb2ffb0df18e4ee80849a90e56"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "scalar",
+                                0.125
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/scale",
+                            "derivation_ids": [
+                              "derivation:bb653ea722ef163ef0f77a46c1e17537ea5668ae0ae340b4b81dc5ff72a37824"
+                            ],
+                            "local_id": "scale",
+                            "node_id": "semantic-op:a4e852fcf9eaf0dee507a58da9a188d946b59b56146393d4e8b80a7539f466c2",
+                            "operands": [
+                              "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b"
+                            ],
+                            "operation": "Mul",
+                            "results": [
+                              "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/causal_mask",
+                            "derivation_ids": [
+                              "derivation:d71eeabf354f3c7286dc0cccc013b8d08c6d458cbcc77e44815a860ef7e00fc7"
+                            ],
+                            "local_id": "causal_mask",
+                            "node_id": "semantic-op:9738d5604a0e43158450a38c3fb0b0ab698a9129c9ec34035c0b0f054c127074",
+                            "operands": [
+                              "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930",
+                              "semantic-value:5adac9a657d2ef59ab3e4eff9dac43075f009af0ac4fc8fa8565dd85be37b3f6"
+                            ],
+                            "operation": "Add",
+                            "results": [
+                              "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+                            "state_effect_ids": [
+                              "semantic-state-effect:e616413d39ec654c912087e0f797b769a736dff1d48db4ba7c0d2a38e3d6f102"
+                            ]
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "dimension",
+                                -1
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/softmax",
+                            "derivation_ids": [
+                              "derivation:6aba63ff198bc8bff275d0e57954b9ef252fd64563c8e3ab677268ea173bc30f"
+                            ],
+                            "local_id": "softmax",
+                            "node_id": "semantic-op:587503aa3e8459cae92db52c1e0ef2ef6bcd6a19f219ed3ff78e566059e88b17",
+                            "operands": [
+                              "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e"
+                            ],
+                            "operation": "Softmax",
+                            "results": [
+                              "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,NH,D"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_view",
+                            "derivation_ids": [
+                              "derivation:ee612f8bae897f897762595f93e9aeee4fc1a64974c2477806887894a2886ec1"
+                            ],
+                            "local_id": "v_view",
+                            "node_id": "semantic-op:a9bf1ea4228fcdf4d8d04affd6a390cf4820e846014d98353655992f871f5459",
+                            "operands": [
+                              "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "permutation",
+                                "0,2,1,3"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_transpose",
+                            "derivation_ids": [
+                              "derivation:52a7003d0a9a0d11b0e7ea776b9e02b77b2a03af263c51ee6b828412e6bc3b39"
+                            ],
+                            "local_id": "v_transpose",
+                            "node_id": "semantic-op:fb93e231eadcba3c693601550419f52566b1ab8ae3fce6f43beeb37964145128",
+                            "operands": [
+                              "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d"
+                            ],
+                            "operation": "Transpose",
+                            "results": [
+                              "semantic-value:9c2234121e2cdcd6f1172d4568f54df4b4dd09148b64dfbe877f633635b74442"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "equation",
+                                "bhqk,bhkd->bqhd"
+                              ],
+                              [
+                                "output_layout",
+                                "sequence_major_contiguous"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_matmul",
+                            "derivation_ids": [
+                              "derivation:4b69c16d2333269137fc677ae9e5b706b06e480888cb3fd156784bcb9752e101"
+                            ],
+                            "local_id": "context_matmul",
+                            "node_id": "semantic-op:271e51be7052559c09cfa0e683516c90b46d538bafd427e2e7c1f12ac7a94cb1",
+                            "operands": [
+                              "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206",
+                              "semantic-value:9c2234121e2cdcd6f1172d4568f54df4b4dd09148b64dfbe877f633635b74442"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [
+                              [
+                                "materialization",
+                                "zero"
+                              ],
+                              [
+                                "target_shape",
+                                "B,S,H"
+                              ]
+                            ],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_view",
+                            "derivation_ids": [
+                              "derivation:1f7c9d45aac19d67241ceefd9c84e5f13656ca73e69f2de2deca18a7da15018d"
+                            ],
+                            "local_id": "context_view",
+                            "node_id": "semantic-op:c6554b92c79ebea19d1608b9804ddf75336875b6727b984563751faf55bdeca6",
+                            "operands": [
+                              "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+                            ],
+                            "operation": "View",
+                            "results": [
+                              "semantic-value:1a142635d0c2baec8118ec3de1c76601915c0f4a8b5cea8ead6019af02146f7b"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/out_proj",
+                            "derivation_ids": [
+                              "derivation:b581d8a832d19115f6afcf22baa50131d4415f88b50fe38fd4369ceb67ce9f48"
+                            ],
+                            "local_id": "out_proj",
+                            "node_id": "semantic-op:1f8e77421ba347daa0263f9d342b70dfa42212e1336df430f1dfb56f344b7d6e",
+                            "operands": [
+                              "semantic-value:1a142635d0c2baec8118ec3de1c76601915c0f4a8b5cea8ead6019af02146f7b",
+                              "semantic-value:08380afe13f263e6b7004fa24129b4eeac1240a07fdb84d33e7043a7d33ed9e2"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:ce520444f63c46b728b0dec956b6de8bad018c63ef0cbbd894ab898eb32ce757"
+                            ]
+                          }
+                        ],
+                        "kind": "model_entrypoint",
+                        "local_id": "attention",
+                        "node_id": "semantic-region:bf9f36c14c988862d5f602fa57e4f5933128aa607a7209b3d9f8ca9f085cabb0",
+                        "outputs": [
+                          "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_1",
+                        "derivation_ids": [
+                          "derivation:3752c8090c084ff999291b433afa2af038de224f31c5b24cb08e1984f0b48b68"
+                        ],
+                        "local_id": "residual_1",
+                        "node_id": "semantic-op:109e5bb05932835dc641d502378e46f8c80e457ea12581a33e9ca982f4853dbb",
+                        "operands": [
+                          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+                          "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+                        ],
+                        "operation": "Add",
+                        "results": [
+                          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "epsilon",
+                            1e-06
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/post_norm",
+                        "derivation_ids": [
+                          "derivation:673ce2704ccbaf5937ddbd286c2aed2db67f48658cf77e06131b79a01d37ec91"
+                        ],
+                        "local_id": "post_norm",
+                        "node_id": "semantic-op:7c25b00b5acf6ffbd9d0fd961014fdfc2e1000b9e6918ceb87b5c2bc0b553fe9",
+                        "operands": [
+                          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+                          "semantic-value:2f852083261654435d9a1039c15be75c4f98ff3a2c255e35e21d2dd3a9fdc003"
+                        ],
+                        "operation": "RMSNorm",
+                        "results": [
+                          "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+                        "state_effect_ids": [
+                          "semantic-state-effect:68ccffabf5f1cc97f592209f101ea8752f1e944f8755b2b9a5e9e1a58be12039"
+                        ]
+                      },
+                      {
+                        "attributes": [
+                          [
+                            "entrypoint",
+                            "forward"
+                          ]
+                        ],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp",
+                        "derivation_ids": [
+                          "derivation:4fb4573f68131655b817ea152069000c863605554e77909b33dea6fcd5d46b31"
+                        ],
+                        "inputs": [
+                          "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43"
+                        ],
+                        "items": [
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_proj",
+                            "derivation_ids": [
+                              "derivation:9c725675d268c60f54c92c77639a2223df83d19ce813e4eb001b5f4c5b6d37ad"
+                            ],
+                            "local_id": "gate_proj",
+                            "node_id": "semantic-op:22c6b5762e9fbde26c94e43f40e8f45f5a3664e615ddc002856d88270ca49149",
+                            "operands": [
+                              "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43",
+                              "semantic-value:396809a1f9fbe137321bae59d7f25a71a0cbea1f95381f74be5c279886990d23"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:dddad4ecfdc842b5e895d6046e3b47461f7de626ebee81dfc9e5388d998ee29c"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/up_proj",
+                            "derivation_ids": [
+                              "derivation:1a2659932a6a2483b854fbcec40a1a4138d547f33036179286812c6148e76721"
+                            ],
+                            "local_id": "up_proj",
+                            "node_id": "semantic-op:c6d93c69dab2e669b998d6e0cf0984eef464f73cad53210a4dcfb3c9ea0dbe90",
+                            "operands": [
+                              "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43",
+                              "semantic-value:f36b15f0cbe038a71dd352e58aeb5cfbf9ad9a9b1589880c0b4c5f1adc5dcb54"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:334baf086cdebf8e4446e3a5a7dc00f46f97b2211a2ad6b6d2dcaee5603fdc9a"
+                            ]
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/silu",
+                            "derivation_ids": [
+                              "derivation:f5724cf54d81bc8d8cfbd60b0a597f781fe631bcecd77c557a4b23d21ec7249e"
+                            ],
+                            "local_id": "silu",
+                            "node_id": "semantic-op:63ab2a6392be235f15958a1f5b0d5237cb097d728827269fbfd28089ffb857e2",
+                            "operands": [
+                              "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7"
+                            ],
+                            "operation": "SiLU",
+                            "results": [
+                              "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_mul",
+                            "derivation_ids": [
+                              "derivation:996aea35bc13cca0113a07a55e453964f391023cfbe2d69e11ae0dd7b6a4cc80"
+                            ],
+                            "local_id": "gate_mul",
+                            "node_id": "semantic-op:dab72389d23a06fcd841c94a92739c42acc1d2cb2b8906a204a23dd509a107a5",
+                            "operands": [
+                              "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2",
+                              "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969"
+                            ],
+                            "operation": "Mul",
+                            "results": [
+                              "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+                            "state_effect_ids": []
+                          },
+                          {
+                            "attributes": [],
+                            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/down_proj",
+                            "derivation_ids": [
+                              "derivation:8cfe4b5bbc2661aa3a855b21a09a443a7af0403b97f5d146848a1957a274a9e5"
+                            ],
+                            "local_id": "down_proj",
+                            "node_id": "semantic-op:d5400afcf0549c9934829105564bbf1cf3d627755b88984ddd19b90d8f21cd76",
+                            "operands": [
+                              "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56",
+                              "semantic-value:8e1befeeddaed927568c411b345e3a822a0bf6510f3eb2b50afa56a206adcf7a"
+                            ],
+                            "operation": "MatMul",
+                            "results": [
+                              "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+                            ],
+                            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+                            "state_effect_ids": [
+                              "semantic-state-effect:9cd4a0ffb88039acf383a58997c9267ec9ebe2de294583f21ec2e9dc2bdfe1da"
+                            ]
+                          }
+                        ],
+                        "kind": "model_entrypoint",
+                        "local_id": "mlp",
+                        "node_id": "semantic-region:daee3d800b4c11f69a5010538d646191cb09b56a6496d718e39a32f861807746",
+                        "outputs": [
+                          "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp",
+                        "state_effect_ids": []
+                      },
+                      {
+                        "attributes": [],
+                        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_2",
+                        "derivation_ids": [
+                          "derivation:7e43fc850fce1fc90526e0b929c323fdbac096a4e238d24831681045177fae4d"
+                        ],
+                        "local_id": "residual_2",
+                        "node_id": "semantic-op:4af227e314cffeb3a541b2e8f826f43ee9c85e6daa8ab4fd155fef2ce4f969e4",
+                        "operands": [
+                          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+                          "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+                        ],
+                        "operation": "Add",
+                        "results": [
+                          "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+                        ],
+                        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2",
+                        "state_effect_ids": []
+                      }
+                    ],
+                    "kind": "model_entrypoint",
+                    "local_id": "layer_1",
+                    "node_id": "semantic-region:77d8f01f737a882790fb3089a69e67d9852d3c2bdbd217f00013f1f2b6c36c42",
+                    "outputs": [
+                      "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+                    ],
+                    "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1",
+                    "state_effect_ids": []
+                  }
+                ],
+                "kind": "model_entrypoint",
+                "local_id": "transformer",
+                "node_id": "semantic-region:04d2b2ebce157de9d71f99964e4a66b6b035da9824fccf8dfa0dfc699ae7f278",
+                "outputs": [
+                  "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+                ],
+                "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer",
+                "state_effect_ids": []
+              }
+            ],
+            "kind": "model_call",
+            "local_id": "model-prefill",
+            "node_id": "semantic-region:5043b8c74527b14df5bbb55e7a009c057433fc6d1170b10f9734204d8f7ca175",
+            "outputs": [
+              "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+            ],
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill",
+            "state_effect_ids": [
+              "semantic-state-effect:500e72ed1c486b7d6cefc25678c1c3808089ae7a61e3d2ca9840a4cff5b97024",
+              "semantic-state-effect:39d7fc319c0e97d7ba57cd3dbd4522afc67b890e767e4da98454d40521071954"
+            ]
+          }
+        ],
+        "kind": "sequence",
+        "local_id": "request",
+        "node_id": "semantic-region:26b1008ef351755e0d353eb8d56c94133d5361e253054a5b9d3b7b5be1c97bea",
+        "outputs": [
+          "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request",
+        "state_effect_ids": []
+      }
+    ],
+    "kind": "analysis_case",
+    "local_id": "issue25-m4-m256-fixed-nk512",
+    "node_id": "semantic-region:aa1b2ecf35fc6e3c0d0d2267476878f545dd252ca1a4662d0b3aa405e9f4812a",
+    "outputs": [
+      "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+    ],
+    "stable_path": "semantic/analysis/issue25-m4-m256-fixed-nk512",
+    "state_effect_ids": []
+  },
+  "schema": "groundupscale.dev/semantic-ir/v1alpha1",
+  "state_artifacts": [
+    {
+      "artifact_id": "semantic-state-artifact:81624a134dd1fff490d7b525ca156c788a8878f0da95c87ad4ea994023945a23",
+      "derivation_ids": [
+        "derivation:b4cecf0ad1dfe05588268edb1026948b74852f3cbda802149055b6587aff94a4"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:81624a134dd1fff490d7b525ca156c788a8878f0da95c87ad4ea994023945a23",
+      "role": "input",
+      "source_kind": "workload_artifact",
+      "stable_path": "semantic/workload/transformer-prefill/request/artifact/hidden-input",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:8dd9dce8f0e12e2fdd4b3d6ade95c6d51bfe542facd532b23ac512fad36aeb7e",
+      "derivation_ids": [
+        "derivation:92469a76be06cc69b4ff7f83780a7b816b4e64426f7cb677d5fdca7e9eadf710"
+      ],
+      "initial_version": null,
+      "node_id": "semantic-state-artifact:8dd9dce8f0e12e2fdd4b3d6ade95c6d51bfe542facd532b23ac512fad36aeb7e",
+      "role": "output",
+      "source_kind": "workload_artifact",
+      "stable_path": "semantic/workload/transformer-prefill/request/artifact/hidden-output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:7c29a4bd7a7f907b037785eb7678f4663b8dfafd6e7b99b98be8543b8358eb48",
+      "derivation_ids": [
+        "derivation:70d9ca4ac3c9298156bb527f7aa9db59792cf62e1a773b67538e393113e3b59b"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:7c29a4bd7a7f907b037785eb7678f4663b8dfafd6e7b99b98be8543b8358eb48",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/input_norm/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:bc378b16ebabb06af8ba5f0eab7110bf27a99520f6aa4b4ef38002b0cb6ed1be",
+      "derivation_ids": [
+        "derivation:ed19e634bcae0e6be79cbb37269a20d738b4edc79562e0c2ca18c356adeecca2"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:bc378b16ebabb06af8ba5f0eab7110bf27a99520f6aa4b4ef38002b0cb6ed1be",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/attention/q_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:baefe302777c1096afb9efd6ab17a6f53c482e992fc597e4263c08941b3d22f7",
+      "derivation_ids": [
+        "derivation:d41c2f1b57ad5d79cf7a45f319a7d91eb9a28fe78d2b1f84d93e84edd4968cd4"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:baefe302777c1096afb9efd6ab17a6f53c482e992fc597e4263c08941b3d22f7",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/attention/k_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:daff99c59f6e973602993f41eebdcfd1c3a86e0444781399a22f8cd5359a0b20",
+      "derivation_ids": [
+        "derivation:5d31f33e70d0b0c5f4286512c706767035a7f340b0ae8d9af9c585b11b217883"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:daff99c59f6e973602993f41eebdcfd1c3a86e0444781399a22f8cd5359a0b20",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/attention/v_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:168a85526f14f152facfaf1e0d7f629d209158341b02a5c28d5480bad72e7877",
+      "derivation_ids": [
+        "derivation:ecf866b1bf8286dfda4aef012ca7cbced21ae288d53539e2555cb45eca3f7c6a"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:168a85526f14f152facfaf1e0d7f629d209158341b02a5c28d5480bad72e7877",
+      "role": "buffer",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/attention/causal_mask/state/mask",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "broadcast",
+        "shape": [
+          1,
+          1,
+          256,
+          256
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:e37826078c3f1a9a2c9e0ca0d153edb71682a132d5b223b43ea4431f9dd2d787",
+      "derivation_ids": [
+        "derivation:52facc928ced07fc334b337e59b135429f9a58c2a94dc4f1babec6abbd696d4c"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:e37826078c3f1a9a2c9e0ca0d153edb71682a132d5b223b43ea4431f9dd2d787",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/attention/out_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:3bfc8d1dc05ce062812a0ad2910838b9a819201b645224ed9a0394b02db5b58f",
+      "derivation_ids": [
+        "derivation:04e0e6d7789a1d1b77622f067e453b3e755bb11509ec6ddfc29a7e02609a2649"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:3bfc8d1dc05ce062812a0ad2910838b9a819201b645224ed9a0394b02db5b58f",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/post_norm/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:7dff61ea62d175466fc853d99212f53b38b0c9457fbadfc9c974ec5abc41333e",
+      "derivation_ids": [
+        "derivation:494e5cc964388cc4b8763a145d1150b71aa741018841bb24f3aa3634a607c7f2"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:7dff61ea62d175466fc853d99212f53b38b0c9457fbadfc9c974ec5abc41333e",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/mlp/gate_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:b9bbe184118b972bbfe8079ff015c6193a7fe51051050e5060d353a9b7f3f1c6",
+      "derivation_ids": [
+        "derivation:48fdc56f94082724898eb721c05b3e750b6bdceec0c5859439c255e357d10314"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:b9bbe184118b972bbfe8079ff015c6193a7fe51051050e5060d353a9b7f3f1c6",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/mlp/up_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:14ab3e61f55620f40ef3c68b411e170a0d55ae047c443c7a201534c89196bc84",
+      "derivation_ids": [
+        "derivation:f5ec615b99e3ea91fd4428a4d1c7579dedcf16cbd8e8300d3f68889049f3c321"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:14ab3e61f55620f40ef3c68b411e170a0d55ae047c443c7a201534c89196bc84",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_0/mlp/down_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          2048,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:0ff91361b335ad91a245a8ed197ce7fad2fd8904db0e6d0ab542035376eb4c88",
+      "derivation_ids": [
+        "derivation:14a810788cb7cd55e2c112c428cb6609a44a9f1ab009dcf1d67c70370389cb3d"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:0ff91361b335ad91a245a8ed197ce7fad2fd8904db0e6d0ab542035376eb4c88",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/input_norm/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:71439ca181c2074dc38c76ed51b80d2e665c74a5a9d2567fa2af53443be6dd38",
+      "derivation_ids": [
+        "derivation:6d000da1069108e51061328a40e8670b34effecc01a7cb52bfe433cb294f31e5"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:71439ca181c2074dc38c76ed51b80d2e665c74a5a9d2567fa2af53443be6dd38",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/attention/q_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:d89e03108246e0636f2c00c4c5c03fb935a526147de6828e4ad1a8e8b207d798",
+      "derivation_ids": [
+        "derivation:9a557411dbad0a1c10556a82ae49bdb41dbc252c1547b0a3fff9a5f926756acb"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:d89e03108246e0636f2c00c4c5c03fb935a526147de6828e4ad1a8e8b207d798",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/attention/k_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:e63c1a3fb4bb0dd1da0bb53c4f6fa913c07f8373b83d7b36ba767f49cf90a619",
+      "derivation_ids": [
+        "derivation:ce0c4744ed6d297cd17e958e5b5053f84cf429878281f882c98265fcfdfdf9fe"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:e63c1a3fb4bb0dd1da0bb53c4f6fa913c07f8373b83d7b36ba767f49cf90a619",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/attention/v_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:bc74ca0c8e8365688a0df616bc7c247fa10d6f471b685469a26a1ecdf12a74f5",
+      "derivation_ids": [
+        "derivation:716633d70d57ac0db21903941885ed1d4a96fc8335a81c994c474f91d2c12993"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:bc74ca0c8e8365688a0df616bc7c247fa10d6f471b685469a26a1ecdf12a74f5",
+      "role": "buffer",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/attention/causal_mask/state/mask",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "broadcast",
+        "shape": [
+          1,
+          1,
+          256,
+          256
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:ad56bbe1639da8e5bb83dd7d4fa0851eda41109575472c1a13584e711bc6c570",
+      "derivation_ids": [
+        "derivation:c016c38866cfa46fed31c3c4190416c4e4b59d06a734fbbeb31bb454b26dd108"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:ad56bbe1639da8e5bb83dd7d4fa0851eda41109575472c1a13584e711bc6c570",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/attention/out_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:92bb3baeff8e8a3a9b2d2e37c6b49666032e44ad8fa3e69631f0f89f14692e94",
+      "derivation_ids": [
+        "derivation:3a5a113a272d32c7f784b43c8f10963aec272bbaa0540c05e9d98968591c490a"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:92bb3baeff8e8a3a9b2d2e37c6b49666032e44ad8fa3e69631f0f89f14692e94",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/post_norm/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:5e860fada954155bf3518e7b7ed55dbb3824fa205a9bcbe4e2260921039e6697",
+      "derivation_ids": [
+        "derivation:a16a3351f6b2333eb0be0962fc6455a9bf9abae9332eb341a48463ad3840b84d"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:5e860fada954155bf3518e7b7ed55dbb3824fa205a9bcbe4e2260921039e6697",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/mlp/gate_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:6903f8a5b9ec1aec9c31e5aa12b502d9108d6336ffd5c19549494d1da20e3b04",
+      "derivation_ids": [
+        "derivation:d16b8ac8d6d4442310f18a402a610e4bef9990f9f99b8d49700d142f80c291a5"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:6903f8a5b9ec1aec9c31e5aa12b502d9108d6336ffd5c19549494d1da20e3b04",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/mlp/up_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      }
+    },
+    {
+      "artifact_id": "semantic-state-artifact:4d8d6b7c1e36d98284451cd26d428dffaabcac8964fc1a4f4ed536573fbc5627",
+      "derivation_ids": [
+        "derivation:c0220c57dee669a59c54e347e804b9ad00ae733a0bc217d373fc359336434232"
+      ],
+      "initial_version": 0,
+      "node_id": "semantic-state-artifact:4d8d6b7c1e36d98284451cd26d428dffaabcac8964fc1a4f4ed536573fbc5627",
+      "role": "parameter",
+      "source_kind": "model_state",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer_1/mlp/down_proj/state/weight",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          2048,
+          512
+        ]
+      }
+    }
+  ],
+  "state_effects": [
+    {
+      "artifact_id": "semantic-state-artifact:81624a134dd1fff490d7b525ca156c788a8878f0da95c87ad4ea994023945a23",
+      "derivation_ids": [
+        "derivation:cb092396d497b0efe5f3d004f759931d509aa4858c69a61bb15959d982b1e5a4"
+      ],
+      "effect_id": "semantic-state-effect:500e72ed1c486b7d6cefc25678c1c3808089ae7a61e3d2ca9840a4cff5b97024",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:500e72ed1c486b7d6cefc25678c1c3808089ae7a61e3d2ca9840a4cff5b97024",
+      "output_value_id": "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+      "owner_node_id": "semantic-region:5043b8c74527b14df5bbb55e7a009c057433fc6d1170b10f9734204d8f7ca175",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/artifact-read/hidden",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:7c29a4bd7a7f907b037785eb7678f4663b8dfafd6e7b99b98be8543b8358eb48",
+      "derivation_ids": [
+        "derivation:d02f116f47b17c9db4d335da9de1a03c6d059de41b8751b7c1c58ad6f5281ab0"
+      ],
+      "effect_id": "semantic-state-effect:b12e543e193583eaa13770bdec707ee413a1e0aa0dbea73ef8a3907845c38861",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:b12e543e193583eaa13770bdec707ee413a1e0aa0dbea73ef8a3907845c38861",
+      "output_value_id": "semantic-value:104baa86209387ae5e8b431028cc2e958eab84a8dc5f57309537bef083c067dc",
+      "owner_node_id": "semantic-op:d15bb0a43457d5074b83c03935467ed117ed54bc65a9b65705e9798dd05f83b0",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:bc378b16ebabb06af8ba5f0eab7110bf27a99520f6aa4b4ef38002b0cb6ed1be",
+      "derivation_ids": [
+        "derivation:5be79d68daaea325996e013621e54aec72642c4569b7087b40997375719e8bf7"
+      ],
+      "effect_id": "semantic-state-effect:8e5740eb30080579ecbc414f0f48d70b88b8e5e01933b99a158535aeb6a57a33",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:8e5740eb30080579ecbc414f0f48d70b88b8e5e01933b99a158535aeb6a57a33",
+      "output_value_id": "semantic-value:508644b93d3b02da07368bc4a14334098199b79757641154b11592e74a3b9425",
+      "owner_node_id": "semantic-op:cc68e840d0f609a9f28ce6ebc685f89eb232a584f854fdb37915106c93160b26",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:baefe302777c1096afb9efd6ab17a6f53c482e992fc597e4263c08941b3d22f7",
+      "derivation_ids": [
+        "derivation:9aa591fa40fdc60c62e24446d72e77056fe3658df7aa20161b8d9570ad2384a2"
+      ],
+      "effect_id": "semantic-state-effect:fc7efcc996683394703058c8f083aad131235b4539bed9885650d44ec096118a",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:fc7efcc996683394703058c8f083aad131235b4539bed9885650d44ec096118a",
+      "output_value_id": "semantic-value:cb0f0d637a48022434d5d1b9bb19187de9f69f1850d3bc5ab3d015201330afbe",
+      "owner_node_id": "semantic-op:9bce308c86991dd93f19a431d753e4741303e604a7722122368f0f77b6665100",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:daff99c59f6e973602993f41eebdcfd1c3a86e0444781399a22f8cd5359a0b20",
+      "derivation_ids": [
+        "derivation:c849489ac7e9204e1b9be863ac8da350d5c3ff42a3160cd4a238e9f3654a0ac4"
+      ],
+      "effect_id": "semantic-state-effect:52d1d922e2214f9f7220c4342018f7c26ac0fc656586be2a584c51d8bdffde22",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:52d1d922e2214f9f7220c4342018f7c26ac0fc656586be2a584c51d8bdffde22",
+      "output_value_id": "semantic-value:1fbcb33fb027a42b3634b9a54bc05322a5ce0f73bb96819abaedf4ec12a76ec5",
+      "owner_node_id": "semantic-op:75c7860918742d9eb2192c6826c60a76fa63e092815fea8adec15f4646d3ac1f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:168a85526f14f152facfaf1e0d7f629d209158341b02a5c28d5480bad72e7877",
+      "derivation_ids": [
+        "derivation:3fefe4fa9bb2d13d2ee99a0f99d0d20a98243529db2c210165c4db114a912bc0"
+      ],
+      "effect_id": "semantic-state-effect:51e13ff95b16d8ff1f5809da6173b4b59639d203e872aa7065d57c017fac19fa",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:51e13ff95b16d8ff1f5809da6173b4b59639d203e872aa7065d57c017fac19fa",
+      "output_value_id": "semantic-value:09d2b417eef7bb72dbc7fc5e3b111f68579fc58c76201cc80c548c7d28d5766d",
+      "owner_node_id": "semantic-op:5cb3d0681e1b09452464b6b347bdbbecf97fb01d86a2ec9c3209adcdabc7f981",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask/state-read/mask",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:e37826078c3f1a9a2c9e0ca0d153edb71682a132d5b223b43ea4431f9dd2d787",
+      "derivation_ids": [
+        "derivation:543d435b004c19519ecba5b639f2ccc07f4c75530cd6db872b194c8f2848d271"
+      ],
+      "effect_id": "semantic-state-effect:0653bed33b022e5e3a27bfc7228bd84f8cbc3c6f838b7dbb63def20290bf1375",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:0653bed33b022e5e3a27bfc7228bd84f8cbc3c6f838b7dbb63def20290bf1375",
+      "output_value_id": "semantic-value:cbd6f336edfad9ac9259d02227dbddc66d1f0a69c8b5ee30a09c5afa9535f656",
+      "owner_node_id": "semantic-op:4c31c39902bdaa9fdc4b82c3fb2df2a6c06fb3c9af1dbc4aa3631b719c34d3ea",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:3bfc8d1dc05ce062812a0ad2910838b9a819201b645224ed9a0394b02db5b58f",
+      "derivation_ids": [
+        "derivation:1eb98167f963340f880f68bc45e048c040f3506187df949df34dd127c4ba592e"
+      ],
+      "effect_id": "semantic-state-effect:be4409ab91b68e8a93d4c0cfe3a3d36d38f0fc1e855e18024c03c9e94f36e228",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:be4409ab91b68e8a93d4c0cfe3a3d36d38f0fc1e855e18024c03c9e94f36e228",
+      "output_value_id": "semantic-value:dc70c83a2eac51a040a583545c8590f30e1a573e6d8917f9e239ee509acc3748",
+      "owner_node_id": "semantic-op:3f4fb41271bf9b0c6f706b2efa51b6b6670400eed57ac74c91207ec951d2c896",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:7dff61ea62d175466fc853d99212f53b38b0c9457fbadfc9c974ec5abc41333e",
+      "derivation_ids": [
+        "derivation:2be774906b7933b1ba06aea4e89c0d1b498b6a452fa980212c48bd2ce244dbd6"
+      ],
+      "effect_id": "semantic-state-effect:637c49d17a574cd33eef658e3d0453025eb747176d0edd46fc8f241ebbe0d962",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:637c49d17a574cd33eef658e3d0453025eb747176d0edd46fc8f241ebbe0d962",
+      "output_value_id": "semantic-value:a6d9cf60abed797df95f73335fe0c273cb7afb5fac29f061ad0dcb2a2e93ae93",
+      "owner_node_id": "semantic-op:12dbe8bb2a03b61451f4e2c8f968c2b04a952634e938138ecc390f5d8bfb9eb9",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:b9bbe184118b972bbfe8079ff015c6193a7fe51051050e5060d353a9b7f3f1c6",
+      "derivation_ids": [
+        "derivation:3291b8e066dbe0650157cc94c600c1e1972a1ea96b320d588c866521242612de"
+      ],
+      "effect_id": "semantic-state-effect:5051796fbb66915ece200b58ff611059eb0fbb72f5648f481d07947cc1aa4197",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:5051796fbb66915ece200b58ff611059eb0fbb72f5648f481d07947cc1aa4197",
+      "output_value_id": "semantic-value:c0872d3d7339353f1cead4f12b7f99417f1333142b861f789042f06fc40fef07",
+      "owner_node_id": "semantic-op:fb6e779cd3dfa26ac4fa1aa009499332a365ec3a4f572589f9a5735fd4459bf8",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:14ab3e61f55620f40ef3c68b411e170a0d55ae047c443c7a201534c89196bc84",
+      "derivation_ids": [
+        "derivation:153a3569b0697adfcaa48e43594412a1777cab232772314af2d739aea7bf5396"
+      ],
+      "effect_id": "semantic-state-effect:c76ca26a4f3c4a60fc507b7c2b82952b0eecd6c9d464d6c230a2bddce1ea8cb2",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:c76ca26a4f3c4a60fc507b7c2b82952b0eecd6c9d464d6c230a2bddce1ea8cb2",
+      "output_value_id": "semantic-value:7d2dda52c5c03f9a616dc1f5e2ac7ca260889e4bb6526bf0460a3641fb04cb2f",
+      "owner_node_id": "semantic-op:175fe4bea83f996436b2cff6a98c6ce4e360cca9d24ca8e481fbc3fc30a7aa47",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:0ff91361b335ad91a245a8ed197ce7fad2fd8904db0e6d0ab542035376eb4c88",
+      "derivation_ids": [
+        "derivation:b6b1b4d5f34be243ce2b62cea19b85dbd43391aeb8015e14aaed8ad50496e979"
+      ],
+      "effect_id": "semantic-state-effect:08916102bd0f75f4de437d1e73611c7462bb0e264bf4cd332e3c11d2a23626e4",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:08916102bd0f75f4de437d1e73611c7462bb0e264bf4cd332e3c11d2a23626e4",
+      "output_value_id": "semantic-value:f20755e27f29c6f6daf492e4c420bc15ce58cbcee916177a0ab7b13c899bf9e6",
+      "owner_node_id": "semantic-op:e3b6bf5536e221cd713edbff7d897c0afbcf32de3ca6e6b4b92d1a4470d52586",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:71439ca181c2074dc38c76ed51b80d2e665c74a5a9d2567fa2af53443be6dd38",
+      "derivation_ids": [
+        "derivation:1009d146de883806475981844bd15999706f30c8eea5a5fc2f5b4ea65c12466a"
+      ],
+      "effect_id": "semantic-state-effect:20de56ea353a8845a7e9c450fe4ceee38e3b9e67e9d3b23a4381773a75d26082",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:20de56ea353a8845a7e9c450fe4ceee38e3b9e67e9d3b23a4381773a75d26082",
+      "output_value_id": "semantic-value:916a32977bf17ee6028a2308f2c23edea63b99b650eed7ecabe8870ba6dd88da",
+      "owner_node_id": "semantic-op:1523148ce18e3a46a24cab2fede91400dad16442e46ec7fa10890cb50c0c1911",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:d89e03108246e0636f2c00c4c5c03fb935a526147de6828e4ad1a8e8b207d798",
+      "derivation_ids": [
+        "derivation:9bfc86e9b0a946ffe935e80f3f86bdea75047052eebeba5f9e440c22d1c8b5a8"
+      ],
+      "effect_id": "semantic-state-effect:6ef616931880683d7dbc80b30bed78aca6add16f4d4701b5f83fd49783f823a6",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:6ef616931880683d7dbc80b30bed78aca6add16f4d4701b5f83fd49783f823a6",
+      "output_value_id": "semantic-value:e14cabf43f2f628681dbce40cb0988c608d8ffe49cd58f70ed0af0cb585a817e",
+      "owner_node_id": "semantic-op:5d9c8b18c1bbaa0e814f3034cfc7644e984f3dda6719626ffeb90860a5f6bad6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:e63c1a3fb4bb0dd1da0bb53c4f6fa913c07f8373b83d7b36ba767f49cf90a619",
+      "derivation_ids": [
+        "derivation:7c78bf3045716449ef5b11fbca38c692de8f81361df9c33c0f52ef8951555b4b"
+      ],
+      "effect_id": "semantic-state-effect:1108ee72c3ed0e631039f3be3b06940d8dfc7c017b0a09e3390aaaf434ea5249",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:1108ee72c3ed0e631039f3be3b06940d8dfc7c017b0a09e3390aaaf434ea5249",
+      "output_value_id": "semantic-value:7afbb31aa15b85a2d68bd57237728e73d1ef3343ced3c958e94c5c5fcd692c5c",
+      "owner_node_id": "semantic-op:f10ff0db9be81226814c44eba5658ce47786d08eee01b8ced9be4a2ec7162cda",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:bc74ca0c8e8365688a0df616bc7c247fa10d6f471b685469a26a1ecdf12a74f5",
+      "derivation_ids": [
+        "derivation:335ab96d862cdb18a70cb7f6b17ae748bf1b5a651903c4371fa26754ce695413"
+      ],
+      "effect_id": "semantic-state-effect:e616413d39ec654c912087e0f797b769a736dff1d48db4ba7c0d2a38e3d6f102",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:e616413d39ec654c912087e0f797b769a736dff1d48db4ba7c0d2a38e3d6f102",
+      "output_value_id": "semantic-value:5adac9a657d2ef59ab3e4eff9dac43075f009af0ac4fc8fa8565dd85be37b3f6",
+      "owner_node_id": "semantic-op:9738d5604a0e43158450a38c3fb0b0ab698a9129c9ec34035c0b0f054c127074",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask/state-read/mask",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:ad56bbe1639da8e5bb83dd7d4fa0851eda41109575472c1a13584e711bc6c570",
+      "derivation_ids": [
+        "derivation:18338f05116982c87236baf85605f12760cc8a08ac2f30354675aa233a39dc78"
+      ],
+      "effect_id": "semantic-state-effect:ce520444f63c46b728b0dec956b6de8bad018c63ef0cbbd894ab898eb32ce757",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:ce520444f63c46b728b0dec956b6de8bad018c63ef0cbbd894ab898eb32ce757",
+      "output_value_id": "semantic-value:08380afe13f263e6b7004fa24129b4eeac1240a07fdb84d33e7043a7d33ed9e2",
+      "owner_node_id": "semantic-op:1f8e77421ba347daa0263f9d342b70dfa42212e1336df430f1dfb56f344b7d6e",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:92bb3baeff8e8a3a9b2d2e37c6b49666032e44ad8fa3e69631f0f89f14692e94",
+      "derivation_ids": [
+        "derivation:add7be6724b8e523e39d5eb63bb71c289d0385c4ca17d2bdcff0ea9fbd0d2b4d"
+      ],
+      "effect_id": "semantic-state-effect:68ccffabf5f1cc97f592209f101ea8752f1e944f8755b2b9a5e9e1a58be12039",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:68ccffabf5f1cc97f592209f101ea8752f1e944f8755b2b9a5e9e1a58be12039",
+      "output_value_id": "semantic-value:2f852083261654435d9a1039c15be75c4f98ff3a2c255e35e21d2dd3a9fdc003",
+      "owner_node_id": "semantic-op:7c25b00b5acf6ffbd9d0fd961014fdfc2e1000b9e6918ceb87b5c2bc0b553fe9",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:5e860fada954155bf3518e7b7ed55dbb3824fa205a9bcbe4e2260921039e6697",
+      "derivation_ids": [
+        "derivation:5d737e58b133d929071b9936be87b295ffec1a0bc5e02550d259a0b5d9c74eab"
+      ],
+      "effect_id": "semantic-state-effect:dddad4ecfdc842b5e895d6046e3b47461f7de626ebee81dfc9e5388d998ee29c",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:dddad4ecfdc842b5e895d6046e3b47461f7de626ebee81dfc9e5388d998ee29c",
+      "output_value_id": "semantic-value:396809a1f9fbe137321bae59d7f25a71a0cbea1f95381f74be5c279886990d23",
+      "owner_node_id": "semantic-op:22c6b5762e9fbde26c94e43f40e8f45f5a3664e615ddc002856d88270ca49149",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:6903f8a5b9ec1aec9c31e5aa12b502d9108d6336ffd5c19549494d1da20e3b04",
+      "derivation_ids": [
+        "derivation:7c9d7ceae4b06846b00b7f699bad06190e591eaccae5eedb4258f5b21ec3d0c0"
+      ],
+      "effect_id": "semantic-state-effect:334baf086cdebf8e4446e3a5a7dc00f46f97b2211a2ad6b6d2dcaee5603fdc9a",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:334baf086cdebf8e4446e3a5a7dc00f46f97b2211a2ad6b6d2dcaee5603fdc9a",
+      "output_value_id": "semantic-value:f36b15f0cbe038a71dd352e58aeb5cfbf9ad9a9b1589880c0b4c5f1adc5dcb54",
+      "owner_node_id": "semantic-op:c6d93c69dab2e669b998d6e0cf0984eef464f73cad53210a4dcfb3c9ea0dbe90",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:4d8d6b7c1e36d98284451cd26d428dffaabcac8964fc1a4f4ed536573fbc5627",
+      "derivation_ids": [
+        "derivation:4176a956fc97c02d96389c93ada9944d344700e5b6163d1ee8b160afbf7ca32b"
+      ],
+      "effect_id": "semantic-state-effect:9cd4a0ffb88039acf383a58997c9267ec9ebe2de294583f21ec2e9dc2bdfe1da",
+      "input_value_id": null,
+      "kind": "read",
+      "node_id": "semantic-state-effect:9cd4a0ffb88039acf383a58997c9267ec9ebe2de294583f21ec2e9dc2bdfe1da",
+      "output_value_id": "semantic-value:8e1befeeddaed927568c411b345e3a822a0bf6510f3eb2b50afa56a206adcf7a",
+      "owner_node_id": "semantic-op:d5400afcf0549c9934829105564bbf1cf3d627755b88984ddd19b90d8f21cd76",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj/state-read/weight",
+      "version_after": null,
+      "version_before": 0
+    },
+    {
+      "artifact_id": "semantic-state-artifact:8dd9dce8f0e12e2fdd4b3d6ade95c6d51bfe542facd532b23ac512fad36aeb7e",
+      "derivation_ids": [
+        "derivation:6979fc1a45dd28852f27745e92c714c2693346769ce02a3232799a02c3d6e906"
+      ],
+      "effect_id": "semantic-state-effect:39d7fc319c0e97d7ba57cd3dbd4522afc67b890e767e4da98454d40521071954",
+      "input_value_id": "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa",
+      "kind": "write",
+      "node_id": "semantic-state-effect:39d7fc319c0e97d7ba57cd3dbd4522afc67b890e767e4da98454d40521071954",
+      "output_value_id": null,
+      "owner_node_id": null,
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/artifact-write/hidden",
+      "version_after": 0,
+      "version_before": null
+    }
+  ],
+  "symbols": [
+    [
+      "B",
+      1
+    ],
+    [
+      "D",
+      64
+    ],
+    [
+      "H",
+      512
+    ],
+    [
+      "I",
+      2048
+    ],
+    [
+      "NH",
+      8
+    ],
+    [
+      "S",
+      256
+    ]
+  ],
+  "values": [
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:d15bb0a43457d5074b83c03935467ed117ed54bc65a9b65705e9798dd05f83b0",
+        "semantic-op:3172d8e9a2f831db6d42522d0f861c14611e12bc0ced74e61a47cf9d52f45faa"
+      ],
+      "derivation_ids": [
+        "derivation:2f275bc5347a68419bc889584918d13892c4a1256058368ede484b3324daa028"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+      "producer_id": "semantic-state-effect:500e72ed1c486b7d6cefc25678c1c3808089ae7a61e3d2ca9840a4cff5b97024",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/artifact-read/hidden/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:d15bb0a43457d5074b83c03935467ed117ed54bc65a9b65705e9798dd05f83b0"
+      ],
+      "derivation_ids": [
+        "derivation:0e92b92ad9e360e7b74c54f437ae917d790a5a48037064873658d0664623d154"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:104baa86209387ae5e8b431028cc2e958eab84a8dc5f57309537bef083c067dc",
+      "producer_id": "semantic-state-effect:b12e543e193583eaa13770bdec707ee413a1e0aa0dbea73ef8a3907845c38861",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      },
+      "value_id": "semantic-value:104baa86209387ae5e8b431028cc2e958eab84a8dc5f57309537bef083c067dc"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:cc68e840d0f609a9f28ce6ebc685f89eb232a584f854fdb37915106c93160b26",
+        "semantic-op:9bce308c86991dd93f19a431d753e4741303e604a7722122368f0f77b6665100",
+        "semantic-op:75c7860918742d9eb2192c6826c60a76fa63e092815fea8adec15f4646d3ac1f"
+      ],
+      "derivation_ids": [
+        "derivation:d05b86cc9b973a295b99e420a004c0f8d1717ce0cc1f527b3bf8871ce49de792"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+      "producer_id": "semantic-op:d15bb0a43457d5074b83c03935467ed117ed54bc65a9b65705e9798dd05f83b0",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:cc68e840d0f609a9f28ce6ebc685f89eb232a584f854fdb37915106c93160b26"
+      ],
+      "derivation_ids": [
+        "derivation:c3455cb399ac46de13b8706c4e94e3b3c9cc68c4adc17f4c47c6f8e35e5882f8"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:508644b93d3b02da07368bc4a14334098199b79757641154b11592e74a3b9425",
+      "producer_id": "semantic-state-effect:8e5740eb30080579ecbc414f0f48d70b88b8e5e01933b99a158535aeb6a57a33",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:508644b93d3b02da07368bc4a14334098199b79757641154b11592e74a3b9425"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:7108694c732af0c0af0561477e9b70b5e9898134ce20f5ff5c36637eab276161"
+      ],
+      "derivation_ids": [
+        "derivation:8dde4faaf515ceb0b54778c657e70a164ede34705addead18a1e38d9c317ae7f"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+      "producer_id": "semantic-op:cc68e840d0f609a9f28ce6ebc685f89eb232a584f854fdb37915106c93160b26",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:9bce308c86991dd93f19a431d753e4741303e604a7722122368f0f77b6665100"
+      ],
+      "derivation_ids": [
+        "derivation:3bdf01f3a3d53136e22309ad10bfa4183165b79b988b78216d03b569f461b7a0"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:cb0f0d637a48022434d5d1b9bb19187de9f69f1850d3bc5ab3d015201330afbe",
+      "producer_id": "semantic-state-effect:fc7efcc996683394703058c8f083aad131235b4539bed9885650d44ec096118a",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:cb0f0d637a48022434d5d1b9bb19187de9f69f1850d3bc5ab3d015201330afbe"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:90daf2e08ccf3499b5689a782c2e3da32ec91728b21533dcb9efe8d124ee0165"
+      ],
+      "derivation_ids": [
+        "derivation:cff36041a1cc6ee3012b39f78623e19fd16a98d3bcbf1faba2ff49a1de74e3d1"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+      "producer_id": "semantic-op:9bce308c86991dd93f19a431d753e4741303e604a7722122368f0f77b6665100",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:75c7860918742d9eb2192c6826c60a76fa63e092815fea8adec15f4646d3ac1f"
+      ],
+      "derivation_ids": [
+        "derivation:e9bad5b1f490b1343267b88f45412e8904a32048ad85a24e88443dc694b99511"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:1fbcb33fb027a42b3634b9a54bc05322a5ce0f73bb96819abaedf4ec12a76ec5",
+      "producer_id": "semantic-state-effect:52d1d922e2214f9f7220c4342018f7c26ac0fc656586be2a584c51d8bdffde22",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:1fbcb33fb027a42b3634b9a54bc05322a5ce0f73bb96819abaedf4ec12a76ec5"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:3e99f39eeb41aca52ff2c0d13c73b3cbca785913bd11b85351650d54708e8070"
+      ],
+      "derivation_ids": [
+        "derivation:71cd148e9f120fcd194f19651287d8da3a69cbfdb1a8a27434bbd70385350a37"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+      "producer_id": "semantic-op:75c7860918742d9eb2192c6826c60a76fa63e092815fea8adec15f4646d3ac1f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+    },
+    {
+      "alias_of": "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+      "consumer_ids": [
+        "semantic-op:1f537b0f9c9146862cdfb471614f8e66f9ab0357523c19fe6f31f4c5bc096e93"
+      ],
+      "derivation_ids": [
+        "derivation:19833186be8af4e1b1527e93c917c6a020202ca363951d50ef9ff4adf343dd46"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b",
+      "producer_id": "semantic-op:7108694c732af0c0af0561477e9b70b5e9898134ce20f5ff5c36637eab276161",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b"
+    },
+    {
+      "alias_of": "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b",
+      "consumer_ids": [
+        "semantic-op:dcd31c669aa01d27358b3f9d1dc507f2ee9083c45c14d657c64a1f48ed9a0f2d"
+      ],
+      "derivation_ids": [
+        "derivation:9c3e83235a241a5023d68f42698f7e1041b77cf40bef85e9bc432c84b86b76ad"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:dbf5b4761dc133afde66af72392ecd1a9f657c69d0179d05e254375981cfe5e0",
+      "producer_id": "semantic-op:1f537b0f9c9146862cdfb471614f8e66f9ab0357523c19fe6f31f4c5bc096e93",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:dbf5b4761dc133afde66af72392ecd1a9f657c69d0179d05e254375981cfe5e0"
+    },
+    {
+      "alias_of": "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+      "consumer_ids": [
+        "semantic-op:f8e99e219aa258ffa23ab232f17b7b9c169fc760b7bbbd8481a4805197f72904"
+      ],
+      "derivation_ids": [
+        "derivation:7a617e7300107272bd08150ccbd373cdfe2e63683ba482552438fd9b94b3f9cb"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881",
+      "producer_id": "semantic-op:90daf2e08ccf3499b5689a782c2e3da32ec91728b21533dcb9efe8d124ee0165",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881"
+    },
+    {
+      "alias_of": "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881",
+      "consumer_ids": [
+        "semantic-op:a716ceb6a879ab6779d640807cfd644e2b676b47a0fffbf58531173acea91793"
+      ],
+      "derivation_ids": [
+        "derivation:116cd32567dec944645ee76ad9b80777c846a970cda8d14d582c77d74c4b22af"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca",
+      "producer_id": "semantic-op:f8e99e219aa258ffa23ab232f17b7b9c169fc760b7bbbd8481a4805197f72904",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca"
+    },
+    {
+      "alias_of": "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca",
+      "consumer_ids": [
+        "semantic-op:dcd31c669aa01d27358b3f9d1dc507f2ee9083c45c14d657c64a1f48ed9a0f2d"
+      ],
+      "derivation_ids": [
+        "derivation:e91736e036f326daf70d82afcf5496e964b0d7cfab7f6353f702c4449cdc2578"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:90184383a2fa48b20c76532107d516aac2263dbe580802a6e18a002350e86e1c",
+      "producer_id": "semantic-op:a716ceb6a879ab6779d640807cfd644e2b676b47a0fffbf58531173acea91793",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          64,
+          256
+        ]
+      },
+      "value_id": "semantic-value:90184383a2fa48b20c76532107d516aac2263dbe580802a6e18a002350e86e1c"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:d78e1cb07d7cebe48ca96e74e87b5fc7d32f3453b84d132e70000038c2fed99a"
+      ],
+      "derivation_ids": [
+        "derivation:fcb780c0d471512c68a107bd3f2e2cab9823288eea3d1f690e8327eadbccd364"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8",
+      "producer_id": "semantic-op:dcd31c669aa01d27358b3f9d1dc507f2ee9083c45c14d657c64a1f48ed9a0f2d",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:5cb3d0681e1b09452464b6b347bdbbecf97fb01d86a2ec9c3209adcdabc7f981"
+      ],
+      "derivation_ids": [
+        "derivation:906d66f4cf9d6e030c4c04200e6ee5a38c4a6b9b01ae77e5b8c1cd00cdd0f664"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e",
+      "producer_id": "semantic-op:d78e1cb07d7cebe48ca96e74e87b5fc7d32f3453b84d132e70000038c2fed99a",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:5cb3d0681e1b09452464b6b347bdbbecf97fb01d86a2ec9c3209adcdabc7f981"
+      ],
+      "derivation_ids": [
+        "derivation:a1622580cabf5f103d784b01536e9cabcb33406c9270566257890bac3a26e97f"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:09d2b417eef7bb72dbc7fc5e3b111f68579fc58c76201cc80c548c7d28d5766d",
+      "producer_id": "semantic-state-effect:51e13ff95b16d8ff1f5809da6173b4b59639d203e872aa7065d57c017fac19fa",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask/state-read/mask/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "broadcast",
+        "shape": [
+          1,
+          1,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:09d2b417eef7bb72dbc7fc5e3b111f68579fc58c76201cc80c548c7d28d5766d"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:9651a4c7c257d8a791ed341726dafbbd089853c39b5bf2caaa5970dab76176e6"
+      ],
+      "derivation_ids": [
+        "derivation:94d839d6d28e30762fa1256fdd149768ef71053ff7f6fac47cc10a4a087e6953"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec",
+      "producer_id": "semantic-op:5cb3d0681e1b09452464b6b347bdbbecf97fb01d86a2ec9c3209adcdabc7f981",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:0a70dcca566a8515d23f1900b59a8d793e9520606dd5fb4626c3ae6f0b857e90"
+      ],
+      "derivation_ids": [
+        "derivation:222fac7fb4c00e05f406762c50a06f8aa77202071a2b40546a4db35440b2a117"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0",
+      "producer_id": "semantic-op:9651a4c7c257d8a791ed341726dafbbd089853c39b5bf2caaa5970dab76176e6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+    },
+    {
+      "alias_of": "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+      "consumer_ids": [
+        "semantic-op:90b8aa25ae4a711d59e0430cc22cb8c92db8700f08245422d4f7041ae977ed91"
+      ],
+      "derivation_ids": [
+        "derivation:3e69cc3266ce05fefb9a7f3d7ee9f2bc02d6d00aaaf64f70e7da7cd4e2c5e3ff"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0",
+      "producer_id": "semantic-op:3e99f39eeb41aca52ff2c0d13c73b3cbca785913bd11b85351650d54708e8070",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0"
+    },
+    {
+      "alias_of": "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0",
+      "consumer_ids": [
+        "semantic-op:0a70dcca566a8515d23f1900b59a8d793e9520606dd5fb4626c3ae6f0b857e90"
+      ],
+      "derivation_ids": [
+        "derivation:08ef2d4774cc5fedc78a49dd414589f24f43e8103ed1a0d45ef0ffd890fba03f"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:019dd373e01e2901e653e96e30b221e7c041127e6b6f9b7ee759fbbf49616e7f",
+      "producer_id": "semantic-op:90b8aa25ae4a711d59e0430cc22cb8c92db8700f08245422d4f7041ae977ed91",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:019dd373e01e2901e653e96e30b221e7c041127e6b6f9b7ee759fbbf49616e7f"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:97508d72d8e5ad90531349bcacf443431acfcd1e1e55e37b27fc4f05f6f538fe"
+      ],
+      "derivation_ids": [
+        "derivation:05a30cc72f2a66ffc129b4df046a7c35df3a9a89a58d60924d8228d3065704a2"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e",
+      "producer_id": "semantic-op:0a70dcca566a8515d23f1900b59a8d793e9520606dd5fb4626c3ae6f0b857e90",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+    },
+    {
+      "alias_of": "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e",
+      "consumer_ids": [
+        "semantic-op:4c31c39902bdaa9fdc4b82c3fb2df2a6c06fb3c9af1dbc4aa3631b719c34d3ea"
+      ],
+      "derivation_ids": [
+        "derivation:4953c32f97ef438f297e4ee4a4855f4bb031c1cbafa1d516a3b331a0a87893ac"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:02c7db8d38bec224070aebe5bfe271202d595feaebaa16eff545097162f7691f",
+      "producer_id": "semantic-op:97508d72d8e5ad90531349bcacf443431acfcd1e1e55e37b27fc4f05f6f538fe",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:02c7db8d38bec224070aebe5bfe271202d595feaebaa16eff545097162f7691f"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:4c31c39902bdaa9fdc4b82c3fb2df2a6c06fb3c9af1dbc4aa3631b719c34d3ea"
+      ],
+      "derivation_ids": [
+        "derivation:3b415294546d27f969676d69fe6761d35dc0f542c961c025d8ad2478052dd100"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:cbd6f336edfad9ac9259d02227dbddc66d1f0a69c8b5ee30a09c5afa9535f656",
+      "producer_id": "semantic-state-effect:0653bed33b022e5e3a27bfc7228bd84f8cbc3c6f838b7dbb63def20290bf1375",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:cbd6f336edfad9ac9259d02227dbddc66d1f0a69c8b5ee30a09c5afa9535f656"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:3172d8e9a2f831db6d42522d0f861c14611e12bc0ced74e61a47cf9d52f45faa"
+      ],
+      "derivation_ids": [
+        "derivation:04a5cc9317cd0443dff35ad7a8e3fba213ff96b133560db57b661ee717b55347"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a",
+      "producer_id": "semantic-op:4c31c39902bdaa9fdc4b82c3fb2df2a6c06fb3c9af1dbc4aa3631b719c34d3ea",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:3f4fb41271bf9b0c6f706b2efa51b6b6670400eed57ac74c91207ec951d2c896",
+        "semantic-op:6d8c096ac55923debc31926ac554119961512748c0e91307b9b96aa2bc53541f"
+      ],
+      "derivation_ids": [
+        "derivation:be5f02a742e629fdf3bf4b83f3d058999243b39485f964f42e8692b8de9e6ecc"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+      "producer_id": "semantic-op:3172d8e9a2f831db6d42522d0f861c14611e12bc0ced74e61a47cf9d52f45faa",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:3f4fb41271bf9b0c6f706b2efa51b6b6670400eed57ac74c91207ec951d2c896"
+      ],
+      "derivation_ids": [
+        "derivation:89bf95bf1fe3cc7b6e85e802fe21eb969e3036f8c884aae91b8ed50dd4a8adbe"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:dc70c83a2eac51a040a583545c8590f30e1a573e6d8917f9e239ee509acc3748",
+      "producer_id": "semantic-state-effect:be4409ab91b68e8a93d4c0cfe3a3d36d38f0fc1e855e18024c03c9e94f36e228",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      },
+      "value_id": "semantic-value:dc70c83a2eac51a040a583545c8590f30e1a573e6d8917f9e239ee509acc3748"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:12dbe8bb2a03b61451f4e2c8f968c2b04a952634e938138ecc390f5d8bfb9eb9",
+        "semantic-op:fb6e779cd3dfa26ac4fa1aa009499332a365ec3a4f572589f9a5735fd4459bf8"
+      ],
+      "derivation_ids": [
+        "derivation:68b12f38c58cccc40803cb62721ebad3095abbd4f59078f5a1e50b9b4e1c7aa6"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96",
+      "producer_id": "semantic-op:3f4fb41271bf9b0c6f706b2efa51b6b6670400eed57ac74c91207ec951d2c896",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:12dbe8bb2a03b61451f4e2c8f968c2b04a952634e938138ecc390f5d8bfb9eb9"
+      ],
+      "derivation_ids": [
+        "derivation:318e8cec79432565a025d42a5eb1f1631c985bda23b5a9dfce6dfe0fa7ed7831"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:a6d9cf60abed797df95f73335fe0c273cb7afb5fac29f061ad0dcb2a2e93ae93",
+      "producer_id": "semantic-state-effect:637c49d17a574cd33eef658e3d0453025eb747176d0edd46fc8f241ebbe0d962",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:a6d9cf60abed797df95f73335fe0c273cb7afb5fac29f061ad0dcb2a2e93ae93"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:11fc51a7ac0f0dd9f47b36eaed4ae1eb408e3669462b851c2f5f5bd2fd9caf4f"
+      ],
+      "derivation_ids": [
+        "derivation:4655cb80e0120539388004296c1e5c23607acd99d7b2d9c6fe9ff4c83dd5b3dd"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e",
+      "producer_id": "semantic-op:12dbe8bb2a03b61451f4e2c8f968c2b04a952634e938138ecc390f5d8bfb9eb9",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:fb6e779cd3dfa26ac4fa1aa009499332a365ec3a4f572589f9a5735fd4459bf8"
+      ],
+      "derivation_ids": [
+        "derivation:ed172237289e2c7efd75dc3364ebcda93719368d059898e5aeb16392a7eb475e"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:c0872d3d7339353f1cead4f12b7f99417f1333142b861f789042f06fc40fef07",
+      "producer_id": "semantic-state-effect:5051796fbb66915ece200b58ff611059eb0fbb72f5648f481d07947cc1aa4197",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:c0872d3d7339353f1cead4f12b7f99417f1333142b861f789042f06fc40fef07"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:97c1bc23cfa085ffe3436530c61e557b71fe91f3bf7be234d92c96e4e52ef579"
+      ],
+      "derivation_ids": [
+        "derivation:dc5563edc3280b95734595f8e6fdfe5810c0bbcc216b04179b7e4ed8feea59fc"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca",
+      "producer_id": "semantic-op:fb6e779cd3dfa26ac4fa1aa009499332a365ec3a4f572589f9a5735fd4459bf8",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:97c1bc23cfa085ffe3436530c61e557b71fe91f3bf7be234d92c96e4e52ef579"
+      ],
+      "derivation_ids": [
+        "derivation:57a9a4b4178f44317e3fa2afd56209142b82e286157fe8d95b55862cf075db8f"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3",
+      "producer_id": "semantic-op:11fc51a7ac0f0dd9f47b36eaed4ae1eb408e3669462b851c2f5f5bd2fd9caf4f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:175fe4bea83f996436b2cff6a98c6ce4e360cca9d24ca8e481fbc3fc30a7aa47"
+      ],
+      "derivation_ids": [
+        "derivation:6e277ea8dee3bda04f9a1c52c2837163c35f533462ed9d153379d80490edc85f"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8",
+      "producer_id": "semantic-op:97c1bc23cfa085ffe3436530c61e557b71fe91f3bf7be234d92c96e4e52ef579",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:175fe4bea83f996436b2cff6a98c6ce4e360cca9d24ca8e481fbc3fc30a7aa47"
+      ],
+      "derivation_ids": [
+        "derivation:95ded44e18b9fee786059cf771d342797344c3ce428e49557247bc103259e0a5"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:7d2dda52c5c03f9a616dc1f5e2ac7ca260889e4bb6526bf0460a3641fb04cb2f",
+      "producer_id": "semantic-state-effect:c76ca26a4f3c4a60fc507b7c2b82952b0eecd6c9d464d6c230a2bddce1ea8cb2",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          2048,
+          512
+        ]
+      },
+      "value_id": "semantic-value:7d2dda52c5c03f9a616dc1f5e2ac7ca260889e4bb6526bf0460a3641fb04cb2f"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:6d8c096ac55923debc31926ac554119961512748c0e91307b9b96aa2bc53541f"
+      ],
+      "derivation_ids": [
+        "derivation:66fbbe3678a4991c38374de06f94f070db9e068eba8480fa80247ef1620a4373"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85",
+      "producer_id": "semantic-op:175fe4bea83f996436b2cff6a98c6ce4e360cca9d24ca8e481fbc3fc30a7aa47",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:e3b6bf5536e221cd713edbff7d897c0afbcf32de3ca6e6b4b92d1a4470d52586",
+        "semantic-op:109e5bb05932835dc641d502378e46f8c80e457ea12581a33e9ca982f4853dbb"
+      ],
+      "derivation_ids": [
+        "derivation:0a2e0c88dc71232bde09b0fd2b1d3c88bebdf817db9e0876a5a34ad5972610a5"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+      "producer_id": "semantic-op:6d8c096ac55923debc31926ac554119961512748c0e91307b9b96aa2bc53541f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:e3b6bf5536e221cd713edbff7d897c0afbcf32de3ca6e6b4b92d1a4470d52586"
+      ],
+      "derivation_ids": [
+        "derivation:c3fe2c7482bc9fc8ebb755834391484b5c4cc8edb715d54f290082e4b5292325"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:f20755e27f29c6f6daf492e4c420bc15ce58cbcee916177a0ab7b13c899bf9e6",
+      "producer_id": "semantic-state-effect:08916102bd0f75f4de437d1e73611c7462bb0e264bf4cd332e3c11d2a23626e4",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      },
+      "value_id": "semantic-value:f20755e27f29c6f6daf492e4c420bc15ce58cbcee916177a0ab7b13c899bf9e6"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:1523148ce18e3a46a24cab2fede91400dad16442e46ec7fa10890cb50c0c1911",
+        "semantic-op:5d9c8b18c1bbaa0e814f3034cfc7644e984f3dda6719626ffeb90860a5f6bad6",
+        "semantic-op:f10ff0db9be81226814c44eba5658ce47786d08eee01b8ced9be4a2ec7162cda"
+      ],
+      "derivation_ids": [
+        "derivation:42d01d1c0daa8f66c368434021923ad54446e476424c46df00c34a558840fcc7"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+      "producer_id": "semantic-op:e3b6bf5536e221cd713edbff7d897c0afbcf32de3ca6e6b4b92d1a4470d52586",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:1523148ce18e3a46a24cab2fede91400dad16442e46ec7fa10890cb50c0c1911"
+      ],
+      "derivation_ids": [
+        "derivation:e1b252828b2ea5cc2b852ae85c6e9a25a3ad55693441d4b9a0e6cbc805f2d1da"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:916a32977bf17ee6028a2308f2c23edea63b99b650eed7ecabe8870ba6dd88da",
+      "producer_id": "semantic-state-effect:20de56ea353a8845a7e9c450fe4ceee38e3b9e67e9d3b23a4381773a75d26082",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:916a32977bf17ee6028a2308f2c23edea63b99b650eed7ecabe8870ba6dd88da"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:9bc2a8956bc80a4a6ad9ae2c8d62ce86d86bd991cad6847b02dcd339c475465f"
+      ],
+      "derivation_ids": [
+        "derivation:f98ccba0051958c01ac26be4621625f217961810164882347f309397441da78c"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+      "producer_id": "semantic-op:1523148ce18e3a46a24cab2fede91400dad16442e46ec7fa10890cb50c0c1911",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:5d9c8b18c1bbaa0e814f3034cfc7644e984f3dda6719626ffeb90860a5f6bad6"
+      ],
+      "derivation_ids": [
+        "derivation:04cf21143dc2621b54286a47747c49e4a8ac2b4087072f5b90093ba7d5de878f"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:e14cabf43f2f628681dbce40cb0988c608d8ffe49cd58f70ed0af0cb585a817e",
+      "producer_id": "semantic-state-effect:6ef616931880683d7dbc80b30bed78aca6add16f4d4701b5f83fd49783f823a6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:e14cabf43f2f628681dbce40cb0988c608d8ffe49cd58f70ed0af0cb585a817e"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:ece8be357f5d1b83f7ff7bc29fc11b24b21a476e1f327945fd2792ab52ff7816"
+      ],
+      "derivation_ids": [
+        "derivation:42a59f98171c77a5bcc4a0a1b4881b5aff6bbc0c10b7fdd1fefa82342911e3e3"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+      "producer_id": "semantic-op:5d9c8b18c1bbaa0e814f3034cfc7644e984f3dda6719626ffeb90860a5f6bad6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:f10ff0db9be81226814c44eba5658ce47786d08eee01b8ced9be4a2ec7162cda"
+      ],
+      "derivation_ids": [
+        "derivation:b1ccde09a8b15510dde203a690eb299f98b0d2048d3299578b3400cbe4297446"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:7afbb31aa15b85a2d68bd57237728e73d1ef3343ced3c958e94c5c5fcd692c5c",
+      "producer_id": "semantic-state-effect:1108ee72c3ed0e631039f3be3b06940d8dfc7c017b0a09e3390aaaf434ea5249",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:7afbb31aa15b85a2d68bd57237728e73d1ef3343ced3c958e94c5c5fcd692c5c"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:a9bf1ea4228fcdf4d8d04affd6a390cf4820e846014d98353655992f871f5459"
+      ],
+      "derivation_ids": [
+        "derivation:d0d16d290282754acca80109c41e36fb7c96d1056031cef53a2a0be90186c13d"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+      "producer_id": "semantic-op:f10ff0db9be81226814c44eba5658ce47786d08eee01b8ced9be4a2ec7162cda",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+    },
+    {
+      "alias_of": "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+      "consumer_ids": [
+        "semantic-op:9914a3e2cfa2f3067638e9fde262cce28d870c5f3274fdb1adc446230609dfc1"
+      ],
+      "derivation_ids": [
+        "derivation:9a34926bfa216c9ee299835ef79365687f35f71128edc8a644806a0c55c74eef"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b",
+      "producer_id": "semantic-op:9bc2a8956bc80a4a6ad9ae2c8d62ce86d86bd991cad6847b02dcd339c475465f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b"
+    },
+    {
+      "alias_of": "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b",
+      "consumer_ids": [
+        "semantic-op:2e0d45dee4b6ea890d4d219f837d24a2779abb0c240e236ceec9f5760bc7e3f6"
+      ],
+      "derivation_ids": [
+        "derivation:dcb53317eaa2d7183395120f040123e34f4b841a9f42f3195d46fc4c537adff8"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:a24f02c88b5a2d4a91a15fd61e316e71399013f5a747532513d69f507c0023a1",
+      "producer_id": "semantic-op:9914a3e2cfa2f3067638e9fde262cce28d870c5f3274fdb1adc446230609dfc1",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:a24f02c88b5a2d4a91a15fd61e316e71399013f5a747532513d69f507c0023a1"
+    },
+    {
+      "alias_of": "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+      "consumer_ids": [
+        "semantic-op:d66fb9119887804a770ffe58e525ff3a98be8813ab47ce995f85997f458b1f5b"
+      ],
+      "derivation_ids": [
+        "derivation:d6afe4e5906a34b75de03cb0761de0032400290bfd4964dd3a27f034d8b026c2"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04",
+      "producer_id": "semantic-op:ece8be357f5d1b83f7ff7bc29fc11b24b21a476e1f327945fd2792ab52ff7816",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04"
+    },
+    {
+      "alias_of": "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04",
+      "consumer_ids": [
+        "semantic-op:5f6367aa3ec951667f75e360a677d89068c848c82ad6794cced0f208c87836c5"
+      ],
+      "derivation_ids": [
+        "derivation:eb6fecccb0addca0f683196fcfe40e73217aec7441227f9650adcfb8a27bb649"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe",
+      "producer_id": "semantic-op:d66fb9119887804a770ffe58e525ff3a98be8813ab47ce995f85997f458b1f5b",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe"
+    },
+    {
+      "alias_of": "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe",
+      "consumer_ids": [
+        "semantic-op:2e0d45dee4b6ea890d4d219f837d24a2779abb0c240e236ceec9f5760bc7e3f6"
+      ],
+      "derivation_ids": [
+        "derivation:02f4adea0d9222f2ca7c4f71fbb5491825605016e339bba11f5e6f0ea9e4d4be"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:a2b5b21ad671f437b12861fab6ac906916df30cb2ffb0df18e4ee80849a90e56",
+      "producer_id": "semantic-op:5f6367aa3ec951667f75e360a677d89068c848c82ad6794cced0f208c87836c5",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          64,
+          256
+        ]
+      },
+      "value_id": "semantic-value:a2b5b21ad671f437b12861fab6ac906916df30cb2ffb0df18e4ee80849a90e56"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:a4e852fcf9eaf0dee507a58da9a188d946b59b56146393d4e8b80a7539f466c2"
+      ],
+      "derivation_ids": [
+        "derivation:33db1d5b8096778417b33f49a3022fc93abb2f1ed67698bce368f7ef79f968d3"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b",
+      "producer_id": "semantic-op:2e0d45dee4b6ea890d4d219f837d24a2779abb0c240e236ceec9f5760bc7e3f6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:9738d5604a0e43158450a38c3fb0b0ab698a9129c9ec34035c0b0f054c127074"
+      ],
+      "derivation_ids": [
+        "derivation:3de7220943260e41ac53103d0d4c9820c30e0da14ff9a6bdb7d2b200ec05d66f"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930",
+      "producer_id": "semantic-op:a4e852fcf9eaf0dee507a58da9a188d946b59b56146393d4e8b80a7539f466c2",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:9738d5604a0e43158450a38c3fb0b0ab698a9129c9ec34035c0b0f054c127074"
+      ],
+      "derivation_ids": [
+        "derivation:abdbdd961b95353529bbf177e15bdbf5f98e5246815057f8ef9441d3b29fbeaa"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:5adac9a657d2ef59ab3e4eff9dac43075f009af0ac4fc8fa8565dd85be37b3f6",
+      "producer_id": "semantic-state-effect:e616413d39ec654c912087e0f797b769a736dff1d48db4ba7c0d2a38e3d6f102",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask/state-read/mask/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "broadcast",
+        "shape": [
+          1,
+          1,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:5adac9a657d2ef59ab3e4eff9dac43075f009af0ac4fc8fa8565dd85be37b3f6"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:587503aa3e8459cae92db52c1e0ef2ef6bcd6a19f219ed3ff78e566059e88b17"
+      ],
+      "derivation_ids": [
+        "derivation:11199e6c455c3d310a62ed654bbd358c5b412ef5c7e151e96911b0f0f2382b3b"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e",
+      "producer_id": "semantic-op:9738d5604a0e43158450a38c3fb0b0ab698a9129c9ec34035c0b0f054c127074",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:271e51be7052559c09cfa0e683516c90b46d538bafd427e2e7c1f12ac7a94cb1"
+      ],
+      "derivation_ids": [
+        "derivation:42f8c4309d7fcdc48fca4cced6ff92b38bc9480bab758d7501570a1ffec636c2"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206",
+      "producer_id": "semantic-op:587503aa3e8459cae92db52c1e0ef2ef6bcd6a19f219ed3ff78e566059e88b17",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          8,
+          256,
+          256
+        ]
+      },
+      "value_id": "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+    },
+    {
+      "alias_of": "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+      "consumer_ids": [
+        "semantic-op:fb93e231eadcba3c693601550419f52566b1ab8ae3fce6f43beeb37964145128"
+      ],
+      "derivation_ids": [
+        "derivation:0c785ad1a72317114423cceeb003aafc5c6233a85fe273d0d331b2e970d1eecb"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d",
+      "producer_id": "semantic-op:a9bf1ea4228fcdf4d8d04affd6a390cf4820e846014d98353655992f871f5459",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "view",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d"
+    },
+    {
+      "alias_of": "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d",
+      "consumer_ids": [
+        "semantic-op:271e51be7052559c09cfa0e683516c90b46d538bafd427e2e7c1f12ac7a94cb1"
+      ],
+      "derivation_ids": [
+        "derivation:853b719099511c22f3c4426e0366925f4e240caf81ceab26cbd77fe16a9b27b3"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:9c2234121e2cdcd6f1172d4568f54df4b4dd09148b64dfbe877f633635b74442",
+      "producer_id": "semantic-op:fb93e231eadcba3c693601550419f52566b1ab8ae3fce6f43beeb37964145128",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "transposed",
+        "shape": [
+          1,
+          8,
+          256,
+          64
+        ]
+      },
+      "value_id": "semantic-value:9c2234121e2cdcd6f1172d4568f54df4b4dd09148b64dfbe877f633635b74442"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:c6554b92c79ebea19d1608b9804ddf75336875b6727b984563751faf55bdeca6"
+      ],
+      "derivation_ids": [
+        "derivation:0ebef83c5bdf2367fab839a0defd657aea989e783f1a3dcfbec3bfd57481cda1"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b",
+      "producer_id": "semantic-op:271e51be7052559c09cfa0e683516c90b46d538bafd427e2e7c1f12ac7a94cb1",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          8,
+          64
+        ]
+      },
+      "value_id": "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+    },
+    {
+      "alias_of": "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b",
+      "consumer_ids": [
+        "semantic-op:1f8e77421ba347daa0263f9d342b70dfa42212e1336df430f1dfb56f344b7d6e"
+      ],
+      "derivation_ids": [
+        "derivation:1954381950370767641ad21022186c0c16d08995a9021a8e39f1e31f5842ff69"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:1a142635d0c2baec8118ec3de1c76601915c0f4a8b5cea8ead6019af02146f7b",
+      "producer_id": "semantic-op:c6554b92c79ebea19d1608b9804ddf75336875b6727b984563751faf55bdeca6",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:1a142635d0c2baec8118ec3de1c76601915c0f4a8b5cea8ead6019af02146f7b"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:1f8e77421ba347daa0263f9d342b70dfa42212e1336df430f1dfb56f344b7d6e"
+      ],
+      "derivation_ids": [
+        "derivation:90b8072e7c1b3d5205dd8d65db431ca6cb47636332c83f45039cfbb16376bc67"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:08380afe13f263e6b7004fa24129b4eeac1240a07fdb84d33e7043a7d33ed9e2",
+      "producer_id": "semantic-state-effect:ce520444f63c46b728b0dec956b6de8bad018c63ef0cbbd894ab898eb32ce757",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          512
+        ]
+      },
+      "value_id": "semantic-value:08380afe13f263e6b7004fa24129b4eeac1240a07fdb84d33e7043a7d33ed9e2"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:109e5bb05932835dc641d502378e46f8c80e457ea12581a33e9ca982f4853dbb"
+      ],
+      "derivation_ids": [
+        "derivation:195d8782a001cce87f6172c0e089b0d7e98b49e6869d7437ce9e86b0d5f953f0"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da",
+      "producer_id": "semantic-op:1f8e77421ba347daa0263f9d342b70dfa42212e1336df430f1dfb56f344b7d6e",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:7c25b00b5acf6ffbd9d0fd961014fdfc2e1000b9e6918ceb87b5c2bc0b553fe9",
+        "semantic-op:4af227e314cffeb3a541b2e8f826f43ee9c85e6daa8ab4fd155fef2ce4f969e4"
+      ],
+      "derivation_ids": [
+        "derivation:73c05645004df727ee6781893b561829782c3818280d8b289e86c006b26c5fa0"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+      "producer_id": "semantic-op:109e5bb05932835dc641d502378e46f8c80e457ea12581a33e9ca982f4853dbb",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:7c25b00b5acf6ffbd9d0fd961014fdfc2e1000b9e6918ceb87b5c2bc0b553fe9"
+      ],
+      "derivation_ids": [
+        "derivation:b0ed3f140b98eedf83133248e4f77027834861201b02c05b27a95f3003218196"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:2f852083261654435d9a1039c15be75c4f98ff3a2c255e35e21d2dd3a9fdc003",
+      "producer_id": "semantic-state-effect:68ccffabf5f1cc97f592209f101ea8752f1e944f8755b2b9a5e9e1a58be12039",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512
+        ]
+      },
+      "value_id": "semantic-value:2f852083261654435d9a1039c15be75c4f98ff3a2c255e35e21d2dd3a9fdc003"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:22c6b5762e9fbde26c94e43f40e8f45f5a3664e615ddc002856d88270ca49149",
+        "semantic-op:c6d93c69dab2e669b998d6e0cf0984eef464f73cad53210a4dcfb3c9ea0dbe90"
+      ],
+      "derivation_ids": [
+        "derivation:12b30829ea9286e36100abd768487263d99ca14558c6ad4a74f4ae02d6f96ab7"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43",
+      "producer_id": "semantic-op:7c25b00b5acf6ffbd9d0fd961014fdfc2e1000b9e6918ceb87b5c2bc0b553fe9",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:22c6b5762e9fbde26c94e43f40e8f45f5a3664e615ddc002856d88270ca49149"
+      ],
+      "derivation_ids": [
+        "derivation:7fbe0b59c00a038a7a7a1cdaf0aeb9bb1158a97880d02d9b138396895ad55f6c"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:396809a1f9fbe137321bae59d7f25a71a0cbea1f95381f74be5c279886990d23",
+      "producer_id": "semantic-state-effect:dddad4ecfdc842b5e895d6046e3b47461f7de626ebee81dfc9e5388d998ee29c",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:396809a1f9fbe137321bae59d7f25a71a0cbea1f95381f74be5c279886990d23"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:63ab2a6392be235f15958a1f5b0d5237cb097d728827269fbfd28089ffb857e2"
+      ],
+      "derivation_ids": [
+        "derivation:3e3db0a5bda229fdf1ed64bfc72fdcdcb900ef1ecd0ba2cffd72938e79a0a5a2"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7",
+      "producer_id": "semantic-op:22c6b5762e9fbde26c94e43f40e8f45f5a3664e615ddc002856d88270ca49149",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:c6d93c69dab2e669b998d6e0cf0984eef464f73cad53210a4dcfb3c9ea0dbe90"
+      ],
+      "derivation_ids": [
+        "derivation:e31691af68f1ce09c0299be403867322bfbecb9409c4f60f9fd107f76db9e504"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:f36b15f0cbe038a71dd352e58aeb5cfbf9ad9a9b1589880c0b4c5f1adc5dcb54",
+      "producer_id": "semantic-state-effect:334baf086cdebf8e4446e3a5a7dc00f46f97b2211a2ad6b6d2dcaee5603fdc9a",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          512,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:f36b15f0cbe038a71dd352e58aeb5cfbf9ad9a9b1589880c0b4c5f1adc5dcb54"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:dab72389d23a06fcd841c94a92739c42acc1d2cb2b8906a204a23dd509a107a5"
+      ],
+      "derivation_ids": [
+        "derivation:3c20b52f772501c11c6397717bf7ea7e99a3669ae265b6de86051217556a11aa"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969",
+      "producer_id": "semantic-op:c6d93c69dab2e669b998d6e0cf0984eef464f73cad53210a4dcfb3c9ea0dbe90",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:dab72389d23a06fcd841c94a92739c42acc1d2cb2b8906a204a23dd509a107a5"
+      ],
+      "derivation_ids": [
+        "derivation:a44fb3bbf81289212c8f7532defbe3c00b09be0012d6c432b44144b74fad04e1"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2",
+      "producer_id": "semantic-op:63ab2a6392be235f15958a1f5b0d5237cb097d728827269fbfd28089ffb857e2",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:d5400afcf0549c9934829105564bbf1cf3d627755b88984ddd19b90d8f21cd76"
+      ],
+      "derivation_ids": [
+        "derivation:6af62d0a48d4649604416f05bf79df6a437c9f78a139e4af0458ae8da6fefe88"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56",
+      "producer_id": "semantic-op:dab72389d23a06fcd841c94a92739c42acc1d2cb2b8906a204a23dd509a107a5",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          2048
+        ]
+      },
+      "value_id": "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:d5400afcf0549c9934829105564bbf1cf3d627755b88984ddd19b90d8f21cd76"
+      ],
+      "derivation_ids": [
+        "derivation:678f7827ad0f1b3a118a4a3162b6ea9581b99042acd07f37ee5df6c0ee3558e3"
+      ],
+      "kind": "artifact",
+      "node_id": "semantic-value:8e1befeeddaed927568c411b345e3a822a0bf6510f3eb2b50afa56a206adcf7a",
+      "producer_id": "semantic-state-effect:9cd4a0ffb88039acf383a58997c9267ec9ebe2de294583f21ec2e9dc2bdfe1da",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj/state-read/weight/value",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          2048,
+          512
+        ]
+      },
+      "value_id": "semantic-value:8e1befeeddaed927568c411b345e3a822a0bf6510f3eb2b50afa56a206adcf7a"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-op:4af227e314cffeb3a541b2e8f826f43ee9c85e6daa8ab4fd155fef2ce4f969e4"
+      ],
+      "derivation_ids": [
+        "derivation:b92ced27983389aa322b419b2ebeb09d8519fdeda30d2d684cc92ab1943cf8a9"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e",
+      "producer_id": "semantic-op:d5400afcf0549c9934829105564bbf1cf3d627755b88984ddd19b90d8f21cd76",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+    },
+    {
+      "alias_of": null,
+      "consumer_ids": [
+        "semantic-state-effect:39d7fc319c0e97d7ba57cd3dbd4522afc67b890e767e4da98454d40521071954"
+      ],
+      "derivation_ids": [
+        "derivation:d6db31e4e2897c0d829359e80804dbf73b1ab27a58e735b655013226bfbd4787"
+      ],
+      "kind": "tensor",
+      "node_id": "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa",
+      "producer_id": "semantic-op:4af227e314cffeb3a541b2e8f826f43ee9c85e6daa8ab4fd155fef2ce4f969e4",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2/result/output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          256,
+          512
+        ]
+      },
+      "value_id": "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+    }
+  ]
+}

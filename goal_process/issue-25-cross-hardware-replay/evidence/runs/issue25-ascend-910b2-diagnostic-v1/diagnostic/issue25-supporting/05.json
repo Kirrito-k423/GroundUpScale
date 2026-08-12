@@ -1,0 +1,17 @@
+{
+  "anchor_id": "issue25-ascend-qproj-512",
+  "frontier_role": "ACTIVE",
+  "holdout_session_refs": [
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-01",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-02",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-03"
+  ],
+  "latency_ns": 15487.000346183777,
+  "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+  "search_session_refs": [
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-01",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-02",
+    "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-03"
+  ],
+  "status": "QUALIFIED"
+}

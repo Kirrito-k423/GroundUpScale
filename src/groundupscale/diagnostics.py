@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
+from copy import deepcopy
 from dataclasses import dataclass
 from hashlib import sha256
-import json
 from math import hypot, isclose, isfinite
 from pathlib import Path
 from re import fullmatch
@@ -22,7 +23,6 @@ from groundupscale.measurement_contract import (
     TimerEvidence,
 )
 from groundupscale.run_bundle import verify_run_bundle
-
 
 DIAGNOSTIC_EVIDENCE_SCHEMA = (
     "groundupscale.dev/diagnostic-evidence/v1alpha1"
@@ -81,6 +81,7 @@ class _SelectedSurfaceCell:
     weights: tuple[float, ...]
     exact_anchor: bool
     effective_rate: float
+    primary_latency_ns: float | None = None
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,16 @@ class _SurfaceUncertainty:
     combined_standard_rate: float
     rate_low: float
     rate_high: float
+
+
+@dataclass(frozen=True)
+class _LatencyUncertainty:
+    anchor_standard_ns: float
+    interpolation_standard_ns: float
+    instrumentation_standard_ns: float
+    combined_standard_ns: float
+    latency_low_ns: float
+    latency_high_ns: float
 
 
 def _canonical_digest(value: object) -> str:
@@ -141,6 +152,27 @@ def _exact_version_text(value: object) -> bool:
             for token in ("unknown", "unspecified", "latest", "unversioned")
         )
         and fullmatch(r"v?\d+(?:[._+-][0-9A-Za-z]+)*", value) is not None
+    )
+
+
+def _surface_version_text(value: object) -> bool:
+    """Accept legacy numeric versions or immutable content-hash versions."""
+    return _exact_version_text(value) or (
+        isinstance(value, str)
+        and fullmatch(r"v-[0-9a-f]{16,64}", value) is not None
+    )
+
+
+def _surface_id_text(value: object) -> bool:
+    """Accept legacy identifiers or canonical hierarchical surface URIs."""
+    return _canonical_identifier(value) or (
+        isinstance(value, str)
+        and fullmatch(
+            r"surface://[a-z0-9][a-z0-9._+-]*"
+            r"(?:/[A-Za-z0-9][A-Za-z0-9._+-]*)+",
+            value,
+        )
+        is not None
     )
 
 
@@ -601,7 +633,10 @@ def _verified_document_digests(document: dict[str, Any]) -> dict[str, str]:
     return actual
 
 
-def _resource_axis(document: dict[str, Any]) -> dict[str, Any]:
+def _resource_axis(
+    document: dict[str, Any],
+    verified_artifacts: dict[str, object] | None = None,
+) -> dict[str, Any]:
     floor = document.get("resource_physical_floor")
     if not isinstance(floor, dict):
         return _unknown("missing-resource-physical-floor")
@@ -649,6 +684,72 @@ def _resource_axis(document: dict[str, Any]) -> dict[str, Any]:
         1e-9, derived_value * 1e-12
     ):
         return _unknown("resource-physical-floor-derivation-mismatch")
+    source_refs = {term.get("source_evidence_ref") for term in terms}
+    if source_refs != {None}:
+        if (
+            verified_artifacts is None
+            or len(source_refs) != 1
+            or not _artifact_uri(next(iter(source_refs)))
+        ):
+            return _unknown("resource-physical-floor-source-evidence-invalid")
+        source = _verified_artifact_content(
+            verified_artifacts,
+            next(iter(source_refs)),
+            role="source-physical-floor",
+            schema=(
+                "groundupscale.dev/"
+                "physical-floor-observation-comparison/v1alpha1"
+            ),
+        )
+        source_floor = (
+            source.get("physical_floor") if isinstance(source, dict) else None
+        )
+        source_capabilities = (
+            source_floor.get("capabilities")
+            if isinstance(source_floor, dict)
+            else None
+        )
+        capability_by_resource = (
+            {
+                capability.get("resource"): capability
+                for capability in source_capabilities
+                if isinstance(capability, dict)
+            }
+            if isinstance(source_capabilities, list)
+            else {}
+        )
+        source_demands = {
+            "compute.fp32": source_floor.get("minimum_work_flops")
+            if isinstance(source_floor, dict)
+            else None,
+            "memory.hbm": source_floor.get("compulsory_bytes")
+            if isinstance(source_floor, dict)
+            else None,
+        }
+        if (
+            not isinstance(source_floor, dict)
+            or not _finite_number(
+                source_floor.get("resource_physical_floor_ns")
+            )
+            or not isclose(
+                float(source_floor["resource_physical_floor_ns"]),
+                float(floor["value_ns"]),
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+            or any(
+                resource not in capability_by_resource
+                or source_demands[resource] != term.get("minimum_demand")
+                or capability_by_resource[resource].get(
+                    "robust_achievable_rate"
+                )
+                != term.get("validated_rate_per_second")
+                for resource, term in {
+                    item["resource"]: item for item in terms
+                }.items()
+            )
+        ):
+            return _unknown("resource-physical-floor-source-evidence-mismatch")
     return {
         "status": "known",
         "value_ns": floor["value_ns"],
@@ -1124,7 +1225,271 @@ def _comparisons(axes: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _diagnostic_trigger(document: dict[str, Any]) -> dict[str, Any] | None:
+def _remote_execution_records(
+    evidence_ref: object,
+    verified_artifacts: dict[str, object],
+) -> dict[str, dict[str, Any]] | None:
+    if not _artifact_uri(evidence_ref):
+        return None
+    source = _verified_artifact_content(
+        verified_artifacts,
+        evidence_ref,
+        role="source-remote-execution",
+        schema="groundupscale.dev/remote-execution/v1alpha1",
+    )
+    sessions = source.get("sessions") if isinstance(source, dict) else None
+    if not isinstance(sessions, list) or not sessions:
+        return None
+    records: dict[str, dict[str, Any]] = {}
+    for record in sessions:
+        if (
+            not isinstance(record, dict)
+            or not _known_identity_string(record.get("session_id"))
+            or not isinstance(record.get("process_id"), int)
+            or isinstance(record["process_id"], bool)
+            or record["process_id"] <= 0
+            or not _known_identity_string(record.get("started_at"))
+            or not isinstance(record.get("sha256"), str)
+            or fullmatch(r"[0-9a-f]{64}", record["sha256"]) is None
+            or record["session_id"] in records
+        ):
+            return None
+        records[record["session_id"]] = record
+    return records
+
+
+def _source_session_matches_remote(
+    ref: str,
+    source: dict[str, Any],
+    remote_records: dict[str, dict[str, Any]],
+    verified_artifacts: dict[str, object],
+) -> bool:
+    artifact = verified_artifacts.get(ref)
+    manifest = artifact.get("manifest") if isinstance(artifact, dict) else None
+    record = remote_records.get(source.get("session_id"))
+    return bool(
+        isinstance(manifest, dict)
+        and isinstance(record, dict)
+        and manifest.get("sha256") == record.get("sha256")
+        and source.get("process_id") == record.get("process_id")
+        and source.get("process_started_at") == record.get("started_at")
+    )
+
+
+def _semantic_path_inputs_valid(
+    source: dict[str, Any],
+) -> bool:
+    path_inputs = source.get("path_inputs")
+    main_input = source.get("input")
+    path_correctness = source.get("path_correctness")
+    if not isinstance(path_inputs, dict) or set(path_inputs) != {"q", "k", "v"}:
+        return False
+    identities: list[tuple[str, str]] = []
+    for identity in path_inputs.values():
+        if (
+            not isinstance(identity, dict)
+            or set(identity) != {"left_sha256", "right_sha256"}
+            or any(
+                not isinstance(value, str)
+                or fullmatch(r"[0-9a-f]{64}", value) is None
+                for value in identity.values()
+            )
+        ):
+            return False
+        identities.append(
+            (identity["left_sha256"], identity["right_sha256"])
+        )
+    expected_hashes = (
+        {
+            record.get("expected_sha256")
+            for record in path_correctness.values()
+            if isinstance(record, dict)
+        }
+        if isinstance(path_correctness, dict)
+        and set(path_correctness) == {"q", "k", "v"}
+        else set()
+    )
+    return bool(
+        len(set(identities)) == 3
+        and isinstance(main_input, dict)
+        and main_input.get("left_sha256")
+        == path_inputs["q"]["left_sha256"]
+        and main_input.get("right_sha256")
+        == path_inputs["q"]["right_sha256"]
+        and len(expected_hashes) == 3
+        and all(
+            isinstance(value, str)
+            and fullmatch(r"[0-9a-f]{64}", value) is not None
+            for value in expected_hashes
+        )
+    )
+
+
+def _trigger_observation_basis_valid(
+    item: dict[str, Any],
+    verified_artifacts: dict[str, object],
+) -> bool:
+    basis = item.get("observation_basis")
+    if not isinstance(basis, dict):
+        return False
+    stable_path = item.get("stable_path")
+    if (
+        basis.get("stable_path") != stable_path
+        or not _resolved_identity_string(basis.get("semantic"))
+    ):
+        return False
+
+    if basis.get("kind") == "benchmark-case":
+        source_ref = basis.get("source_evidence_ref")
+        if not _artifact_uri(source_ref):
+            return False
+        source = _verified_artifact_content(
+            verified_artifacts,
+            source_ref,
+            role="source-transformer-benchmark",
+            schema="groundupscale.dev/benchmark-observation/v1alpha1",
+        )
+        cases = source.get("cases") if isinstance(source, dict) else None
+        source_case = next(
+            (
+                case
+                for case in cases
+                if isinstance(case, dict)
+                and case.get("case_id") == basis.get("source_case_id")
+            ),
+            None,
+        ) if isinstance(cases, list) else None
+        latency = (
+            source_case.get("latency")
+            if isinstance(source_case, dict)
+            else None
+        )
+        authored_scope = (
+            source_case.get("authored_scope")
+            if isinstance(source_case, dict)
+            else None
+        )
+        canonical_scope = (
+            f"semantic/{authored_scope}"
+            .replace("layer_", "layer-")
+            .replace("q_proj", "q-proj")
+            .replace("k_proj", "k-proj")
+            .replace("v_proj", "v-proj")
+            if isinstance(authored_scope, str)
+            else None
+        )
+        return bool(
+            isinstance(latency, dict)
+            and _finite_number(latency.get("median_ns"))
+            and latency["median_ns"] == item.get("observed_ns")
+            and canonical_scope == stable_path
+            and basis.get("semantic") == "batch-one Q projection MatMul"
+        )
+
+    if basis.get("kind") != "session-variant-aggregate":
+        return False
+    variant = basis.get("variant")
+    input_refs = basis.get("input_refs")
+    remote_records = _remote_execution_records(
+        basis.get("execution_evidence_ref"), verified_artifacts
+    )
+    if (
+        not _canonical_identifier(variant)
+        or basis.get("lane") != "baseline"
+        or basis.get("reducer")
+        != "median-of-independent-session-medians"
+        or not isinstance(input_refs, list)
+        or len(input_refs) < 3
+        or not all(_artifact_uri(ref) for ref in input_refs)
+        or len(set(input_refs)) != len(input_refs)
+        or remote_records is None
+    ):
+        return False
+
+    session_medians: list[float] = []
+    process_ids: set[int] = set()
+    cohort_ids: set[str] = set()
+    for ref in input_refs:
+        source = _verified_artifact_content(
+            verified_artifacts,
+            ref,
+            role="source-diagnostic-session",
+            schema="groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+        )
+        if not isinstance(source, dict):
+            return False
+        contract = source.get("execution_contract")
+        variant_contracts = (
+            contract.get("variant_contracts")
+            if isinstance(contract, dict)
+            else None
+        )
+        variant_contract = (
+            variant_contracts.get(variant)
+            if isinstance(variant_contracts, dict)
+            else None
+        )
+        variants = source.get("variants")
+        measurement = (
+            variants.get(variant) if isinstance(variants, dict) else None
+        )
+        samples = (
+            measurement.get("raw_samples_ns")
+            if isinstance(measurement, dict)
+            else None
+        )
+        measurement_semantic = (
+            measurement.get("semantic")
+            if isinstance(measurement, dict)
+            else None
+        )
+        process_id = source.get("process_id")
+        cohort_id = source.get("cohort_id")
+        path_key = {"k_baseline": "k", "v_baseline": "v"}.get(variant)
+        path_inputs = source.get("path_inputs")
+        input_identity = (
+            path_inputs.get(path_key)
+            if isinstance(path_inputs, dict) and path_key is not None
+            else None
+        )
+        if (
+            not isinstance(variant_contract, dict)
+            or variant_contract.get("semantic") != basis["semantic"]
+            or variant_contract.get("stable_path") != stable_path
+            or variant_contract.get("lane") != "baseline"
+            or variant_contract.get("input_identity") != input_identity
+            or not _semantic_path_inputs_valid(source)
+            or measurement_semantic != f"{basis['semantic']} baseline"
+            or not isinstance(samples, list)
+            or not samples
+            or not all(
+                _finite_number(sample) and float(sample) >= 0
+                for sample in samples
+            )
+            or not _known_identity_string(source.get("session_id"))
+            or not isinstance(process_id, int)
+            or isinstance(process_id, bool)
+            or process_id <= 0
+            or not _known_identity_string(cohort_id)
+            or not _source_session_matches_remote(
+                ref, source, remote_records, verified_artifacts
+            )
+        ):
+            return False
+        process_ids.add(process_id)
+        cohort_ids.add(cohort_id)
+        session_medians.append(float(median(samples)))
+    return bool(
+        len(process_ids) == len(input_refs)
+        and len(cohort_ids) == 1
+        and float(median(session_medians)) == item.get("observed_ns")
+    )
+
+
+def _diagnostic_trigger(
+    document: dict[str, Any],
+    verified_artifacts: dict[str, object] | None = None,
+) -> dict[str, Any] | None:
     trigger_input = document.get("diagnostic_trigger_input")
     if not isinstance(trigger_input, dict):
         return None
@@ -1149,6 +1514,108 @@ def _diagnostic_trigger(document: dict[str, Any]) -> dict[str, Any] | None:
         or not isinstance(items, list)
     ):
         return _unknown("invalid-diagnostic-trigger-input")
+
+    e2e_source_ref = trigger_input.get("source_evidence_ref")
+    baseline_source_ref = trigger_input.get(
+        "baseline_observation_evidence_ref"
+    )
+    source_evidence_required = trigger_input.get(
+        "source_evidence_required", False
+    )
+    has_item_basis = any(
+        isinstance(item, dict)
+        and isinstance(item.get("observation_basis"), dict)
+        for item in items
+    )
+    bundle_has_trigger_sources = bool(
+        isinstance(verified_artifacts, dict)
+        and any(
+            isinstance(artifact, dict)
+            and isinstance(artifact.get("manifest"), dict)
+            and artifact["manifest"].get("role")
+            in {
+                "source-transformer-e2e-attribution",
+                "source-remote-execution",
+            }
+            for artifact in verified_artifacts.values()
+        )
+    )
+    if not isinstance(source_evidence_required, bool):
+        return _unknown("invalid-diagnostic-trigger-input")
+    if (
+        source_evidence_required
+        or has_item_basis
+        or bundle_has_trigger_sources
+        or e2e_source_ref is not None
+        or baseline_source_ref is not None
+    ):
+        if (
+            verified_artifacts is None
+            or not _artifact_uri(e2e_source_ref)
+            or (
+                baseline_source_ref is not None
+                and not _artifact_uri(baseline_source_ref)
+            )
+        ):
+            return _unknown("diagnostic-trigger-source-evidence-invalid")
+        e2e_source = _verified_artifact_content(
+            verified_artifacts,
+            e2e_source_ref,
+            role="source-transformer-e2e-attribution",
+            schema="groundupscale.dev/error-attribution/v1alpha1",
+        )
+        baseline_source = (
+            _verified_artifact_content(
+                verified_artifacts,
+                baseline_source_ref,
+                role="source-transformer-benchmark",
+                schema=(
+                    "groundupscale.dev/benchmark-observation/v1alpha1"
+                ),
+            )
+            if baseline_source_ref is not None
+            else None
+        )
+        baseline_cases = (
+            baseline_source.get("cases")
+            if isinstance(baseline_source, dict)
+            else None
+        )
+        q_case = next(
+            (
+                case
+                for case in baseline_cases
+                if isinstance(case, dict)
+                and case.get("case_id") == "matmul-q-proj"
+            ),
+            None,
+        ) if isinstance(baseline_cases, list) else None
+        q_latency = q_case.get("latency") if isinstance(q_case, dict) else None
+        if (
+            not isinstance(e2e_source, dict)
+            or e2e_source.get("e2e_trace_host_ns") != e2e_observation_ns
+            or (
+                baseline_source_ref is not None
+                and (
+                    not isinstance(q_latency, dict)
+                    or not _finite_number(q_latency.get("median_ns"))
+                    or any(
+                        not isinstance(item, dict)
+                        or item.get("observed_ns") != q_latency["median_ns"]
+                        for item in items
+                    )
+                )
+            )
+        ):
+            return _unknown("diagnostic-trigger-source-evidence-mismatch")
+        if any(
+            not isinstance(item, dict)
+            or not _trigger_observation_basis_valid(
+                item, verified_artifacts
+            )
+            for item in items
+        ):
+            return _unknown("diagnostic-trigger-source-evidence-mismatch")
 
     normalized: list[dict[str, Any]] = []
     paths: set[str] = set()
@@ -1177,6 +1644,11 @@ def _diagnostic_trigger(document: dict[str, Any]) -> dict[str, Any] | None:
                 "combined_uncertainty_ns": item[
                     "combined_uncertainty_ns"
                 ],
+                **(
+                    {"observation_basis": deepcopy(item["observation_basis"])}
+                    if isinstance(item.get("observation_basis"), dict)
+                    else {}
+                ),
             }
         )
 
@@ -1263,6 +1735,151 @@ def _diagnostic_trigger(document: dict[str, Any]) -> dict[str, Any] | None:
         "evaluated": evaluated,
         "triggered": [item for item in evaluated if item["triggered"]],
     }
+
+
+def _candidate_source_replay_valid(
+    candidate: dict[str, Any],
+    *,
+    sessions: list[dict[str, Any]],
+    stable_path: str,
+    semantic: str,
+    evidence_lane: str,
+    direct_failure: dict[str, Any] | None,
+    verified_artifacts: dict[str, object],
+) -> bool:
+    replay = candidate.get("source_replay")
+    if replay is None:
+        return evidence_lane == "baseline"
+    if not isinstance(replay, dict):
+        return False
+    variant = replay.get("variant")
+    refs = replay.get("input_refs")
+    remote_records = _remote_execution_records(
+        replay.get("execution_evidence_ref"), verified_artifacts
+    )
+    if (
+        variant
+        != ("negative_control" if evidence_lane == "diagnostic" else "k_baseline")
+        or not isinstance(refs, list)
+        or len(refs) < 3
+        or len(refs) != len(sessions)
+        or not all(_artifact_uri(ref) for ref in refs)
+        or len(set(refs)) != len(refs)
+        or remote_records is None
+    ):
+        return False
+    sources: dict[str, tuple[str, dict[str, Any]]] = {}
+    for ref in refs:
+        source = _verified_artifact_content(
+            verified_artifacts,
+            ref,
+            role="source-diagnostic-session",
+            schema="groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+        )
+        if (
+            not isinstance(source, dict)
+            or not _known_identity_string(source.get("session_id"))
+            or source["session_id"] in sources
+            or not _source_session_matches_remote(
+                ref, source, remote_records, verified_artifacts
+            )
+        ):
+            return False
+        sources[source["session_id"]] = (ref, source)
+    if {session.get("session_id") for session in sessions} != set(sources):
+        return False
+    for session in sessions:
+        source = sources[session["session_id"]][1]
+        contract = source.get("execution_contract")
+        variant_contracts = (
+            contract.get("variant_contracts")
+            if isinstance(contract, dict)
+            else None
+        )
+        variant_contract = (
+            variant_contracts.get(variant)
+            if isinstance(variant_contracts, dict)
+            else None
+        )
+        variants = source.get("variants")
+        measurement = (
+            variants.get(variant) if isinstance(variants, dict) else None
+        )
+        source_samples = (
+            measurement.get("raw_samples_ns")
+            if isinstance(measurement, dict)
+            else None
+        )
+        measurement_semantic = (
+            measurement.get("semantic")
+            if isinstance(measurement, dict)
+            else None
+        )
+        path_key = "k" if variant == "k_baseline" else "v"
+        path_inputs = source.get("path_inputs")
+        input_identity = (
+            path_inputs.get(path_key)
+            if isinstance(path_inputs, dict)
+            else None
+        )
+        if (
+            not isinstance(variant_contract, dict)
+            or variant_contract.get("semantic") != semantic
+            or variant_contract.get("stable_path") != stable_path
+            or variant_contract.get("lane") != evidence_lane
+            or variant_contract.get("input_identity") != input_identity
+            or not _semantic_path_inputs_valid(source)
+            or measurement_semantic
+            != (
+                semantic
+                if variant == "negative_control"
+                else f"{semantic} baseline"
+            )
+            or not isinstance(source_samples, list)
+            or not source_samples
+            or not all(
+                _finite_number(sample) and float(sample) >= 0
+                for sample in source_samples
+            )
+            or source_samples != session.get("raw_samples_ns")
+            or source.get("process_id") != session.get("process_id")
+        ):
+            return False
+        if evidence_lane == "diagnostic":
+            negative_control = source.get("negative_control")
+            negative_correctness = (
+                negative_control.get("correctness")
+                if isinstance(negative_control, dict)
+                else None
+            )
+            if (
+                not isinstance(direct_failure, dict)
+                or not isinstance(negative_correctness, dict)
+                or negative_correctness.get("passed") is not False
+                or negative_correctness.get("expected_sha256")
+                != direct_failure.get("expected_sha256")
+                or negative_correctness.get("observed_sha256")
+                != direct_failure.get("observed_sha256")
+                or negative_correctness.get("max_abs_difference")
+                != direct_failure.get("max_abs_difference")
+                or negative_correctness.get("mismatched_elements")
+                != direct_failure.get("mismatched_elements")
+                or not isinstance(
+                    negative_correctness.get("expected_sha256"), str
+                )
+                or negative_correctness["expected_sha256"]
+                == negative_correctness.get("observed_sha256")
+                or not _finite_number(
+                    negative_correctness.get("max_abs_difference")
+                )
+                or float(negative_correctness["max_abs_difference"]) <= 0
+                or not isinstance(
+                    negative_correctness.get("mismatched_elements"), int
+                )
+                or negative_correctness["mismatched_elements"] <= 0
+            ):
+                return False
+    return True
 
 
 def _locked_probe_contract_valid(
@@ -2023,15 +2640,14 @@ def _integration_operator_frontier_valid(
         or value.get("cohort_id") != contract.get("cohort_id")
         or value.get("execution_domain") != contract.get("execution_domain")
         or not isinstance(surface, dict)
-        or not _resolved_identity_string(surface.get("surface_id"))
-        or not _exact_version_text(surface.get("version"))
+        or not _surface_id_text(surface.get("surface_id"))
+        or not _surface_version_text(surface.get("version"))
         or not _finite_number(value.get("latency_ns"))
         or float(value["latency_ns"]) <= 0
         or not _finite_number(combined_uncertainty_ns)
         or float(combined_uncertainty_ns) < 0
         or not _artifact_uri(evidence_ref)
         or value.get("evidence_refs") != [evidence_ref]
-        or not _uncertainty_policy_structure_valid(policy)
     ):
         return False
     frontier_content = _verified_artifact_content(
@@ -2043,6 +2659,119 @@ def _integration_operator_frontier_valid(
     expected_content = {
         key: item for key, item in value.items() if key != "evidence_ref"
     }
+    if frontier_content != expected_content:
+        return False
+    source_basis = value.get("uncertainty_basis")
+    if (
+        isinstance(source_basis, dict)
+        and source_basis.get("kind")
+        == "verified-capability-surface-query"
+    ):
+        qualification = _verified_artifact_content(
+            verified_artifacts,
+            source_basis.get("qualification_evidence_ref"),
+            role="source-frontier-qualification",
+            schema=(
+                "groundupscale.dev/operator-frontier-qualification/v1alpha1"
+            ),
+        )
+        query = source_basis.get("query")
+        source_surface = (
+            qualification.get("surface")
+            if isinstance(qualification, dict)
+            else None
+        )
+        if not isinstance(source_surface, dict) or not isinstance(query, dict):
+            return False
+        try:
+            _, _, query_results = _capability_surface_results(
+                {
+                    "capability_surfaces": [source_surface],
+                    "surface_queries": [query],
+                    "cohort_id": contract.get("cohort_id"),
+                }
+            )
+        except DiagnosticBundleIntegrityError:
+            return False
+        if len(query_results) != 1:
+            return False
+        result = query_results[0]
+        work_rate_latency = result.get("work_rate_latency")
+        uncertainty = result.get("uncertainty")
+        interval = (
+            uncertainty.get("latency_interval")
+            if isinstance(uncertainty, dict)
+            else None
+        )
+        execution_shape = contract.get("execution_domain", {}).get("shape", {})
+        response_model = source_surface.get("response_model")
+        expected_query_shape = (
+            {"m": execution_shape.get("m")}
+            if isinstance(response_model, dict)
+            and response_model.get("primary_response") == "latency_ns"
+            else {"s": execution_shape.get("m")}
+        )
+        if (
+            result.get("status") != "exact_anchor"
+            or not isinstance(work_rate_latency, dict)
+            or not _finite_number(work_rate_latency.get("value_ns"))
+            or not isinstance(interval, dict)
+            or not _finite_number(interval.get("lower_ns"))
+            or not _finite_number(interval.get("upper_ns"))
+            or result.get("surface") != surface
+            or query.get("shape") != expected_query_shape
+        ):
+            return False
+        latency_ns = float(work_rate_latency["value_ns"])
+        expected_uncertainty_ns = max(
+            latency_ns - float(interval["lower_ns"]),
+            float(interval["upper_ns"]) - latency_ns,
+        )
+        return (
+            qualification.get("status") == "qualified"
+            and qualification.get("hardware_cohort")
+            == contract.get("cohort_id")
+            and source_basis.get("source_policy")
+            == {
+                key: source_surface["uncertainty_policy"][key]
+                for key in (
+                    "policy_id",
+                    "version",
+                    "combination",
+                    "target_coverage",
+                )
+            }
+            and source_basis.get("latency_interval") == interval
+            and set(source_basis)
+            == {
+                "kind",
+                "qualification_evidence_ref",
+                "query",
+                "source_policy",
+                "latency_interval",
+                "surface_uncertainty_ns",
+            }
+            and isclose(
+                float(source_basis.get("surface_uncertainty_ns", -1)),
+                expected_uncertainty_ns,
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+            and isclose(
+                float(value["latency_ns"]),
+                latency_ns,
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+            and isclose(
+                float(combined_uncertainty_ns),
+                expected_uncertainty_ns,
+                rel_tol=1e-12,
+                abs_tol=1e-9,
+            )
+        )
+    if not _uncertainty_policy_structure_valid(policy):
+        return False
     limits = _uncertainty_policy_artifacts_valid(
         policy,
         stable_path=stable_path,
@@ -2051,8 +2780,7 @@ def _integration_operator_frontier_valid(
         verified_artifacts=verified_artifacts,
     )
     if (
-        frontier_content != expected_content
-        or limits is None
+        limits is None
         or not _uncertainty_records_artifacts_valid(
             records,
             limits,
@@ -2392,6 +3120,120 @@ def _integration_evidence_artifacts_valid(
             )
         )
 
+    def derived_ablation(value: object) -> bool:
+        if not isinstance(value, dict):
+            return False
+        derivation = value.get("derivation")
+        sessions = value.get("sessions")
+        expected_prior = {
+            "dispatch": ["frontier_adapter"],
+            "copy": ["frontier_adapter", "dispatch"],
+            "sync": ["frontier_adapter", "dispatch", "copy"],
+            "profiling": [
+                "frontier_adapter",
+                "dispatch",
+                "copy",
+                "sync",
+            ],
+        }
+        kind = value.get("kind")
+        input_refs = (
+            derivation.get("input_refs")
+            if isinstance(derivation, dict)
+            else None
+        )
+        if (
+            kind not in expected_prior
+            or not isinstance(derivation, dict)
+            or derivation.get("formula")
+            != (
+                "max(0, median(cumulative_variant) - "
+                "max(median(prior_cumulative_variants)))"
+            )
+            or derivation.get("sample_semantics")
+            != "derived-paired-session-delta"
+            or derivation.get("cumulative_variant") != kind
+            or derivation.get("prior_cumulative_variants")
+            != expected_prior[kind]
+            or not isinstance(input_refs, list)
+            or not isinstance(sessions, list)
+            or len(input_refs) != len(sessions)
+            or len(set(input_refs)) != len(input_refs)
+        ):
+            return False
+        for session, input_ref in zip(sessions, input_refs, strict=True):
+            source = _verified_artifact_content(
+                verified_artifacts,
+                input_ref,
+                role="source-diagnostic-session",
+                schema=(
+                    "groundupscale.dev/ascend-diagnostic-session/v1alpha1"
+                ),
+            )
+            variants = source.get("variants") if isinstance(source, dict) else None
+            if (
+                not isinstance(session, dict)
+                or not isinstance(source, dict)
+                or not isinstance(variants, dict)
+                or source.get("session_id") != session.get("session_id")
+                or source.get("process_id") != session.get("process_id")
+                or source.get("cohort_id") != session.get("cohort_id")
+                or "raw_samples_ns" in session
+                or not isinstance(session.get("derived_samples_ns"), list)
+                or not session["derived_samples_ns"]
+            ):
+                return False
+            medians: dict[str, float] = {}
+            for variant_name in [kind, *expected_prior[kind]]:
+                variant = variants.get(variant_name)
+                raw_samples = (
+                    variant.get("raw_samples_ns")
+                    if isinstance(variant, dict)
+                    else None
+                )
+                if (
+                    not isinstance(raw_samples, list)
+                    or not raw_samples
+                    or not all(_finite_number(sample) for sample in raw_samples)
+                ):
+                    return False
+                medians[variant_name] = float(median(raw_samples))
+            expected = max(
+                0.0,
+                medians[kind]
+                - max(medians[name] for name in expected_prior[kind]),
+            )
+            derived_samples = session["derived_samples_ns"]
+            if (
+                len(derived_samples) != 1
+                or not _finite_number(derived_samples[0])
+                or not _finite_number(session.get("latency_ns"))
+                or not isclose(
+                    float(derived_samples[0]),
+                    expected,
+                    rel_tol=1e-12,
+                    abs_tol=1e-9,
+                )
+                or not isclose(
+                    float(session["latency_ns"]),
+                    expected,
+                    rel_tol=1e-12,
+                    abs_tol=1e-9,
+                )
+            ):
+                return False
+        return measurement(value)
+
+    def ablation(value: object) -> bool:
+        derivation = value.get("derivation") if isinstance(value, dict) else None
+        if (
+            isinstance(derivation, dict)
+            and derivation.get("sample_semantics")
+            == "derived-paired-session-delta"
+        ):
+            return derived_ablation(value)
+        return measurement(value)
+
     target_sessions = target_candidate.get("sessions")
     target_correctness = target_candidate.get("correctness")
     baseline_lane = measurement_lanes.get("baseline")
@@ -2423,7 +3265,7 @@ def _integration_evidence_artifacts_valid(
         and measurement(wrapped)
         and (
             not isinstance(ablations, list)
-            or all(measurement(ablation) for ablation in ablations)
+            or all(ablation(item) for item in ablations)
         )
         and (ledger is None or plural(ledger))
         and (counterfactual is None or plural(counterfactual))
@@ -2536,9 +3378,15 @@ def _normalize_timing_sessions(
     expected_cohort_id: str,
     minimum_sessions: int,
     require_authored_latency: bool,
+    allow_zero_samples: bool = False,
+    samples_field: str = "raw_samples_ns",
 ) -> dict[str, Any] | None:
-    """Validate one lane/cohort and derive medians from included raw samples."""
-    if not isinstance(sessions, list) or not sessions:
+    """Validate one lane/cohort and derive medians from declared samples."""
+    if (
+        not isinstance(sessions, list)
+        or not sessions
+        or samples_field not in {"raw_samples_ns", "derived_samples_ns"}
+    ):
         return None
     session_latencies_ns: dict[str, float] = {}
     session_process_ids: dict[str, int] = {}
@@ -2547,8 +3395,8 @@ def _normalize_timing_sessions(
     session_exclusions: dict[str, list[dict[str, object]]] = {}
     evidence_refs: list[str] = []
     for session in sessions:
-        raw_samples = (
-            session.get("raw_samples_ns")
+        samples = (
+            session.get(samples_field)
             if isinstance(session, dict)
             else None
         )
@@ -2566,11 +3414,16 @@ def _normalize_timing_sessions(
             or session["process_id"] <= 0
             or session.get("lane_id") != expected_lane_id
             or session.get("cohort_id") != expected_cohort_id
-            or not isinstance(raw_samples, list)
-            or not raw_samples
+            or not isinstance(samples, list)
+            or not samples
             or not all(
-                _finite_number(sample) and float(sample) > 0
-                for sample in raw_samples
+                _finite_number(sample)
+                and (
+                    float(sample) >= 0
+                    if allow_zero_samples
+                    else float(sample) > 0
+                )
+                for sample in samples
             )
             or not isinstance(exclusions, list)
             or not _nonempty_string(session.get("evidence_ref"))
@@ -2585,7 +3438,7 @@ def _normalize_timing_sessions(
                 or not isinstance(exclusion.get("index"), int)
                 or isinstance(exclusion["index"], bool)
                 or exclusion["index"] < 0
-                or exclusion["index"] >= len(raw_samples)
+                or exclusion["index"] >= len(samples)
                 or exclusion["index"] in excluded_indices
                 or not _resolved_identity_string(exclusion.get("reason"))
             ):
@@ -2599,7 +3452,7 @@ def _normalize_timing_sessions(
             )
         included = [
             float(sample)
-            for index, sample in enumerate(raw_samples)
+            for index, sample in enumerate(samples)
             if index not in excluded_indices
         ]
         if not included:
@@ -2619,7 +3472,7 @@ def _normalize_timing_sessions(
         session_id = session["session_id"]
         session_latencies_ns[session_id] = session_latency_ns
         session_process_ids[session_id] = session["process_id"]
-        raw_samples_ns[session_id] = list(raw_samples)
+        raw_samples_ns[session_id] = list(samples)
         included_samples_ns[session_id] = included
         session_exclusions[session_id] = normalized_exclusions
         evidence_refs.append(session["evidence_ref"])
@@ -2635,7 +3488,8 @@ def _normalize_timing_sessions(
         "session_ids": list(session_latencies_ns),
         "session_latencies_ns": session_latencies_ns,
         "session_process_ids": session_process_ids,
-        "raw_samples_ns": raw_samples_ns,
+        samples_field: raw_samples_ns,
+        "samples_field": samples_field,
         "included_samples_ns": included_samples_ns,
         "session_exclusions": session_exclusions,
         "evidence_refs": evidence_refs,
@@ -2799,6 +3653,7 @@ def _shape_disambiguation_probes(
                 verified_artifacts=verified_artifacts,
             )
             if isinstance(integration_evidence, dict)
+            and len(integration_targets) == 1
             else None
         )
         locked_candidate_ids = contract["candidate_ids"]
@@ -2821,6 +3676,12 @@ def _shape_disambiguation_probes(
             )
             continue
 
+        direct_defect_value = probe.get("direct_defect_evidence")
+        direct_failure = (
+            direct_defect_value.get("failure")
+            if isinstance(direct_defect_value, dict)
+            else None
+        )
         candidate_evaluations = []
         malformed_candidate = False
         for candidate in candidates:
@@ -2856,6 +3717,12 @@ def _shape_disambiguation_probes(
                 else None
             )
             sessions = candidate.get("sessions")
+            evidence_lane = candidate.get("evidence_lane", "baseline")
+            diagnostic_target_id = (
+                direct_defect_value.get("target_candidate_id")
+                if isinstance(direct_defect_value, dict)
+                else None
+            )
             correctness_passed = (
                 _raw_correctness_passed(
                     correctness.get("records"), correctness.get("tolerance")
@@ -2941,17 +3808,40 @@ def _shape_disambiguation_probes(
                 or not _nonempty_string(correctness.get("evidence_ref"))
                 or not isinstance(sessions, list)
                 or not sessions
+                or evidence_lane not in {"baseline", "diagnostic"}
+                or (
+                    evidence_lane == "diagnostic"
+                    and (
+                        candidate.get("candidate_id")
+                        != diagnostic_target_id
+                        or measurement_lanes["diagnostic"].get(
+                            "timing_used_for_verdict"
+                        )
+                        is not False
+                    )
+                )
             ):
                 malformed_candidate = True
                 break
             normalized_sessions = _normalize_timing_sessions(
                 sessions,
-                expected_lane_id=measurement_lanes["baseline"]["lane_id"],
+                expected_lane_id=measurement_lanes[evidence_lane]["lane_id"],
                 expected_cohort_id=contract["cohort_id"],
                 minimum_sessions=1,
                 require_authored_latency=True,
             )
-            if normalized_sessions is None:
+            if (
+                normalized_sessions is None
+                or not _candidate_source_replay_valid(
+                    candidate,
+                    sessions=sessions,
+                    stable_path=stable_path,
+                    semantic=contract["semantic"],
+                    evidence_lane=evidence_lane,
+                    direct_failure=direct_failure,
+                    verified_artifacts=verified_artifacts,
+                )
+            ):
                 malformed_candidate = True
                 break
             eligible_for_best = (
@@ -2966,6 +3856,7 @@ def _shape_disambiguation_probes(
                 {
                     "candidate_id": candidate["candidate_id"],
                     "role": candidate["role"],
+                    "evidence_lane": evidence_lane,
                     "implementation_family": {
                         **implementation_family,
                         "source_identity": implementation_content[
@@ -3013,7 +3904,6 @@ def _shape_disambiguation_probes(
                     ],
                 }
             )
-        direct_defect_value = probe.get("direct_defect_evidence")
         direct_defect = _direct_defect_evidence(
             direct_defect_value,
             candidates=candidate_evaluations,
@@ -3198,6 +4088,7 @@ def _integration_measurement(
     expected_cohort_id: str,
     minimum_sessions: int,
     correctness_policy: dict[str, Any],
+    allow_zero_samples: bool = False,
 ) -> dict[str, Any] | None:
     correctness = value.get("correctness") if isinstance(value, dict) else None
     correctness_passed = (
@@ -3222,12 +4113,19 @@ def _integration_measurement(
         or not _artifact_uri(correctness.get("evidence_ref"))
     ):
         return None
+    samples_field = (
+        "derived_samples_ns"
+        if isinstance(value, dict) and isinstance(value.get("derivation"), dict)
+        else "raw_samples_ns"
+    )
     normalized = _normalize_timing_sessions(
         value.get("sessions"),
         expected_lane_id=expected_lane_id,
         expected_cohort_id=expected_cohort_id,
         minimum_sessions=minimum_sessions,
         require_authored_latency=False,
+        allow_zero_samples=allow_zero_samples,
+        samples_field=samples_field,
     )
     if normalized is None:
         return None
@@ -3289,7 +4187,15 @@ def _integration_ledger(
             or not _resolved_identity_string(leaf.get("leaf_id"))
             or leaf["leaf_id"] in leaf_by_id
             or leaf.get("kind")
-            not in {"operator", "copy", "dispatch", "sync", "wait", "other"}
+            not in {
+                "operator",
+                "copy",
+                "dispatch",
+                "sync",
+                "profiling",
+                "wait",
+                "other",
+            }
             or not _finite_number(leaf.get("duration_ns"))
             or float(leaf["duration_ns"]) < 0
             or not isinstance(leaf.get("evidence_refs"), list)
@@ -3449,8 +4355,8 @@ def _integration_surface_action(
     latency_ns = frontier.get("latency_ns") if isinstance(frontier, dict) else None
     if (
         not isinstance(surface, dict)
-        or not _resolved_identity_string(surface.get("surface_id"))
-        or not _exact_version_text(surface.get("version"))
+        or not _surface_id_text(surface.get("surface_id"))
+        or not _surface_version_text(surface.get("version"))
         or not _finite_number(latency_ns)
         or float(latency_ns) <= 0
     ):
@@ -3632,9 +4538,23 @@ def _integration_overhead_verdict(
             "standalone-operator-outside-frontier-uncertainty",
         )
     minimum_sessions = policy["minimum_independent_sessions"]
+    wrapped_value = evidence.get("wrapped_e2e")
+    wrapped_lane_id = (
+        wrapped_value.get("lane_id")
+        if isinstance(wrapped_value, dict)
+        else None
+    )
+    if wrapped_lane_id not in {
+        lanes["baseline"]["lane_id"],
+        lanes["diagnostic"]["lane_id"],
+    }:
+        return fail(
+            "wrapped-e2e-evidence-valid",
+            "wrapped-e2e-lane-invalid",
+        )
     wrapped = _integration_measurement(
-        evidence.get("wrapped_e2e"),
-        expected_lane_id=lanes["baseline"]["lane_id"],
+        wrapped_value,
+        expected_lane_id=wrapped_lane_id,
         expected_cohort_id=evidence["cohort_id"],
         minimum_sessions=minimum_sessions,
         correctness_policy=probe["locked_contract"]["correctness_policy"],
@@ -3672,6 +4592,7 @@ def _integration_overhead_verdict(
             correctness_policy=probe["locked_contract"][
                 "correctness_policy"
             ],
+            allow_zero_samples=True,
         )
         value_removed = (
             value.get("removed_leaf_ids")
@@ -3684,7 +4605,14 @@ def _integration_overhead_verdict(
             or not _resolved_identity_string(value.get("ablation_id"))
             or value["ablation_id"] in ablation_ids
             or value.get("kind")
-            not in {"copy", "dispatch", "sync", "wait", "other"}
+            not in {
+                "copy",
+                "dispatch",
+                "sync",
+                "profiling",
+                "wait",
+                "other",
+            }
             or not isinstance(value_removed, list)
             or not value_removed
             or len(value_removed) != len(set(value_removed))
@@ -3858,12 +4786,14 @@ def _integration_overhead_verdict(
             for artifact_ref, field in values
         ]
 
-    def timing_inputs(refs: list[str]) -> list[dict[str, str]]:
+    def timing_inputs(
+        refs: list[str], *, samples_field: str = "raw_samples_ns"
+    ) -> list[dict[str, str]]:
         return [
             input_ref
             for artifact_ref in refs
             for input_ref in inputs(
-                (artifact_ref, "payload.raw_samples_ns"),
+                (artifact_ref, f"payload.{samples_field}"),
                 (artifact_ref, "payload.excluded_samples"),
             )
         ]
@@ -3905,7 +4835,11 @@ def _integration_overhead_verdict(
                     "payload.removed_leaf_ids",
                 ),
                 *(
-                    (ref, "payload.raw_samples_ns")
+                    (
+                        ref,
+                        "payload."
+                        + ablation.get("samples_field", "raw_samples_ns"),
+                    )
                     for ablation in ablations
                     for ref in ablation["session_evidence_refs"]
                 ),
@@ -4886,7 +5820,10 @@ def _performance_diagnosis_verdicts(
                             ]
                         )
                     ),
-                    "counterexamples": [
+                    "counterexamples": list(
+                        probe.get("counterexamples", [])
+                    )
+                    + [
                         {
                             "candidate_id": candidate["candidate_id"],
                             "reason_code": candidate["exclusion_reason"],
@@ -5739,21 +6676,43 @@ def _adapter_contract(
     lanes: dict[str, Any] | None = None
     if isinstance(diagnostic, dict):
         pair_id = diagnostic.get("pair_id")
-        if (
-            not isinstance(baseline, dict)
-            or not _nonempty_string(pair_id)
-            or baseline.get("pair_id") != pair_id
-            or diagnostic.get("paired_baseline_lane_id")
-            != baseline.get("lane_id")
-            or diagnostic.get("cohort_id") != document.get("cohort_id")
-            or diagnostic.get("cohort_id") != baseline.get("cohort_id")
-            or diagnostic.get("candidate_id") != baseline.get("candidate_id")
-            or diagnostic.get("execution_domain")
-            != baseline.get("execution_domain")
-            or diagnostic.get("execution_domain")
-            != document.get("execution_domain")
-            or not _nonempty_string(diagnostic.get("lane_id"))
-            or not _nonempty_string(diagnostic.get("instrumentation_profile"))
+        common_lane_identity_valid = (
+            isinstance(baseline, dict)
+            and _nonempty_string(pair_id)
+            and baseline.get("pair_id") == pair_id
+            and diagnostic.get("paired_baseline_lane_id")
+            == baseline.get("lane_id")
+            and diagnostic.get("cohort_id") == document.get("cohort_id")
+            and diagnostic.get("cohort_id") == baseline.get("cohort_id")
+            and diagnostic.get("candidate_id") == baseline.get("candidate_id")
+            and diagnostic.get("execution_domain")
+            == baseline.get("execution_domain")
+            and diagnostic.get("execution_domain")
+            == document.get("execution_domain")
+            and _nonempty_string(diagnostic.get("lane_id"))
+            and _nonempty_string(diagnostic.get("instrumentation_profile"))
+            and _nonempty_string(diagnostic.get("evidence_ref"))
+        )
+        diagnostic_not_requested = (
+            diagnostic.get("status") == "not_requested"
+            and diagnostic.get("timing_used_for_frontier") is False
+            and _nonempty_string(diagnostic.get("reason_code"))
+            and "raw_samples_ns" not in diagnostic
+            and "observation_validity" not in diagnostic
+            and "frontier_role" not in diagnostic
+            and "timer" not in diagnostic
+            and "completion_boundary" not in diagnostic
+        )
+        if common_lane_identity_valid and diagnostic_not_requested:
+            lanes = {
+                "pair_id": pair_id,
+                "baseline_lane_id": baseline["lane_id"],
+                "diagnostic_lane_id": diagnostic["lane_id"],
+                "diagnostic_frontier_eligible": False,
+                "reason_code": "diagnostic-lane-not-requested",
+            }
+        elif (
+            not common_lane_identity_valid
             or not _completion_boundary_valid(
                 diagnostic.get("completion_boundary")
             )
@@ -5767,7 +6726,6 @@ def _adapter_contract(
                 _finite_number(sample) and sample >= 0
                 for sample in diagnostic["raw_samples_ns"]
             )
-            or not _nonempty_string(diagnostic.get("evidence_ref"))
         ):
             lanes = {
                 "pair_id": pair_id,
@@ -5866,6 +6824,9 @@ def _surface_summary(
         "anchor_lifecycle_policy": surface.get(
             "anchor_lifecycle_policy"
         ),
+        "coordinate": surface.get("coordinate"),
+        "work_formula": surface.get("work_formula"),
+        "response_model": surface.get("response_model"),
         "anchor_ids": [
             anchor.get("anchor_id")
             for anchor in anchors
@@ -6009,6 +6970,13 @@ def _eligible_surface_anchor(
     lifecycle_mode = _surface_anchor_lifecycle_mode(surface)
     shape = anchor.get("shape")
     rate = anchor.get("effective_rate")
+    response_model = surface.get("response_model")
+    latency_primary = (
+        isinstance(response_model, dict)
+        and response_model.get("kind") == "piecewise-linear-latency"
+        and response_model.get("primary_response") == "latency_ns"
+    )
+    latency = anchor.get("latency_ns")
     if lifecycle_mode == "strict-v2":
         history_compatible = _anchor_state_history_valid(anchor)
     else:
@@ -6025,8 +6993,14 @@ def _eligible_surface_anchor(
         and isinstance(shape, dict)
         and set(shape) == set(axes)
         and all(_finite_number(shape[axis]) and shape[axis] > 0 for axis in axes)
-        and _finite_number(rate)
-        and rate > 0
+        and (
+            _finite_number(latency)
+            and latency > 0
+            and _finite_number(rate)
+            and rate > 0
+            if latency_primary
+            else _finite_number(rate) and rate > 0
+        )
         and anchor.get("rate_unit") == "FLOP/s"
         and _nonempty_string(anchor.get("candidate_id"))
         and anchor.get("candidate_family") == surface.get("candidate_family")
@@ -6270,10 +7244,33 @@ def _select_surface_cell(
     if not candidates:
         return None
     _, _, cell, anchors, weights = min(candidates, key=lambda item: item[:2])
-    effective_rate = sum(
-        weight * float(anchor["effective_rate"])
-        for weight, anchor in zip(weights, anchors, strict=True)
+    response_model = surface.get("response_model")
+    latency_primary = (
+        isinstance(response_model, dict)
+        and response_model.get("kind") == "piecewise-linear-latency"
+        and response_model.get("primary_response") == "latency_ns"
     )
+    primary_latency_ns = (
+        sum(
+            weight * float(anchor["latency_ns"])
+            for weight, anchor in zip(weights, anchors, strict=True)
+        )
+        if latency_primary
+        else None
+    )
+    if primary_latency_ns is not None:
+        point_map = {
+            axis: value for axis, value in zip(axes, point, strict=True)
+        }
+        declared_work = _declared_work(surface, point_map)
+        if declared_work is None or primary_latency_ns <= 0:
+            return None
+        effective_rate = declared_work / primary_latency_ns * 1_000_000_000.0
+    else:
+        effective_rate = sum(
+            weight * float(anchor["effective_rate"])
+            for weight, anchor in zip(weights, anchors, strict=True)
+        )
     return _SelectedSurfaceCell(
         cell=cell,
         anchors=anchors,
@@ -6284,6 +7281,77 @@ def _select_surface_cell(
             for anchor in anchors
         ),
         effective_rate=effective_rate,
+        primary_latency_ns=primary_latency_ns,
+    )
+
+
+def _derive_latency_uncertainty(
+    policy: dict[str, Any],
+    all_anchors: list[Any],
+    selected: _SelectedSurfaceCell,
+) -> tuple[_LatencyUncertainty | None, str | None]:
+    covariance = policy.get("anchor_covariance_ns2")
+    if (
+        selected.primary_latency_ns is None
+        or not isinstance(covariance, list)
+        or len(covariance) != len(all_anchors)
+        or any(
+            not isinstance(row, list) or len(row) != len(all_anchors)
+            for row in covariance
+        )
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_indices = [all_anchors.index(anchor) for anchor in selected.anchors]
+    anchor_variance = 0.0
+    for row_index, row_weight in zip(
+        anchor_indices, selected.weights, strict=True
+    ):
+        for column_index, column_weight in zip(
+            anchor_indices, selected.weights, strict=True
+        ):
+            covariance_value = covariance[row_index][column_index]
+            if not _finite_number(covariance_value):
+                return None, "insufficient_uncertainty_evidence"
+            anchor_variance += row_weight * column_weight * covariance_value
+    interpolation_standard = (
+        0.0
+        if selected.exact_anchor
+        else selected.cell.get("interpolation_standard_uncertainty_ns")
+    )
+    instrumentation_standard = policy.get(
+        "instrumentation_standard_uncertainty_ns"
+    )
+    if (
+        not isfinite(anchor_variance)
+        or anchor_variance < 0
+        or not _finite_number(interpolation_standard)
+        or interpolation_standard < 0
+        or not _finite_number(instrumentation_standard)
+        or instrumentation_standard < 0
+    ):
+        return None, "insufficient_uncertainty_evidence"
+    anchor_standard = anchor_variance**0.5
+    combined_standard = hypot(
+        anchor_standard,
+        float(interpolation_standard),
+        float(instrumentation_standard),
+    )
+    latency_low = selected.primary_latency_ns - combined_standard
+    latency_high = selected.primary_latency_ns + combined_standard
+    if not all(isfinite(item) for item in (latency_low, latency_high)):
+        return None, "invalid_nonfinite_latency_interval"
+    if latency_low <= 0:
+        return None, "invalid_nonpositive_latency_interval"
+    return (
+        _LatencyUncertainty(
+            anchor_standard_ns=anchor_standard,
+            interpolation_standard_ns=float(interpolation_standard),
+            instrumentation_standard_ns=float(instrumentation_standard),
+            combined_standard_ns=combined_standard,
+            latency_low_ns=latency_low,
+            latency_high_ns=latency_high,
+        ),
+        None,
     )
 
 
@@ -6361,12 +7429,10 @@ def _derive_surface_uncertainty(
     )
 
 
-def _derive_work_rate_latency(
+def _declared_work(
     surface: dict[str, Any],
     point: dict[str, float],
-    effective_rate: float,
-    uncertainty: _SurfaceUncertainty,
-) -> tuple[dict[str, Any], dict[str, float]] | None:
+) -> float | None:
     work_formula = surface.get("work_formula")
     if not isinstance(work_formula, dict) or not _nonempty_string(
         work_formula.get("version")
@@ -6376,6 +7442,20 @@ def _derive_work_rate_latency(
         declared_work = 2.0 * point["s"] ** 3
     elif (
         work_formula.get("kind") == "matmul-2mnk"
+        and set(point) == {"m"}
+        and _finite_number(work_formula.get("fixed_n"))
+        and work_formula["fixed_n"] > 0
+        and _finite_number(work_formula.get("fixed_k"))
+        and work_formula["fixed_k"] > 0
+    ):
+        declared_work = (
+            2.0
+            * point["m"]
+            * work_formula["fixed_n"]
+            * work_formula["fixed_k"]
+        )
+    elif (
+        work_formula.get("kind") == "matmul-2mnk"
         and set(point) == {"m", "n"}
         and _finite_number(work_formula.get("fixed_k"))
         and work_formula["fixed_k"] > 0
@@ -6383,7 +7463,17 @@ def _derive_work_rate_latency(
         declared_work = 2.0 * point["m"] * point["n"] * work_formula["fixed_k"]
     else:
         return None
-    if not isfinite(declared_work) or not isfinite(effective_rate):
+    return declared_work if isfinite(declared_work) else None
+
+
+def _derive_work_rate_latency(
+    surface: dict[str, Any],
+    point: dict[str, float],
+    effective_rate: float,
+    uncertainty: _SurfaceUncertainty,
+) -> tuple[dict[str, Any], dict[str, float]] | None:
+    declared_work = _declared_work(surface, point)
+    if declared_work is None or not isfinite(effective_rate):
         return None
     latency = {
         "declared_work": declared_work,
@@ -6395,6 +7485,42 @@ def _derive_work_rate_latency(
         "upper_ns": declared_work / uncertainty.rate_low * 1_000_000_000,
     }
     return latency, latency_interval
+
+
+def _latency_primary_response_model(
+    surface: dict[str, Any], axes: tuple[str, ...]
+) -> dict[str, Any] | None:
+    response = surface.get("response_model")
+    work_formula = surface.get("work_formula")
+    if response is None:
+        return None
+    if (
+        not isinstance(response, dict)
+        or response.get("kind") != "piecewise-linear-latency"
+        or response.get("primary_response") != "latency_ns"
+        or not all(
+            _nonempty_string(response.get(key))
+            for key in (
+                "response_identity",
+                "shape_regime_identity",
+                "version",
+            )
+        )
+        or axes != ("m",)
+        or response.get("fixed_dimensions")
+        != {
+            "n": work_formula.get("fixed_n")
+            if isinstance(work_formula, dict)
+            else None,
+            "k": work_formula.get("fixed_k")
+            if isinstance(work_formula, dict)
+            else None,
+        }
+        or not isinstance(work_formula, dict)
+        or work_formula.get("kind") != "matmul-2mnk"
+    ):
+        return {}
+    return response
 
 
 def _query_capability_surface(
@@ -6422,6 +7548,11 @@ def _query_capability_surface(
             query, surface, "invalid_surface_coordinate_policy"
         )
     axes = tuple(axes_value)
+    latency_response = _latency_primary_response_model(surface, axes)
+    if latency_response == {}:
+        return _unknown_surface_query(
+            query, surface, "invalid_latency_response_model"
+        )
     anchors_value = surface.get("anchors")
     if len(axes) == 2 and (
         not _nonempty_string(surface.get("candidate_family"))
@@ -6538,24 +7669,94 @@ def _query_capability_surface(
         return _unknown_surface_query(
             query, surface, "insufficient_uncertainty_evidence"
         )
-    uncertainty, uncertainty_reason = _derive_surface_uncertainty(
-        policy, anchors_value, selected
-    )
-    if uncertainty is None:
-        return _unknown_surface_query(
-            query,
-            surface,
-            uncertainty_reason or "insufficient_uncertainty_evidence",
+    point_map = {
+        axis: value for axis, value in zip(axes, point, strict=True)
+    }
+    if latency_response is not None:
+        latency_uncertainty, uncertainty_reason = (
+            _derive_latency_uncertainty(policy, anchors_value, selected)
         )
-    latency_derivation = _derive_work_rate_latency(
-        surface,
-        {axis: value for axis, value in zip(axes, point, strict=True)},
-        selected.effective_rate,
-        uncertainty,
-    )
-    if latency_derivation is None:
-        return _unknown_surface_query(query, surface, "invalid_work_formula")
-    latency, latency_interval = latency_derivation
+        if latency_uncertainty is None:
+            return _unknown_surface_query(
+                query,
+                surface,
+                uncertainty_reason or "insufficient_uncertainty_evidence",
+            )
+        declared_work = _declared_work(surface, point_map)
+        if declared_work is None or selected.primary_latency_ns is None:
+            return _unknown_surface_query(
+                query, surface, "invalid_work_formula"
+            )
+        latency = {
+            "declared_work": declared_work,
+            "work_unit": "FLOP",
+            "value_ns": selected.primary_latency_ns,
+        }
+        latency_interval = {
+            "lower_ns": latency_uncertainty.latency_low_ns,
+            "upper_ns": latency_uncertainty.latency_high_ns,
+        }
+        uncertainty_result = {
+            "components": {
+                "anchor_standard_ns": (
+                    latency_uncertainty.anchor_standard_ns
+                ),
+                "interpolation_standard_ns": (
+                    latency_uncertainty.interpolation_standard_ns
+                ),
+                "instrumentation_standard_ns": (
+                    latency_uncertainty.instrumentation_standard_ns
+                ),
+            },
+            "combined_standard_ns": (
+                latency_uncertainty.combined_standard_ns
+            ),
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "latency_interval": latency_interval,
+        }
+    else:
+        uncertainty, uncertainty_reason = _derive_surface_uncertainty(
+            policy, anchors_value, selected
+        )
+        if uncertainty is None:
+            return _unknown_surface_query(
+                query,
+                surface,
+                uncertainty_reason or "insufficient_uncertainty_evidence",
+            )
+        latency_derivation = _derive_work_rate_latency(
+            surface,
+            point_map,
+            selected.effective_rate,
+            uncertainty,
+        )
+        if latency_derivation is None:
+            return _unknown_surface_query(
+                query, surface, "invalid_work_formula"
+            )
+        latency, latency_interval = latency_derivation
+        uncertainty_result = {
+            "components": {
+                "anchor_standard_rate": uncertainty.anchor_standard_rate,
+                "interpolation_standard_rate": (
+                    uncertainty.interpolation_standard_rate
+                ),
+                "instrumentation_standard_rate": (
+                    uncertainty.instrumentation_standard_rate
+                ),
+            },
+            "combined_standard_rate": uncertainty.combined_standard_rate,
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "rate_interval": {
+                "lower": uncertainty.rate_low,
+                "upper": uncertainty.rate_high,
+            },
+            "latency_interval": latency_interval,
+        }
     evidence_refs = [
         *(anchor["evidence_ref"] for anchor in selected.anchors),
         *confirmation_refs,
@@ -6594,6 +7795,11 @@ def _query_capability_surface(
                 "anchor_version": anchor["anchor_version"],
                 "shape": anchor["shape"],
                 "effective_rate": anchor["effective_rate"],
+                **(
+                    {"latency_ns": anchor["latency_ns"]}
+                    if latency_response is not None
+                    else {}
+                ),
                 "evidence_ref": anchor["evidence_ref"],
             }
             for anchor in selected.anchors
@@ -6604,26 +7810,23 @@ def _query_capability_surface(
             "unit": "FLOP/s",
         },
         "work_rate_latency": latency,
-        "uncertainty": {
-            "components": {
-                "anchor_standard_rate": uncertainty.anchor_standard_rate,
-                "interpolation_standard_rate": (
-                    uncertainty.interpolation_standard_rate
-                ),
-                "instrumentation_standard_rate": (
-                    uncertainty.instrumentation_standard_rate
-                ),
-            },
-            "combined_standard_rate": uncertainty.combined_standard_rate,
-            "target_coverage": policy.get("target_coverage"),
-            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
-            "calibration_evidence_refs": list(calibration_refs),
-            "rate_interval": {
-                "lower": uncertainty.rate_low,
-                "upper": uncertainty.rate_high,
-            },
-            "latency_interval": latency_interval,
-        },
+        **(
+            {
+                "response": {
+                    "primary_response": "latency_ns",
+                    "response_identity": latency_response[
+                        "response_identity"
+                    ],
+                    "shape_regime_identity": latency_response[
+                        "shape_regime_identity"
+                    ],
+                    "value_ns": selected.primary_latency_ns,
+                }
+            }
+            if latency_response is not None
+            else {}
+        ),
+        "uncertainty": uncertainty_result,
         "evidence_refs": evidence_refs,
     }
 
@@ -6919,6 +8122,7 @@ def _validated_candidate_envelopes(
             ]
             coordinate = surfaces[0].get("coordinate")
             work_formula = surfaces[0].get("work_formula")
+            response_model = surfaces[0].get("response_model")
             if (
                 len(set(candidate_families)) != len(candidate_families)
                 or any(
@@ -6929,6 +8133,7 @@ def _validated_candidate_envelopes(
                     != envelope.get("domain_policy")
                     or surface.get("coordinate") != coordinate
                     or surface.get("work_formula") != work_formula
+                    or surface.get("response_model") != response_model
                     for surface in surfaces
                 )
             ):
@@ -7011,6 +8216,7 @@ def _validated_surface_lineage(
                         "anchor_lifecycle_policy",
                         "coordinate",
                         "work_formula",
+                        "response_model",
                     )
                 ):
                     continue
@@ -7415,8 +8621,9 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
     root = Path(path).resolve()
     manifest, document = _load_evidence(root)
     digests = _verified_document_digests(document)
+    verified_artifacts = _verified_bundle_artifacts(root, manifest)
     if _complete_required_identity(document):
-        resource = _resource_axis(document)
+        resource = _resource_axis(document, verified_artifacts)
         operator = _operator_axis(document)
         schedule = _schedule_axis(document, operator)
         observation = _observation_axis(document)
@@ -7437,8 +8644,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
             )
         }
     comparisons = _comparisons(axes)
-    diagnostic_trigger = _diagnostic_trigger(document)
-    verified_artifacts = _verified_bundle_artifacts(root, manifest)
+    diagnostic_trigger = _diagnostic_trigger(document, verified_artifacts)
     shape_probes = _shape_disambiguation_probes(
         document,
         diagnostic_trigger,
@@ -7471,6 +8677,7 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
         "candidate_envelopes": candidate_envelopes,
         "capability_surface_queries": surface_queries,
         "adapter_contract": adapter_contract,
+        "source_runs": list(document.get("source_runs", [])),
     }
     if diagnostic_trigger is not None:
         derivation_basis["diagnostic_trigger"] = diagnostic_trigger
@@ -7536,11 +8743,15 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
                 "measurement_capability_manifest",
                 "diagnostic_profiling_lane",
                 "cohort_evidence",
+                "timing_plan",
+                "frontier_anchors",
+                "single_node_schedule",
             )
             if key in document
         },
         "digests": digests,
         "derivation": derivation,
+        "source_runs": list(document.get("source_runs", [])),
     }
     if diagnostic_trigger is not None:
         result["diagnostic_trigger"] = diagnostic_trigger
@@ -7578,6 +8789,16 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             lines.append(
                 f"{label}: unknown ({axis['reason_code']})"
             )
+    for lifecycle in result.get("frontier_anchor_lifecycles", []):
+        state = lifecycle.get("state", {})
+        lines.append(
+            f"Frontier Anchor {lifecycle['anchor_id']}: "
+            f"{state.get('observation_validity', 'unknown')}/"
+            f"{state.get('frontier_role', 'unknown')}; "
+            "authoritative="
+            f"{str(lifecycle.get('authoritative_surface_knot', False)).lower()}; "
+            f"history={lifecycle.get('history_status', 'unknown')}"
+        )
     for query in result.get("capability_surface_queries", []):
         envelope = query.get("envelope")
         if isinstance(envelope, dict):
@@ -7670,6 +8891,15 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                 f"; candidate-family={query['selected_candidate_family']}"
             )
             winner_text = ""
+        response = query.get("response")
+        response_text = (
+            f"primary-response={response['primary_response']}; "
+            f"response={response['value_ns']:.6f} ns; "
+            f"response-identity={response['response_identity']}; "
+            f"shape-regime={response['shape_regime_identity']}; "
+            if isinstance(response, dict)
+            else ""
+        )
         lines.append(
             f"{prefix}: {query['status']}; "
             f"cohort={query['cohort_id']}; "
@@ -7677,6 +8907,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"{candidate_text.lstrip('; ')}"
             f"{winner_text}"
             f"{domain_policy_text}; "
+            f"{response_text}"
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
             f"latency={latency['value_ns']:.6f} ns; "
             f"cell={query['cell_id']}; "
@@ -7712,6 +8943,19 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                     ),
                 ]
             )
+            for item in trigger.get("evaluated", []):
+                basis = item.get("observation_basis")
+                if isinstance(basis, dict):
+                    lines.append(
+                        "trigger observation basis: "
+                        f"{item['stable_path']}; "
+                        + json.dumps(
+                            basis,
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        )
+                    )
         else:
             lines.append(
                 "Diagnostic Trigger: unknown "
@@ -7871,8 +9115,8 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             frontier = surface_action["operator_achievable_frontier_ns"]
             surface_identity = (
                 f"{surface['surface_id']}@{surface['version']}"
-                if _resolved_identity_string(surface.get("surface_id"))
-                and _exact_version_text(surface.get("version"))
+                if _surface_id_text(surface.get("surface_id"))
+                and _surface_version_text(surface.get("version"))
                 else "unknown-surface"
             )
             lines.append(
@@ -7898,6 +9142,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
     qualification = (
         policies.get("qualification") if isinstance(policies, dict) else None
     )
+    best_of_correct = candidate.get("exact_shape_best_of_correct")
     lines.extend(
         [
             "hardware/cohort: "
@@ -7924,10 +9169,31 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
                 if isinstance(qualification, dict)
                 else "unknown"
             ),
+            "candidate search: "
+            + (
+                f"winner={best_of_correct.get('winner_candidate_id', 'unknown')}; "
+                "eligible="
+                + ",".join(best_of_correct.get("eligible_candidate_ids", []))
+                + "; sessions="
+                + ",".join(best_of_correct.get("search_session_ids", []))
+                + f"; evidence={best_of_correct.get('evidence_ref', 'unknown')}"
+                if isinstance(best_of_correct, dict)
+                else "unknown"
+            ),
+            f"raw bundle: run-bundle://{result['run_id']}",
             f"input digest: {result['digests']['input_sha256']}",
             f"evidence digest: {result['digests']['evidence_sha256']}",
         ]
     )
+    for source_run in result.get("source_runs", []):
+        if isinstance(source_run, dict):
+            lines.append(
+                f"source run {source_run.get('run_id', 'unknown')}: "
+                f"{source_run.get('role', 'unknown')}; "
+                f"path={source_run.get('path', 'unknown')}; "
+                "manifest-sha256="
+                f"{source_run.get('manifest_sha256', 'unknown')}"
+            )
     lines.append(
         "Resource Physical Floor distance is optimization headroom; "
         "not prediction error."

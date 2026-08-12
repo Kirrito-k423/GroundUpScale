@@ -1,0 +1,80 @@
+{
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "combined_uncertainty_ns": 874.8525783371635,
+  "evidence_refs": [
+    "artifact://issue-25/ascend-integration-operator-frontier"
+  ],
+  "execution_domain": {
+    "affinity": "192-223",
+    "alignment_bytes": 512,
+    "concurrency": 1,
+    "context": "pytorch-eager",
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "layout": "row-major-contiguous",
+    "numa": "6",
+    "shape": {
+      "k": 512,
+      "m": 512,
+      "n": 512
+    },
+    "stream": "default-npu-stream",
+    "threads": 1
+  },
+  "frontier_role": "ACTIVE",
+  "latency_ns": 15487.000346183777,
+  "observation_validity": "QUALIFIED",
+  "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+  "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+  "surface": {
+    "input_digest": "5f4aa4c09a7a6efe8682e0b8cc89a1fe6139ac94d16b0b9b8958cce799c9f2ac",
+    "surface_id": "surface://issue-25/ascend-910b2/q-proj/1d",
+    "version": "v1"
+  },
+  "uncertainty_basis": {
+    "kind": "verified-capability-surface-query",
+    "latency_interval": {
+      "lower_ns": 14612.147767846613,
+      "upper_ns": 16361.852924520941
+    },
+    "qualification_evidence_ref": "artifact://issue-25/ascend-frontier-qualification",
+    "query": {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "fixed-n512-k512-m-ramp-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "issue25-ascend-qproj-512-exact",
+      "shape": {
+        "m": 512
+      },
+      "surface_id": "surface://issue-25/ascend-910b2/q-proj/1d",
+      "surface_version": "v1"
+    },
+    "source_policy": {
+      "combination": "root-sum-of-squares",
+      "policy_id": "issue25-ascend-surface-uncertainty",
+      "target_coverage": 0.68,
+      "version": "v1"
+    },
+    "surface_uncertainty_ns": 874.8525783371635
+  },
+  "uncertainty_policy": {
+    "combination": "root-sum-of-squares",
+    "policy_id": "issue25-ascend-surface-uncertainty",
+    "target_coverage": 0.68,
+    "version": "v1"
+  }
+}

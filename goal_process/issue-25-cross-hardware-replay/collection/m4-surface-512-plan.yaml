@@ -1,0 +1,16 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: AnalysisPlan
+metadata:
+  name: issue25-m4-surface-512
+  version: 1.0.0
+spec:
+  workload: {path: specs/workloads/prefill.yaml, version: 0.1.0}
+  analysis_case: {path: goal_process/issue-25-cross-hardware-replay/collection/m4-analysis-512.yaml, version: 1.0.0}
+  deployment_intent: {path: specs/deployment-intents/mac-cpu.yaml, version: 0.1.0}
+  hardware:
+    - {path: specs/hardware/apple-m4.yaml, version: 0.1.0}
+  hardware_capability_profiles:
+    - {path: specs/hardware-capabilities/apple-m4-cpu-local.yaml, version: 0.1.0}
+  fabric_graph: {path: specs/fabrics/local-m4.yaml, version: 0.1.0}
+  benchmark_cases:
+    - {path: goal_process/issue-25-cross-hardware-replay/collection/m4-q-proj-only.yaml, version: 1.0.0}

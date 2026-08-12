@@ -1,0 +1,79 @@
+{
+  "checked_at": "2026-08-12T01:16:05Z",
+  "commands": [
+    "ssh root@192.168.9.225 hostname/id/npu health checks",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-01-v7 --output issue32-session-01-v7.json",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-02-v7 --output issue32-session-02-v7.json",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-03-v7 --output issue32-session-03-v7.json",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-01-v10 --output issue32-session-01-v10.json",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-02-v10 --output issue32-session-02-v10.json",
+    "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/envs/lmz_pt27py311/bin/python collect_npu_diagnostic_evidence.py --session-id issue32-session-03-v10 --output issue32-session-03-v10.json",
+    "npu-smi info -t health -i 0 -c 0"
+  ],
+  "endpoint": "192.168.9.225",
+  "failed_commands": [
+    {
+      "command": "ASCEND_RT_VISIBLE_DEVICES=0 /home/miniconda3/bin/python3 collect_npu_diagnostic_evidence.py --session-id issue32-session-01-v4 ...",
+      "reason": "the base Python 3.13 environment loaded torch_npu with an undefined symbol; collection was rerun in the verified lmz_pt27py311 environment"
+    }
+  ],
+  "hostname": "localhost.localdomain",
+  "local_services": {
+    "reason": "ticket requires direct NPU collection only",
+    "status": "skipped"
+  },
+  "machine": "A2-AK-225",
+  "remote_root": "/home/t00906153/groundupscale-issue32-v10",
+  "source_roots": [
+    "/home/t00906153/groundupscale-issue32-v7",
+    "/home/t00906153/groundupscale-issue32-v10"
+  ],
+  "schema": "groundupscale.dev/remote-execution/v1alpha1",
+  "sessions": [
+    {
+      "process_id": 2783368,
+      "session_id": "issue32-session-01-v7",
+      "sha256": "5bc9a3e711fdc80c9832576e9b1268598b4d233d30a159b92d50c934e26c57fd",
+      "started_at": "2026-08-11T08:54:38.124513+00:00"
+    },
+    {
+      "process_id": 2784432,
+      "session_id": "issue32-session-02-v7",
+      "sha256": "3f44abffbd546de4292a6165b786deaac59b59e42772e641142e50b16993f903",
+      "started_at": "2026-08-11T08:54:51.636952+00:00"
+    },
+    {
+      "process_id": 2785721,
+      "session_id": "issue32-session-03-v7",
+      "sha256": "4bcb97798897d60d73cbe1db132c1c107de4fe2470471b4da85e3f1b78b84825",
+      "started_at": "2026-08-11T08:55:05.569502+00:00"
+    },
+    {
+      "process_id": 2477077,
+      "session_id": "issue32-session-01-v10",
+      "sha256": "37f7588af4138f5456ccd34d4a8e925dbf96e1cdb8f36fff5a8b44366e935caf",
+      "started_at": "2026-08-12T01:15:00.187261+00:00"
+    },
+    {
+      "process_id": 2478462,
+      "session_id": "issue32-session-02-v10",
+      "sha256": "264db36b9b0302ac76879f29ee2e36aeadc378a615338ee97c239fa6d642d37c",
+      "started_at": "2026-08-12T01:15:14.011822+00:00"
+    },
+    {
+      "process_id": 2479753,
+      "session_id": "issue32-session-03-v10",
+      "sha256": "0f5b3cdf2e6e3588ca2906fffed1c35b39423f9f3edadc0c9ca181e29fe30d23",
+      "started_at": "2026-08-12T01:15:28.784597+00:00"
+    }
+  ],
+  "ssh_success": true,
+  "user": "root",
+  "warnings": [
+    "torch_npu profiler reset export_type to text",
+    "profiler reported stop-during-RECORD; this ticket uses the event-timed instrumentation overhead only and makes no exported operator-timeline claim",
+    "the Q operator baseline keeps batch-one input/output views outside the timed 2-D torch.matmul kernel to preserve the qualified #31 Frontier execution contract",
+    "the v10 semantic sessions provide independently timed K and V baseline variants with distinct input identities plus a V diagnostic negative control; they are not used to replace the qualified Q operator replay",
+    "final NPU health check at 2026-08-12T01:16:00Z returned Health Status OK"
+  ]
+}

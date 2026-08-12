@@ -682,6 +682,158 @@ def test_2d_retained_simplex_interpolates_and_rejects_false_bounding_box(
     assert false_box["weights"] == []
 
 
+def test_latency_primary_matmul_surface_varies_only_m_and_derives_rate(
+    tmp_path: Path,
+) -> None:
+    surface = _surface_version("v1", previous_version=None)
+    surface["coordinate"] = {
+        "axis": "m",
+        "transform": "identity",
+        "transform_version": "v1",
+    }
+    surface["work_formula"] = {
+        "kind": "matmul-2mnk",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "version": "v2",
+        "work_unit": "FLOP",
+    }
+    surface["response_model"] = {
+        "kind": "piecewise-linear-latency",
+        "primary_response": "latency_ns",
+        "response_identity": "m4-q-proj-duration-v1",
+        "shape_regime_identity": "m4-q-proj-ramp-v1",
+        "fixed_dimensions": {"n": 512, "k": 512},
+        "version": "v1",
+    }
+    for anchor, m, latency, uncertainty in zip(
+        surface["anchors"],
+        (256, 512),
+        (80_000.0, 154_000.0),
+        (100.0, 200.0),
+        strict=True,
+    ):
+        anchor["shape"] = {"m": m}
+        anchor["latency_ns"] = latency
+        anchor["standard_uncertainty_ns"] = uncertainty
+        anchor["effective_rate"] = 2.0 * m * 512 * 512 / latency * 1e9
+    cell = surface["cells"][0]
+    cell["interpolation_standard_uncertainty_ns"] = 300.0
+    cell.pop("interpolation_standard_uncertainty_rate")
+    policy = surface["uncertainty_policy"]
+    policy["anchor_covariance_ns2"] = [[10_000.0, 0.0], [0.0, 40_000.0]]
+    policy["instrumentation_standard_uncertainty_ns"] = 50.0
+    policy.pop("anchor_covariance")
+    policy.pop("instrumentation_standard_uncertainty_rate")
+    _refresh_surface_digest(surface)
+
+    query = _queries_by_id(
+        diagnose_run_bundle(
+            _write_surface_bundle(
+                tmp_path,
+                surfaces=[surface],
+                queries=[
+                    {
+                        "query_id": "q-m384-fixed-nk",
+                        "surface_id": surface["surface_id"],
+                        "surface_version": "v1",
+                        "shape": {"m": 384},
+                        "domain": surface["domain"],
+                    }
+                ],
+            )
+        )
+    )["q-m384-fixed-nk"]
+
+    assert query["status"] == "interpolated"
+    assert query["response"] == {
+        "primary_response": "latency_ns",
+        "response_identity": "m4-q-proj-duration-v1",
+        "shape_regime_identity": "m4-q-proj-ramp-v1",
+        "value_ns": 117_000.0,
+    }
+    assert query["work_rate_latency"]["value_ns"] == 117_000.0
+    assert query["effective_rate"]["value"] == pytest.approx(
+        2.0 * 384 * 512 * 512 / 117_000.0 * 1e9
+    )
+    assert set(query["uncertainty"]["components"]) == {
+        "anchor_standard_ns",
+        "interpolation_standard_ns",
+        "instrumentation_standard_ns",
+    }
+
+
+@pytest.mark.parametrize(
+    ("mutation", "reason_code"),
+    [
+        (
+            lambda surface: surface["coordinate"].update({"axis": "s"}),
+            "invalid_latency_response_model",
+        ),
+        (
+            lambda surface: surface["response_model"].update(
+                {"fixed_dimensions": {"n": 256, "k": 512}}
+            ),
+            "invalid_latency_response_model",
+        ),
+    ],
+)
+def test_latency_primary_matmul_surface_rejects_non_m_sweep_or_fixed_nk_drift(
+    tmp_path: Path,
+    mutation,
+    reason_code: str,
+) -> None:
+    surface = _surface_version("v1", previous_version=None)
+    surface["coordinate"] = {
+        "axis": "m",
+        "transform": "identity",
+        "transform_version": "v1",
+    }
+    surface["work_formula"] = {
+        "kind": "matmul-2mnk",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "version": "v2",
+        "work_unit": "FLOP",
+    }
+    surface["response_model"] = {
+        "kind": "piecewise-linear-latency",
+        "primary_response": "latency_ns",
+        "response_identity": "m4-q-proj-duration-v1",
+        "shape_regime_identity": "m4-q-proj-ramp-v1",
+        "fixed_dimensions": {"n": 512, "k": 512},
+        "version": "v1",
+    }
+    for anchor, m, latency in zip(
+        surface["anchors"], (256, 512), (80_000.0, 154_000.0), strict=True
+    ):
+        anchor["shape"] = {"m": m}
+        anchor["latency_ns"] = latency
+    mutation(surface)
+    _refresh_surface_digest(surface)
+
+    query = _queries_by_id(
+        diagnose_run_bundle(
+            _write_surface_bundle(
+                tmp_path,
+                surfaces=[surface],
+                queries=[
+                    {
+                        "query_id": "q-invalid-latency-model",
+                        "surface_id": surface["surface_id"],
+                        "surface_version": "v1",
+                        "shape": {surface["coordinate"]["axis"]: 384},
+                        "domain": surface["domain"],
+                    }
+                ],
+            )
+        )
+    )["q-invalid-latency-model"]
+
+    assert query["status"] == "unknown"
+    assert query["reason_code"] == reason_code
+
+
 def test_2d_property_exact_knots_and_outside_points_never_guess(
     tmp_path: Path,
 ) -> None:

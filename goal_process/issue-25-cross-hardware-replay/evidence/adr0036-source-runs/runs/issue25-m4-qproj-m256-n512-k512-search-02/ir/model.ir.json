@@ -1,0 +1,5212 @@
+{
+  "compilation_fingerprint": "c5373e7898ac9fe012839db550b2099a40430686e7bcb440bb8e3f2ff400702b",
+  "constraints": [
+    "H == NH * D"
+  ],
+  "name": "two-layer-transformer",
+  "provenance": [
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:353f8b876caabee30a02b9afc6f0bccebae627f4d13b88fdc733dd5ba47c4952",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/input_norm",
+      "target_node_ids": [
+        "modelir:b05515341900779a747565d2e9523297856bdf60c89a984d7bcd3fe446e23bff"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:0f635f47f0263377abc652b7cce3179ca6a9e92aad74e832796d76b085e7289e",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+      "target_node_ids": [
+        "modelir:c37a1eacafcafcbbc0cc057d6b581d9e068ef0d1d036ffc28afdda60f8d8e293"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:83f51908ba446db0f4387b2b7c9a7006c1077ba94fcb7c10b8e08d3d2a39ead8",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_proj",
+      "target_node_ids": [
+        "modelir:2bd34eec55e6b71cdb2a7b933a62b167b459b740406f9baa9750505f5549ca37"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:8dff53a87e73da28701ff968b13ae44a08be5f0127b7aa8f1e48d548f4f1c29e",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_proj",
+      "target_node_ids": [
+        "modelir:96b6c5badffa05201f0190d8fb6b1374d60fc626e4ec2d2b4f18f74a3e2fb689"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:0068953137e0842eb801c11902850308ce51590c8b71dd7a9bbf3e2cb08c5900",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_view",
+      "target_node_ids": [
+        "modelir:26f889fa6cfc95b508e22a2d5102464cccae9509c5d4cca70b195dc2ef37da9b"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:50a0ed96efa7dd9b04b9a08b44cf54e6de47736bfc2a4cb23cbe790477971283",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_transpose",
+      "target_node_ids": [
+        "modelir:7dfe47d0e1e9cfc98732d14c08df7331956a2795f5e2ff2bfe7dd1b53ee6de96"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:3c039a065c6286b19859b0402873013a9fa76fb795bc3ee05d82c7b34a810050",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_view",
+      "target_node_ids": [
+        "modelir:2db260f69d5ed13cc49fa8f5dd9a4b06a06965c4268efae551a0e71fc50eaebf"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:275648b01d2dd5c83b4d9c1d242b7253c8f9cc044bb0bc92bf00bfff40798ad3",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_transpose",
+      "target_node_ids": [
+        "modelir:5cd52cfce86649060ff0927d581985e109a6e17847732d911310be5824201ac4"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:abf2b2ec139c1cdbb08e805047dca96163a6fdbd6048aa34f89b7a9469f92dd7",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_key_transpose",
+      "target_node_ids": [
+        "modelir:90acc97fb7457aad2087e34ee4e2618a7fdcf84e731420b0fa788808e49bebd2"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:67de65a8bd577bbdbd20e4489579f2df06c8bc3a929f8c8f5775401f5e3a2ef6",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/qk_matmul",
+      "target_node_ids": [
+        "modelir:219dfbd12d7ec9af7d3ebf4d7c225cb6a29286ca6000c89ee412d31cef29c310"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:a4e76b63f79220398500a71859b4a3442b67de004b88aabd10c9ed420997fe83",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/scale",
+      "target_node_ids": [
+        "modelir:a5c3325d56815569c0184a240c05b0a6353591457fad4344084987bd6d4b8660"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:33e7757a0da5b80a5e5a8002f3e1fb367a5c938a025bc319c506f02d4fcec305",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/causal_mask",
+      "target_node_ids": [
+        "modelir:02ed8dcf6bbcd2cb05dea0ed347006f0be729a392ec4d464e640bddd5d4740b0"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:9aec4e82eb8e7804bc264c0f96355d62ffd00b1cb09e8b3ab06486bf8065a942",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/softmax",
+      "target_node_ids": [
+        "modelir:59b10c763c640325ad74743d6904a14f865205614414d7e7da949ba60aab9011"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:0b06608cea184db40eaddbbec9cb4cf69c28d569500f546f44cf4d43a3cd1a3f",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_view",
+      "target_node_ids": [
+        "modelir:e346a6892d941a6cf86575d966b3094c9be102afdeb038d72a4ffd0dcdf5f070"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:ac504253d6932fd1102135cb1b4d7fd8f96db9a28d157c8c8f86a699549b3ba1",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_transpose",
+      "target_node_ids": [
+        "modelir:12ae84d1f11ac805b20a1df19915bb37c912c10d0a9cafcce5511d39072f9aeb"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:b9370f5b3dba015f15cd7d44ebb8b4119d4688d227932b97b23bfd24ee509115",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/context_matmul",
+      "target_node_ids": [
+        "modelir:e3afdd8fc48e7e40d3bf57aaa8c5a8aadcf9b1378cf865687d4f8054a1f863af"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:23755f53ffd0b966313e96b7d86cb29c106ddb3e3bda19a8592d5ddad87904a0",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/context_view",
+      "target_node_ids": [
+        "modelir:7ae827431b0c639daaaa094365c61648d0ce29e56591b53e07fdb196eb25b403"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:d7291f96d494bb301284594cd327c49919049abb9778dad6d7f444b8b0385731",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention/out_proj",
+      "target_node_ids": [
+        "modelir:0a294da50f90fce6b2f424549631b2026fea7308dfc194571cc1d6a874737d18"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:fc55e813597ab948485f1ce266a70378c85d034ebe6bb9497b71be16e739cd0a",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/attention",
+      "target_node_ids": [
+        "modelir:a9bc5a7e00f58682315b7f69b745af2e859cca9500e7c2d08fa68d249a3da97b"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:c89749756701b00569e0bbd7b5c18efab422afc0de13fc318e7f38570b6028fb",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/residual_1",
+      "target_node_ids": [
+        "modelir:d482d30a738a486b516ef698bd49e15b94e85fd825e6a2b2b646a52ec17b62d8"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:a6d033a536514945a76cd2139318da4affbe3aa6bfe453518e61a981471eb770",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/post_norm",
+      "target_node_ids": [
+        "modelir:282aab5823edd3904f4278691a995346af73ac470b90aa9b9faf609968c9f018"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:d657abe5414e7a9b98fa7fe593c2df4d3c0ed3240a9e927bca82f34c7f997491",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_proj",
+      "target_node_ids": [
+        "modelir:1cd1fbc9641a7e9f6af6b7f4c3b8eea52dcf0bbbdad8d83f20dced5dbae62e70"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:3dbfd4ca75b7a3792c80f1a21aab8b0aadb4c1724e85464ea6ed1afcfe966ad5",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/up_proj",
+      "target_node_ids": [
+        "modelir:36f2ff17b5196a638d3771bbbe33c6c21750558825b276ab7fd4d634c8a6052f"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:9610887be89028b739be770c1bd1e7d96efd2044553400472e8659e25a99e108",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/silu",
+      "target_node_ids": [
+        "modelir:77bf11a7a5864a5e533a2035bbc7d10fed57c264296e1549af0e62bba06b08d2"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:4fc3cc7c29d1f54667bef7d3900977ea541c4f83a52cf566506f754c7f180d3c",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_mul",
+      "target_node_ids": [
+        "modelir:3d110edda0325cd794d34fb391d8bc8c154fd69e6fc44ca91baea8f5969bce6f"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:d2b8ec6782ac62ca40837254ec65a437ad980336ed8cc5c3d2270ed9b4c5635c",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/down_proj",
+      "target_node_ids": [
+        "modelir:cc3e9a90570bf8172b28955a51130243b0057c71639b794481435d5eb6990059"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:a4c3d9d4870b4c7579133c5116d0a38df96809505a119147a9801e429c38d18a",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/mlp",
+      "target_node_ids": [
+        "modelir:60672a68033619dffa826be866ef07d860bbe944bd9a3c210b99c9261047837e"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:91edade24354836babbb38e7d4acfd2934da69d744c066872d5c4a1593d2d146",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0/residual_2",
+      "target_node_ids": [
+        "modelir:6c94b0732a480ac35dd4866d14ad7d112d780da5ffa3a16943c9e2267d2b8edc"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:218e6b97dd51565917cd35e86856d03de8345d22f4abeedb598ac89dc278ee6b",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:expand-repeat",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_0",
+      "target_node_ids": [
+        "modelir:23cc7b29301b6b650ff4a06ada8ab404f33cc2ad0048d345a4e11e4ab7358043"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:abd6807222f9a69a3dfe6559e1f1596ccd16dba449ad3fc96bf96faa8202b6c7",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/input_norm",
+      "target_node_ids": [
+        "modelir:4d4fa1c9ddb87fe4d8d74f5271a2d97687d5979f3d54c5a15aa2892c859b748b"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:431b1932b8dff9a32c0afb338f915110b80bf8d20dfebdc002922f2ff1c654c1",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_proj",
+      "target_node_ids": [
+        "modelir:9d0174a99f1b5360175f0ccb618600949c3a9ffce4c14be03a9fa9f257de342a"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:1a37df758eeda087f7efaef969f7c07d9f6ba2e2d0c25254d3ed98813428c3c7",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_proj",
+      "target_node_ids": [
+        "modelir:10f9b77bad45819abcf562709b17d0e533f5c2bef18a751eba9e9253a64b00ec"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:3b3c451ebfae882815ec4e5fbdd3e66c9cf049dea57b22877ea7429464584334",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_proj",
+      "target_node_ids": [
+        "modelir:7662ada0cd4f783d4c42fbc479b09dfb004b79be492a0129fc0268dbedd5764c"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:5ffd45b758dd942660c13a157c058c747ba3e9e03fa2ea8b74d6e68a9e664ac6",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_view",
+      "target_node_ids": [
+        "modelir:364df81bbea0c0c0f709009ef35466435e9fe339d5819348e0f247eb08faa6db"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:e36ea34d724631bf22bd9c3045a3e5d1c5a8a12be00f0296b0ce82ead616631f",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_transpose",
+      "target_node_ids": [
+        "modelir:e61dd1ae2b9a7a781bde6ee47a9451b543c05f436cf98bfc20f309d8a43629dd"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:4143c048e262429cd4b3679483ccba037b2fda2ef2a0196907b01f0316d40d33",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_view",
+      "target_node_ids": [
+        "modelir:6e99d0c6f621fcd0e2130ede13605bc73f8724ab72537e8a82d28fd2762fdeb9"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:164ac5349da46dfe4349774c98a952f33b97123c864bd09c03c809731e2e0051",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_transpose",
+      "target_node_ids": [
+        "modelir:87a17af24a3fb89717aa3005408c2633e3d125d8566da01a741f9437e23d67da"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:a77617d93bd54768fba6643b4f51d57de6125d29d1ce4b50ae2b5298783144f4",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_key_transpose",
+      "target_node_ids": [
+        "modelir:e1592dc4cb3fabdb5eb7088c312d12a4793e8b4717a85d4417465363afd7bf85"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:4fecfaa91ff2071dab75e05c6792fd7c74c3d5a9cd54319180360943087638d9",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/qk_matmul",
+      "target_node_ids": [
+        "modelir:adf0734431577f92e043571b4a364f72dca5ab88683880873ca8b9fade67f534"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:1fc3f265f1016449c10f6770a00c143051768dc47d245e1b32e37fea8e5ccd40",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/scale",
+      "target_node_ids": [
+        "modelir:9fa36833731cef1659bf9ab36aa9fecbe0298d93c5dcfc15a3d07bf31d862896"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:c6b2f34ecc2faaf1a1a305300fccf1bbc2d897ac7aaa1eb85dbcdb1b616fbae4",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/causal_mask",
+      "target_node_ids": [
+        "modelir:cadd2a070b393cef809170157c8eb5151a8f51773cf6de42dd0ae58f31608e5c"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:2f5b7a4e6cd2436d06d2b432ad88d1f74cbeb88fff4f6cd87a73ffd3daa3257e",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/softmax",
+      "target_node_ids": [
+        "modelir:12c88b27163304e911679de829df94eb41058f583c5628fc5376e8414f3ad1cf"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:235636e560ea8ab35c9cbc6a57cd697420b9c62c0af67c5cc4c60d865f4821b2",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_view",
+      "target_node_ids": [
+        "modelir:ea9cfcbdf461359006a3585ba22a3d690edd082cb7dd5dd7db23b09aa436d6b1"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:84f835e64873531f9b8995c9f7fb6833a59449bc335cf0452b2df660e5985181",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_transpose",
+      "target_node_ids": [
+        "modelir:3674fed96e2f80d23bfc2602831f69f0435209191680650f1350d046bca23636"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:99c40e21c924a86f879f3db7c716ffd3ff26474aee213f8684063d229282b732",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/context_matmul",
+      "target_node_ids": [
+        "modelir:6ab682abc6fb48be2ab66303c1c706ec710f241f39030aced32e4e7c8150a0ff"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:88ee87f9c606c48b60b5760271f88b5f11f4e1a831f43794fd22a39db5f55b92",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/context_view",
+      "target_node_ids": [
+        "modelir:ee41986e48e6e78148b2bc31e999a788f8f61743f3d449afc059a6df8e77a8f3"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:bf2d163ed7c385c555fcb5b1074d1f4a1cfb282dcce4ec15ab338faa33fc53ef",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention/out_proj",
+      "target_node_ids": [
+        "modelir:e7cba573ac146259c4edfa9642d90d1f43b698a970574c5999cd0221205a084d"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:ea6cae62cdd4620b4132d1bb6d68db1358a7fb3d201ba88632d75594973b276b",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/attention",
+      "target_node_ids": [
+        "modelir:de3b1c61380fb2a42e76e9ed955749ba69fa50db8daf3117fa8b7dac9762c52c"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:cdb36302a216669a78931fbeb38e3eb0cc2abe5aa85a7e9d2a125617e09712d2",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/residual_1",
+      "target_node_ids": [
+        "modelir:28909590b47f3148388790edd17c0e6e8b205125d89c5f101a2c1b7bbe5a9058"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:e7fb41398d09423f9a9d459b2e68da0aac3ff882156846cefdc15484d0ef0398",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/post_norm",
+      "target_node_ids": [
+        "modelir:8419a999100fbf4369d67102b7fb914bfc3529f0d89be1b394ffc83568b5008e"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:69ce10406cbd5b958dd58ccb4aee07c44cf81d77c613d226f7421569af043f7b",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_proj",
+      "target_node_ids": [
+        "modelir:ee35282ae613513d1825e782116530f000f183501c81003422c500749708dae3"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:4f03a82e2f128990087bd8884ad3840fe342957d9889ddc92a89bfa62734ab0b",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/up_proj",
+      "target_node_ids": [
+        "modelir:4c5092b177559117bc6b9a186709c36b8ac71a180e2a10b4866cac29672f3728"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:aea69504392cc5e74817c91a131faea3f30a3a360fa790d756cc36c8a9d74965",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/silu",
+      "target_node_ids": [
+        "modelir:01cd2568e2c156e2b75ce7cc84357e61b92ca2ff3963bc49f58134b171d1ab22"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:94fe9d281c3ef1fac8242f2917b16cc1f922362b4225b8c05317cc88cbc0df08",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_mul",
+      "target_node_ids": [
+        "modelir:e4027a7d65778953f45f9916e81e49e7c7caf92bbfb86e7f99da6c4a95c062f2"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:1858a27a36ad181df1050b14e8f795587eb09b21f761c63f6be78589a2e00e90",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/down_proj",
+      "target_node_ids": [
+        "modelir:4eca8542c91d6e26fa96657e05bc93b7b4ad69080686408d5e168c979376d12e"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:8144e0d94ae6dba680fb5a91ce57939210acd670c41cb2abab97217be0c92e18",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/mlp",
+      "target_node_ids": [
+        "modelir:b2f53ff58bf430c3700e86cfb18d3d6a3c8a22cc2c7805469096cd3c245239e1"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:82ad9ebb3f29812b0f16aebe2fb307beb36aa422a33aca1bfb2069a25c51ad62",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1/residual_2",
+      "target_node_ids": [
+        "modelir:b847c1bec7c766ffefe2614291b37fda1683e8db4122ba63efc48e0ff527a42e"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:59a7da42f75e28949d991fb18a82b1f46b1313fa358d3c9c5486488a71f100af",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:expand-repeat",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer/layer_1",
+      "target_node_ids": [
+        "modelir:684dc130af3ef0654bb40f26c491386198449ced6eb40691080274e2d8ab5096"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:ac0ac5f5a2d890dadc543b2b81bfcd8eb13c06ca24d0dfbb83b8a3ab32d6c887",
+      "phase": "model-build",
+      "rule": "core.model-builder/v1alpha1:instantiate-module",
+      "source_path": "ModelSpec/two-layer-transformer@0.1.0",
+      "source_stable_path": "model/two-layer-transformer/transformer",
+      "target_node_ids": [
+        "modelir:7b7e0d46210437aadc4fa13c42efa5b08c9169b43d49b655b28aa7323a37f533"
+      ],
+      "warnings": []
+    }
+  ],
+  "root": {
+    "attributes": [],
+    "children": [
+      {
+        "attributes": [],
+        "children": [
+          {
+            "attributes": [
+              [
+                "epsilon",
+                1e-06
+              ]
+            ],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/input_norm",
+            "derivation_ids": [
+              "derivation:353f8b876caabee30a02b9afc6f0bccebae627f4d13b88fdc733dd5ba47c4952"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "x",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "input_norm",
+            "module_kind": "primitive",
+            "node_id": "modelir:b05515341900779a747565d2e9523297856bdf60c89a984d7bcd3fe446e23bff",
+            "operation": "RMSNorm",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/input_norm",
+            "state": [
+              {
+                "name": "weight",
+                "role": "parameter",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "H"
+                  ]
+                },
+                "trainable": true
+              }
+            ]
+          },
+          {
+            "attributes": [],
+            "children": [
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_proj",
+                "derivation_ids": [
+                  "derivation:0f635f47f0263377abc652b7cce3179ca6a9e92aad74e832796d76b085e7289e"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:c37a1eacafcafcbbc0cc057d6b581d9e068ef0d1d036ffc28afdda60f8d8e293",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_proj",
+                "derivation_ids": [
+                  "derivation:83f51908ba446db0f4387b2b7c9a7006c1077ba94fcb7c10b8e08d3d2a39ead8"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:2bd34eec55e6b71cdb2a7b933a62b167b459b740406f9baa9750505f5549ca37",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_proj",
+                "derivation_ids": [
+                  "derivation:8dff53a87e73da28701ff968b13ae44a08be5f0127b7aa8f1e48d548f4f1c29e"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:96b6c5badffa05201f0190d8fb6b1374d60fc626e4ec2d2b4f18f74a3e2fb689",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_view",
+                "derivation_ids": [
+                  "derivation:0068953137e0842eb801c11902850308ce51590c8b71dd7a9bbf3e2cb08c5900"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:26f889fa6cfc95b508e22a2d5102464cccae9509c5d4cca70b195dc2ef37da9b",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_transpose",
+                "derivation_ids": [
+                  "derivation:50a0ed96efa7dd9b04b9a08b44cf54e6de47736bfc2a4cb23cbe790477971283"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:7dfe47d0e1e9cfc98732d14c08df7331956a2795f5e2ff2bfe7dd1b53ee6de96",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/q_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_view",
+                "derivation_ids": [
+                  "derivation:3c039a065c6286b19859b0402873013a9fa76fb795bc3ee05d82c7b34a810050"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:2db260f69d5ed13cc49fa8f5dd9a4b06a06965c4268efae551a0e71fc50eaebf",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_transpose",
+                "derivation_ids": [
+                  "derivation:275648b01d2dd5c83b4d9c1d242b7253c8f9cc044bb0bc92bf00bfff40798ad3"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:5cd52cfce86649060ff0927d581985e109a6e17847732d911310be5824201ac4",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,1,3,2"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_key_transpose",
+                "derivation_ids": [
+                  "derivation:abf2b2ec139c1cdbb08e805047dca96163a6fdbd6048aa34f89b7a9469f92dd7"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_key_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:90acc97fb7457aad2087e34ee4e2618a7fdcf84e731420b0fa788808e49bebd2",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "D",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/k_key_transpose",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/qk_matmul",
+                "derivation_ids": [
+                  "derivation:67de65a8bd577bbdbd20e4489579f2df06c8bc3a929f8c8f5775401f5e3a2ef6"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "D",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "qk_matmul",
+                "module_kind": "primitive",
+                "node_id": "modelir:219dfbd12d7ec9af7d3ebf4d7c225cb6a29286ca6000c89ee412d31cef29c310",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/qk_matmul",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "scalar",
+                    0.125
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/scale",
+                "derivation_ids": [
+                  "derivation:a4e76b63f79220398500a71859b4a3442b67de004b88aabd10c9ed420997fe83"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "scale",
+                "module_kind": "primitive",
+                "node_id": "modelir:a5c3325d56815569c0184a240c05b0a6353591457fad4344084987bd6d4b8660",
+                "operation": "Mul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/scale",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/causal_mask",
+                "derivation_ids": [
+                  "derivation:33e7757a0da5b80a5e5a8002f3e1fb367a5c938a025bc319c506f02d4fcec305"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "scores",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "causal_mask",
+                "module_kind": "primitive",
+                "node_id": "modelir:02ed8dcf6bbcd2cb05dea0ed347006f0be729a392ec4d464e640bddd5d4740b0",
+                "operation": "Add",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/causal_mask",
+                "state": [
+                  {
+                    "name": "mask",
+                    "role": "buffer",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "broadcast",
+                      "shape": [
+                        "B",
+                        1,
+                        "S",
+                        "S"
+                      ]
+                    },
+                    "trainable": false
+                  }
+                ]
+              },
+              {
+                "attributes": [
+                  [
+                    "dimension",
+                    -1
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/softmax",
+                "derivation_ids": [
+                  "derivation:9aec4e82eb8e7804bc264c0f96355d62ffd00b1cb09e8b3ab06486bf8065a942"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "softmax",
+                "module_kind": "primitive",
+                "node_id": "modelir:59b10c763c640325ad74743d6904a14f865205614414d7e7da949ba60aab9011",
+                "operation": "Softmax",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/softmax",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_view",
+                "derivation_ids": [
+                  "derivation:0b06608cea184db40eaddbbec9cb4cf69c28d569500f546f44cf4d43a3cd1a3f"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:e346a6892d941a6cf86575d966b3094c9be102afdeb038d72a4ffd0dcdf5f070",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_transpose",
+                "derivation_ids": [
+                  "derivation:ac504253d6932fd1102135cb1b4d7fd8f96db9a28d157c8c8f86a699549b3ba1"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:12ae84d1f11ac805b20a1df19915bb37c912c10d0a9cafcce5511d39072f9aeb",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/v_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "equation",
+                    "bhqk,bhkd->bqhd"
+                  ],
+                  [
+                    "output_layout",
+                    "sequence_major_contiguous"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_matmul",
+                "derivation_ids": [
+                  "derivation:b9370f5b3dba015f15cd7d44ebb8b4119d4688d227932b97b23bfd24ee509115"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "context_matmul",
+                "module_kind": "primitive",
+                "node_id": "modelir:e3afdd8fc48e7e40d3bf57aaa8c5a8aadcf9b1378cf865687d4f8054a1f863af",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/context_matmul",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,H"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_view",
+                "derivation_ids": [
+                  "derivation:23755f53ffd0b966313e96b7d86cb29c106ddb3e3bda19a8592d5ddad87904a0"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "context_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:7ae827431b0c639daaaa094365c61648d0ce29e56591b53e07fdb196eb25b403",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/context_view",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/out_proj",
+                "derivation_ids": [
+                  "derivation:d7291f96d494bb301284594cd327c49919049abb9778dad6d7f444b8b0385731"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "out_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:0a294da50f90fce6b2f424549631b2026fea7308dfc194571cc1d6a874737d18",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/attention/out_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              }
+            ],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention",
+            "derivation_ids": [
+              "derivation:fc55e813597ab948485f1ce266a70378c85d034ebe6bb9497b71be16e739cd0a"
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "forward",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "q_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "q"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "k_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "k"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "v_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "v"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "q"
+                      ]
+                    ],
+                    "local_id": "q_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "q_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "q_view"
+                      ]
+                    ],
+                    "local_id": "q_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "q_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k"
+                      ]
+                    ],
+                    "local_id": "k_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k_view"
+                      ]
+                    ],
+                    "local_id": "k_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k_heads"
+                      ]
+                    ],
+                    "local_id": "k_key_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_keys"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_key_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "q_heads"
+                      ],
+                      [
+                        "right",
+                        "k_keys"
+                      ]
+                    ],
+                    "local_id": "qk_matmul",
+                    "outputs": [
+                      [
+                        "output",
+                        "scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "qk_matmul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "scores"
+                      ]
+                    ],
+                    "local_id": "scale",
+                    "outputs": [
+                      [
+                        "output",
+                        "scaled_scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "scale"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "scores",
+                        "scaled_scores"
+                      ]
+                    ],
+                    "local_id": "causal_mask",
+                    "outputs": [
+                      [
+                        "output",
+                        "masked_scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "causal_mask"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "masked_scores"
+                      ]
+                    ],
+                    "local_id": "softmax",
+                    "outputs": [
+                      [
+                        "output",
+                        "probabilities"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "softmax"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "v"
+                      ]
+                    ],
+                    "local_id": "v_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "v_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "v_view"
+                      ]
+                    ],
+                    "local_id": "v_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "v_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "probabilities"
+                      ],
+                      [
+                        "right",
+                        "v_heads"
+                      ]
+                    ],
+                    "local_id": "context_matmul",
+                    "outputs": [
+                      [
+                        "output",
+                        "context_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "context_matmul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "context_heads"
+                      ]
+                    ],
+                    "local_id": "context_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "context"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "context_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "context"
+                      ]
+                    ],
+                    "local_id": "out_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "hidden"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "out_proj"
+                  }
+                ]
+              }
+            ],
+            "inputs": [],
+            "local_id": "attention",
+            "module_kind": "composite",
+            "node_id": "modelir:a9bc5a7e00f58682315b7f69b745af2e859cca9500e7c2d08fa68d249a3da97b",
+            "operation": null,
+            "outputs": [],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/attention",
+            "state": []
+          },
+          {
+            "attributes": [],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_1",
+            "derivation_ids": [
+              "derivation:c89749756701b00569e0bbd7b5c18efab422afc0de13fc318e7f38570b6028fb"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "left",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              },
+              {
+                "name": "right",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "residual_1",
+            "module_kind": "primitive",
+            "node_id": "modelir:d482d30a738a486b516ef698bd49e15b94e85fd825e6a2b2b646a52ec17b62d8",
+            "operation": "Add",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/residual_1",
+            "state": []
+          },
+          {
+            "attributes": [
+              [
+                "epsilon",
+                1e-06
+              ]
+            ],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/post_norm",
+            "derivation_ids": [
+              "derivation:a6d033a536514945a76cd2139318da4affbe3aa6bfe453518e61a981471eb770"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "x",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "post_norm",
+            "module_kind": "primitive",
+            "node_id": "modelir:282aab5823edd3904f4278691a995346af73ac470b90aa9b9faf609968c9f018",
+            "operation": "RMSNorm",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/post_norm",
+            "state": [
+              {
+                "name": "weight",
+                "role": "parameter",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "H"
+                  ]
+                },
+                "trainable": true
+              }
+            ]
+          },
+          {
+            "attributes": [],
+            "children": [
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_proj",
+                "derivation_ids": [
+                  "derivation:d657abe5414e7a9b98fa7fe593c2df4d3c0ed3240a9e927bca82f34c7f997491"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "gate_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:1cd1fbc9641a7e9f6af6b7f4c3b8eea52dcf0bbbdad8d83f20dced5dbae62e70",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "I"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/up_proj",
+                "derivation_ids": [
+                  "derivation:3dbfd4ca75b7a3792c80f1a21aab8b0aadb4c1724e85464ea6ed1afcfe966ad5"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "up_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:36f2ff17b5196a638d3771bbbe33c6c21750558825b276ab7fd4d634c8a6052f",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/up_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "I"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/silu",
+                "derivation_ids": [
+                  "derivation:9610887be89028b739be770c1bd1e7d96efd2044553400472e8659e25a99e108"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "silu",
+                "module_kind": "primitive",
+                "node_id": "modelir:77bf11a7a5864a5e533a2035bbc7d10fed57c264296e1549af0e62bba06b08d2",
+                "operation": "SiLU",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/silu",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_mul",
+                "derivation_ids": [
+                  "derivation:4fc3cc7c29d1f54667bef7d3900977ea541c4f83a52cf566506f754c7f180d3c"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "gate_mul",
+                "module_kind": "primitive",
+                "node_id": "modelir:3d110edda0325cd794d34fb391d8bc8c154fd69e6fc44ca91baea8f5969bce6f",
+                "operation": "Mul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_mul",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/down_proj",
+                "derivation_ids": [
+                  "derivation:d2b8ec6782ac62ca40837254ec65a437ad980336ed8cc5c3d2270ed9b4c5635c"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "down_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:cc3e9a90570bf8172b28955a51130243b0057c71639b794481435d5eb6990059",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp/down_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "I",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              }
+            ],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp",
+            "derivation_ids": [
+              "derivation:a4c3d9d4870b4c7579133c5116d0a38df96809505a119147a9801e429c38d18a"
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "forward",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "gate_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "gate"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "gate_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "up_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "up"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "up_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "gate"
+                      ]
+                    ],
+                    "local_id": "silu",
+                    "outputs": [
+                      [
+                        "output",
+                        "activated_gate"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "silu"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "activated_gate"
+                      ],
+                      [
+                        "right",
+                        "up"
+                      ]
+                    ],
+                    "local_id": "gate_mul",
+                    "outputs": [
+                      [
+                        "output",
+                        "gated"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "gate_mul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "gated"
+                      ]
+                    ],
+                    "local_id": "down_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "hidden"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "down_proj"
+                  }
+                ]
+              }
+            ],
+            "inputs": [],
+            "local_id": "mlp",
+            "module_kind": "composite",
+            "node_id": "modelir:60672a68033619dffa826be866ef07d860bbe944bd9a3c210b99c9261047837e",
+            "operation": null,
+            "outputs": [],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/mlp",
+            "state": []
+          },
+          {
+            "attributes": [],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_2",
+            "derivation_ids": [
+              "derivation:91edade24354836babbb38e7d4acfd2934da69d744c066872d5c4a1593d2d146"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "left",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              },
+              {
+                "name": "right",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "residual_2",
+            "module_kind": "primitive",
+            "node_id": "modelir:6c94b0732a480ac35dd4866d14ad7d112d780da5ffa3a16943c9e2267d2b8edc",
+            "operation": "Add",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_0/residual_2",
+            "state": []
+          }
+        ],
+        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]",
+        "derivation_ids": [
+          "derivation:218e6b97dd51565917cd35e86856d03de8345d22f4abeedb598ac89dc278ee6b"
+        ],
+        "entrypoints": [
+          {
+            "inputs": [
+              {
+                "name": "hidden",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "name": "forward",
+            "outputs": [
+              {
+                "name": "hidden",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "x",
+                    "hidden"
+                  ]
+                ],
+                "local_id": "input_norm",
+                "outputs": [
+                  [
+                    "output",
+                    "normed"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "input_norm"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "hidden",
+                    "normed"
+                  ]
+                ],
+                "local_id": "attention",
+                "outputs": [
+                  [
+                    "hidden",
+                    "attention_output"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "attention"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "left",
+                    "hidden"
+                  ],
+                  [
+                    "right",
+                    "attention_output"
+                  ]
+                ],
+                "local_id": "residual_1",
+                "outputs": [
+                  [
+                    "output",
+                    "post_attention"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "residual_1"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "x",
+                    "post_attention"
+                  ]
+                ],
+                "local_id": "post_norm",
+                "outputs": [
+                  [
+                    "output",
+                    "post_attention_normed"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "post_norm"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "hidden",
+                    "post_attention_normed"
+                  ]
+                ],
+                "local_id": "mlp",
+                "outputs": [
+                  [
+                    "hidden",
+                    "mlp_output"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "mlp"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "left",
+                    "post_attention"
+                  ],
+                  [
+                    "right",
+                    "mlp_output"
+                  ]
+                ],
+                "local_id": "residual_2",
+                "outputs": [
+                  [
+                    "output",
+                    "hidden"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "residual_2"
+              }
+            ]
+          }
+        ],
+        "inputs": [],
+        "local_id": "layer_0",
+        "module_kind": "composite",
+        "node_id": "modelir:23cc7b29301b6b650ff4a06ada8ab404f33cc2ad0048d345a4e11e4ab7358043",
+        "operation": null,
+        "outputs": [],
+        "repeat_group": "layers",
+        "repeat_index": 0,
+        "stable_path": "model/two-layer-transformer/transformer/layer_0",
+        "state": []
+      },
+      {
+        "attributes": [],
+        "children": [
+          {
+            "attributes": [
+              [
+                "epsilon",
+                1e-06
+              ]
+            ],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/input_norm",
+            "derivation_ids": [
+              "derivation:abd6807222f9a69a3dfe6559e1f1596ccd16dba449ad3fc96bf96faa8202b6c7"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "x",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "input_norm",
+            "module_kind": "primitive",
+            "node_id": "modelir:4d4fa1c9ddb87fe4d8d74f5271a2d97687d5979f3d54c5a15aa2892c859b748b",
+            "operation": "RMSNorm",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/input_norm",
+            "state": [
+              {
+                "name": "weight",
+                "role": "parameter",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "H"
+                  ]
+                },
+                "trainable": true
+              }
+            ]
+          },
+          {
+            "attributes": [],
+            "children": [
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_proj",
+                "derivation_ids": [
+                  "derivation:431b1932b8dff9a32c0afb338f915110b80bf8d20dfebdc002922f2ff1c654c1"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:9d0174a99f1b5360175f0ccb618600949c3a9ffce4c14be03a9fa9f257de342a",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_proj",
+                "derivation_ids": [
+                  "derivation:1a37df758eeda087f7efaef969f7c07d9f6ba2e2d0c25254d3ed98813428c3c7"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:10f9b77bad45819abcf562709b17d0e533f5c2bef18a751eba9e9253a64b00ec",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_proj",
+                "derivation_ids": [
+                  "derivation:3b3c451ebfae882815ec4e5fbdd3e66c9cf049dea57b22877ea7429464584334"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:7662ada0cd4f783d4c42fbc479b09dfb004b79be492a0129fc0268dbedd5764c",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_view",
+                "derivation_ids": [
+                  "derivation:5ffd45b758dd942660c13a157c058c747ba3e9e03fa2ea8b74d6e68a9e664ac6"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:364df81bbea0c0c0f709009ef35466435e9fe339d5819348e0f247eb08faa6db",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/q_transpose",
+                "derivation_ids": [
+                  "derivation:e36ea34d724631bf22bd9c3045a3e5d1c5a8a12be00f0296b0ce82ead616631f"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "q_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:e61dd1ae2b9a7a781bde6ee47a9451b543c05f436cf98bfc20f309d8a43629dd",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/q_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_view",
+                "derivation_ids": [
+                  "derivation:4143c048e262429cd4b3679483ccba037b2fda2ef2a0196907b01f0316d40d33"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:6e99d0c6f621fcd0e2130ede13605bc73f8724ab72537e8a82d28fd2762fdeb9",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_transpose",
+                "derivation_ids": [
+                  "derivation:164ac5349da46dfe4349774c98a952f33b97123c864bd09c03c809731e2e0051"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:87a17af24a3fb89717aa3005408c2633e3d125d8566da01a741f9437e23d67da",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,1,3,2"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/k_key_transpose",
+                "derivation_ids": [
+                  "derivation:a77617d93bd54768fba6643b4f51d57de6125d29d1ce4b50ae2b5298783144f4"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "k_key_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:e1592dc4cb3fabdb5eb7088c312d12a4793e8b4717a85d4417465363afd7bf85",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "D",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/k_key_transpose",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/qk_matmul",
+                "derivation_ids": [
+                  "derivation:4fecfaa91ff2071dab75e05c6792fd7c74c3d5a9cd54319180360943087638d9"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "D",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "qk_matmul",
+                "module_kind": "primitive",
+                "node_id": "modelir:adf0734431577f92e043571b4a364f72dca5ab88683880873ca8b9fade67f534",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/qk_matmul",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "scalar",
+                    0.125
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/scale",
+                "derivation_ids": [
+                  "derivation:1fc3f265f1016449c10f6770a00c143051768dc47d245e1b32e37fea8e5ccd40"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "scale",
+                "module_kind": "primitive",
+                "node_id": "modelir:9fa36833731cef1659bf9ab36aa9fecbe0298d93c5dcfc15a3d07bf31d862896",
+                "operation": "Mul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/scale",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/causal_mask",
+                "derivation_ids": [
+                  "derivation:c6b2f34ecc2faaf1a1a305300fccf1bbc2d897ac7aaa1eb85dbcdb1b616fbae4"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "scores",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "causal_mask",
+                "module_kind": "primitive",
+                "node_id": "modelir:cadd2a070b393cef809170157c8eb5151a8f51773cf6de42dd0ae58f31608e5c",
+                "operation": "Add",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/causal_mask",
+                "state": [
+                  {
+                    "name": "mask",
+                    "role": "buffer",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "broadcast",
+                      "shape": [
+                        "B",
+                        1,
+                        "S",
+                        "S"
+                      ]
+                    },
+                    "trainable": false
+                  }
+                ]
+              },
+              {
+                "attributes": [
+                  [
+                    "dimension",
+                    -1
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/softmax",
+                "derivation_ids": [
+                  "derivation:2f5b7a4e6cd2436d06d2b432ad88d1f74cbeb88fff4f6cd87a73ffd3daa3257e"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "softmax",
+                "module_kind": "primitive",
+                "node_id": "modelir:12c88b27163304e911679de829df94eb41058f583c5628fc5376e8414f3ad1cf",
+                "operation": "Softmax",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/softmax",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,NH,D"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_view",
+                "derivation_ids": [
+                  "derivation:235636e560ea8ab35c9cbc6a57cd697420b9c62c0af67c5cc4c60d865f4821b2"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:ea9cfcbdf461359006a3585ba22a3d690edd082cb7dd5dd7db23b09aa436d6b1",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_view",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "permutation",
+                    "0,2,1,3"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/v_transpose",
+                "derivation_ids": [
+                  "derivation:84f835e64873531f9b8995c9f7fb6833a59449bc335cf0452b2df660e5985181"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "view",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "v_transpose",
+                "module_kind": "primitive",
+                "node_id": "modelir:3674fed96e2f80d23bfc2602831f69f0435209191680650f1350d046bca23636",
+                "operation": "Transpose",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/v_transpose",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "equation",
+                    "bhqk,bhkd->bqhd"
+                  ],
+                  [
+                    "output_layout",
+                    "sequence_major_contiguous"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_matmul",
+                "derivation_ids": [
+                  "derivation:99c40e21c924a86f879f3db7c716ffd3ff26474aee213f8684063d229282b732"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "S"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "transposed",
+                      "shape": [
+                        "B",
+                        "NH",
+                        "S",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "context_matmul",
+                "module_kind": "primitive",
+                "node_id": "modelir:6ab682abc6fb48be2ab66303c1c706ec710f241f39030aced32e4e7c8150a0ff",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/context_matmul",
+                "state": []
+              },
+              {
+                "attributes": [
+                  [
+                    "target_shape",
+                    "B,S,H"
+                  ]
+                ],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/context_view",
+                "derivation_ids": [
+                  "derivation:88ee87f9c606c48b60b5760271f88b5f11f4e1a831f43794fd22a39db5f55b92"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "NH",
+                        "D"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "context_view",
+                "module_kind": "primitive",
+                "node_id": "modelir:ee41986e48e6e78148b2bc31e999a788f8f61743f3d449afc059a6df8e77a8f3",
+                "operation": "View",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/context_view",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention/out_proj",
+                "derivation_ids": [
+                  "derivation:bf2d163ed7c385c555fcb5b1074d1f4a1cfb282dcce4ec15ab338faa33fc53ef"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "out_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:e7cba573ac146259c4edfa9642d90d1f43b698a970574c5999cd0221205a084d",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/attention/out_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              }
+            ],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/attention",
+            "derivation_ids": [
+              "derivation:ea6cae62cdd4620b4132d1bb6d68db1358a7fb3d201ba88632d75594973b276b"
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "forward",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "q_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "q"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "k_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "k"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "v_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "v"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "q"
+                      ]
+                    ],
+                    "local_id": "q_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "q_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "q_view"
+                      ]
+                    ],
+                    "local_id": "q_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "q_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "q_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k"
+                      ]
+                    ],
+                    "local_id": "k_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k_view"
+                      ]
+                    ],
+                    "local_id": "k_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "k_heads"
+                      ]
+                    ],
+                    "local_id": "k_key_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "k_keys"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "k_key_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "q_heads"
+                      ],
+                      [
+                        "right",
+                        "k_keys"
+                      ]
+                    ],
+                    "local_id": "qk_matmul",
+                    "outputs": [
+                      [
+                        "output",
+                        "scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "qk_matmul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "scores"
+                      ]
+                    ],
+                    "local_id": "scale",
+                    "outputs": [
+                      [
+                        "output",
+                        "scaled_scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "scale"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "scores",
+                        "scaled_scores"
+                      ]
+                    ],
+                    "local_id": "causal_mask",
+                    "outputs": [
+                      [
+                        "output",
+                        "masked_scores"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "causal_mask"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "masked_scores"
+                      ]
+                    ],
+                    "local_id": "softmax",
+                    "outputs": [
+                      [
+                        "output",
+                        "probabilities"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "softmax"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "v"
+                      ]
+                    ],
+                    "local_id": "v_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "v_view"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "v_view"
+                      ]
+                    ],
+                    "local_id": "v_transpose",
+                    "outputs": [
+                      [
+                        "output",
+                        "v_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "v_transpose"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "probabilities"
+                      ],
+                      [
+                        "right",
+                        "v_heads"
+                      ]
+                    ],
+                    "local_id": "context_matmul",
+                    "outputs": [
+                      [
+                        "output",
+                        "context_heads"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "context_matmul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "context_heads"
+                      ]
+                    ],
+                    "local_id": "context_view",
+                    "outputs": [
+                      [
+                        "output",
+                        "context"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "context_view"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "context"
+                      ]
+                    ],
+                    "local_id": "out_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "hidden"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "out_proj"
+                  }
+                ]
+              }
+            ],
+            "inputs": [],
+            "local_id": "attention",
+            "module_kind": "composite",
+            "node_id": "modelir:de3b1c61380fb2a42e76e9ed955749ba69fa50db8daf3117fa8b7dac9762c52c",
+            "operation": null,
+            "outputs": [],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/attention",
+            "state": []
+          },
+          {
+            "attributes": [],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_1",
+            "derivation_ids": [
+              "derivation:cdb36302a216669a78931fbeb38e3eb0cc2abe5aa85a7e9d2a125617e09712d2"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "left",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              },
+              {
+                "name": "right",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "residual_1",
+            "module_kind": "primitive",
+            "node_id": "modelir:28909590b47f3148388790edd17c0e6e8b205125d89c5f101a2c1b7bbe5a9058",
+            "operation": "Add",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/residual_1",
+            "state": []
+          },
+          {
+            "attributes": [
+              [
+                "epsilon",
+                1e-06
+              ]
+            ],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/post_norm",
+            "derivation_ids": [
+              "derivation:e7fb41398d09423f9a9d459b2e68da0aac3ff882156846cefdc15484d0ef0398"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "x",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "post_norm",
+            "module_kind": "primitive",
+            "node_id": "modelir:8419a999100fbf4369d67102b7fb914bfc3529f0d89be1b394ffc83568b5008e",
+            "operation": "RMSNorm",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/post_norm",
+            "state": [
+              {
+                "name": "weight",
+                "role": "parameter",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "H"
+                  ]
+                },
+                "trainable": true
+              }
+            ]
+          },
+          {
+            "attributes": [],
+            "children": [
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_proj",
+                "derivation_ids": [
+                  "derivation:69ce10406cbd5b958dd58ccb4aee07c44cf81d77c613d226f7421569af043f7b"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "gate_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:ee35282ae613513d1825e782116530f000f183501c81003422c500749708dae3",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "I"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/up_proj",
+                "derivation_ids": [
+                  "derivation:4f03a82e2f128990087bd8884ad3840fe342957d9889ddc92a89bfa62734ab0b"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "up_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:4c5092b177559117bc6b9a186709c36b8ac71a180e2a10b4866cac29672f3728",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/up_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "H",
+                        "I"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/silu",
+                "derivation_ids": [
+                  "derivation:aea69504392cc5e74817c91a131faea3f30a3a360fa790d756cc36c8a9d74965"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "silu",
+                "module_kind": "primitive",
+                "node_id": "modelir:01cd2568e2c156e2b75ce7cc84357e61b92ca2ff3963bc49f58134b171d1ab22",
+                "operation": "SiLU",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/silu",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/gate_mul",
+                "derivation_ids": [
+                  "derivation:94fe9d281c3ef1fac8242f2917b16cc1f922362b4225b8c05317cc88cbc0df08"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "left",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "right",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "gate_mul",
+                "module_kind": "primitive",
+                "node_id": "modelir:e4027a7d65778953f45f9916e81e49e7c7caf92bbfb86e7f99da6c4a95c062f2",
+                "operation": "Mul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_mul",
+                "state": []
+              },
+              {
+                "attributes": [],
+                "children": [],
+                "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp/down_proj",
+                "derivation_ids": [
+                  "derivation:1858a27a36ad181df1050b14e8f795587eb09b21f761c63f6be78589a2e00e90"
+                ],
+                "entrypoints": [],
+                "inputs": [
+                  {
+                    "name": "x",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "I"
+                      ]
+                    }
+                  }
+                ],
+                "local_id": "down_proj",
+                "module_kind": "primitive",
+                "node_id": "modelir:4eca8542c91d6e26fa96657e05bc93b7b4ad69080686408d5e168c979376d12e",
+                "operation": "MatMul",
+                "outputs": [
+                  {
+                    "name": "output",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "repeat_group": null,
+                "repeat_index": null,
+                "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp/down_proj",
+                "state": [
+                  {
+                    "name": "weight",
+                    "role": "parameter",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "I",
+                        "H"
+                      ]
+                    },
+                    "trainable": true
+                  }
+                ]
+              }
+            ],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/mlp",
+            "derivation_ids": [
+              "derivation:8144e0d94ae6dba680fb5a91ce57939210acd670c41cb2abab97217be0c92e18"
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "forward",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "gate_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "gate"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "gate_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "hidden"
+                      ]
+                    ],
+                    "local_id": "up_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "up"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "up_proj"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "gate"
+                      ]
+                    ],
+                    "local_id": "silu",
+                    "outputs": [
+                      [
+                        "output",
+                        "activated_gate"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "silu"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "left",
+                        "activated_gate"
+                      ],
+                      [
+                        "right",
+                        "up"
+                      ]
+                    ],
+                    "local_id": "gate_mul",
+                    "outputs": [
+                      [
+                        "output",
+                        "gated"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "gate_mul"
+                  },
+                  {
+                    "entrypoint": "forward",
+                    "inputs": [
+                      [
+                        "x",
+                        "gated"
+                      ]
+                    ],
+                    "local_id": "down_proj",
+                    "outputs": [
+                      [
+                        "output",
+                        "hidden"
+                      ]
+                    ],
+                    "source_kind": "call",
+                    "target": "down_proj"
+                  }
+                ]
+              }
+            ],
+            "inputs": [],
+            "local_id": "mlp",
+            "module_kind": "composite",
+            "node_id": "modelir:b2f53ff58bf430c3700e86cfb18d3d6a3c8a22cc2c7805469096cd3c245239e1",
+            "operation": null,
+            "outputs": [],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/mlp",
+            "state": []
+          },
+          {
+            "attributes": [],
+            "children": [],
+            "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]/residual_2",
+            "derivation_ids": [
+              "derivation:82ad9ebb3f29812b0f16aebe2fb307beb36aa422a33aca1bfb2069a25c51ad62"
+            ],
+            "entrypoints": [],
+            "inputs": [
+              {
+                "name": "left",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              },
+              {
+                "name": "right",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "local_id": "residual_2",
+            "module_kind": "primitive",
+            "node_id": "modelir:b847c1bec7c766ffefe2614291b37fda1683e8db4122ba63efc48e0ff527a42e",
+            "operation": "Add",
+            "outputs": [
+              {
+                "name": "output",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "repeat_group": null,
+            "repeat_index": null,
+            "stable_path": "model/two-layer-transformer/transformer/layer_1/residual_2",
+            "state": []
+          }
+        ],
+        "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer/layers[*]",
+        "derivation_ids": [
+          "derivation:59a7da42f75e28949d991fb18a82b1f46b1313fa358d3c9c5486488a71f100af"
+        ],
+        "entrypoints": [
+          {
+            "inputs": [
+              {
+                "name": "hidden",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "name": "forward",
+            "outputs": [
+              {
+                "name": "hidden",
+                "tensor": {
+                  "dtype": "float32",
+                  "layout": "contiguous",
+                  "shape": [
+                    "B",
+                    "S",
+                    "H"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "x",
+                    "hidden"
+                  ]
+                ],
+                "local_id": "input_norm",
+                "outputs": [
+                  [
+                    "output",
+                    "normed"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "input_norm"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "hidden",
+                    "normed"
+                  ]
+                ],
+                "local_id": "attention",
+                "outputs": [
+                  [
+                    "hidden",
+                    "attention_output"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "attention"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "left",
+                    "hidden"
+                  ],
+                  [
+                    "right",
+                    "attention_output"
+                  ]
+                ],
+                "local_id": "residual_1",
+                "outputs": [
+                  [
+                    "output",
+                    "post_attention"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "residual_1"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "x",
+                    "post_attention"
+                  ]
+                ],
+                "local_id": "post_norm",
+                "outputs": [
+                  [
+                    "output",
+                    "post_attention_normed"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "post_norm"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "hidden",
+                    "post_attention_normed"
+                  ]
+                ],
+                "local_id": "mlp",
+                "outputs": [
+                  [
+                    "hidden",
+                    "mlp_output"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "mlp"
+              },
+              {
+                "entrypoint": "forward",
+                "inputs": [
+                  [
+                    "left",
+                    "post_attention"
+                  ],
+                  [
+                    "right",
+                    "mlp_output"
+                  ]
+                ],
+                "local_id": "residual_2",
+                "outputs": [
+                  [
+                    "output",
+                    "hidden"
+                  ]
+                ],
+                "source_kind": "call",
+                "target": "residual_2"
+              }
+            ]
+          }
+        ],
+        "inputs": [],
+        "local_id": "layer_1",
+        "module_kind": "composite",
+        "node_id": "modelir:684dc130af3ef0654bb40f26c491386198449ced6eb40691080274e2d8ab5096",
+        "operation": null,
+        "outputs": [],
+        "repeat_group": "layers",
+        "repeat_index": 1,
+        "stable_path": "model/two-layer-transformer/transformer/layer_1",
+        "state": []
+      }
+    ],
+    "definition_id": "model-definition/two-layer-transformer@0.1.0/transformer",
+    "derivation_ids": [
+      "derivation:ac0ac5f5a2d890dadc543b2b81bfcd8eb13c06ca24d0dfbb83b8a3ab32d6c887"
+    ],
+    "entrypoints": [
+      {
+        "inputs": [
+          {
+            "name": "hidden",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          }
+        ],
+        "name": "prefill",
+        "outputs": [
+          {
+            "name": "hidden",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          }
+        ],
+        "steps": [
+          {
+            "entrypoint": "forward",
+            "inputs": [
+              [
+                "hidden",
+                "hidden"
+              ]
+            ],
+            "local_id": "layers_0",
+            "outputs": [
+              [
+                "hidden",
+                "hidden__layer_0"
+              ]
+            ],
+            "source_kind": "repeat_call",
+            "target": "layer_0"
+          },
+          {
+            "entrypoint": "forward",
+            "inputs": [
+              [
+                "hidden",
+                "hidden__layer_0"
+              ]
+            ],
+            "local_id": "layers_1",
+            "outputs": [
+              [
+                "hidden",
+                "hidden"
+              ]
+            ],
+            "source_kind": "repeat_call",
+            "target": "layer_1"
+          }
+        ]
+      }
+    ],
+    "inputs": [],
+    "local_id": "transformer",
+    "module_kind": "composite",
+    "node_id": "modelir:7b7e0d46210437aadc4fa13c42efa5b08c9169b43d49b655b28aa7323a37f533",
+    "operation": null,
+    "outputs": [],
+    "repeat_group": null,
+    "repeat_index": null,
+    "stable_path": "model/two-layer-transformer/transformer",
+    "state": []
+  },
+  "schema": "groundupscale.dev/model-ir/v1alpha1",
+  "source_sha256": "beb86a2eda84342c6909bb20df21e184fdf30fa53891942322db8464451d0289",
+  "symbols": [
+    [
+      "B",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ],
+    [
+      "D",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ],
+    [
+      "H",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ],
+    [
+      "I",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ],
+    [
+      "NH",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ],
+    [
+      "S",
+      [
+        [
+          "maximum",
+          null
+        ],
+        [
+          "minimum",
+          1
+        ],
+        [
+          "type",
+          "integer"
+        ]
+      ]
+    ]
+  ],
+  "version": "0.1.0"
+}

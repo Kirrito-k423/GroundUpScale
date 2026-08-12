@@ -1,0 +1,6 @@
+{
+  "payload": {
+    "eligible": true
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,244 @@
+{
+  "captured_at": "2026-08-09T16:19:14.932272+00:00",
+  "device": "cpu",
+  "hardware_validity_cohort": {
+    "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "device": {
+      "device": "cpu",
+      "hardware": [
+        "apple-m4"
+      ],
+      "identity_sha256": "2fecc1c0c23b7886f97c053d939bc3a0349ba73b84d480b32577b7d9b94aa0f2",
+      "observed_identity": {
+        "cpu_brand": "Apple M4",
+        "logical_cpu": 10,
+        "model": "Mac16,12",
+        "performance_levels": {
+          "efficiency_cores": 6,
+          "performance_cores": 4
+        },
+        "physical_cpu": 10,
+        "source": "sysctl",
+        "status": "resolved"
+      },
+      "partition": "whole-device",
+      "topology": "single-socket-unified-memory"
+    },
+    "numeric_execution": {
+      "affinity": "os-managed-unpinned",
+      "concurrency": "single-operator-no-overlap",
+      "context": "single-process-cpu",
+      "dtype": "float32",
+      "execution_mode": "eager",
+      "interop_threads": 10,
+      "numa": "single-socket-unified-memory",
+      "stream": "not-applicable-cpu",
+      "threads": 4
+    },
+    "power_clock": {
+      "clock_policy": "macos-default-managed",
+      "policy_id": "local-apple-silicon-v2",
+      "power_source": "ac",
+      "thermal_status": "nominal"
+    },
+    "schema": "groundupscale.dev/hardware-validity-cohort/v1alpha1",
+    "software": {
+      "kernel": "24.6.0",
+      "machine": "arm64",
+      "operator_library": "pytorch-aten",
+      "os": "Darwin",
+      "python": "3.11.15",
+      "torch": "2.13.0",
+      "torch_build_sha256": "710de3d730799028424190066aa9e3b79a4acac2bcba370fbaee2f384c09b597"
+    },
+    "timing": {
+      "adapter": {
+        "name": "groundupscale-run-bundle",
+        "version": "1.0.0"
+      },
+      "completion_boundary": "synchronous-cpu-call-return",
+      "instrumentation_profile": "benchmark",
+      "measurement_protocol": {
+        "protocol_id": "groundupscale-cpu-baseline-timing",
+        "version": "1.0.0"
+      },
+      "timer_monotonic": true,
+      "timer_source": "time.perf_counter_ns",
+      "timing_scope": "host_visible_completion"
+    }
+  },
+  "measurement_preflight": {
+    "captured_at": "2026-08-09T16:18:45.758857+00:00",
+    "checks": [
+      {
+        "check_id": "trusted-platform",
+        "observed": {
+          "machine": "arm64",
+          "system": "Darwin"
+        },
+        "passed": true,
+        "required": {
+          "machine": "arm64",
+          "system": "Darwin"
+        }
+      },
+      {
+        "check_id": "ac-power",
+        "observed": "ac",
+        "passed": true,
+        "required": "ac"
+      },
+      {
+        "check_id": "thermal-nominal",
+        "observed": "nominal",
+        "passed": true,
+        "required": "nominal"
+      },
+      {
+        "check_id": "settled-load",
+        "observed": 0.176953125,
+        "passed": true,
+        "required": {
+          "maximum": 0.25,
+          "normalization": "one-minute load / logical CPU count"
+        }
+      },
+      {
+        "check_id": "bounded-total-competing-cpu",
+        "observed": 0.016800000000000002,
+        "passed": true,
+        "required": {
+          "maximum": 0.1,
+          "normalization": "maximum sampled total non-coordinator process CPU percent / (100 * logical CPU count)"
+        }
+      }
+    ],
+    "collector": {
+      "name": "groundupscale-local-environment",
+      "privacy": "allowlisted fields only; no command arguments, environment variables, or unrestricted process paths",
+      "version": "v1alpha1"
+    },
+    "eligible": true,
+    "interpretation": "Preflight eligibility does not replace per-run benchmark noise gates.",
+    "observations": {
+      "competitors": {
+        "excluded_process_scope": "coordinator process and ancestors",
+        "maximum_single_process_cpu_percent": 5.0,
+        "maximum_total_cpu_percent": 16.8,
+        "normalized_maximum_total_cpu": 0.016800000000000002,
+        "sample_count": 3,
+        "sample_interval_seconds": 0.5,
+        "top": [
+          {
+            "cpu_percent": 5.0,
+            "name": "TokenTrackerBar",
+            "pid": 5993
+          },
+          {
+            "cpu_percent": 3.1,
+            "name": "healthmonitor",
+            "pid": 5988
+          },
+          {
+            "cpu_percent": 2.6,
+            "name": "Activity Monitor",
+            "pid": 5992
+          },
+          {
+            "cpu_percent": 1.8,
+            "name": "Feishu",
+            "pid": 5986
+          },
+          {
+            "cpu_percent": 1.8,
+            "name": "Google Chrome Helper (Renderer)",
+            "pid": 69749
+          },
+          {
+            "cpu_percent": 0.9,
+            "name": "Dock",
+            "pid": 6001
+          },
+          {
+            "cpu_percent": 0.7,
+            "name": "zsh",
+            "pid": 36127
+          },
+          {
+            "cpu_percent": 0.6,
+            "name": "Google Chrome Helper",
+            "pid": 6035
+          },
+          {
+            "cpu_percent": 0.5,
+            "name": "rapportd",
+            "pid": 5847
+          },
+          {
+            "cpu_percent": 0.5,
+            "name": "Google Chrome",
+            "pid": 5871
+          }
+        ],
+        "total_cpu_percent_samples": [
+          16.8,
+          7.5,
+          11.199999999999996
+        ]
+      },
+      "load": {
+        "fifteen_minutes": 2.27099609375,
+        "five_minutes": 2.0703125,
+        "normalized_one_minute": 0.176953125,
+        "one_minute": 1.76953125
+      },
+      "platform": {
+        "logical_cpu_count": 10,
+        "machine": "arm64",
+        "release": "24.6.0",
+        "system": "Darwin"
+      },
+      "power": {
+        "battery_percent": 90.0,
+        "source": "ac"
+      },
+      "thermal": {
+        "performance_warning": false,
+        "speed_limits_percent": {},
+        "status": "nominal",
+        "thermal_warning": false
+      }
+    },
+    "policy": {
+      "allowlist_only": true,
+      "maximum_normalized_one_minute_load": 0.25,
+      "maximum_normalized_total_competing_cpu": 0.1,
+      "policy_id": "local-apple-silicon-v2",
+      "require_ac_power": true,
+      "require_nominal_thermal_status": true,
+      "required_machine": "arm64",
+      "required_system": "Darwin"
+    },
+    "reason_codes": [],
+    "schema": "groundupscale.dev/environment-validity/v1alpha1"
+  },
+  "platform": {
+    "machine": "arm64",
+    "release": "24.6.0",
+    "system": "Darwin"
+  },
+  "policy": "allowlisted fields only; no unrestricted environment dump",
+  "process": {
+    "pid": 63381,
+    "session_id": "m4-cpu-exact-frontier-prediction-observation-20260810-v5"
+  },
+  "python": "3.11.15",
+  "schema": "groundupscale.dev/environment/v1alpha1",
+  "torch": {
+    "mps_available": true,
+    "mps_built": true,
+    "num_interop_threads": 10,
+    "num_threads": 4,
+    "version": "2.13.0"
+  }
+}

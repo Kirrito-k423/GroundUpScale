@@ -1,0 +1,80 @@
+{
+  "payload": {
+    "ablation_id": "remove-profiling",
+    "correctness": {
+      "evidence_ref": "artifact://issue-32/integration-profiling-correctness",
+      "passed": true,
+      "records": [
+        {
+          "expected": 0.0,
+          "observed": 0.0001220703125
+        }
+      ],
+      "tolerance": {
+        "atol": 0.001,
+        "rtol": 0.001
+      }
+    },
+    "derivation": {
+      "cumulative_variant": "profiling",
+      "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+      "input_refs": [
+        "artifact://issue-32/raw-q-session-1",
+        "artifact://issue-32/raw-q-session-2",
+        "artifact://issue-32/raw-q-session-3"
+      ],
+      "prior_cumulative_variants": [
+        "frontier_adapter",
+        "dispatch",
+        "copy",
+        "sync"
+      ],
+      "sample_semantics": "derived-paired-session-delta"
+    },
+    "kind": "profiling",
+    "lane_id": "issue32-ascend-diagnostic",
+    "measurement_id": "issue32-profiling-exclusive-attribution",
+    "removed_leaf_ids": [
+      "profiling-overhead"
+    ],
+    "sessions": [
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "derived_samples_ns": [
+          43489.50386047363
+        ],
+        "evidence_ref": "artifact://issue-32/integration-profiling-1",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 43489.50386047363,
+        "process_id": 2783368,
+        "session_id": "issue32-session-01-v7"
+      },
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "derived_samples_ns": [
+          42990.99922180176
+        ],
+        "evidence_ref": "artifact://issue-32/integration-profiling-2",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 42990.99922180176,
+        "process_id": 2784432,
+        "session_id": "issue32-session-02-v7"
+      },
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "derived_samples_ns": [
+          35071.20132446289
+        ],
+        "evidence_ref": "artifact://issue-32/integration-profiling-3",
+        "excluded_samples": [],
+        "lane_id": "issue32-ascend-diagnostic",
+        "latency_ns": 35071.20132446289,
+        "process_id": 2785721,
+        "session_id": "issue32-session-03-v7"
+      }
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

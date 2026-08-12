@@ -1,0 +1,8 @@
+{
+  "family_id": "pytorch-ascend-matmul",
+  "implementation_ref": "artifact://issue-32/torch-matmul-q-proj-implementation",
+  "implementation_sha256": "459a68a78bb346440bf15e6783089f16e66f1498cb4d70ce22379d11db3cdd9a",
+  "schema": "groundupscale.dev/implementation-family-manifest/v1alpha1",
+  "source_identity": "issue-32/remote/torch-matmul-q-proj",
+  "version": "v1"
+}

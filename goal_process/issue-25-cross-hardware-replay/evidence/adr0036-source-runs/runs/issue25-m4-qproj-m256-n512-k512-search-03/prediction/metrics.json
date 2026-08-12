@@ -1,0 +1,982 @@
+{
+  "cost_summary": {
+    "buffer_bytes": 524288,
+    "ideal_parallel_critical_path_flops": 2969036800,
+    "metrics": {
+      "activation_read_bytes": 57671680,
+      "alias_result_bytes": 8388608,
+      "buffer_read_bytes": 524288,
+      "explicit_activation_bytes": 44040192,
+      "flops": 4579649536,
+      "logical_read_bytes": 91758592,
+      "logical_write_bytes": 52428800,
+      "materialized_read_bytes": 83369984,
+      "materialized_write_bytes": 44040192,
+      "parameter_read_bytes": 33562624
+    },
+    "parameter_bytes": 33562624,
+    "serial_flops": 4579649536,
+    "workload_artifact_bytes": 1048576
+  },
+  "duration": {
+    "assumptions": [
+      "FLOPs are the CostIR minimum mathematical work, not implementation-added work.",
+      "Each unfused candidate counts only CostIR materialized reads and writes; aliases move zero physical bytes.",
+      "P80 rates are robust achieved resource capacities from diverse probe Shapes.",
+      "Generic max(compute_time, memory_time) is retained only as a Resource Physical Floor.",
+      "A compound candidate is selected only from exact phase capabilities and explicit phase composition.",
+      "Dependent phases are serial unless a Chunk Pipeline Contract says otherwise.",
+      "Inside one phase, the exact operation probe already includes data movement; its duration and the independent memory-pattern floor compose by max with both profile refs retained.",
+      "The ideal DAG bound is reported separately as max(dependency critical path, shared-resource load).",
+      "Cross-operation fusion requires an explicit fused ImplementationCandidate and is not inferred from a scope boundary.",
+      "Launch overhead, contention, conversions, and poor algorithms remain excluded."
+    ],
+    "compulsory_bytes": 35135488,
+    "compute_time": {
+      "evidence": [
+        {
+          "accessed_on": "2026-08-07",
+          "source_kind": "vendor_official",
+          "title": "Apple introduces M4 chip",
+          "url": "https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/"
+        }
+      ],
+      "reason": "vendor_does_not_publish_frequency_or_fma_issue_rate",
+      "required_capability": "fp32_flops_per_second",
+      "status": "unknown",
+      "value_ns": null
+    },
+    "critical_path_hardware_floor_ns": null,
+    "empirical_compute_time_ns": 2619262.3011290743,
+    "empirical_hardware_floor_ns": null,
+    "empirical_memory_time_ns": 1004553.9447129573,
+    "flops": 4579649536,
+    "formula": "selected = compose(candidate selected durations); resource_physical_floor = compose(max(minimum_flops / measured_fp32_P80, materialized_bytes / measured_memory_P80))",
+    "full_duration_ns": null,
+    "ideal_dag_hardware_floor_ns": 2619262.3011290743,
+    "limiting_resource": null,
+    "materialized_bytes": 127410176,
+    "memory_optimistic_lower_bound_ns": 292795.73333333334,
+    "provisional_estimate_ns": null,
+    "provisional_evidence_tier": null,
+    "provisional_reason_codes": [],
+    "resource_hardware_floor_ns": 2619262.3011290743,
+    "resource_limiting_resource": "compute.fp32",
+    "resource_physical_floor_ns": 3060608.1988938097,
+    "schedule": "serialized-unfused",
+    "serialized_hardware_floor_ns": null,
+    "vendor_memory_time_floor_ns": 292795.73333333334
+  },
+  "duration_status": "phase-capabilities-incomplete",
+  "hardware_backend": {
+    "artifact": "prediction/hardware-backend.json",
+    "backend_id": "apple.m4.cpu.resource-envelope",
+    "backend_version": "v1alpha2",
+    "prediction_complete": false
+  },
+  "live_set": {
+    "buffer_bytes": 524288,
+    "exclusions": [
+      "kernel-private workspace",
+      "allocator reservation and fragmentation",
+      "driver allocations",
+      "framework/runtime code and Python object memory"
+    ],
+    "parameter_bytes": 33562624,
+    "peak_activation_live_bytes": 6815744,
+    "peak_operation_index": 22,
+    "peak_operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+    "predicted_framework_peak_bytes": 40902656,
+    "schema": "groundupscale.dev/live-set-prediction/v1alpha1",
+    "state_bytes": 34086912,
+    "storage_lifetimes": [
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 18,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/artifact-read/hidden/value",
+        "start_operation": -1,
+        "storage_id": "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 3,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm/result/output",
+        "start_operation": 0,
+        "storage_id": "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b"
+      },
+      {
+        "aliases": [
+          "semantic-value:6e3077e9e85fd8465340b3f0d47f1f3b893d9671128b95aba8b71a9bd9d4ce1b",
+          "semantic-value:dbf5b4761dc133afde66af72392ecd1a9f657c69d0179d05e254375981cfe5e0"
+        ],
+        "bytes": 524288,
+        "end_operation": 9,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj/result/output",
+        "start_operation": 1,
+        "storage_id": "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7"
+      },
+      {
+        "aliases": [
+          "semantic-value:7b15ebb0b82d0135fc0949b3809715e02c514029bd64d579dce873c0a9d38881",
+          "semantic-value:424ff24ff4a6134d104d5f27b37796ea46f44fb619ee59d297404347023362ca",
+          "semantic-value:90184383a2fa48b20c76532107d516aac2263dbe580802a6e18a002350e86e1c"
+        ],
+        "bytes": 524288,
+        "end_operation": 9,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj/result/output",
+        "start_operation": 2,
+        "storage_id": "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336"
+      },
+      {
+        "aliases": [
+          "semantic-value:161976f3fa24c56973fcc71c36f2c6e6299e5d610411d5bbb8e792a0902f73f0",
+          "semantic-value:019dd373e01e2901e653e96e30b221e7c041127e6b6f9b7ee759fbbf49616e7f"
+        ],
+        "bytes": 524288,
+        "end_operation": 15,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj/result/output",
+        "start_operation": 3,
+        "storage_id": "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 10,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul/result/output",
+        "start_operation": 9,
+        "storage_id": "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 11,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale/result/output",
+        "start_operation": 10,
+        "storage_id": "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 12,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask/result/output",
+        "start_operation": 11,
+        "storage_id": "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 15,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax/result/output",
+        "start_operation": 12,
+        "storage_id": "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+      },
+      {
+        "aliases": [
+          "semantic-value:02c7db8d38bec224070aebe5bfe271202d595feaebaa16eff545097162f7691f"
+        ],
+        "bytes": 524288,
+        "end_operation": 17,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul/result/output",
+        "start_operation": 15,
+        "storage_id": "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 18,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj/result/output",
+        "start_operation": 17,
+        "storage_id": "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1/result/output",
+        "start_operation": 18,
+        "storage_id": "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 21,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm/result/output",
+        "start_operation": 19,
+        "storage_id": "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 22,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj/result/output",
+        "start_operation": 20,
+        "storage_id": "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 23,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj/result/output",
+        "start_operation": 21,
+        "storage_id": "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 23,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu/result/output",
+        "start_operation": 22,
+        "storage_id": "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 24,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul/result/output",
+        "start_operation": 23,
+        "storage_id": "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj/result/output",
+        "start_operation": 24,
+        "storage_id": "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 44,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2/result/output",
+        "start_operation": 25,
+        "storage_id": "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm/result/output",
+        "start_operation": 26,
+        "storage_id": "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a"
+      },
+      {
+        "aliases": [
+          "semantic-value:e8d7af81c8e8f2cdc3c3412c5c348c2f60111184c41f1a666738c3f52213f81b",
+          "semantic-value:a24f02c88b5a2d4a91a15fd61e316e71399013f5a747532513d69f507c0023a1"
+        ],
+        "bytes": 524288,
+        "end_operation": 35,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj/result/output",
+        "start_operation": 27,
+        "storage_id": "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706"
+      },
+      {
+        "aliases": [
+          "semantic-value:e1c7c7290bc362143c315573ed99afadd0a1e9344698eac0b78dd74da2b81d04",
+          "semantic-value:e64e021ee2e16b83da810114fc92d871dfe6997e5d759f6516c0edc3f4148cbe",
+          "semantic-value:a2b5b21ad671f437b12861fab6ac906916df30cb2ffb0df18e4ee80849a90e56"
+        ],
+        "bytes": 524288,
+        "end_operation": 35,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj/result/output",
+        "start_operation": 28,
+        "storage_id": "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49"
+      },
+      {
+        "aliases": [
+          "semantic-value:8c667c24db50d2bd54426870675d82fd00ea9e498cb608901143320b42a7686d",
+          "semantic-value:9c2234121e2cdcd6f1172d4568f54df4b4dd09148b64dfbe877f633635b74442"
+        ],
+        "bytes": 524288,
+        "end_operation": 41,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj/result/output",
+        "start_operation": 29,
+        "storage_id": "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 36,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul/result/output",
+        "start_operation": 35,
+        "storage_id": "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 37,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale/result/output",
+        "start_operation": 36,
+        "storage_id": "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 38,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask/result/output",
+        "start_operation": 37,
+        "storage_id": "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 41,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax/result/output",
+        "start_operation": 38,
+        "storage_id": "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+      },
+      {
+        "aliases": [
+          "semantic-value:1a142635d0c2baec8118ec3de1c76601915c0f4a8b5cea8ead6019af02146f7b"
+        ],
+        "bytes": 524288,
+        "end_operation": 43,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul/result/output",
+        "start_operation": 41,
+        "storage_id": "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 44,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj/result/output",
+        "start_operation": 43,
+        "storage_id": "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 51,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1/result/output",
+        "start_operation": 44,
+        "storage_id": "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 47,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm/result/output",
+        "start_operation": 45,
+        "storage_id": "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 48,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj/result/output",
+        "start_operation": 46,
+        "storage_id": "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 49,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj/result/output",
+        "start_operation": 47,
+        "storage_id": "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 49,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu/result/output",
+        "start_operation": 48,
+        "storage_id": "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2"
+      },
+      {
+        "aliases": [],
+        "bytes": 2097152,
+        "end_operation": 50,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul/result/output",
+        "start_operation": 49,
+        "storage_id": "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 51,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj/result/output",
+        "start_operation": 50,
+        "storage_id": "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+      },
+      {
+        "aliases": [],
+        "bytes": 524288,
+        "end_operation": 52,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2/result/output",
+        "start_operation": 51,
+        "storage_id": "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+      }
+    ],
+    "timeline": [
+      {
+        "activation_live_bytes": 524288,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7"
+        ],
+        "operation_index": -1,
+        "operation_stable_path": "before"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b"
+        ],
+        "operation_index": 0,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7"
+        ],
+        "operation_index": 1,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336"
+        ],
+        "operation_index": 2,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+      },
+      {
+        "activation_live_bytes": 2621440,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:33b16cdb31afdd7810f82cfc3a1a77cbeb6c791f1bd563bcd097a6f9e6d0559b",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 3,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 4,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 5,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 6,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 7,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807"
+        ],
+        "operation_index": 8,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "activation_live_bytes": 4194304,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:b3fd716f48b6514119040781c0bf5b56f9add1395d8501600ca31ab840dc6de7",
+          "semantic-value:cc3a468522a124fd465da48d01ff308a4a14f6c3926ba7b2b0cb45f3e0328336",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8"
+        ],
+        "operation_index": 9,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:4fb14b5532c54756986e7e0aa82c0c04e5b728a93db37a4453eb0fbec33b8ea8",
+          "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e"
+        ],
+        "operation_index": 10,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:32ba12a3de1896af2fcae198b1479ce2043a5f3adeaa9ac27a9653deceda323e",
+          "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec"
+        ],
+        "operation_index": 11,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:41092e972e617de8982c4103409030bfcb9758323562ba1adf35c0e369eae9ec",
+          "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+        ],
+        "operation_index": 12,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+        ],
+        "operation_index": 13,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0"
+        ],
+        "operation_index": 14,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "activation_live_bytes": 3670016,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:43ee918ff1c14ab2dcc962f78f11e68cbb5ddea6a6cbb90eb8d79667b9684807",
+          "semantic-value:e29e01e048ca8b3b06abe3e45d0757bae9f753d53cb809ea53cca90e395fabf0",
+          "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+        ],
+        "operation_index": 15,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e"
+        ],
+        "operation_index": 16,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:e31ccd8764e8f7c7f40fce661f4304daf6952664c551165ff36aecacb30b9a9e",
+          "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a"
+        ],
+        "operation_index": 17,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:8a4fb6134e42ee53018799093c2bdcf86d2b0fc25282b16cd473e8e3dc6461c7",
+          "semantic-value:9512b03ca72a7ed6179136455dc90a2e78b61b37d05b89ca849de7433a3e729a",
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd"
+        ],
+        "operation_index": 18,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96"
+        ],
+        "operation_index": 19,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96",
+          "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e"
+        ],
+        "operation_index": 20,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:a80f39e4fb987650277a3bf8688ee1b3d92094ae323ebcdc503906f343313c96",
+          "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e",
+          "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca"
+        ],
+        "operation_index": 21,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "activation_live_bytes": 6815744,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:d2ecfe327a0d895027a4dde37f55896f143cebbe3cd14edc9d1ae9d51313f80e",
+          "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca",
+          "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3"
+        ],
+        "operation_index": 22,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "activation_live_bytes": 6815744,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:3bb0cfcc141b7f94f14a37d9b0c4127fedf0930c7a5286639df8f9a60da0cfca",
+          "semantic-value:47f87eea7bfed81769002b8146912640530fc15e38c82902234db5515138d4d3",
+          "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8"
+        ],
+        "operation_index": 23,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:9c4197207825eb614df9b6da63f3e43294685b89338e4b762b93611ced22a7f8",
+          "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85"
+        ],
+        "operation_index": 24,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:9cd89409b8731edddd3159fb102bf3d6a7fab3b56b12f2d95c892fcb67ace6bd",
+          "semantic-value:5e5c22fe2bc4f24da7c58577ed33f3da3b9fa3e24856c011ebfbf9cacb4c9c85",
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed"
+        ],
+        "operation_index": 25,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a"
+        ],
+        "operation_index": 26,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706"
+        ],
+        "operation_index": 27,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49"
+        ],
+        "operation_index": 28,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+      },
+      {
+        "activation_live_bytes": 2621440,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:fdc3fac4005f4dd737583b2840c5357bca5e205cf5fb6c0582a9ccd5fa1e011a",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 29,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 30,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 31,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 32,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 33,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "activation_live_bytes": 2097152,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072"
+        ],
+        "operation_index": 34,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "activation_live_bytes": 4194304,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:0d1867e2964c218bd1301066230c99bb1b4f7bd192fc061138c7721691dc8706",
+          "semantic-value:3a6288976b2bdfd96813d3a6f8ec930cc66193531764ce31c45706bcbc902e49",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b"
+        ],
+        "operation_index": 35,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:c9f3beecc334ac036a7c2054289d3936beff72e8fd8af9cce02d676232a0615b",
+          "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930"
+        ],
+        "operation_index": 36,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:4aa0e45156602fba0895060b72d3cfd304a673bdcbd0d3b909f584d5020e0930",
+          "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e"
+        ],
+        "operation_index": 37,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:94719e2cbbcadedf25f4c1448350496ac047f45e9945b88f9829cb41e4d8579e",
+          "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+        ],
+        "operation_index": 38,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+        ],
+        "operation_index": 39,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206"
+        ],
+        "operation_index": 40,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "activation_live_bytes": 3670016,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:cbb974c37665d8ca2873d0d55604dfc182bb6ac53a9716bf31ae44726bc13072",
+          "semantic-value:18e956905b409ec64962cf02e62536477dc17f05d683ee4c35c95266fb721206",
+          "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+        ],
+        "operation_index": 41,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b"
+        ],
+        "operation_index": 42,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:91a5a1c3253f25b8dc1fbe326005fdd461cb8e85dad4ae45743de60fc1acc27b",
+          "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da"
+        ],
+        "operation_index": 43,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:3c005b604186782da102196e736451db815e9429769f645f3f58c0c56e631fed",
+          "semantic-value:f09d8503f6d5175de06d515367911ff869164c50b895eaa21c08ed571905c1da",
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f"
+        ],
+        "operation_index": 44,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+      },
+      {
+        "activation_live_bytes": 1048576,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43"
+        ],
+        "operation_index": 45,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43",
+          "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7"
+        ],
+        "operation_index": 46,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "activation_live_bytes": 5242880,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:06176ac6162a64ebf7aa1ad0c7f9556caef7c0594cb76ee58eff5c2b48f78d43",
+          "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7",
+          "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969"
+        ],
+        "operation_index": 47,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "activation_live_bytes": 6815744,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:048a5705aa22d0430d31fb7007b261dcc44c436e42e8d60a3d948304d1d601e7",
+          "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969",
+          "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2"
+        ],
+        "operation_index": 48,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+      },
+      {
+        "activation_live_bytes": 6815744,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:abfb17e934e5bc0911db9cb7ab756bdcc6c320c1f4e5baa017bedf918b110969",
+          "semantic-value:d24060b50a7e26bfb92fb7ddb98bc5e93ef790db3fc74a0ad0981a6eb681c6d2",
+          "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56"
+        ],
+        "operation_index": 49,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+      },
+      {
+        "activation_live_bytes": 3145728,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:4c5b83c4b931850931fd4bf6f86304f5c5bc71abb367c5df87596bb946f17e56",
+          "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e"
+        ],
+        "operation_index": 50,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "activation_live_bytes": 1572864,
+        "live_storage_ids": [
+          "semantic-value:fb145c3bbdd6b20637ce4679fe51f6e226527e88f97209dc6915e16865f6a70f",
+          "semantic-value:d772c39f9a36f11d015667dee68a835cca91ab17f7721e812290373e6852955e",
+          "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+        ],
+        "operation_index": 51,
+        "operation_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+      },
+      {
+        "activation_live_bytes": 524288,
+        "live_storage_ids": [
+          "semantic-value:5264293d1b11e25a8dce6dc697c89d66f5c74cd39fe01ee6521df645b1a932fa"
+        ],
+        "operation_index": 52,
+        "operation_stable_path": "after"
+      }
+    ]
+  },
+  "schema": "groundupscale.dev/prediction/v1alpha2"
+}

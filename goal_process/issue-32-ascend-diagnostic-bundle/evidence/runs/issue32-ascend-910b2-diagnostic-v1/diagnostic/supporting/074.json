@@ -1,0 +1,6 @@
+{
+  "payload": {
+    "artifact_ref": "artifact://issue-32/profiling-validity-domain"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

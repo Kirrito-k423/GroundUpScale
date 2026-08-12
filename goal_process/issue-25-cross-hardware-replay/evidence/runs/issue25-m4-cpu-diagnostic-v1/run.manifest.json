@@ -1,0 +1,373 @@
+{
+  "artifacts": [
+    {
+      "inputs": [
+        "source-m4-observation",
+        "source-m4-surface-sessions"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/evidence.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "diagnostic-evidence",
+      "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+      "sha256": "b5a0cafa783780ff486de52f1a6389e07a87c10ae610dde88f0a04bfe494865d"
+    },
+    {
+      "inputs": [
+        "run-bundle://m4-cpu-exact-frontier-prediction-observation-20260810-v5"
+      ],
+      "media_type": "application/json",
+      "path": "source/m4-observation-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "e7d9a41cfd16c1764f9adacd24c3ed3f8c7885af5059f2374d11c0101a8f43bf"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/m4-observation-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-benchmark-observation",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "d990dbd6cd7bca51727ca1895a620b79d018cb4fdf23e0b1415782f32a6c067d"
+    },
+    {
+      "inputs": [
+        "run-bundle://m4-cpu-exact-frontier-prediction-observation-20260810-v5"
+      ],
+      "media_type": "application/json",
+      "path": "source/m4-observation-comparison.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-prediction-observation-comparison",
+      "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+      "sha256": "e3bd66453a25c70c7bd4c85a73fc423d44318d2b674b3f551e05f8d07f8c9b58"
+    },
+    {
+      "inputs": [
+        "run-bundle://m4-cpu-exact-frontier-prediction-observation-20260810-v5"
+      ],
+      "media_type": "application/json",
+      "path": "source/m4-observation-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "eada7f69bce6473a970110d1cbd2b65b92988b7bdcd0a7fcde9fe66f7c26ed1e"
+    },
+    {
+      "inputs": [
+        "operator-frontier-profile://apple-m4-cpu-matmul-512-v3"
+      ],
+      "media_type": "application/yaml",
+      "path": "source/apple-m4-cpu-matmul-512-v3.yaml",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-frontier-profile",
+      "schema": "groundupscale.dev/operator-frontier-profile/v1alpha1",
+      "sha256": "e9522434a23ed821b9fac7331201dfcac4771d2c5ab0b69174091e32eed26d49"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-02-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "7ab9332bef169e007e0ded17f3db5da0270cfb86930bea122c8c6d16445ae6a7"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-02-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "ce9144acc3e4c6b2f1c6475e3be932cf94270d21ea052f4b043f4518b88c035f"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-02-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "15867e57a730aa955836be74e17684bcb3b494938a221e492051a4de39de769e"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-03-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "c729ba00bee135fc3c46b39229953ef928d9e3d09340bd96641a395d6f494b46"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-03-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "fa79a00735ba2f9ca7964fa6b0c613ea9d83a12fbebc6490d91c8e2c8631d3dd"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-03-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "3b917e9a94d6625740be6b91416b9567e02c427187df128f941a782d9683379b"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-05-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "414a612ba13ebcfa37658845b74e7fbaed8fbf72d55c6b699e4b8f1d231ecc73"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-05-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "90c0ca538d28a8ea7f54aa55d5fb13e28b33f5c16e38f496feca46d177805c7f"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-search-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-search-05-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "705feae73a2bc46cb72734aa630a58ea88c570bb4958003a795d96f5924f5fff"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-01-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "48e50e4a0ee49367174c913ceadd21fa177538b474bf7091cde4cabd80ccc378"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-01-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "873c2e91768357255bd82b36bf74b1879ac4a24274086cc583bd38f7aa7ee2c0"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-01-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "f9496c361c05889794e3a3e234fd8e9d6f7d807d4c38bb31a12c508b488fb1d5"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-03-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "5c461bf2f4ff2f50f43d21d0003f58dd01e8238ea1dda122d5a046a7371b688e"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-03-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "6bc1b5642f8e7350929063a96b5ca9b80b8a0325d2b22e5a288e5218647f853e"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-03-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "865f69f4c285db8c726287a38d6478609e18818b34ac7b8f0358aabdbd72c5c1"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-05-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "11a10ae3ff09c73d360fbec66680da725b48d3d33061f67cadeadbb6b0144c7d"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-05-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "3149e50a82fe5a383a2af76c944bfa1aa87bd9f9ae935e734d5be764c24f7cf1"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m256-n512-k512-holdout-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m256-n512-k512-holdout-05-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "08a4f5257260d21b56e80a18b1fe48b134c6cc188a90d16cf0aa84b94babd8ad"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-04"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-04-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "1982666f93034e3ea2e7bb02e4e8cc879d385f560aeca658ffbe62b0e873bb21"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-04-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-confirmation-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "791672bb7b54020949f1d443295931aba836c96919f1d7119cb463eab7bc6eb3"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-04"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-04-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "19a474414390adc1860a2c95419bfccde9e36410bf25e3155e7fd5f664c55809"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-05-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "a5b09c81d1ca32b978971a1fd0a3cfd197d0c6417428c32c730fc224c2f7f67f"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-05-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-confirmation-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "13a8595fefb8b5f9888dd09a0fe52309d574463c057bf243b9a3351229112711"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-05"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-05-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "3305bcb38a0506db234aa1da10f02081b0379df32cb3e3bb0f31b2e2cce0e973"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-06"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-06-run.manifest.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-run-manifest",
+      "schema": "groundupscale.dev/run-manifest/v1alpha1",
+      "sha256": "fae779bb2a5c160455eb06aa60eac0d65a25d045e9a37a6ea308752560104b96"
+    },
+    {
+      "inputs": [
+        "run-bundle://observation"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-06-benchmark.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-surface-confirmation-session",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "17d58ed47d13c110f4d9ccaf344016e042ae5ffa6329157d24643c57b1076b36"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue25-m4-qproj-m384-n512-k512-confirmation-06"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue25-m4-qproj-m384-n512-k512-confirmation-06-environment.json",
+      "produced_by": "issue-25-real-m4-diagnostic-builder",
+      "role": "source-environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "13ed67c53db492766e7883b0dd16ffe02a7b6df74d2256db512e9ea887fd3a31"
+    }
+  ],
+  "device": "cpu",
+  "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+  "run_id": "issue25-m4-cpu-diagnostic-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "completed"
+}

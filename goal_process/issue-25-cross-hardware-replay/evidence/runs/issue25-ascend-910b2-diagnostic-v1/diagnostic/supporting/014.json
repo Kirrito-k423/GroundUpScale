@@ -1,0 +1,146 @@
+{
+  "payload": {
+    "candidate_id": "torch.matmul",
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "completion_boundary": {
+      "absolute_timestamps_subtracted": false,
+      "closed": true,
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event-stream-completion",
+      "stream_id": "default-npu-stream",
+      "stream_synchronized": true
+    },
+    "execution_domain": {
+      "affinity": "192-223",
+      "alignment_bytes": 512,
+      "concurrency": 1,
+      "context": "pytorch-eager",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "row-major-contiguous",
+      "numa": "6",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "default-npu-stream",
+      "threads": 1
+    },
+    "instrumentation_profile": "torch-npu-profiler/v1",
+    "lane_id": "issue32-ascend-diagnostic",
+    "overhead_ablation": {
+      "evidence_ref": "artifact://issue-32/profiling-ablation",
+      "holdout": {
+        "baseline_lane_id": "issue32-ascend-baseline",
+        "baseline_raw_samples_ns": [
+          15894.500017166138,
+          15859.799981117249,
+          15206.300020217896
+        ],
+        "baseline_session_ids": [
+          "issue32-session-01-v7-baseline",
+          "issue32-session-02-v7-baseline",
+          "issue32-session-03-v7-baseline"
+        ],
+        "diagnostic_lane_id": "issue32-ascend-diagnostic",
+        "diagnostic_raw_samples_ns": [
+          212804.09812927246,
+          221654.10041809082,
+          202454.20455932617
+        ],
+        "diagnostic_session_ids": [
+          "issue32-session-01-v7-diagnostic",
+          "issue32-session-02-v7-diagnostic",
+          "issue32-session-03-v7-diagnostic"
+        ],
+        "evidence_ref": "artifact://issue-32/profiling-holdout",
+        "pair_id": "issue32-ascend-paired-lanes"
+      },
+      "instrumentation_profile": "torch-npu-profiler/v1",
+      "selection": {
+        "evidence_ref": "artifact://issue-32/profiling-selection",
+        "session_ids": [
+          "issue31-search-v4-s512-torch-matmul-01",
+          "issue31-search-v4-s512-torch-matmul-02",
+          "issue31-search-v4-s512-torch-matmul-03"
+        ]
+      },
+      "status": "qualified"
+    },
+    "pair_id": "issue32-ascend-paired-lanes",
+    "paired_baseline_lane_id": "issue32-ascend-baseline",
+    "raw_samples_ns": [
+      216784.5916748047,
+      211780.6053161621,
+      211657.39059448242,
+      209635.39123535156,
+      210993.00384521484,
+      210878.60107421875,
+      209883.19396972656,
+      210108.60443115234,
+      213224.39193725586,
+      213645.99227905273,
+      214437.40844726562,
+      214580.59310913086,
+      213764.19067382812,
+      212124.40490722656,
+      214655.79986572266,
+      213477.00119018555,
+      212929.19158935547,
+      212679.00466918945,
+      212597.19848632812,
+      214583.2061767578,
+      228936.99645996094,
+      223704.79583740234,
+      222784.80529785156,
+      221138.19122314453,
+      220828.9909362793,
+      220589.599609375,
+      220799.99923706055,
+      221333.0078125,
+      220158.99658203125,
+      221422.1954345703,
+      221619.20547485352,
+      221944.40841674805,
+      221688.99536132812,
+      222318.40133666992,
+      223111.59133911133,
+      222559.79537963867,
+      220785.19821166992,
+      222206.99310302734,
+      222042.59872436523,
+      221518.99337768555,
+      213763.19885253906,
+      203949.60403442383,
+      204086.79962158203,
+      209937.80136108398,
+      203224.39193725586,
+      204176.59759521484,
+      202421.6079711914,
+      201194.5915222168,
+      202511.9972229004,
+      202255.80215454102,
+      201076.20239257812,
+      202486.80114746094,
+      201092.3957824707,
+      201368.99948120117,
+      212300.79650878906,
+      200938.20571899414,
+      202329.19692993164,
+      201417.80853271484,
+      201519.60372924805,
+      202549.59106445312
+    ],
+    "timer": {
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event",
+      "monotonic": true,
+      "resolution_ns": 20,
+      "source": "torch.npu.Event.elapsed_time",
+      "stream_id": "default-npu-stream"
+    },
+    "timing_used_for_frontier": false
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

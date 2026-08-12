@@ -1,0 +1,4 @@
+{
+  "schema": "groundupscale.dev/candidate-implementation/v1alpha1",
+  "source_identity": "issue-32/remote/torch-matmul-q-proj"
+}

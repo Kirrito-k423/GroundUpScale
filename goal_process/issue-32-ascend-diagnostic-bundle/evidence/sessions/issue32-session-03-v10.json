@@ -1,0 +1,392 @@
+{
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "correctness": {
+    "atol": 0.001,
+    "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+    "max_abs_difference": 0.0001220703125,
+    "mismatched_elements": 0,
+    "observed_sha256": "602ee1d806fde43cf9d721c81f3ed0f8387d16846457dacbcd8b93d090aa0aba",
+    "passed": true,
+    "rtol": 0.001
+  },
+  "device": {
+    "logical": "npu:0",
+    "name": "Ascend910B2"
+  },
+  "execution_contract": {
+    "alignment_bytes": 512,
+    "completion_boundary": "device-event-end-synchronize-plus-device-synchronize",
+    "cumulative_variant_order": [
+      "frontier_adapter",
+      "dispatch",
+      "copy",
+      "sync",
+      "profiling"
+    ],
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "inner_iterations": 100,
+    "layout": "row-major-contiguous",
+    "operator_baseline_adapter": "batch-one input/output are zero-copy views outside the timed 2-D torch.matmul kernel",
+    "samples": 20,
+    "semantic": "batch-one Q projection MatMul",
+    "shape": {
+      "left": [
+        1,
+        512,
+        512
+      ],
+      "output": [
+        1,
+        512,
+        512
+      ],
+      "right": [
+        512,
+        512
+      ]
+    },
+    "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+    "variant_contracts": {
+      "k_baseline": {
+        "input_identity": {
+          "left_sha256": "8dc819fb7774de18214f421f5a7f08e15263429a53b4c7a57b56c704ab18971c",
+          "right_sha256": "e04d0ba6b878598bb802ef561ee4de4e7ec030090c4ada8a5f2cd9cde7fad282"
+        },
+        "lane": "baseline",
+        "semantic": "batch-one K projection MatMul",
+        "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
+      },
+      "negative_control": {
+        "input_identity": {
+          "left_sha256": "ae13165105e269f01848e808a00eab3db466c585afc59baaae45c968b8135d5e",
+          "right_sha256": "f5eb86bcb6ea00ec57cafc424a1ac9f255d3066a14e1469be43971d1f883b236"
+        },
+        "lane": "diagnostic",
+        "semantic": "batch-one V projection MatMul negative control",
+        "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
+      },
+      "v_baseline": {
+        "input_identity": {
+          "left_sha256": "ae13165105e269f01848e808a00eab3db466c585afc59baaae45c968b8135d5e",
+          "right_sha256": "f5eb86bcb6ea00ec57cafc424a1ac9f255d3066a14e1469be43971d1f883b236"
+        },
+        "lane": "baseline",
+        "semantic": "batch-one V projection MatMul",
+        "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
+      }
+    },
+    "warmup_iterations": 100
+  },
+  "input": {
+    "left_sha256": "e3a041e19d7fb37558a59d150c3829552e861853f03abe026d5dc4cf4f22a457",
+    "right_sha256": "7fc571d319a78641188f4ac85a2824026e706593e7b6b2cbfd543b40a0a77384",
+    "seed": 20260811
+  },
+  "negative_control": {
+    "correctness": {
+      "atol": 0.001,
+      "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
+      "max_abs_difference": 0.0100860595703125,
+      "mismatched_elements": 80864,
+      "observed_sha256": "3f76c8a0018beb56dea991dc58f9eeeef32af2c7d97879345b1b8291cbadb1b8",
+      "passed": false,
+      "rtol": 0.001
+    },
+    "injected_bias": 0.01,
+    "kind": "injected-output-bias"
+  },
+  "path_correctness": {
+    "k": {
+      "atol": 0.001,
+      "expected_sha256": "ffa130a1cf3073e9ef0d7b3c0bccb9fa8e188fdb0f75fb35dac3246a79bc7189",
+      "max_abs_difference": 0.0001373291015625,
+      "mismatched_elements": 0,
+      "observed_sha256": "46e861bc8c3c697d0a1c26f1fe178a709a912c5d2a97b30c723627a5ae5c0ead",
+      "passed": true,
+      "rtol": 0.001
+    },
+    "q": {
+      "atol": 0.001,
+      "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+      "max_abs_difference": 0.0001220703125,
+      "mismatched_elements": 0,
+      "observed_sha256": "602ee1d806fde43cf9d721c81f3ed0f8387d16846457dacbcd8b93d090aa0aba",
+      "passed": true,
+      "rtol": 0.001
+    },
+    "v": {
+      "atol": 0.001,
+      "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
+      "max_abs_difference": 9.918212890625e-05,
+      "mismatched_elements": 0,
+      "observed_sha256": "a06c4669cf37c6bf084e746a80536a4cb8932d39034ecc010082c0bb54f8ceed",
+      "passed": true,
+      "rtol": 0.001
+    }
+  },
+  "path_inputs": {
+    "k": {
+      "left_sha256": "8dc819fb7774de18214f421f5a7f08e15263429a53b4c7a57b56c704ab18971c",
+      "right_sha256": "e04d0ba6b878598bb802ef561ee4de4e7ec030090c4ada8a5f2cd9cde7fad282"
+    },
+    "q": {
+      "left_sha256": "e3a041e19d7fb37558a59d150c3829552e861853f03abe026d5dc4cf4f22a457",
+      "right_sha256": "7fc571d319a78641188f4ac85a2824026e706593e7b6b2cbfd543b40a0a77384"
+    },
+    "v": {
+      "left_sha256": "ae13165105e269f01848e808a00eab3db466c585afc59baaae45c968b8135d5e",
+      "right_sha256": "f5eb86bcb6ea00ec57cafc424a1ac9f255d3066a14e1469be43971d1f883b236"
+    }
+  },
+  "process_id": 2479753,
+  "process_started_at": "2026-08-12T01:15:28.784597+00:00",
+  "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+  "session_id": "issue32-session-03-v10",
+  "software": {
+    "python": "3.11.14",
+    "torch": "2.7.1+cpu",
+    "torch_npu": "2.7.1"
+  },
+  "timer": {
+    "resolution_ns": 20.0,
+    "source": "torch.npu.Event.elapsed_time",
+    "unit": "nanoseconds"
+  },
+  "variants": {
+    "copy": {
+      "median_ns": 43157.00054168701,
+      "raw_samples_ns": [
+        43650.59852600098,
+        43219.19918060303,
+        43477.60200500488,
+        43113.19828033447,
+        43193.00174713135,
+        43069.60105895996,
+        43281.20231628418,
+        42720.59917449951,
+        43120.999336242676,
+        42848.00052642822,
+        43260.99872589111,
+        42139.00089263916,
+        43507.19928741455,
+        42615.39936065674,
+        43557.400703430176,
+        43244.80056762695,
+        42757.20119476318,
+        42692.599296569824,
+        42762.59899139404,
+        43238.60168457031
+      ],
+      "semantic": "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+    },
+    "dispatch": {
+      "median_ns": 15898.600220680237,
+      "raw_samples_ns": [
+        16179.00013923645,
+        15824.799537658691,
+        15845.600366592407,
+        15910.600423812866,
+        16220.999956130981,
+        15837.8005027771,
+        16030.199527740479,
+        15960.7994556427,
+        16011.199951171875,
+        15733.200311660767,
+        16001.19948387146,
+        15942.399501800537,
+        15766.40009880066,
+        15931.600332260132,
+        15999.599695205688,
+        15832.99994468689,
+        15873.80051612854,
+        15886.600017547607,
+        15128.799676895142,
+        15564.9995803833
+      ],
+      "semantic": "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+    },
+    "frontier_adapter": {
+      "median_ns": 16679.399609565735,
+      "raw_samples_ns": [
+        15785.599946975708,
+        16801.199913024902,
+        16846.599578857422,
+        16818.39942932129,
+        16861.000061035156,
+        16670.3999042511,
+        16858.999729156494,
+        16693.60041618347,
+        26932.599544525146,
+        16850.99959373474,
+        16693.19987297058,
+        16643.999814987183,
+        16671.199798583984,
+        16540.600061416626,
+        16473.000049591064,
+        16329.599618911743,
+        16634.39989089966,
+        16687.599420547485,
+        16166.599988937378,
+        16405.800580978394
+      ],
+      "semantic": "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+    },
+    "k_baseline": {
+      "median_ns": 22767.10033416748,
+      "raw_samples_ns": [
+        22845.59965133667,
+        22786.800861358643,
+        22786.800861358643,
+        22431.199550628662,
+        23071.999549865723,
+        23034.59882736206,
+        22339.398860931396,
+        22503.39984893799,
+        22406.399250030518,
+        22538.80023956299,
+        22902.20022201538,
+        22844.600677490234,
+        22587.599754333496,
+        22367.000579833984,
+        22646.20065689087,
+        22747.39980697632,
+        23206.400871276855,
+        22581.6011428833,
+        22860.60094833374,
+        22990.798950195312
+      ],
+      "semantic": "batch-one K projection MatMul baseline"
+    },
+    "negative_control": {
+      "median_ns": 49914.398193359375,
+      "raw_samples_ns": [
+        51767.20142364502,
+        50938.401222229004,
+        51025.800704956055,
+        49691.200256347656,
+        49117.398262023926,
+        50010.39981842041,
+        49840.00205993652,
+        49871.99783325195,
+        50004.60147857666,
+        49627.59971618652,
+        49989.800453186035,
+        49779.0002822876,
+        50255.19847869873,
+        49956.7985534668,
+        49530.20095825195,
+        49551.00059509277,
+        49966.00151062012,
+        49520.40195465088,
+        49367.1989440918,
+        50102.00023651123
+      ],
+      "semantic": "batch-one V projection MatMul negative control"
+    },
+    "profiling": {
+      "median_ns": 216076.00212097168,
+      "raw_samples_ns": [
+        220612.20169067383,
+        216102.00881958008,
+        214121.60873413086,
+        213453.99856567383,
+        212831.40182495117,
+        213562.20245361328,
+        214529.2091369629,
+        216049.99542236328,
+        213041.19110107422,
+        213115.80657958984,
+        214509.79232788086,
+        213189.39208984375,
+        233654.19387817383,
+        235344.20013427734,
+        233054.4090270996,
+        233256.79779052734,
+        233372.4021911621,
+        232629.7950744629,
+        234150.7911682129,
+        233854.00772094727
+      ],
+      "semantic": "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+    },
+    "standalone": {
+      "median_ns": 22853.599786758423,
+      "raw_samples_ns": [
+        23002.60066986084,
+        23884.39893722534,
+        23269.200325012207,
+        23947.200775146484,
+        23629.000186920166,
+        23503.000736236572,
+        23540.799617767334,
+        22819.3998336792,
+        22150.59995651245,
+        22561.19966506958,
+        22892.59910583496,
+        22267.799377441406,
+        22778.398990631104,
+        22258.601188659668,
+        22658.60080718994,
+        22734.200954437256,
+        22567.79909133911,
+        22887.799739837646,
+        23030.600547790527,
+        22497.599124908447
+      ],
+      "semantic": "2-D Frontier-kernel diagnostic control"
+    },
+    "sync": {
+      "median_ns": 179965.40069580078,
+      "raw_samples_ns": [
+        179892.80700683594,
+        178870.60165405273,
+        177542.1905517578,
+        179330.40618896484,
+        179242.40112304688,
+        180418.39599609375,
+        176166.5916442871,
+        177948.2078552246,
+        178967.39959716797,
+        179777.60314941406,
+        180133.99124145508,
+        180037.99438476562,
+        181191.99752807617,
+        180958.00399780273,
+        180052.20413208008,
+        181715.20233154297,
+        180955.39093017578,
+        181191.59698486328,
+        181014.1944885254,
+        179293.99490356445
+      ],
+      "semantic": "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+    },
+    "v_baseline": {
+      "median_ns": 22517.499923706055,
+      "raw_samples_ns": [
+        22462.799549102783,
+        23083.200454711914,
+        22560.999393463135,
+        22692.201137542725,
+        22551.400661468506,
+        22340.400218963623,
+        22402.99940109253,
+        22927.000522613525,
+        22497.000694274902,
+        22566.399574279785,
+        22776.999473571777,
+        22488.79909515381,
+        22900.800704956055,
+        22047.600746154785,
+        22638.399600982666,
+        22479.20036315918,
+        22213.799953460693,
+        22537.999153137207,
+        22135.000228881836,
+        22261.40022277832
+      ],
+      "semantic": "batch-one V projection MatMul baseline"
+    }
+  }
+}

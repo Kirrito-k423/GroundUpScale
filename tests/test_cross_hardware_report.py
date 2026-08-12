@@ -1,9 +1,35 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from groundupscale.run_bundle import verify_run_bundle
+from groundupscale.diagnostics import diagnose_run_bundle
 from groundupscale.cross_hardware import (
     CROSS_HARDWARE_REPORT_SCHEMA,
     compare_cross_hardware,
+    compare_cross_hardware_inputs,
     render_cross_hardware_report,
+)
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+M4_DIAGNOSTIC_BUNDLE = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/runs"
+    / "issue25-m4-cpu-diagnostic-v1"
+)
+M4_SOURCE_BUNDLES = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/adr0036-source-runs/runs"
+)
+M4_CONFIRMATION_BUNDLES = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/adr0036-confirmation-runs/runs"
+)
+ASCEND_DIAGNOSTIC_BUNDLE = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/runs"
+    / "issue25-ascend-910b2-diagnostic-v1"
 )
 
 
@@ -28,6 +54,26 @@ def _diagnosis(*, cohort: str, device: str, observation: float = 1000.0) -> dict
         "environment": {
             "eligible": True,
             "evidence_ref": "artifact://preflight",
+        },
+        "measurement_adapter": {
+            "adapter_id": "fixture-adapter",
+            "adapter_version": "v1",
+            "protocol_id": "fixture-protocol",
+            "protocol_version": "v1",
+            "evidence_ref": "artifact://adapter",
+            "operation_evidence": [
+                {
+                    "operation": operation,
+                    "evidence_ref": f"artifact://adapter/{operation}",
+                }
+                for operation in (
+                    "discover_capabilities",
+                    "fingerprint_cohort",
+                    "preflight",
+                    "build_timing_plan",
+                    "collect",
+                )
+            ],
         },
         "measurement_capability_manifest": {
             "status": "complete",
@@ -83,6 +129,12 @@ def _diagnosis(*, cohort: str, device: str, observation: float = 1000.0) -> dict
                 "query_id": "surface-query-1",
                 "status": "known",
                 "surface": {"surface_id": f"surface-{cohort}", "version": "1"},
+                "query_shape": {"m": 512},
+                "response": {
+                    "primary_response": "latency_ns",
+                    "response_identity": f"response-{cohort}",
+                    "shape_regime_identity": f"regime-{cohort}",
+                },
                 "evidence_refs": ["artifact://surface"],
             }
         ],
@@ -137,6 +189,19 @@ def test_compare_cross_hardware_rejects_stable_path_mismatch() -> None:
     assert "semantic-operation-mismatch" in report["gate"]["reason_codes"]
 
 
+def test_compare_cross_hardware_requires_a_portable_semantic_identity() -> None:
+    m4 = _diagnosis(cohort="m4-cohort", device="Apple M4 CPU")
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    m4["evidence"]["resolved_ir"] = {"operation": "MatMul"}
+    npu["evidence"]["resolved_ir"] = {"operation": "MatMul"}
+
+    report = compare_cross_hardware(m4, npu)
+
+    assert report["status"] == "insufficient_evidence"
+    assert report["semantic_comparison"]["status"] == "unknown"
+    assert "semantic-operation-mismatch" in report["gate"]["reason_codes"]
+
+
 def test_compare_cross_hardware_fails_closed_when_required_evidence_is_missing() -> None:
     npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
     npu["evidence"].pop("measurement_capability_manifest")
@@ -147,6 +212,47 @@ def test_compare_cross_hardware_fails_closed_when_required_evidence_is_missing()
     assert report["sides"]["ascend"]["evidence_quality"]["status"] == "unknown"
     assert "missing-measurement-capability-manifest" in report["sides"]["ascend"]["evidence_quality"]["reason_codes"]
     assert report["metrics"]["ascend"]["frontier_efficiency"]["status"] == "unknown"
+
+
+def test_compare_cross_hardware_accepts_partial_result_with_a_known_surface_query() -> None:
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    npu["status"] = "partial"
+    npu["capability_surface_queries"][0]["status"] = "exact_anchor"
+    npu["capability_surface_queries"].append(
+        {
+            "query_id": "outside-validated-domain",
+            "status": "unknown",
+            "reason_code": "outside_validated_domain",
+            "surface": {"surface_id": "surface-ascend-cohort", "version": "1"},
+            "evidence_refs": [],
+        }
+    )
+
+    report = compare_cross_hardware(
+        _diagnosis(cohort="m4-cohort", device="Apple M4 CPU"),
+        npu,
+    )
+
+    assert report["status"] == "complete"
+    assert report["sides"]["ascend"]["evidence_quality"] == {
+        "status": "known",
+        "reason_codes": [],
+    }
+
+
+def test_compare_cross_hardware_rejects_non_latency_primary_surface_query() -> None:
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    npu["capability_surface_queries"][0].pop("response")
+
+    report = compare_cross_hardware(
+        _diagnosis(cohort="m4-cohort", device="Apple M4 CPU"),
+        npu,
+    )
+
+    assert report["status"] == "insufficient_evidence"
+    assert "capability-surface-query-not-qualified" in report["sides"][
+        "ascend"
+    ]["evidence_quality"]["reason_codes"]
 
 
 def test_load_cross_hardware_inputs_keeps_source_identity(tmp_path) -> None:
@@ -194,3 +300,148 @@ def test_bundle_without_diagnostic_artifact_is_reported_as_unknown(tmp_path) -> 
     assert report["status"] == "insufficient_evidence"
     assert report["sides"]["m4"]["evidence_quality"]["status"] == "unknown"
     assert report["sides"]["ascend"]["evidence_quality"]["status"] == "unknown"
+
+
+def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
+    assert verify_run_bundle(M4_DIAGNOSTIC_BUNDLE)["passed"] is True
+    assert verify_run_bundle(ASCEND_DIAGNOSTIC_BUNDLE)["passed"] is True
+    assert all(
+        verify_run_bundle(bundle)["passed"] is True
+        for root in (M4_SOURCE_BUNDLES, M4_CONFIRMATION_BUNDLES)
+        for bundle in root.iterdir()
+        if bundle.is_dir()
+    )
+
+    report = compare_cross_hardware_inputs(
+        M4_DIAGNOSTIC_BUNDLE,
+        ASCEND_DIAGNOSTIC_BUNDLE,
+    )
+
+    assert report["status"] == "complete"
+    assert report["semantic_comparison"] == {
+        "status": "matched",
+        "operation": "MatMul",
+        "identity": "transformer/layer-0/attention/q-proj",
+    }
+    assert report["shape_comparison"] == {
+        "status": "matched",
+        "shape": {"m": 512, "k": 512, "n": 512},
+    }
+    assert report["cohorts"]["m4"]["cohort_id"] != report["cohorts"][
+        "ascend"
+    ]["cohort_id"]
+    assert all(
+        isinstance(report["metrics"][side]["frontier_efficiency"], float)
+        for side in ("m4", "ascend")
+    )
+    assert all(
+        isinstance(report["metrics"][side]["combined_uncertainty_ns"], float)
+        for side in ("m4", "ascend")
+    )
+    assert isinstance(
+        report["cross_hardware_comparison"]["combined_uncertainty_ns"],
+        float,
+    )
+    assert report["cross_hardware_comparison"]["absolute_latency_comparison"] == (
+        "not-a-fair-efficiency-metric"
+    )
+    m4_result = diagnose_run_bundle(M4_DIAGNOSTIC_BUNDLE)
+    ascend_result = diagnose_run_bundle(ASCEND_DIAGNOSTIC_BUNDLE)
+    assert ascend_result["axes"]["operator_achievable_frontier"][
+        "anchor_id"
+    ] == "issue25-ascend-qproj-512"
+    diagnostic_lane = m4_result["evidence"]["diagnostic_profiling_lane"]
+    assert diagnostic_lane["status"] == "not_requested"
+    assert diagnostic_lane["timing_used_for_frontier"] is False
+    assert "raw_samples_ns" not in diagnostic_lane
+    assert "observation_validity" not in diagnostic_lane
+    assert m4_result["adapter_contract"]["lanes"]["reason_code"] == (
+        "diagnostic-lane-not-requested"
+    )
+    surface = m4_result["capability_surfaces"][0]
+    assert surface["anchor_ids"] == [
+        "issue25-m4-qproj-256",
+        "issue25-m4-qproj-512",
+    ]
+    queries = {
+        query["query_id"]: query
+        for query in m4_result["capability_surface_queries"]
+    }
+    exact = queries["issue25-m4-qproj-512-exact"]
+    interpolated = queries["issue25-m4-qproj-384-interpolation"]
+    assert exact["status"] == "exact_anchor"
+    assert interpolated["status"] == "interpolated"
+    assert exact["response"]["primary_response"] == "latency_ns"
+    assert interpolated["query_shape"] == {"m": 384}
+    assert interpolated["work_rate_latency"]["declared_work"] == (
+        2 * 384 * 512 * 512
+    )
+    ascend_surface = ascend_result["capability_surfaces"][0]
+    assert ascend_surface["coordinate"]["axis"] == "m"
+    assert ascend_surface["response_model"]["primary_response"] == "latency_ns"
+    assert ascend_surface["response_model"]["fixed_dimensions"] == {
+        "n": 512,
+        "k": 512,
+    }
+    assert ascend_surface["work_formula"] == {
+        "kind": "matmul-2mnk",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "version": "v2",
+        "work_unit": "FLOP",
+    }
+    ascend_queries = {
+        query["query_id"]: query
+        for query in ascend_result["capability_surface_queries"]
+    }
+    assert ascend_queries["issue25-ascend-qproj-512-exact"]["status"] == (
+        "exact_anchor"
+    )
+    assert all(
+        anchor["evidence_ref"].startswith("artifact://issue-25/")
+        for anchor in ascend_queries[
+            "issue25-ascend-qproj-512-exact"
+        ]["anchors"]
+    )
+    assert ascend_queries[
+        "issue25-ascend-qproj-384-interpolation"
+    ]["status"] == "interpolated"
+    integration_verdict = next(
+        verdict
+        for verdict in ascend_result["performance_diagnosis_verdicts"]
+        if verdict["verdict"] == "integration_overhead"
+    )
+    assert integration_verdict["metrics"]["operator_frontier_ns"] == (
+        ascend_result["axes"]["operator_achievable_frontier"]["value_ns"]
+    )
+    assert integration_verdict["metrics"][
+        "operator_frontier_combined_uncertainty_ns"
+    ] == ascend_queries["issue25-ascend-qproj-512-exact"]["uncertainty"][
+        "combined_standard_ns"
+    ]
+    assert all(
+        report["evidence_index"][side][key]
+        for side in ("m4", "ascend")
+        for key in (
+            "source_run_refs",
+            "anchor_refs",
+            "surface_refs",
+            "policy_refs",
+            "derivation_refs",
+            "ledger_refs",
+        )
+    )
+    assert all(
+        report["evidence_index"]["ascend"][key]
+        for key in ("verdict_refs", "probe_refs")
+    )
+    verdicts = {
+        verdict["verdict"]
+        for side in ("m4", "ascend")
+        for verdict in report["sides"][side]["verdicts"]
+    }
+    assert {
+        "insufficient_evidence",
+        "integration_overhead",
+        "confirmed_bug",
+    } <= verdicts

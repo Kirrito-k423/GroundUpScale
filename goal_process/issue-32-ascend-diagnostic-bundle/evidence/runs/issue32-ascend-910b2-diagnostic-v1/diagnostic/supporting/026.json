@@ -1,0 +1,8 @@
+{
+  "payload": {
+    "oracle": "cpu-float32-same-seed-matmul",
+    "passed": true,
+    "policy_ref": "issue32-fp32-correctness/v1"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,2042 @@
+{
+  "artifacts": [
+    {
+      "inputs": [
+        "run-bundle://issue32-ascend-910b2-diagnostic-v1",
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/evidence.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-evidence",
+      "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+      "sha256": "22391ef8d47d8f6e26cdd7942c4a9af806ba3317aadf6cab1d4a32ea92e75368"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/001.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d6b5e0992182b55501b7e3a80510817b8c0a036cf62a926ec44dadb6ec738275",
+      "uri": "artifact://frontier/qualification.json"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/002.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d45eba6b2f2c320ede3e44af127699c1b6e0a0eeffe73fa1d1850ad42a0e4c7c",
+      "uri": "artifact://issue-32/adapter-build_timing_plan"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/003.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "9e790b7a6a2eaa7ad28410bec635ab5cf18d78b290c977bd520fc669df0cc349",
+      "uri": "artifact://issue-32/adapter-collect"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/004.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "dd8fd604481312e02320aa5805c87f44dd6bb3cdbc9d8850a9e4ed4892113f3d",
+      "uri": "artifact://issue-32/adapter-discover_capabilities"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/005.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "14db23a323bfdfee0629104a116c59f5b92b3f7669ffa1e65e4ef9a1af0274d3",
+      "uri": "artifact://issue-32/adapter-fingerprint_cohort"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/006.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "bcac52388153de4a856961552dc5d0513dd7dfefa5a2fbabe01dd5a7ab3c084d",
+      "uri": "artifact://issue-32/adapter-preflight"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/007.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d3f1a983735d2f31dd2f4203eef6b860a3543bdf42760d4efbdff5136d82d126",
+      "uri": "artifact://issue-32/baseline-q-proj-observation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/008.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "a0e9b7fac1eed2ad46c2e2f528d49b3ad144f7924ed8d19fd5a5f265e0797589",
+      "uri": "artifact://issue-32/capabilities"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/009.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "56d269e83a4adc6b9ddc891d2116148e4e5ab88d3e86cd1a001df95f293a1e69",
+      "uri": "artifact://issue-32/cohort-identity"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/010.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "dd5571cb7e1f7ea50a132bf782128a9e82ac43a60d0733a0299807631c1c5dc8",
+      "uri": "artifact://issue-32/cohort-match"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/011.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "77d3e65b698b0e73225951d7e32b755783d3f45b51ab47cab0c2190d9fec3883",
+      "uri": "artifact://issue-32/counterexample-fluctuation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/012.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "fd7a25ad266abe7a85489b5caff48f4f9107188a70cf1f32e249f7f1f21e78a8",
+      "uri": "artifact://issue-32/counterexample-performance"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/013.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "7b9a8e0e8d7bd08c08717c5efedbfdc2f9f8dca7413b051a28878ce35dfdee17",
+      "uri": "artifact://issue-32/counterexample-proxy"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/014.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "5c8136835a5e4d45935032d7b62f93674b4b7b01683f09006b683b8d199639e1",
+      "uri": "artifact://issue-32/diagnostic-profiling-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/015.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "186cd449371c230725b68961cee18c104cb6753c1385721a134463a18c8fe39a",
+      "uri": "artifact://issue-32/direct-defect"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/016.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "8b472db9eb9cbf395e0bc7ee4494d9a8476ee99dbec172a56fb21f7384631e5a",
+      "uri": "artifact://issue-32/environment"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/017.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "83d70d26c4263c39a4709e913a7c85d064a9ab86252329dacd9c2435d10aee18",
+      "uri": "artifact://issue-32/frontier-anchor"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/018.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "9899d891a9eb023efec9ee42380d58961a9d161c0b548b365eef41de86c80731",
+      "uri": "artifact://issue-32/frontier-holdout"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/019.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "65eeb4f841f97e3330d5069981977109c9dcdde7b36fd5823e1911a6b135dc39",
+      "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-01"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/020.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d1ce477b37cff6e12c690e97766a5af8d943f5e931e6828762d234da64c72590",
+      "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-02"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/021.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "a7b45cd571e77473382366fa951d213f294ce092abd8335676879cbb9fb9079f",
+      "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-03"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/022.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "02aae0965b2c83ce64f60f0d8a4b2b9b2feb7822d06ab1afb7bb76d625a67a37",
+      "uri": "artifact://issue-32/frontier-search"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/023.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "0922952f7ecb0f5ac592d5b3f0ad3b5feee5e24dcb98317d44e0c013e75a328f",
+      "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-01"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/024.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "17555a2fed48ecb6cdfde7df5856d6a965afc3b39ec976a2b968611cdcdb8ee9",
+      "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-02"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/025.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "dddf55f0298d3bc6d74905cabc59003cc574072c62a96575adedaa4a68d1ff30",
+      "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-03"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/026.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "957be5994a1a304f360385a100d331e1284c03c322754fb8dd6e7b923e1af25e",
+      "uri": "artifact://issue-32/global-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/027.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d05dcc0c6015a73ffd02ce35200f1fd4394c1864c2770aa802cb9c183ddf5e56",
+      "uri": "artifact://issue-32/integration-contract"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/028.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "24b127da5fec49f82d39e14fcff24f5599f7e5040cdae53da1e95181796bff05",
+      "uri": "artifact://issue-32/integration-copy"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/029.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "518e091dec71b4535f229e4b065d6797a25a48f5f0e7dbee5e5e6f9dc97f5833",
+      "uri": "artifact://issue-32/integration-copy-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/030.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "60812a8b3917db240e31da7b239e2132fe6a4ce96a7d211c90c8dcb25e652913",
+      "uri": "artifact://issue-32/integration-copy-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/031.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "0106f71eba17da00ec570ddb7ed667ba6ba3a920482defec5afe650a71f9983e",
+      "uri": "artifact://issue-32/integration-copy-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/032.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/integration-copy-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/033.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "e536e4d5e202fea51b9bde00ee6378f029c2a5cf048c1d260a17b17edd25ccf9",
+      "uri": "artifact://issue-32/integration-counterfactual"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/034.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c9ae3be1b0332bdc947e20d838e22ccc40f42cfd22ce52362d6747aea27c01d1",
+      "uri": "artifact://issue-32/integration-dispatch"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/035.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "63a6b48fdcb962fd1508507c85d2099edece6cf693784da8cb97b367031c400c",
+      "uri": "artifact://issue-32/integration-dispatch-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/036.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "504028c188fdafb1ce286b711d50578d4efa4a642a770f04326a6aa4920f2fe6",
+      "uri": "artifact://issue-32/integration-dispatch-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/037.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c6a5d944943d35e0949f895f326b3cbbb85bf1278def571f76358e10765a961b",
+      "uri": "artifact://issue-32/integration-dispatch-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/038.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/integration-dispatch-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/039.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "83084d454dee389a4de899d111eb8bb841f79118b3af5ab5ddcda770d41b6b49",
+      "uri": "artifact://issue-32/integration-ledger"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/040.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "6e59e3e13a4f1dd46ea003e0604b1d6e829bddad6c02f289ec5eef09b355f07b",
+      "uri": "artifact://issue-32/integration-operator"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/041.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c839092826b8424be1c0dfed1fc8fbc849e9dcc8912010b96356c5bb01b2ba78",
+      "uri": "artifact://issue-32/integration-profiling"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/042.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "a50d42a54e4e5e8c0b3f407f5782827fc3873f81d75011d6f54ff98eb5683599",
+      "uri": "artifact://issue-32/integration-profiling-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/043.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "2b35fbccf7a3732141ea9db0827e246a94e33d03ae21083a203233f391d372da",
+      "uri": "artifact://issue-32/integration-profiling-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/044.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "e7ca522f0a89631ac5e748c3f7ee999844f335b9bff1467e17f0d8d9dd68d055",
+      "uri": "artifact://issue-32/integration-profiling-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/045.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/integration-profiling-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/046.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "979fe3e6b843efed8c0b8d899cf9f42df258c615ed7181319bbe8bf92f08c56b",
+      "uri": "artifact://issue-32/integration-residual"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/047.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "eb2c548c77ffc4a58f38771330c6e8cd55215fa03bee90967915ce23e7c31e1f",
+      "uri": "artifact://issue-32/integration-sync"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/048.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "0e9c81f3243188d91ae99e214d41aed3d3607a584f8e925ea498d2d55f3fb247",
+      "uri": "artifact://issue-32/integration-sync-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/049.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "34d948ef3d0e351e7943fc82842719b7d7ae1c0c5ba9ca94888cedbb52a820f4",
+      "uri": "artifact://issue-32/integration-sync-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/050.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "b4c6272fb94bc2494583e21c9a0e6455be1f0c41ff9ea154dff198bc81ae3a13",
+      "uri": "artifact://issue-32/integration-sync-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/051.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/integration-sync-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/052.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "837a7e8ebc4080a656e2014ec4ad6f7bc7a1c7fd28a0318eba6acf2c3d12bc81",
+      "uri": "artifact://issue-32/integration-wrapped"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/053.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "7c50ec6df1761609a38b1d0c93ee21789e6411e379c7552b6c39581e3c983fe8",
+      "uri": "artifact://issue-32/integration-wrapped-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/054.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "b860d9d2b25a9a8e96e5b6eb7e0bf5ff33c829512031b0b49abe89c54a85950f",
+      "uri": "artifact://issue-32/integration-wrapped-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/055.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "ef4ed4c968c6e915ec427b1201d73881b5662aec151c43bb78a3fb738c04b421",
+      "uri": "artifact://issue-32/integration-wrapped-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/056.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/integration-wrapped-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/057.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "309f91f988fc81be8c902080d45c333e20c1e06ce03af961421beff9805d9508",
+      "uri": "artifact://issue-32/k-proj-baseline-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/058.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "bd62d5688b7bf7223b9e9d9f65559a4bfd97ae2ba40879080082ae095783470e",
+      "uri": "artifact://issue-32/k-proj-diagnostic-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/059.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "020c90bf558df48d8e40ed5e4e3f93b170108d6fc1628a43de931844c6878898",
+      "uri": "artifact://issue-32/k-proj-preflight"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/060.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "2f7c6f4d477bcdb0a7892e45a4f135c57a6a2eb25880f39af1e929c8a624c56e",
+      "uri": "artifact://issue-32/measurement-adapter"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/061.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "4a9ece05aa39e8cd0e8a99f0c2a6081b0d6b92bfedda8389f01d4f08e3c91478",
+      "uri": "artifact://issue-32/negative-correctness-difference"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/062.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c24115057ca8511e72b99a0735a2d3116bd351eaad21a5de86b00093bb4eeaf2",
+      "uri": "artifact://issue-32/negative-input-summary"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/063.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "a9335bd6e6838705cf75f6e8a8fb7860d7b815bb9ff457e6d14431d0878b1326",
+      "uri": "artifact://issue-32/negative-repeat-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/064.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "adcf7ffda0c14a6c0cc81e0793225f75f86c928c82e52e33924e10021169600c",
+      "uri": "artifact://issue-32/negative-repeat-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/065.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "eef1931eaaf908cd24b115da9dd54bce8ad80450099f855da636eb1bd00a7d3a",
+      "uri": "artifact://issue-32/negative-repeat-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/066.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "operator-frontier-evidence",
+      "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+      "sha256": "fe77acdf88e0c780e0c63c0d67fe6b7867f7c9a9a7e1f2278dd28257a8fac024",
+      "uri": "artifact://issue-32/operator-frontier"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/067.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "4fda366198dfec8f167a58e1172875433d2d8b868fbe1a468b6c4f918d817bd5",
+      "uri": "artifact://issue-32/physical-floor"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/068.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "0c8176c53d320c59d90e40b0ea72c3f30f594c44d50213fc1d14ec276ba20b8b",
+      "uri": "artifact://issue-32/physical-floor-compute"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/069.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c190609ed2e13a82d5214a6483c0163cdd256c5301a35a81a44a35143f64013e",
+      "uri": "artifact://issue-32/physical-floor-memory"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/070.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "8edb4968725eeec97559bed9f6b49a9a692a525c5f8bbc5dcd1fa1fb5181d64e",
+      "uri": "artifact://issue-32/preflight"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/071.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "5d79a8c5ec656128c0284ca867fda35850250f777833af6e43a118f1bd22c2ab",
+      "uri": "artifact://issue-32/profiling-ablation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/072.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "b13a6dfc171ccb0f1a55871a38f14206c9a4b2d4d6f485dca9cf3a20a2d7d69f",
+      "uri": "artifact://issue-32/profiling-holdout"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/073.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "4d74c859920bb9b2cc70d2837cecffcc86cd672b2c160c841d111f2132f1d75b",
+      "uri": "artifact://issue-32/profiling-selection"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/074.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "536539ff43cf7b83964130bc34e19bfe307e2dcd3f9c546a8cd59cdcc504eef2",
+      "uri": "artifact://issue-32/profiling-validity-domain"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/075.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "uri": "artifact://issue-32/q-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/076.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "2f28705d29c4e673de16f070b81ce8005e637028cca952dd3421ca1b349790a4",
+      "uri": "artifact://issue-32/q-probe"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/077.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "7c5917ea1f308d76f4716b4144aa0b394060840458913aa96ac6a1d4b2b6b8f2",
+      "uri": "artifact://issue-32/q-proj-baseline-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/078.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "3730420d4d32dc873f48af93b7bc4789e4c56110c4da0cf2a266bbcfd10ba589",
+      "uri": "artifact://issue-32/q-proj-diagnostic-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/079.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "020c90bf558df48d8e40ed5e4e3f93b170108d6fc1628a43de931844c6878898",
+      "uri": "artifact://issue-32/q-proj-preflight"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/080.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "7c104469c2366816da5c65e8b59a1224d063868aed21d6d28f0305aadfefd52d",
+      "uri": "artifact://issue-32/q-target-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/081.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "de8d0f102e53f5dbdc4875d883e232f8e9556bedffb32d4ac6046de378cbbf89",
+      "uri": "artifact://issue-32/q-target-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/082.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "53b400bf81e4f3ee5f1e50f77ec31312798dd59b6feb44aa69360ee12a9a12e5",
+      "uri": "artifact://issue-32/q-target-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/083.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "3f8f19eb91d04d7282c86518198108a6ac3a93d5074b11b0c5481836d3f21bd8",
+      "uri": "artifact://issue-32/schedule"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/084.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "5c073ec6aef18d3ff81ca1ab8fd4eaa36424682e438ab5448398c4e68a8959b1",
+      "uri": "artifact://issue-32/timing-plan"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/085.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "c777592a6d6b63256207a392e71a59845cdab9df1775c72bb41c3597ccaaa7fb",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/086.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "implementation-family-manifest",
+      "schema": "groundupscale.dev/implementation-family-manifest/v1alpha1",
+      "sha256": "6acf0a6f18b074ffc500bc78a2bb55972f05add24dad16be8852b2d0443e1f6c",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-family"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/087.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "candidate-implementation",
+      "schema": "groundupscale.dev/candidate-implementation/v1alpha1",
+      "sha256": "5515943a7ea41cf144f5c6a236d5b3fba87a821eba886fc7adf692460ebb898a",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-implementation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/088.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "ce42400b296ca942f8ed3df884f24051dbf4ddca9e534e94043edcc5d0b9a4f7",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-probe"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/089.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "4da4774a9cfed499948c23f13551aa6353f868a6396312d6792fd23043b74a02",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-session-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/090.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "eaccc70d2d575ace2476f6f8a57afeee5ff67b7088e0c7ae970e6a8ae8cdb474",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-session-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/091.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "518802b48d05eaf926bbe7429ae738b130766936c16d38115ad1b1e42c718de1",
+      "uri": "artifact://issue-32/torch-matmul-k-proj-session-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/092.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "implementation-family-manifest",
+      "schema": "groundupscale.dev/implementation-family-manifest/v1alpha1",
+      "sha256": "9d76e981c8e6b9e0ae04d6fe770b591a4ebfdb285ee5eef2b692c3706b056da0",
+      "uri": "artifact://issue-32/torch-matmul-q-proj-family"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/093.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "candidate-implementation",
+      "schema": "groundupscale.dev/candidate-implementation/v1alpha1",
+      "sha256": "459a68a78bb346440bf15e6783089f16e66f1498cb4d70ce22379d11db3cdd9a",
+      "uri": "artifact://issue-32/torch-matmul-q-proj-implementation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/094.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "986e78128aa0dc070d11d317dd88455474f4d943a069a5f391694e61cda6bab6",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-correctness"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/095.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "implementation-family-manifest",
+      "schema": "groundupscale.dev/implementation-family-manifest/v1alpha1",
+      "sha256": "8f39034660bddf5442791ea675490c63e14270e81f933ee4405820ccbd17fb02",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-family"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/096.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "candidate-implementation",
+      "schema": "groundupscale.dev/candidate-implementation/v1alpha1",
+      "sha256": "f2b004ae0107e9aaa5ac4a7dd9ff1ba453e255330e87cf3c27abb4d3514093e7",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-implementation"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/097.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "e61c5b433444a72f108b5e78ac45deac953bcee75e555a3b88ec71720b233690",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-probe"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/098.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "bc21a8f92b86c19b0a4f99510faa2ad8ce8c216deae44cb4d0daf9af60a2ad01",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-1"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/099.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "8b45622421d0f51b85f13b320cb85611634b632f0b31ab686e1bb55c3a006a62",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-2"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/100.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "69e83511be94fb9b750c15ccc1b505bf904f530d3a4865f70f6940b13a32733d",
+      "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-3"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/101.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "5ef466010dd1ffc7d3410d6ef72feb7a9c82e01670d141e9554994c9a7523110",
+      "uri": "artifact://issue-32/v-proj-baseline-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/102.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "1317010f3f4b15bb3c526b3dde2fba50b319521218e482de39d184e5a3d8db87",
+      "uri": "artifact://issue-32/v-proj-diagnostic-lane"
+    },
+    {
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/supporting/103.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "020c90bf558df48d8e40ed5e4e3f93b170108d6fc1628a43de931844c6878898",
+      "uri": "artifact://issue-32/v-proj-preflight"
+    },
+    {
+      "inputs": [
+        "run-bundle://ascend-910b2-matmul-floor-comparison-20260810-v2"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue29-physical-floor.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-physical-floor",
+      "schema": "groundupscale.dev/physical-floor-observation-comparison/v1alpha1",
+      "sha256": "1bba53e98d7320828903cff5d53763ca0a33bdb2a62373c8b98a75b748b1b1e3",
+      "uri": "artifact://issue-32/source-physical-floor"
+    },
+    {
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue30-transformer-benchmark.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-transformer-benchmark",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07",
+      "uri": "artifact://issue-32/source-transformer-benchmark"
+    },
+    {
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue30-transformer-e2e-attribution.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-transformer-e2e-attribution",
+      "schema": "groundupscale.dev/error-attribution/v1alpha1",
+      "sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+      "uri": "artifact://issue-32/source-transformer-e2e-attribution"
+    },
+    {
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue30-hardware-cohort.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-hardware-cohort",
+      "schema": "groundupscale.dev/hardware-cohort/v1alpha1",
+      "sha256": "0805095176a573b81417a8a906201b3b385b12b53d9e49e60df2dee88fc922b4"
+    },
+    {
+      "inputs": [
+        "run-bundle://issue31-operator-frontier-v3"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue31-frontier-qualification.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-frontier-qualification",
+      "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
+      "sha256": "9522255c71e51a7cb3876d2c9f097f7f6a1c37ec313a96a5920f52c848ed8e93",
+      "uri": "artifact://issue-32/source-frontier-qualification"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-collection"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-remote-execution.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-remote-execution",
+      "schema": "groundupscale.dev/remote-execution/v1alpha1",
+      "sha256": "c17f6dd2cc2dc83f641eb202ffaf2290ed2e61db27f79d6e9f87e4fc4078296d",
+      "uri": "artifact://issue-32/source-remote-execution"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-01-v7"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-q-session-01-v7.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "5bc9a3e711fdc80c9832576e9b1268598b4d233d30a159b92d50c934e26c57fd",
+      "uri": "artifact://issue-32/raw-q-session-1"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-02-v7"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-q-session-02-v7.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "3f44abffbd546de4292a6165b786deaac59b59e42772e641142e50b16993f903",
+      "uri": "artifact://issue-32/raw-q-session-2"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-03-v7"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-q-session-03-v7.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "4bcb97798897d60d73cbe1db132c1c107de4fe2470471b4da85e3f1b78b84825",
+      "uri": "artifact://issue-32/raw-q-session-3"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-01-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-01-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "37f7588af4138f5456ccd34d4a8e925dbf96e1cdb8f36fff5a8b44366e935caf",
+      "uri": "artifact://issue-32/raw-semantic-session-1"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-02-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-02-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "264db36b9b0302ac76879f29ee2e36aeadc378a615338ee97c239fa6d642d37c",
+      "uri": "artifact://issue-32/raw-semantic-session-2"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-03-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-03-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "0f5b3cdf2e6e3588ca2906fffed1c35b39423f9f3edadc0c9ca181e29fe30d23",
+      "uri": "artifact://issue-32/raw-semantic-session-3"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-holdout-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-holdout-01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "15c1128d78bef330114afbcc54388ce5c3c2e93f09d6f9533e195ba39467706d",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-holdout-01"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-holdout-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-holdout-02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "fc339f178ce9a3a7e515290ece0923b8bc949ea17bec75e92b1800d6ae369f75",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-holdout-02"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-holdout-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-holdout-03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "5a32516c57659c268232bc5304963e5713bd2417995edb43c4c6f0f9ce126bcb",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-holdout-03"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-search-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-search-01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "4014ffc9c07447e9f26775d26e57f9689be3acb8e48e526706a95c07f9820940",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-search-01"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-search-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-search-02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "ba3705a2bbf626f989a83240fab8de95af07e7eb14ecda04cee5a8fbc06fbaa5",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-search-02"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m256-n512-k512-search-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m256-n512-k512-search-03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "f0c11fe6649881e9deca68532a8efa55297fcc63850fee64bfe7af4f89041a8a",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m256-n512-k512-search-03"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m384-n512-k512-confirmation-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m384-n512-k512-confirmation-01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "8fec680dbfed3a4272bf526bbeedfd22f378c1b41459c394d44746556aff4043",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m384-n512-k512-confirmation-01"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m384-n512-k512-confirmation-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m384-n512-k512-confirmation-02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "2273ad3bba9182b96ef563bee3128111e2758a02b403cf10a498917f96c8764f",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m384-n512-k512-confirmation-02"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m384-n512-k512-confirmation-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m384-n512-k512-confirmation-03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "b68380065ac5602f2f1cc0bccb09220e087a14e9b5d2eb6fe71aed11d9e42991",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m384-n512-k512-confirmation-03"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-holdout-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-holdout-01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "9053fd965d92c5d58737e5e173b21b4863d8f1f094699393f2c38faf6525c1f7",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-01"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-holdout-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-holdout-02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "e530f1b3e33df79fed1178a1e01524e605af98d5de41646fac49e61844e9c896",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-02"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-holdout-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-holdout-03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "e803a5de8d6f1f97affe904466d7f0945071fc0f2460f5e6cc7ed48566e84503",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-holdout-03"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-search-01"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-search-01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "8fd4d2b059b75bb15283893b3089a07b6bd490847582f00e0c69f6fd3bca5bdc",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-01"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-search-02"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-search-02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "2c9da734fbc8e7b4f16bef3eb1fb19d7696572b847b6790f35a460bee706efe2",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-02"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-ascend-qproj-m512-n512-k512-search-03"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/issue25-ascend-qproj-m512-n512-k512-search-03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-latency-surface-session",
+      "schema": "groundupscale.dev/ascend-latency-surface-session/v1alpha1",
+      "sha256": "956a2d116de828d53decafe5eaaf5bb2f4269f7801b74721f84d1f8ecf66bb73",
+      "uri": "artifact://issue-25/ascend-surface-session-issue25-ascend-qproj-m512-n512-k512-search-03"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/01.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-frontier-qualification",
+      "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
+      "sha256": "3df593fd63ca5b26a04918c4417bd80f368dbe8af838a9cf728f2dfd27e1e71d",
+      "uri": "artifact://issue-25/ascend-frontier-qualification"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/02.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "1266fcd39e20681d1347f13d66146fccb515b5bdfcdb3b0cce514a7dcce48357",
+      "uri": "artifact://issue-25/ascend-integration-contract"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/03.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "operator-frontier-evidence",
+      "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+      "sha256": "b7488ae189e461903ec22b6f253481ff275cc164e041193ed4a66adad4d1de19",
+      "uri": "artifact://issue-25/ascend-integration-operator-frontier"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/04.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "operator-frontier-evidence",
+      "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+      "sha256": "b9622de64dab8cea6d92a1b94dfffda579575f83bc2c06c32aa043452aab6f68",
+      "uri": "artifact://issue-25/ascend-qproj-256-anchor"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/05.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "operator-frontier-evidence",
+      "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+      "sha256": "3743d84a02d5ffdb20d3927a0930ccb21bd99ef1fbd2c9c21a1d2640e71c1087",
+      "uri": "artifact://issue-25/ascend-qproj-512-anchor"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/06.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "d054c4343c5add135c3948289cf59513331e3413fa4754c528b2f9804acd4791",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-256-holdout"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/07.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "fae89b2be0291b5c6f98aa67a94014a61d9c07fad1f192bbba585ec64d31518c",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-256-qualification"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/08.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "362fe46960127032af16cd80d212faf6e8134914b2295eed61401af98d87ba5a",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-256-search"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/09.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "724218ae04b3676f363d2a968cf1e495a7f71afd2d95a8055721e5ac79471c34",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-512-holdout"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/10.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "ca478ef3b99ea2a33c4344d220ff78a262174742374927cbebdfcf893fe5e58f",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-512-qualification"
+    },
+    {
+      "inputs": [
+        "source-latency-surface-session"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/issue25-supporting/11.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "f492d64d05e62d5ed1a3acc6f647887d957384bf7fc5fbfc2f8565a7ba5dad08",
+      "uri": "artifact://issue-25/issue25-ascend-qproj-512-search"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue25-adr0036-collection"
+      ],
+      "media_type": "application/json",
+      "path": "source/ascend-latency-surface/remote-execution.json",
+      "produced_by": "issue-25-ascend-latency-surface-builder",
+      "role": "source-remote-execution",
+      "schema": "groundupscale.dev/remote-execution-record/v1alpha1",
+      "sha256": "1c8617decc69fc02e9ad89b9a538c5597f32f0bd2690f30dbce6e7ff079753a9",
+      "uri": "artifact://issue-25/ascend-remote-execution"
+    }
+  ],
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "run_id": "issue25-ascend-910b2-diagnostic-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_manifest_integrity": "required",
+  "source_runs": [
+    {
+      "manifest_sha256": "67e4250978b852d461cac801370d78ffaa50c121984143691c4e5139ea91e386",
+      "path": "../../../../issue-32-ascend-diagnostic-bundle/evidence/runs/issue32-ascend-910b2-diagnostic-v1",
+      "role": "diagnostic-and-exact-512-anchor",
+      "run_id": "issue32-ascend-910b2-diagnostic-v1"
+    }
+  ],
+  "status": "completed"
+}

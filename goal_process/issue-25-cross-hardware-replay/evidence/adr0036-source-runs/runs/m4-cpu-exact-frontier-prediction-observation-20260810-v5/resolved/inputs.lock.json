@@ -1,0 +1,3347 @@
+{
+  "documents": {
+    "analysis_case": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "AnalysisCase",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "fixed-prefill",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "driver": {
+          "kind": "fixed_iterations",
+          "measured_iterations": 20,
+          "warmup_iterations": 10
+        },
+        "observation_window": {
+          "kind": "iterations",
+          "value": 20
+        },
+        "shape": {
+          "bindings": {
+            "B": 1,
+            "D": 64,
+            "H": 512,
+            "I": 2048,
+            "NH": 8,
+            "S": 512
+          },
+          "dtype": "float32",
+          "kind": "fixed"
+        }
+      }
+    },
+    "analysis_plan": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "AnalysisPlan",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "mac-cpu-prefill",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "analysis_case": {
+          "path": "specs/analysis-cases/fixed-prefill.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "benchmark_cases": [
+          {
+            "path": "specs/benchmarks/core-prefill.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "deployment_intent": {
+          "path": "specs/deployment-intents/mac-cpu.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "fabric_graph": {
+          "path": "specs/fabrics/local-m4.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "hardware": [
+          {
+            "path": "specs/hardware/apple-m4.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "hardware_capability_profiles": [
+          {
+            "path": "specs/hardware-capabilities/apple-m4-cpu-local.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "operator_frontier_execution_domain": {
+          "candidate_digests": {
+            "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4"
+          },
+          "candidate_families": {
+            "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": "torch.matmul.cpu.fp32"
+          },
+          "completion_boundary": "synchronous-cpu-call-return",
+          "execution_contract_digests": {
+            "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38"
+          },
+          "execution_mode": "eager",
+          "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "input_corpus_digests": {
+            "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6"
+          },
+          "instrumentation_profile": "benchmark",
+          "interop_threads": 10,
+          "threads": 4,
+          "timing_scope": "host_visible_completion"
+        },
+        "operator_frontier_profiles": [
+          {
+            "path": "specs/operator-frontiers/apple-m4-cpu-matmul-512-v3.yaml",
+            "sha256": null,
+            "version": "3.0.0"
+          }
+        ],
+        "workload": {
+          "path": "specs/workloads/prefill.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        }
+      }
+    },
+    "benchmark_cases": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "BenchmarkCase",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "core-prefill",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "cases": [
+            {
+              "id": "matmul-q-proj",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "rmsnorm-input",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/input_norm",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "softmax-attention",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/softmax",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "transformer-layer",
+              "mode": "module",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0",
+              "warmup_iterations": 50
+            },
+            {
+              "id": "two-layer-prefill",
+              "mode": "e2e",
+              "samples": 20,
+              "scope": "workload/transformer-prefill/request/model-prefill",
+              "warmup_iterations": 20
+            }
+          ]
+        }
+      }
+    ],
+    "deployment_intent": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "DeploymentIntent",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "mac-cpu",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "bindings": [
+          {
+            "placement": "local-m4/cpu",
+            "scope": "workload/transformer-prefill/request/model-prefill",
+            "strategies": []
+          }
+        ]
+      }
+    },
+    "fabric_graph": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "FabricGraph",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "local-m4",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "links": [],
+        "nodes": [
+          {
+            "device": "cpu",
+            "hardware": "apple-m4",
+            "id": "local-m4/cpu"
+          },
+          {
+            "device": "gpu",
+            "hardware": "apple-m4",
+            "id": "local-m4/gpu"
+          }
+        ]
+      }
+    },
+    "hardware": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "HardwareSpec",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "apple-m4",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "devices": [
+            {
+              "capabilities": {
+                "architecture": "arm64",
+                "core_pools": [
+                  {
+                    "count": 4,
+                    "kind": "performance"
+                  },
+                  {
+                    "count": 6,
+                    "kind": "efficiency"
+                  }
+                ],
+                "core_topology_evidence": [
+                  {
+                    "accessed_on": "2026-08-07",
+                    "source_kind": "vendor_official",
+                    "title": "MacBook Air (13-inch, M4, 2025) - Tech Specs",
+                    "url": "https://support.apple.com/en-us/122209"
+                  }
+                ],
+                "theoretical_compute": {
+                  "fp32_flops_per_second": {
+                    "evidence": [
+                      {
+                        "accessed_on": "2026-08-07",
+                        "source_kind": "vendor_official",
+                        "title": "Apple introduces M4 chip",
+                        "url": "https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/"
+                      }
+                    ],
+                    "reason": "vendor_does_not_publish_frequency_or_fma_issue_rate",
+                    "status": "unknown",
+                    "value": null
+                  },
+                  "fp64_flops_per_second": {
+                    "evidence": [
+                      {
+                        "accessed_on": "2026-08-07",
+                        "source_kind": "vendor_official",
+                        "title": "Apple introduces M4 chip",
+                        "url": "https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/"
+                      }
+                    ],
+                    "reason": "vendor_does_not_publish_frequency_or_fma_issue_rate",
+                    "status": "unknown",
+                    "value": null
+                  },
+                  "matrix_operations_per_second": {
+                    "evidence": [
+                      {
+                        "accessed_on": "2026-08-07",
+                        "source_kind": "vendor_official",
+                        "title": "Apple introduces M4 chip",
+                        "url": "https://www.apple.com/newsroom/2024/05/apple-introduces-m4-chip/"
+                      }
+                    ],
+                    "reason": "vendor_does_not_publish_cpu_ml_accelerator_throughput",
+                    "status": "unknown",
+                    "value": null
+                  }
+                },
+                "unified_memory": {
+                  "evidence": [
+                    {
+                      "accessed_on": "2026-08-07",
+                      "source_kind": "vendor_official",
+                      "title": "MacBook Air (13-inch, M4, 2025) - Tech Specs",
+                      "url": "https://support.apple.com/en-us/122209"
+                    }
+                  ],
+                  "peak_bandwidth_bytes_per_second": 120000000000.0,
+                  "scope": "soc_shared"
+                },
+                "vector": {
+                  "evidence": [
+                    {
+                      "accessed_on": "2026-08-07",
+                      "source_kind": "isa_derived",
+                      "title": "Arm Coding for Neon",
+                      "url": "https://developer.arm.com/documentation/102159/0104"
+                    }
+                  ],
+                  "fp32_fma_flops_per_instruction": 8,
+                  "fp64_fma_flops_per_instruction": 4,
+                  "isa": "neon",
+                  "register_bits": 128
+                }
+              },
+              "compute_units": 10,
+              "id": "cpu",
+              "kind": "cpu",
+              "memory_bytes": 17179869184,
+              "model": "M4",
+              "vendor": "Apple"
+            },
+            {
+              "capabilities": null,
+              "compute_units": 8,
+              "id": "gpu",
+              "kind": "gpu",
+              "memory_bytes": 17179869184,
+              "model": "M4",
+              "vendor": "Apple"
+            }
+          ]
+        }
+      }
+    ],
+    "hardware_capability_profiles": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "HardwareCapabilityProfile",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "apple-m4-cpu-local",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "environment": {
+            "captured_at": "2026-08-07T03:58:15.293783+00:00",
+            "checks": [
+              {
+                "check_id": "trusted-platform",
+                "observed": {
+                  "machine": "arm64",
+                  "system": "Darwin"
+                },
+                "passed": true,
+                "required": {
+                  "machine": "arm64",
+                  "system": "Darwin"
+                }
+              },
+              {
+                "check_id": "ac-power",
+                "observed": "ac",
+                "passed": true,
+                "required": "ac"
+              },
+              {
+                "check_id": "thermal-nominal",
+                "observed": "nominal",
+                "passed": true,
+                "required": "nominal"
+              },
+              {
+                "check_id": "settled-load",
+                "observed": 0.271826171875,
+                "passed": false,
+                "reason_code": "load-above-policy",
+                "required": {
+                  "maximum": 0.25,
+                  "normalization": "one-minute load / logical CPU count"
+                }
+              },
+              {
+                "check_id": "bounded-total-competing-cpu",
+                "observed": 0.17799999999999996,
+                "passed": false,
+                "reason_code": "total-competing-cpu-above-policy",
+                "required": {
+                  "maximum": 0.1,
+                  "normalization": "maximum sampled total non-coordinator process CPU percent / (100 * logical CPU count)"
+                }
+              }
+            ],
+            "collector": {
+              "name": "groundupscale-local-environment",
+              "privacy": "allowlisted fields only; no command arguments, environment variables, or unrestricted process paths",
+              "version": "v1alpha1"
+            },
+            "eligible": false,
+            "interpretation": "Preflight eligibility does not replace per-run benchmark noise gates.",
+            "observations": {
+              "competitors": {
+                "excluded_process_scope": "coordinator process and ancestors",
+                "maximum_single_process_cpu_percent": 107.5,
+                "maximum_total_cpu_percent": 177.99999999999997,
+                "normalized_maximum_total_cpu": 0.17799999999999996,
+                "sample_count": 3,
+                "sample_interval_seconds": 0.2,
+                "top": [
+                  {
+                    "cpu_percent": 107.5,
+                    "name": "mediaanalysisd",
+                    "pid": 83264
+                  },
+                  {
+                    "cpu_percent": 60.6,
+                    "name": "python3.11",
+                    "pid": 71091
+                  },
+                  {
+                    "cpu_percent": 36.9,
+                    "name": "python3.11",
+                    "pid": 71092
+                  },
+                  {
+                    "cpu_percent": 8.8,
+                    "name": "mediaanalysisd-access",
+                    "pid": 83919
+                  },
+                  {
+                    "cpu_percent": 4.0,
+                    "name": "Codex (Renderer)",
+                    "pid": 69420
+                  },
+                  {
+                    "cpu_percent": 2.5,
+                    "name": "Feishu",
+                    "pid": 5986
+                  },
+                  {
+                    "cpu_percent": 2.1,
+                    "name": "Codex (Service)",
+                    "pid": 69345
+                  },
+                  {
+                    "cpu_percent": 2.0,
+                    "name": "Storage",
+                    "pid": 50064
+                  },
+                  {
+                    "cpu_percent": 1.7,
+                    "name": "healthmonitor",
+                    "pid": 5988
+                  },
+                  {
+                    "cpu_percent": 1.7,
+                    "name": "Activity Monitor",
+                    "pid": 5992
+                  }
+                ],
+                "total_cpu_percent_samples": [
+                  117.39999999999999,
+                  177.99999999999997,
+                  144.1
+                ]
+              },
+              "load": {
+                "fifteen_minutes": 3.00244140625,
+                "five_minutes": 3.2177734375,
+                "normalized_one_minute": 0.271826171875,
+                "one_minute": 2.71826171875
+              },
+              "platform": {
+                "logical_cpu_count": 10,
+                "machine": "arm64",
+                "release": "24.6.0",
+                "system": "Darwin"
+              },
+              "power": {
+                "battery_percent": 100.0,
+                "source": "ac"
+              },
+              "thermal": {
+                "performance_warning": false,
+                "speed_limits_percent": {},
+                "status": "nominal",
+                "thermal_warning": false
+              }
+            },
+            "policy": {
+              "allowlist_only": true,
+              "maximum_normalized_one_minute_load": 0.25,
+              "maximum_normalized_total_competing_cpu": 0.1,
+              "policy_id": "local-apple-silicon-v2",
+              "require_ac_power": true,
+              "require_nominal_thermal_status": true,
+              "required_machine": "arm64",
+              "required_system": "Darwin"
+            },
+            "reason_codes": [
+              "load-above-policy",
+              "total-competing-cpu-above-policy"
+            ],
+            "schema": "groundupscale.dev/environment-validity/v1alpha1"
+          },
+          "hardware_cohort": "apple-m4-cpu-darwin-arm64-torch-2.13.0-local-apple-silicon-v2-5071fb6a2f79",
+          "resources": [
+            {
+              "aggregation": "max(probe_shape_p80)",
+              "optimistic_rate": 1874898740205.6428,
+              "probe_envelopes": [
+                {
+                  "distinct_shape_count": 12,
+                  "probe_id": "matrix-fp32-cube",
+                  "shape_best_rates": [
+                    {
+                      "rate": 822571594959.9551,
+                      "shape": [
+                        127,
+                        127,
+                        127
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 935784700337.4515,
+                      "shape": [
+                        128,
+                        128,
+                        128
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 676919844614.068,
+                      "shape": [
+                        129,
+                        129,
+                        129
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1316466556958.1882,
+                      "shape": [
+                        255,
+                        255,
+                        255
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1394935227300.1501,
+                      "shape": [
+                        256,
+                        256,
+                        256
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1135246262827.43,
+                      "shape": [
+                        257,
+                        257,
+                        257
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 1680257986472.8596,
+                      "shape": [
+                        511,
+                        511,
+                        511
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 1748779685469.7048,
+                      "shape": [
+                        512,
+                        512,
+                        512
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1556661050465.2986,
+                      "shape": [
+                        513,
+                        513,
+                        513
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 1847675240382.5125,
+                      "shape": [
+                        767,
+                        767,
+                        767
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 1908171906656.1357,
+                      "shape": [
+                        768,
+                        768,
+                        768
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1747131956010.1812,
+                      "shape": [
+                        769,
+                        769,
+                        769
+                      ],
+                      "threads": 1
+                    }
+                  ],
+                  "shape_p80_rate": 1748450139577.8,
+                  "shape_p95_rate": 1874898740205.6428
+                },
+                {
+                  "distinct_shape_count": 11,
+                  "probe_id": "scalar-fp32-fma-chain",
+                  "shape_best_rates": [
+                    {
+                      "rate": 5939613925.094869,
+                      "shape": [
+                        63
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 5855611150.822016,
+                      "shape": [
+                        64
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 6457942648.501633,
+                      "shape": [
+                        65
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 9481481481.481482,
+                      "shape": [
+                        128
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 9127694859.038143,
+                      "shape": [
+                        129
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 12374585997.306707,
+                      "shape": [
+                        255
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 11811114443.239752,
+                      "shape": [
+                        256
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 12126824405.823942,
+                      "shape": [
+                        257
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 13827347571.08163,
+                      "shape": [
+                        511
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 13903385725.608402,
+                      "shape": [
+                        512
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 14106122448.979591,
+                      "shape": [
+                        513
+                      ],
+                      "threads": 1
+                    }
+                  ],
+                  "shape_p80_rate": 13827347571.08163,
+                  "shape_p95_rate": 14004754087.293997
+                },
+                {
+                  "distinct_shape_count": 12,
+                  "probe_id": "vector-fp32-fma",
+                  "shape_best_rates": [
+                    {
+                      "rate": 14588343164.33958,
+                      "shape": [
+                        65535
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 14405675424.26309,
+                      "shape": [
+                        65536
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 14329515333.652693,
+                      "shape": [
+                        65537
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 22119473325.203083,
+                      "shape": [
+                        262143
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 26012243850.128227,
+                      "shape": [
+                        262144
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 25548468459.571285,
+                      "shape": [
+                        262145
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 28107096036.68909,
+                      "shape": [
+                        1048575
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 28106519346.123062,
+                      "shape": [
+                        1048576
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 28671280379.447212,
+                      "shape": [
+                        1048577
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 11895316380.281488,
+                      "shape": [
+                        4194303
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 11761594794.795918,
+                      "shape": [
+                        4194304
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 11638915025.013048,
+                      "shape": [
+                        4194305
+                      ],
+                      "threads": 10
+                    }
+                  ],
+                  "shape_p80_rate": 27687664246.924095,
+                  "shape_p95_rate": 28360978990.930244
+                }
+              ],
+              "resource": "compute.fp32",
+              "robust_achievable_rate": 1748450139577.8,
+              "selected_optimistic_probe": "matrix-fp32-cube",
+              "selected_robust_probe": "matrix-fp32-cube",
+              "unit": "FLOP/s"
+            },
+            {
+              "aggregation": "max(probe_shape_p80)",
+              "optimistic_rate": 133844279672.11787,
+              "probe_envelopes": [
+                {
+                  "distinct_shape_count": 12,
+                  "probe_id": "shared-memory-copy",
+                  "shape_best_rates": [
+                    {
+                      "rate": 132572109963.80734,
+                      "shape": [
+                        4194303
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 134968616255.92438,
+                      "shape": [
+                        4194304
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 132924367921.73073,
+                      "shape": [
+                        4194305
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 102427768762.05055,
+                      "shape": [
+                        8388607
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 102356171111.26999,
+                      "shape": [
+                        8388608
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 103874497190.45796,
+                      "shape": [
+                        8388609
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 95467744413.52704,
+                      "shape": [
+                        16777215
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 100021762665.62286,
+                      "shape": [
+                        16777216
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 97772143065.01389,
+                      "shape": [
+                        16777217
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 96539979950.10002,
+                      "shape": [
+                        33554431
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 97107492731.0136,
+                      "shape": [
+                        33554432
+                      ],
+                      "threads": 4
+                    },
+                    {
+                      "rate": 96475658478.87978,
+                      "shape": [
+                        33554433
+                      ],
+                      "threads": 4
+                    }
+                  ],
+                  "shape_p80_rate": 126832587409.13748,
+                  "shape_p95_rate": 133844279672.11787
+                },
+                {
+                  "distinct_shape_count": 12,
+                  "probe_id": "shared-memory-triad",
+                  "shape_best_rates": [
+                    {
+                      "rate": 95954033925.85954,
+                      "shape": [
+                        4194303
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 95325090909.09091,
+                      "shape": [
+                        4194304
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 95792134308.2093,
+                      "shape": [
+                        4194305
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 93548472466.87073,
+                      "shape": [
+                        8388607
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 92583903772.36473,
+                      "shape": [
+                        8388608
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 93737702874.35344,
+                      "shape": [
+                        8388609
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 95372348051.03168,
+                      "shape": [
+                        16777215
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 94628516153.64034,
+                      "shape": [
+                        16777216
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 95717398563.75125,
+                      "shape": [
+                        16777217
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 94483477166.3698,
+                      "shape": [
+                        33554431
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 96505986966.94136,
+                      "shape": [
+                        33554432
+                      ],
+                      "threads": 10
+                    },
+                    {
+                      "rate": 92183821987.8477,
+                      "shape": [
+                        33554433
+                      ],
+                      "threads": 10
+                    }
+                  ],
+                  "shape_p80_rate": 95777187159.31769,
+                  "shape_p95_rate": 96202412794.34636
+                }
+              ],
+              "resource": "memory.shared",
+              "robust_achievable_rate": 126832587409.13748,
+              "selected_optimistic_probe": "shared-memory-copy",
+              "selected_robust_probe": "shared-memory-copy",
+              "unit": "B/s"
+            }
+          ],
+          "source": {
+            "observation_schema": "groundupscale.dev/hardware-microbenchmark-observation/v1alpha1",
+            "path": "goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-microbenchmark-observation-v2.json",
+            "sha256": "221c19f53f5df7442165943b99d097b1287b1fcd47903136ccb1a0251ed69e30",
+            "suite": {
+              "name": "apple-m4-cpu-resource-envelope",
+              "version": "0.1.0"
+            }
+          },
+          "target": {
+            "device": "cpu",
+            "hardware": "apple-m4"
+          }
+        }
+      }
+    ],
+    "models": {
+      "two-layer-transformer": {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "ModelSpec",
+        "metadata": {
+          "description": "Two-layer pre-norm Transformer with self-attention and gated MLP.",
+          "labels": {},
+          "name": "two-layer-transformer",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "constraints": [
+            "H == NH * D"
+          ],
+          "root": {
+            "children": [
+              {
+                "count": 2,
+                "id": "layers",
+                "id_template": "layer_{index}",
+                "kind": "repeat",
+                "template": {
+                  "children": [
+                    {
+                      "attributes": {
+                        "epsilon": 1e-06
+                      },
+                      "id": "input_norm",
+                      "inputs": [
+                        {
+                          "name": "x",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "RMSNorm",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": [
+                        {
+                          "name": "weight",
+                          "role": "parameter",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "H"
+                            ]
+                          },
+                          "trainable": true
+                        }
+                      ]
+                    },
+                    {
+                      "children": [
+                        {
+                          "attributes": {},
+                          "id": "q_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "k_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "v_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "q_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "q_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "k_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "k_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,1,3,2"
+                          },
+                          "id": "k_key_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "D",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "qk_matmul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "D",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "scalar": 0.125
+                          },
+                          "id": "scale",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Mul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "causal_mask",
+                          "inputs": [
+                            {
+                              "name": "scores",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Add",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "mask",
+                              "role": "buffer",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "broadcast",
+                                "shape": [
+                                  "B",
+                                  1,
+                                  "S",
+                                  "S"
+                                ]
+                              },
+                              "trainable": false
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {
+                            "dimension": -1
+                          },
+                          "id": "softmax",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Softmax",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "v_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "v_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "equation": "bhqk,bhkd->bqhd",
+                            "output_layout": "sequence_major_contiguous"
+                          },
+                          "id": "context_matmul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,H"
+                          },
+                          "id": "context_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "out_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        }
+                      ],
+                      "entrypoints": [
+                        {
+                          "inputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "name": "forward",
+                          "outputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "steps": [
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q"
+                              },
+                              "target": "q_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k"
+                              },
+                              "target": "k_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v"
+                              },
+                              "target": "v_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_view",
+                              "inputs": {
+                                "x": "q"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q_view"
+                              },
+                              "target": "q_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_transpose",
+                              "inputs": {
+                                "x": "q_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q_heads"
+                              },
+                              "target": "q_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_view",
+                              "inputs": {
+                                "x": "k"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_view"
+                              },
+                              "target": "k_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_transpose",
+                              "inputs": {
+                                "x": "k_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_heads"
+                              },
+                              "target": "k_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_key_transpose",
+                              "inputs": {
+                                "x": "k_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_keys"
+                              },
+                              "target": "k_key_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "qk_matmul",
+                              "inputs": {
+                                "left": "q_heads",
+                                "right": "k_keys"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "scores"
+                              },
+                              "target": "qk_matmul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "scale",
+                              "inputs": {
+                                "x": "scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "scaled_scores"
+                              },
+                              "target": "scale"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "causal_mask",
+                              "inputs": {
+                                "scores": "scaled_scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "masked_scores"
+                              },
+                              "target": "causal_mask"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "softmax",
+                              "inputs": {
+                                "x": "masked_scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "probabilities"
+                              },
+                              "target": "softmax"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_view",
+                              "inputs": {
+                                "x": "v"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v_view"
+                              },
+                              "target": "v_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_transpose",
+                              "inputs": {
+                                "x": "v_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v_heads"
+                              },
+                              "target": "v_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "context_matmul",
+                              "inputs": {
+                                "left": "probabilities",
+                                "right": "v_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "context_heads"
+                              },
+                              "target": "context_matmul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "context_view",
+                              "inputs": {
+                                "x": "context_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "context"
+                              },
+                              "target": "context_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "out_proj",
+                              "inputs": {
+                                "x": "context"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "hidden"
+                              },
+                              "target": "out_proj"
+                            }
+                          ]
+                        }
+                      ],
+                      "id": "attention",
+                      "kind": "composite"
+                    },
+                    {
+                      "attributes": {},
+                      "id": "residual_1",
+                      "inputs": [
+                        {
+                          "name": "left",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        },
+                        {
+                          "name": "right",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "Add",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "attributes": {
+                        "epsilon": 1e-06
+                      },
+                      "id": "post_norm",
+                      "inputs": [
+                        {
+                          "name": "x",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "RMSNorm",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": [
+                        {
+                          "name": "weight",
+                          "role": "parameter",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "H"
+                            ]
+                          },
+                          "trainable": true
+                        }
+                      ]
+                    },
+                    {
+                      "children": [
+                        {
+                          "attributes": {},
+                          "id": "gate_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "I"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "up_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "I"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "silu",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "SiLU",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "gate_mul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Mul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "down_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "I",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        }
+                      ],
+                      "entrypoints": [
+                        {
+                          "inputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "name": "forward",
+                          "outputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "steps": [
+                            {
+                              "entrypoint": "forward",
+                              "id": "gate_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "gate"
+                              },
+                              "target": "gate_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "up_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "up"
+                              },
+                              "target": "up_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "silu",
+                              "inputs": {
+                                "x": "gate"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "activated_gate"
+                              },
+                              "target": "silu"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "gate_mul",
+                              "inputs": {
+                                "left": "activated_gate",
+                                "right": "up"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "gated"
+                              },
+                              "target": "gate_mul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "down_proj",
+                              "inputs": {
+                                "x": "gated"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "hidden"
+                              },
+                              "target": "down_proj"
+                            }
+                          ]
+                        }
+                      ],
+                      "id": "mlp",
+                      "kind": "composite"
+                    },
+                    {
+                      "attributes": {},
+                      "id": "residual_2",
+                      "inputs": [
+                        {
+                          "name": "left",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        },
+                        {
+                          "name": "right",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "Add",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": []
+                    }
+                  ],
+                  "entrypoints": [
+                    {
+                      "inputs": [
+                        {
+                          "name": "hidden",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "name": "forward",
+                      "outputs": [
+                        {
+                          "name": "hidden",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "steps": [
+                        {
+                          "entrypoint": "forward",
+                          "id": "input_norm",
+                          "inputs": {
+                            "x": "hidden"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "normed"
+                          },
+                          "target": "input_norm"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "attention",
+                          "inputs": {
+                            "hidden": "normed"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "hidden": "attention_output"
+                          },
+                          "target": "attention"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "residual_1",
+                          "inputs": {
+                            "left": "hidden",
+                            "right": "attention_output"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "post_attention"
+                          },
+                          "target": "residual_1"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "post_norm",
+                          "inputs": {
+                            "x": "post_attention"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "post_attention_normed"
+                          },
+                          "target": "post_norm"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "mlp",
+                          "inputs": {
+                            "hidden": "post_attention_normed"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "hidden": "mlp_output"
+                          },
+                          "target": "mlp"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "residual_2",
+                          "inputs": {
+                            "left": "post_attention",
+                            "right": "mlp_output"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "hidden"
+                          },
+                          "target": "residual_2"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "layer",
+                  "kind": "composite"
+                }
+              }
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "prefill",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "group": "layers",
+                    "id": "layers",
+                    "initial": "hidden",
+                    "input_port": "hidden",
+                    "kind": "repeat_call",
+                    "output_port": "hidden",
+                    "result": "hidden"
+                  }
+                ]
+              }
+            ],
+            "id": "transformer",
+            "kind": "composite"
+          },
+          "symbols": {
+            "B": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "D": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "H": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "I": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "NH": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "S": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "operator_frontier_profiles": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "OperatorFrontierProfile",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "apple-m4-cpu-matmul-512",
+          "version": "3.0.0"
+        },
+        "spec": {
+          "anchors": [
+            {
+              "anchor_id": "apple-m4-cpu-matmul-512-matmul-q-proj-3.0.0",
+              "candidate_coverage": {
+                "evaluated_candidate_digests": [
+                  "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4"
+                ],
+                "evaluated_candidate_families": [
+                  "torch.matmul.cpu.fp32"
+                ],
+                "level": "C0_SINGLE",
+                "limitation": "does-not-establish-global-optimum-or-support-frontier-shift",
+                "scope": "declared-runtime-candidate-family",
+                "selected_candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                "selected_candidate_family": "torch.matmul.cpu.fp32"
+              },
+              "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+              "candidate_family": "torch.matmul.cpu.fp32",
+              "case_id": "matmul-q-proj",
+              "completion_boundary": "synchronous-cpu-call-return",
+              "dtype": "float32",
+              "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+              "execution_mode": "eager",
+              "frontier_role": "ACTIVE",
+              "holdout_run_ids": [
+                "m4-cpu-matmul512-v3-holdout-20260809-01",
+                "m4-cpu-matmul512-v3-holdout-20260809-02",
+                "m4-cpu-matmul512-v3-holdout-20260809-03"
+              ],
+              "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+              "instrumentation_profile": "benchmark",
+              "interop_threads": 10,
+              "latency_ns": 154364.57142857142,
+              "layout": "row-major-contiguous",
+              "measurement_hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+              "minimum_alignment_bytes": 64,
+              "observation_validity": "QUALIFIED",
+              "operand_shapes": [
+                [
+                  1,
+                  512,
+                  512
+                ],
+                [
+                  512,
+                  512
+                ]
+              ],
+              "operand_strides": [
+                [
+                  262144,
+                  512,
+                  1
+                ],
+                [
+                  512,
+                  1
+                ]
+              ],
+              "qualification_policy": {
+                "estimator": "median(independent_holdout_session_medians)",
+                "maximum_search_holdout_relative_gap": 0.05,
+                "maximum_session_iqr_over_median": 0.03,
+                "maximum_session_median_relative_range": 0.05,
+                "maximum_warmup_median_drift": 0.05,
+                "minimum_holdout_sessions": 3,
+                "minimum_samples": 20,
+                "minimum_search_sessions": 3,
+                "minimum_timed_duration_ns": 100000000,
+                "minimum_warmup_iterations": 500,
+                "minimum_windows_per_sample": 5,
+                "policy_id": "exact-shape-operator-frontier-qualification",
+                "uncertainty": "sample-standard-deviation(independent_holdout_session_medians)",
+                "version": "2.0.0"
+              },
+              "result_shape": [
+                1,
+                512,
+                512
+              ],
+              "result_stride": [
+                262144,
+                512,
+                1
+              ],
+              "search_run_ids": [
+                "m4-cpu-matmul512-v3-search-20260809-06",
+                "m4-cpu-matmul512-v3-search-20260809-07",
+                "m4-cpu-matmul512-v3-search-20260809-08"
+              ],
+              "semantic_operation": "MatMul",
+              "session_evidence": {
+                "holdout": [
+                  {
+                    "benchmark_sha256": "9c7430b6481e73ebd960514c16d30cfce68ff7c322028f8bda9499ccef262835",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.000809977140542288,
+                    "median_ns": 154281.25,
+                    "process_id": 62618,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-holdout-20260809-01",
+                    "run_id": "m4-cpu-matmul512-v3-holdout-20260809-01",
+                    "run_manifest_sha256": "b9856e52e4cb9181d88ade107ef02026cfbfb382ec0e559a21b6fb423aa256e1",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      154306.57142857142,
+                      154330.35714285716,
+                      154273.7857142857,
+                      154235.14285714287,
+                      154187.5,
+                      154187.5,
+                      154449.42857142858,
+                      154348.2857142857,
+                      154145.85714285716,
+                      154044.7142857143,
+                      154196.5,
+                      154345.21428571426,
+                      154440.42857142858,
+                      154315.5,
+                      154306.57142857142,
+                      154288.7142857143,
+                      154214.2857142857,
+                      154294.64285714284,
+                      154074.35714285716,
+                      154196.5
+                    ],
+                    "timed_duration_ns": 172792381.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.0028924180108494115,
+                    "warmup_window_samples_ns": [
+                      164622.9,
+                      154572.9,
+                      154395.85,
+                      154087.5,
+                      154127.1,
+                      154077.05,
+                      154141.7
+                    ]
+                  },
+                  {
+                    "benchmark_sha256": "37bf2995fd68f539cf7c90c58976a1119510142dca7624123395c562519610a8",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.02158898956248713,
+                    "median_ns": 158846.67857142855,
+                    "process_id": 62737,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-holdout-20260809-02",
+                    "run_id": "m4-cpu-matmul512-v3-holdout-20260809-02",
+                    "run_manifest_sha256": "8f5a06afb64924f3e8e114ba8b02815528cd8d79813fb0904f5dc28b0a238a21",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      161854.14285714284,
+                      161386.92857142858,
+                      157122.0,
+                      157491.07142857142,
+                      158038.64285714284,
+                      157523.7857142857,
+                      158306.5,
+                      158717.21428571426,
+                      158976.14285714284,
+                      159541.64285714284,
+                      157473.14285714284,
+                      154654.7142857143,
+                      152699.35714285716,
+                      152913.7142857143,
+                      159270.85714285716,
+                      160678.57142857142,
+                      160758.92857142858,
+                      163104.14285714284,
+                      164785.71428571426,
+                      168160.7142857143
+                    ],
+                    "timed_duration_ns": 178329368.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.007209730303251358,
+                    "warmup_window_samples_ns": [
+                      161220.85,
+                      157506.25,
+                      162322.9,
+                      160664.6,
+                      161910.4,
+                      169070.8,
+                      162391.65
+                    ]
+                  },
+                  {
+                    "benchmark_sha256": "b1c0fd091f457e9a3d261f78f232d81c225c4dbd5c8418a19bffb17612b68749",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.000848524642960184,
+                    "median_ns": 154364.57142857142,
+                    "process_id": 62954,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-holdout-20260809-03",
+                    "run_id": "m4-cpu-matmul512-v3-holdout-20260809-03",
+                    "run_manifest_sha256": "3da977cc732e0bcbdd77c037b0d28414b4d190443caeaa536b3ac2bd97b148bc",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      154500.0,
+                      154506.0,
+                      154720.2857142857,
+                      154285.78571428574,
+                      154339.2857142857,
+                      154383.92857142858,
+                      154226.2142857143,
+                      154345.2857142857,
+                      154330.35714285716,
+                      154452.35714285716,
+                      154369.0,
+                      154273.85714285716,
+                      154479.21428571426,
+                      154455.35714285716,
+                      154883.92857142858,
+                      154372.07142857142,
+                      154360.14285714284,
+                      154330.2857142857,
+                      154297.57142857142,
+                      154342.2857142857
+                    ],
+                    "timed_duration_ns": 172992417.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.037559081099688106,
+                    "warmup_window_samples_ns": [
+                      162635.4,
+                      160052.1,
+                      159718.75,
+                      155220.8,
+                      154258.3,
+                      154437.5,
+                      154233.35
+                    ]
+                  }
+                ],
+                "search": [
+                  {
+                    "benchmark_sha256": "c901aeb4ec789ade90ab26fc6e5a5ad8d8a59904415472fe10120da91f9c4b50",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.0009188823211340275,
+                    "median_ns": 154555.0,
+                    "process_id": 62312,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-search-20260809-06",
+                    "run_id": "m4-cpu-matmul512-v3-search-20260809-06",
+                    "run_manifest_sha256": "8c6f37bf2a34304824a5293ee82da630129999df8715f8bd9633f8cd280d15ff",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      154392.85714285716,
+                      154547.57142857142,
+                      154488.14285714284,
+                      154470.2142857143,
+                      154163.64285714284,
+                      154627.92857142858,
+                      154571.35714285716,
+                      154500.0,
+                      154562.42857142858,
+                      154592.21428571426,
+                      154369.0,
+                      154666.64285714284,
+                      154648.7857142857,
+                      154502.92857142858,
+                      154574.42857142858,
+                      154511.85714285716,
+                      154651.85714285713,
+                      154627.92857142858,
+                      154639.85714285716,
+                      154479.2142857143
+                    ],
+                    "timed_duration_ns": 173120995.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.0006759833871569102,
+                    "warmup_window_samples_ns": [
+                      159100.0,
+                      154143.75,
+                      154250.0,
+                      154229.2,
+                      154106.25,
+                      154145.8,
+                      154402.1
+                    ]
+                  },
+                  {
+                    "benchmark_sha256": "2317dbd4fc2056020e4b6d2e3803bfec84d28f9bd605c3f23589bbe65e80d263",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.0010944225873641168,
+                    "median_ns": 154321.42857142858,
+                    "process_id": 62424,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-search-20260809-07",
+                    "run_id": "m4-cpu-matmul512-v3-search-20260809-07",
+                    "run_manifest_sha256": "c5450072b889fc6a172a71b99c7200e1ebc632d9c07fdfc2d5a9d95a006a4aaa",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      154288.64285714284,
+                      154131.0,
+                      154136.92857142858,
+                      154163.71428571426,
+                      154157.71428571426,
+                      154392.85714285713,
+                      154363.07142857142,
+                      154330.2857142857,
+                      154392.85714285716,
+                      154232.14285714284,
+                      154360.14285714287,
+                      154309.5,
+                      154303.5,
+                      154458.35714285716,
+                      154416.64285714284,
+                      154312.57142857142,
+                      154425.64285714284,
+                      154223.2142857143,
+                      154437.57142857142,
+                      154464.28571428574
+                    ],
+                    "timed_duration_ns": 172844838.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.004016335369033876,
+                    "warmup_window_samples_ns": [
+                      164383.3,
+                      154677.1,
+                      154354.15,
+                      154116.65,
+                      153993.75,
+                      154141.65,
+                      154058.35
+                    ]
+                  },
+                  {
+                    "benchmark_sha256": "bdf58e5f0840576efeb0178d9554095bc8b004262f69d135729bcc2879eb0cca",
+                    "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+                    "completion_boundary": "synchronous-cpu-call-return",
+                    "correctness_oracle_policy_id": "matmul-fp32-float64-oracle-v1",
+                    "correctness_sha256": "b35bd1339c08abe7d69499a178dcc75c3f6bd3655a3e54e367142b285d1d1d96",
+                    "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+                    "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+                    "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+                    "instrumentation_profile": "benchmark",
+                    "iqr_over_median": 0.001788837744533974,
+                    "median_ns": 155178.57142857142,
+                    "process_id": 62524,
+                    "run_bundle": ".groundupscale/runs/m4-cpu-matmul512-v3-search-20260809-08",
+                    "run_id": "m4-cpu-matmul512-v3-search-20260809-08",
+                    "run_manifest_sha256": "594f98f4348c1dcf280d874d0f18969731a33186ebcdc2e9c4758b2f45351155",
+                    "sample_count": 20,
+                    "samples_ns": [
+                      155080.2857142857,
+                      155020.7857142857,
+                      155014.92857142858,
+                      154976.2142857143,
+                      155336.28571428574,
+                      155035.64285714284,
+                      154979.2142857143,
+                      154985.07142857142,
+                      155267.85714285713,
+                      155086.2857142857,
+                      155160.7142857143,
+                      155160.7142857143,
+                      155351.2142857143,
+                      155333.28571428574,
+                      155282.64285714284,
+                      155309.5,
+                      155309.57142857142,
+                      155279.7857142857,
+                      155196.42857142858,
+                      155342.2857142857
+                    ],
+                    "timed_duration_ns": 173833920.0,
+                    "timer_resolution_ns": 41.66666666666667,
+                    "timer_source": "time.perf_counter_ns",
+                    "timing_scope": "host_visible_completion",
+                    "warmup_iterations": 500,
+                    "warmup_median_drift": 0.0012633276877166762,
+                    "warmup_window_samples_ns": [
+                      160833.3,
+                      155012.5,
+                      155183.3,
+                      154979.15,
+                      154987.5,
+                      155037.5,
+                      154950.0
+                    ]
+                  }
+                ]
+              },
+              "stable_path_pattern": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+              "standard_uncertainty_ns": 2612.1308332893736,
+              "threads": 4,
+              "timing_scope": "host_visible_completion",
+              "working_set_bytes": 3145728
+            }
+          ],
+          "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "source": {
+            "observation_schema": "groundupscale.dev/operator-frontier-observation/v1alpha1",
+            "path": "goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-matmul-512-frontier-observation-20260810-v4.json",
+            "sha256": "e50d2a903dea9b8464bb2b8ff56149ef18c1a1bf92474c6e92ef0332ed6240e8"
+          },
+          "target": {
+            "device": "cpu",
+            "hardware": "apple-m4"
+          }
+        }
+      }
+    ],
+    "workload": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "WorkloadSpec",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "transformer-prefill",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "artifacts": [
+          {
+            "name": "hidden-input",
+            "role": "input",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          },
+          {
+            "name": "hidden-output",
+            "role": "output",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          }
+        ],
+        "root": {
+          "children": [
+            {
+              "entrypoint": "prefill",
+              "id": "model-prefill",
+              "inputs": {
+                "hidden": "hidden-input"
+              },
+              "kind": "model_call",
+              "model": {
+                "path": "specs/models/two-layer-transformer.yaml",
+                "sha256": null,
+                "version": "0.1.0"
+              },
+              "outputs": {
+                "hidden": "hidden-output"
+              }
+            }
+          ],
+          "id": "request",
+          "kind": "sequence"
+        }
+      }
+    }
+  },
+  "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+  "sources": {
+    "specs/analysis-cases/fixed-prefill.yaml": {
+      "kind": "AnalysisCase",
+      "name": "fixed-prefill",
+      "path": "specs/analysis-cases/fixed-prefill.yaml",
+      "sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+      "version": "0.1.0"
+    },
+    "specs/benchmarks/core-prefill.yaml": {
+      "kind": "BenchmarkCase",
+      "name": "core-prefill",
+      "path": "specs/benchmarks/core-prefill.yaml",
+      "sha256": "b7042dbb93d0dbc4cc7029a96cb48851b6a7714329e011c21877c7fa78e63397",
+      "version": "0.1.0"
+    },
+    "specs/deployment-intents/mac-cpu.yaml": {
+      "kind": "DeploymentIntent",
+      "name": "mac-cpu",
+      "path": "specs/deployment-intents/mac-cpu.yaml",
+      "sha256": "e3d18423f60d73db4e1dd71d08766a5f04735dfedb80394021bb37619fd2ef39",
+      "version": "0.1.0"
+    },
+    "specs/fabrics/local-m4.yaml": {
+      "kind": "FabricGraph",
+      "name": "local-m4",
+      "path": "specs/fabrics/local-m4.yaml",
+      "sha256": "8d6f9c0cee4afa21176c5e4b48e53359796c356f259cc5175d3846925e243057",
+      "version": "0.1.0"
+    },
+    "specs/hardware-capabilities/apple-m4-cpu-local.yaml": {
+      "kind": "HardwareCapabilityProfile",
+      "name": "apple-m4-cpu-local",
+      "path": "specs/hardware-capabilities/apple-m4-cpu-local.yaml",
+      "sha256": "b8457d2f36aa089a0bf912f306936345cb8ef4233bb5389d6aa7ce68b8a29b3c",
+      "version": "0.1.0"
+    },
+    "specs/hardware/apple-m4.yaml": {
+      "kind": "HardwareSpec",
+      "name": "apple-m4",
+      "path": "specs/hardware/apple-m4.yaml",
+      "sha256": "1c4feb662a1f05c3dd27afde77a6ccb50e1f765f46c648d018a4b17198b6ec57",
+      "version": "0.1.0"
+    },
+    "specs/models/two-layer-transformer.yaml": {
+      "kind": "ModelSpec",
+      "name": "two-layer-transformer",
+      "path": "specs/models/two-layer-transformer.yaml",
+      "sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+      "version": "0.1.0"
+    },
+    "specs/operator-frontiers/apple-m4-cpu-matmul-512-v3.yaml": {
+      "kind": "OperatorFrontierProfile",
+      "name": "apple-m4-cpu-matmul-512",
+      "path": "specs/operator-frontiers/apple-m4-cpu-matmul-512-v3.yaml",
+      "sha256": "e9522434a23ed821b9fac7331201dfcac4771d2c5ab0b69174091e32eed26d49",
+      "version": "3.0.0"
+    },
+    "specs/plans/mac-cpu-prefill.yaml": {
+      "kind": "AnalysisPlan",
+      "name": "mac-cpu-prefill",
+      "path": "specs/plans/mac-cpu-prefill.yaml",
+      "sha256": "eb2df2caa5c4b04ebab5ec8e2b63797d2a199da9ef7ff8775b98add1d7224517",
+      "version": "0.1.0"
+    },
+    "specs/workloads/prefill.yaml": {
+      "kind": "WorkloadSpec",
+      "name": "transformer-prefill",
+      "path": "specs/workloads/prefill.yaml",
+      "sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf",
+      "version": "0.1.0"
+    }
+  }
+}

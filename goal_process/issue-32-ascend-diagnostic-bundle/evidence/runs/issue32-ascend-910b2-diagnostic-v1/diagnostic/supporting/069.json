@@ -1,0 +1,31 @@
+{
+  "payload": {
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "demand_unit": "B",
+    "execution_domain": {
+      "affinity": "192-223",
+      "alignment_bytes": 512,
+      "concurrency": 1,
+      "context": "pytorch-eager",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "row-major-contiguous",
+      "numa": "6",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "default-npu-stream",
+      "threads": 1
+    },
+    "minimum_demand": 3145728,
+    "rate_unit": "B/s",
+    "resource": "memory.hbm",
+    "source_evidence_ref": "artifact://issue-32/source-physical-floor",
+    "validated": true,
+    "validated_rate_per_second": 1408047205172.7576,
+    "validated_rate_resource": "memory.hbm"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

@@ -1,0 +1,10 @@
+{
+  "payload": {
+    "session_ids": [
+      "issue31-search-v4-s512-torch-matmul-01",
+      "issue31-search-v4-s512-torch-matmul-02",
+      "issue31-search-v4-s512-torch-matmul-03"
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

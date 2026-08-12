@@ -1,0 +1,6 @@
+{
+  "payload": {
+    "operation": "preflight"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

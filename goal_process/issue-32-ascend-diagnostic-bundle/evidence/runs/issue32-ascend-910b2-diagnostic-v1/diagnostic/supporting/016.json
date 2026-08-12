@@ -1,0 +1,7 @@
+{
+  "payload": {
+    "eligible": true,
+    "preflight_ref": "artifact://issue-32/preflight"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

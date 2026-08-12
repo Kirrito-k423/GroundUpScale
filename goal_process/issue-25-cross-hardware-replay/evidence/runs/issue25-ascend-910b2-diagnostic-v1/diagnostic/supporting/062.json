@@ -1,0 +1,41 @@
+{
+  "payload": {
+    "alignment_bytes": 512,
+    "dtype": "float32",
+    "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
+    "layout": "row-major-contiguous",
+    "shape": {
+      "left": [
+        1,
+        512,
+        512
+      ],
+      "output": [
+        1,
+        512,
+        512
+      ],
+      "right": [
+        512,
+        512
+      ]
+    },
+    "strides": {
+      "left": [
+        262144,
+        512,
+        1
+      ],
+      "output": [
+        262144,
+        512,
+        1
+      ],
+      "right": [
+        512,
+        1
+      ]
+    }
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}
