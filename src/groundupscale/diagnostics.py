@@ -6926,7 +6926,10 @@ def _unknown_surface_query(
         "anchors": [],
         "weights": [],
         "effective_rate": None,
+        "latency": None,
         "work_rate_latency": None,
+        "response": None,
+        "shape_regime": None,
         "uncertainty": None,
         "evidence_refs": (
             list(rejected_cell.cell.get("rejection_evidence_refs", []))
@@ -7569,10 +7572,24 @@ def _query_capability_surface(
             query, surface, "incomplete_candidate_family_facet"
         )
     shape = query.get("shape")
+    work_formula = surface.get("work_formula")
+    integer_shape_required = (
+        isinstance(work_formula, dict)
+        and work_formula.get("kind") == "matmul-2mnk-fixed-nk"
+    )
     if (
         not isinstance(shape, dict)
         or set(shape) != set(axes)
-        or any(not _finite_number(shape[axis]) or shape[axis] <= 0 for axis in axes)
+        or any(
+            not _finite_number(shape[axis])
+            or shape[axis] <= 0
+            or integer_shape_required
+            and (
+                not isinstance(shape[axis], int)
+                or isinstance(shape[axis], bool)
+            )
+            for axis in axes
+        )
     ):
         return _unknown_surface_query(query, surface, "invalid_query_shape")
     surface_domain = surface.get("domain")
@@ -7618,6 +7635,16 @@ def _query_capability_surface(
     ):
         return _unknown_surface_query(
             query, surface, "kernel_dispatch_regime_unvalidated"
+        )
+    if (
+        "fixed_n" in surface_domain
+        and (
+            query_domain.get("fixed_n") != surface_domain.get("fixed_n")
+            or query_domain.get("fixed_k") != surface_domain.get("fixed_k")
+        )
+    ):
+        return _unknown_surface_query(
+            query, surface, "fixed_nk_domain_mismatch"
         )
     if query_domain != surface_domain:
         return _unknown_surface_query(query, surface, "shape_regime_unvalidated")

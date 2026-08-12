@@ -16,7 +16,7 @@ from test_ascend_npu_measurement_adapter import (
     _raw_hardware_collection,
 )
 
-from groundupscale.diagnostics import diagnose_run_bundle
+from groundupscale.diagnostics import diagnose_run_bundle, render_diagnostic_report
 from groundupscale.ir import content_fingerprint
 from groundupscale.measurement_adapters.ascend_npu import (
     AscendNpuMeasurementAdapter,
@@ -125,6 +125,113 @@ def _measurement_run(
     _rewrite_environment_session(run, process_id=process_id)
     assert verify_run_bundle(run)["passed"] is True
     return run
+
+
+def _fixed_nk_measurement_run(
+    root: Path,
+    *,
+    run_id: str,
+    m: int,
+    median_ns: int,
+    process_id: int,
+    n: int = 512,
+    k: int = 512,
+) -> Path:
+    case = {
+        "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
+        "operation": "MatMul",
+        "shape": {"left": [m, k], "right": [k, n]},
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "seed": 20260812,
+        "candidate": "torch.matmul",
+        "warmup_iterations": 20,
+        "repetitions": 5,
+    }
+    raw = _raw_hardware_collection(None, 0, case, {})
+    raw["left_sha256"] = sha256(f"left-{m}-{k}".encode()).hexdigest()
+    raw["right_sha256"] = sha256(f"right-{k}-{n}".encode()).hexdigest()
+    raw["target_output_sha256"] = sha256(f"output-{m}-{n}".encode()).hexdigest()
+    raw["minimum_alignment_bytes"] = 64
+    raw["raw_samples_ns"] = [
+        median_ns - 2,
+        median_ns - 1,
+        median_ns,
+        median_ns + 1,
+        median_ns + 2,
+    ]
+    adapter = AscendNpuMeasurementAdapter(
+        runtime_loader=_available_runtime,
+        collection_executor=lambda *args: raw,
+        system_probe=_complete_system_probe,
+    )
+    run = MeasurementRunBundleWriter(adapter).run(root, case=case, run_id=run_id)
+    _rewrite_environment_session(run, process_id=process_id)
+    assert verify_run_bundle(run)["passed"] is True
+    return run
+
+
+def _fixed_nk_inputs(tmp_path: Path) -> tuple[list[Path], list[Path], list[Path]]:
+    measurements = tmp_path / "fixed-nk-measurements"
+    search: list[Path] = []
+    holdout: list[Path] = []
+    confirmation: list[Path] = []
+    process_id = 100
+
+    def expected_latency_ns(m: int) -> int:
+        declared_work = 2 * m * 512 * 512
+        return round(30_000 + declared_work / 524.288)
+
+    for m in (128, 512):
+        for lane, target in (("search", search), ("holdout", holdout)):
+            for session in range(3):
+                target.append(
+                    _fixed_nk_measurement_run(
+                        measurements,
+                        run_id=f"{lane}-m{m}-{session}",
+                        m=m,
+                        median_ns=expected_latency_ns(m),
+                        process_id=process_id,
+                    )
+                )
+                process_id += 1
+    for session in range(3):
+        confirmation.append(
+            _fixed_nk_measurement_run(
+                measurements,
+                run_id=f"confirmation-m320-{session}",
+                m=320,
+                median_ns=expected_latency_ns(320),
+                process_id=process_id,
+            )
+        )
+        process_id += 1
+    return search, holdout, confirmation
+
+
+def _fixed_nk_policy() -> dict[str, object]:
+    policy = _qualification_policy()
+    policy["policy_id"] = "test-fixed-nk-latency-response"
+    policy["version"] = "v2"
+    policy["scope"] = {
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "operation": "MatMul",
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "anchor_m": [128, 512],
+        "confirmation_m": 320,
+        "candidate_ids": ["torch.matmul"],
+    }
+    policy["response_target"] = "latency"
+    policy["response_kind"] = "setup-plus-throughput"
+    policy["response_version"] = "v1"
+    policy["maximum_relative_error"] = 0.01
+    policy["maximum_setup_fraction_for_steady"] = 0.10
+    policy["change_reason"] = "deterministic ticket-35 synthetic fixture"
+    policy["evidence_ref"] = "test://ticket-35/fixed-nk-policy-v2"
+    return policy
 
 
 def _rewrite_candidate_identity(run: Path) -> None:
@@ -431,6 +538,213 @@ def test_qualifies_best_correct_candidates_and_queries_minimal_surface(
     )
     assert queries[640]["status"] == "unknown"
     assert queries[640]["reason_code"] == "outside_validated_domain"
+
+def test_fixed_nk_queries_fail_closed_for_invalid_m_and_mismatched_domain(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="fixed-nk-invalid-query-v1",
+        qualification_policy=_fixed_nk_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(0, -1, 320, 320),
+    )
+    diagnostic_path = run / "diagnostic/evidence.json"
+    diagnostic = json.loads(diagnostic_path.read_text(encoding="utf-8"))
+    diagnostic["surface_queries"][2]["domain"]["fixed_n"] = 256
+    diagnostic["surface_queries"][3]["shape"]["m"] = 320.5
+    evidence = {
+        key: value
+        for key, value in diagnostic.items()
+        if key
+        not in {
+            "schema",
+            "resolved_configuration",
+            "resolved_ir",
+            "hardware",
+            "cohort_id",
+            "execution_domain",
+            "digests",
+        }
+    }
+    diagnostic["digests"]["evidence_sha256"] = sha256(
+        json.dumps(
+            evidence,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    diagnostic_path.write_text(
+        json.dumps(diagnostic, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    diagnostic_artifact = next(
+        artifact
+        for artifact in manifest["artifacts"]
+        if artifact["role"] == "diagnostic-evidence"
+    )
+    diagnostic_artifact["sha256"] = sha256(diagnostic_path.read_bytes()).hexdigest()
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    queries = diagnose_run_bundle(run)["capability_surface_queries"]
+
+    assert [query["status"] for query in queries] == ["unknown"] * 4
+    assert [query["reason_code"] for query in queries] == [
+        "invalid_query_shape",
+        "invalid_query_shape",
+        "fixed_nk_domain_mismatch",
+        "invalid_query_shape",
+    ]
+    assert all(query["latency"] is None for query in queries)
+    assert all(query["effective_rate"] is None for query in queries)
+
+
+def test_fixed_nk_qualification_rejects_anchor_holdout_outside_error_budget(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    holdout[:3] = [
+        _fixed_nk_measurement_run(
+            tmp_path / "fixed-nk-measurements",
+            run_id=f"holdout-m128-outside-budget-{session}",
+            m=128,
+            median_ns=161_000,
+            process_id=999 + session,
+        )
+        for session in range(3)
+    ]
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-anchor-outside-error-budget",
+            qualification_policy=_fixed_nk_policy(),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(128, 320),
+        )
+
+    assert captured.value.reason_code == "latency-response-error-budget-failed"
+
+
+def test_fixed_nk_synthetic_evidence_qualifies_latency_response_surface(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="fixed-nk-latency-response-v1",
+        qualification_policy=_fixed_nk_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(128, 320, 640),
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    surface = qualification["surface"]
+    response = surface["cells"][0]["response"]
+    assert surface["coordinate"] == {
+        "axis": "m",
+        "transform": "identity",
+        "transform_version": "v1",
+    }
+    assert surface["work_formula"] == {
+        "kind": "matmul-2mnk-fixed-nk",
+        "version": "v1",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "work_unit": "FLOP",
+    }
+    assert response["target"] == "latency"
+    assert response["kind"] == "setup-plus-throughput"
+    assert response["version"] == "v1"
+    assert response["setup_latency_ns"] == pytest.approx(30_000.0)
+    assert response["asymptotic_rate"] == pytest.approx(524_288_000_000.0)
+    assert response["shape_regime"]["identity"]
+    assert response["shape_regime"]["classification"] == "ramp"
+    assert response["fit_evidence_refs"]
+    assert response["holdout_evidence_refs"]
+
+    queries = {
+        item["query_shape"]["m"]: item
+        for item in diagnose_run_bundle(run)["capability_surface_queries"]
+    }
+    exact = queries[128]
+    assert exact["status"] == "exact_anchor"
+    assert exact["latency"]["value_ns"] == pytest.approx(158_000.0)
+    assert exact["effective_rate"]["value"] == pytest.approx(
+        (2 * 128 * 512 * 512) / (158_000.0e-9)
+    )
+    interior = queries[320]
+    assert interior["status"] == "modeled"
+    assert interior["latency"]["value_ns"] == pytest.approx(350_000.0)
+    assert interior["effective_rate"]["value"] == pytest.approx(
+        (2 * 320 * 512 * 512) / (interior["latency"]["value_ns"] * 1e-9)
+    )
+    assert set(interior["uncertainty"]["components"]) == {
+        "anchor_standard_latency_ns",
+        "response_model_standard_latency_ns",
+        "instrumentation_standard_latency_ns",
+        "boundary_standard_latency_ns",
+    }
+    assert queries[640]["status"] == "unknown"
+    assert queries[640]["reason_code"] == "outside_validated_domain"
+
+    report = render_diagnostic_report(diagnose_run_bundle(run))
+    assert "Setup Latency=30000.000000 ns" in report
+    assert "asymptotic-rate=0.524288000 TFLOP/s" in report
+    assert f"Shape Regime={response['shape_regime']['identity']}/ramp" in report
+    assert '"response_model_standard_latency_ns"' in report
+
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(Path(__file__).parents[1] / "src")
+    machine = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "groundupscale.cli",
+            "diagnose",
+            str(run),
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    human = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "groundupscale.cli",
+            "diagnose",
+            str(run),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    assert machine.returncode == 0, machine.stderr
+    assert json.loads(machine.stdout) == diagnose_run_bundle(run)
+    assert human.returncode == 0, human.stderr
+    assert "Setup Latency=30000.000000 ns" in human.stdout
+    assert "asymptotic-rate=0.524288000 TFLOP/s" in human.stdout
 
 
 def test_qualification_requires_an_explicit_versioned_policy(

@@ -1219,7 +1219,7 @@ def _run_operator_frontier_qualification(args: argparse.Namespace) -> int:
         "anchor_count": len(qualification["anchors"]),
         "surface": qualification["surface"]["surface_id"],
         "query_statuses": {
-            str(query["query_shape"]["s"]): query["status"]
+            str(next(iter(query["query_shape"].values()))): query["status"]
             for query in result["capability_surface_queries"]
         },
         "verification_passed": verification["passed"],

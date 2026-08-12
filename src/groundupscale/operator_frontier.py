@@ -9,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
-from math import hypot
+from math import hypot, isfinite
 from pathlib import Path
 from statistics import median, stdev
 from typing import Any, cast
@@ -149,7 +149,9 @@ class _Observation:
     manifest_sha256: str
     run_id: str
     cohort_id: str
-    size: int
+    m: int
+    n: int
+    k: int
     candidate_id: str
     candidate_family: str
     candidate_digest: str
@@ -286,13 +288,16 @@ def _observation(path: str | Path) -> _Observation:
         or not isinstance(right, list)
         or len(left) != 2
         or len(right) != 2
-        or left[0] != left[1]
-        or left != right
-        or not isinstance(left[0], int)
-        or left[0] <= 0
+        or any(
+            not isinstance(dimension, int)
+            or isinstance(dimension, bool)
+            or dimension <= 0
+            for dimension in (*left, *right)
+        )
+        or left[1] != right[0]
     ):
         raise OperatorFrontierQualificationError(
-            f"{root}: only square exact-Shape MatMul is supported",
+            f"{root}: MatMul requires positive integer M/N/K and compatible operands",
             reason_code="unsupported-shape-regime",
         )
     candidate_body = dict(candidate)
@@ -373,7 +378,9 @@ def _observation(path: str | Path) -> _Observation:
         manifest_sha256=_sha256(manifest_path),
         run_id=str(manifest["run_id"]),
         cohort_id=str(manifest["hardware_cohort"]),
-        size=int(left[0]),
+        m=int(left[0]),
+        n=int(right[1]),
+        k=int(left[1]),
         candidate_id=str(candidate["candidate_id"]),
         candidate_family=str(candidate["candidate_family"]),
         candidate_digest=candidate_digest,
@@ -445,15 +452,28 @@ def _require_policy_scope(
 ) -> None:
     scope = policy.document["scope"]
     assert isinstance(scope, dict)
-    expected = {
-        "hardware_cohort": cohort_id,
-        "operation": "MatMul",
-        "dtype": observations[0].dtype,
-        "layout": observations[0].layout,
-        "anchor_shapes": list(anchor_shapes),
-        "confirmation_shape": confirmation_shape,
-        "candidate_ids": list(candidate_ids),
-    }
+    if policy.document.get("response_target") == "latency":
+        expected = {
+            "hardware_cohort": cohort_id,
+            "operation": "MatMul",
+            "dtype": observations[0].dtype,
+            "layout": observations[0].layout,
+            "fixed_n": observations[0].n,
+            "fixed_k": observations[0].k,
+            "anchor_m": list(anchor_shapes),
+            "confirmation_m": confirmation_shape,
+            "candidate_ids": list(candidate_ids),
+        }
+    else:
+        expected = {
+            "hardware_cohort": cohort_id,
+            "operation": "MatMul",
+            "dtype": observations[0].dtype,
+            "layout": observations[0].layout,
+            "anchor_shapes": list(anchor_shapes),
+            "confirmation_shape": confirmation_shape,
+            "candidate_ids": list(candidate_ids),
+        }
     if any(scope.get(key) != value for key, value in expected.items()):
         raise OperatorFrontierQualificationError(
             "qualification policy does not cover this evidence cohort",
@@ -533,7 +553,7 @@ def _same_shape_input_and_contract(observations: Sequence[_Observation]) -> bool
     return len(
         {
             (
-                item.size,
+                item.m,
                 item.seed,
                 item.input_identity,
                 item.execution_contract_digest,
@@ -585,7 +605,11 @@ def _source_record(
         "path": os.path.relpath(observation.root, bundle_root),
         "manifest_sha256": observation.manifest_sha256,
         "hardware_cohort": observation.cohort_id,
-        "shape": {"s": observation.size},
+        "shape": (
+            {"s": observation.m}
+            if observation.m == observation.n == observation.k
+            else {"m": observation.m, "n": observation.n, "k": observation.k}
+        ),
         "candidate_id": observation.candidate_id,
         "candidate_family": observation.candidate_family,
         "candidate_digest": observation.candidate_digest,
@@ -642,6 +666,36 @@ class OperatorFrontierBundleWriter:
             )
         _require_independent_sessions(all_observations)
         cohort_id = _require_common_identity(all_observations)
+        latency_response = policy.document.get("response_target") == "latency"
+        if latency_response:
+            maximum_setup_fraction_for_steady = policy.document.get(
+                "maximum_setup_fraction_for_steady"
+            )
+            if (
+                policy.document.get("response_kind") != "setup-plus-throughput"
+                or policy.document.get("response_version") != "v1"
+                or len({item.n for item in all_observations}) != 1
+                or len({item.k for item in all_observations}) != 1
+                or not isinstance(
+                    maximum_setup_fraction_for_steady, (int, float)
+                )
+                or isinstance(maximum_setup_fraction_for_steady, bool)
+                or not 0
+                <= float(maximum_setup_fraction_for_steady)
+                <= 1
+            ):
+                raise OperatorFrontierQualificationError(
+                    "latency response requires fixed N/K and a valid regime policy",
+                    reason_code="fixed-nk-domain-mismatch",
+                )
+        elif any(
+            item.m != item.n or item.m != item.k
+            for item in all_observations
+        ):
+            raise OperatorFrontierQualificationError(
+                "legacy Effective Rate Surfaces require square MatMul evidence",
+                reason_code="unsupported-shape-regime",
+            )
 
         runs_root = Path(artifact_store).resolve() / "runs"
         destination = runs_root / run_id
@@ -653,16 +707,16 @@ class OperatorFrontierBundleWriter:
         ] = {}
         for item in searches:
             search_by_shape_candidate.setdefault(
-                (item.size, item.candidate_id), []
+                (item.m, item.candidate_id), []
             ).append(item)
-        shapes = sorted({item.size for item in searches})
+        shapes = sorted({item.m for item in searches})
         if len(shapes) != 2:
             raise OperatorFrontierQualificationError(
                 "the minimal one-dimensional Surface requires exactly two anchor Shapes",
                 reason_code="invalid-minimal-surface-anchor-count",
             )
 
-        confirmation_shapes = sorted({item.size for item in confirmations})
+        confirmation_shapes = sorted({item.m for item in confirmations})
         if (
             len(confirmation_shapes) != 1
             or not shapes[0] < confirmation_shapes[0] < shapes[1]
@@ -732,7 +786,7 @@ class OperatorFrontierBundleWriter:
                 family = next(iter(families)) if len(families) == 1 else "mixed"
                 aggregate = float(median(medians))
                 record: dict[str, object] = {
-                    "shape": {"s": size},
+                    "shape": {"m" if latency_response else "s": size},
                     "candidate_id": candidate_id,
                     "candidate_family": family,
                     "status": status,
@@ -795,7 +849,7 @@ class OperatorFrontierBundleWriter:
             for candidate_id in regime_eligible_ids
         }
         actual_holdout_keys = {
-            (item.size, item.candidate_id) for item in holdouts
+            (item.m, item.candidate_id) for item in holdouts
         }
         if actual_holdout_keys != expected_holdout_keys:
             raise OperatorFrontierQualificationError(
@@ -809,7 +863,7 @@ class OperatorFrontierBundleWriter:
             shape_holdouts = [
                 item
                 for item in holdouts
-                if item.size == size and item.candidate_id == candidate_id
+                if item.m == size and item.candidate_id == candidate_id
             ]
             if not _same_shape_input_and_contract(shape_holdouts):
                 raise OperatorFrontierQualificationError(
@@ -926,6 +980,17 @@ class OperatorFrontierBundleWriter:
                 ),
                 "candidate_set_digest": candidate_set_digest,
                 "execution_protocol_digest": execution_protocol_digest,
+                **(
+                    {
+                        "fixed_n": searches[0].n,
+                        "fixed_k": searches[0].k,
+                        "response_target": "latency",
+                        "response_kind": "setup-plus-throughput",
+                        "response_version": "v1",
+                    }
+                    if latency_response
+                    else {}
+                ),
             }
         )
         evidence_version_digest = _canonical_digest(
@@ -939,7 +1004,9 @@ class OperatorFrontierBundleWriter:
         )
         surface_version = f"v-{evidence_version_digest[:16]}"
         surface_id = (
-            f"surface://{cohort_id}/matmul/square/{validity_key[:16]}"
+            f"surface://{cohort_id}/matmul/fixed-nk/{validity_key[:16]}"
+            if latency_response
+            else f"surface://{cohort_id}/matmul/square/{validity_key[:16]}"
         )
 
         domain = {
@@ -948,7 +1015,11 @@ class OperatorFrontierBundleWriter:
             "layout": searches[0].layout,
             "alignment_regime": "minimum-64-byte",
             "alignment_validated": True,
-            "working_set_regime": f"square-{shapes[0]}-{shapes[1]}",
+            "working_set_regime": (
+                f"fixed-n{searches[0].n}-k{searches[0].k}-m{shapes[0]}-{shapes[1]}"
+                if latency_response
+                else f"square-{shapes[0]}-{shapes[1]}"
+            ),
             "working_set_validated": True,
             "kernel_dispatch_regime": selected_candidate_family,
             "kernel_dispatch_validated": True,
@@ -959,10 +1030,19 @@ class OperatorFrontierBundleWriter:
             "candidate_set_digest": candidate_set_digest,
             "execution_protocol_digest": execution_protocol_digest,
         }
+        if latency_response:
+            domain.update(
+                {
+                    "fixed_n": searches[0].n,
+                    "fixed_k": searches[0].k,
+                    "varying_axis": "m",
+                }
+            )
         anchors: list[dict[str, object]] = []
         anchor_rates: list[float] = []
         anchor_latencies: list[float] = []
         anchor_rate_variances: list[float] = []
+        anchor_latency_variances: list[float] = []
         for size in shapes:
             (
                 winner_id,
@@ -972,21 +1052,29 @@ class OperatorFrontierBundleWriter:
             ) = winners[size]
             holdout_medians = [item.median_ns for item in shape_holdouts]
             latency_ns = float(median(holdout_medians))
-            work = float(2 * size**3)
+            work = float(
+                2 * size * searches[0].n * searches[0].k
+                if latency_response
+                else 2 * size**3
+            )
             rates = [work / (value * 1e-9) for value in holdout_medians]
             effective_rate = float(median(rates))
             standard_rate = float(stdev(rates))
+            standard_latency = float(stdev(holdout_medians))
             anchor_id = (
-                f"ascend-matmul-square-{size}-{validity_key[:12]}"
+                f"ascend-matmul-fixed-n{searches[0].n}-k{searches[0].k}-m{size}-{validity_key[:12]}"
+                if latency_response
+                else f"ascend-matmul-square-{size}-{validity_key[:12]}"
             )
             anchor_rate_variances.append(standard_rate**2)
+            anchor_latency_variances.append(standard_latency**2)
             anchor_rates.append(effective_rate)
             anchor_latencies.append(latency_ns)
             anchors.append(
                 {
                     "anchor_id": anchor_id,
                     "anchor_version": surface_version,
-                    "shape": {"s": size},
+                    "shape": {"m" if latency_response else "s": size},
                     "effective_rate": effective_rate,
                     "rate_unit": "FLOP/s",
                     "candidate_id": winner_id,
@@ -1004,6 +1092,7 @@ class OperatorFrontierBundleWriter:
                     "state_transitions": _active_transitions(anchor_id),
                     "latency_ns": latency_ns,
                     "standard_uncertainty_rate": standard_rate,
+                    "standard_uncertainty_latency_ns": standard_latency,
                     "search_run_ids": [item.run_id for item in search_records],
                     "holdout_run_ids": [item.run_id for item in shape_holdouts],
                     "holdout_session_medians_ns": holdout_medians,
@@ -1034,7 +1123,11 @@ class OperatorFrontierBundleWriter:
             left_weight * anchor_rates[0]
             + (1.0 - left_weight) * anchor_rates[1]
         )
-        confirmation_work = float(2 * confirmation_size**3)
+        confirmation_work = float(
+            2 * confirmation_size * searches[0].n * searches[0].k
+            if latency_response
+            else 2 * confirmation_size**3
+        )
         confirmation_rates = [
             confirmation_work / (item.median_ns * 1e-9)
             for item in confirmations
@@ -1056,15 +1149,165 @@ class OperatorFrontierBundleWriter:
             ]
             for row in range(len(anchor_rate_variances))
         ]
+        latency_covariance = [
+            [
+                variance if row == column else 0.0
+                for column, variance in enumerate(anchor_latency_variances)
+            ]
+            for row in range(len(anchor_latency_variances))
+        ]
         cell_id = (
-            f"ascend-matmul-square-{shapes[0]}-{shapes[1]}-"
-            f"{validity_key[:12]}"
+            (
+                f"ascend-matmul-fixed-n{searches[0].n}-k{searches[0].k}-"
+                f"m{shapes[0]}-{shapes[1]}-{validity_key[:12]}"
+            )
+            if latency_response
+            else (
+                f"ascend-matmul-square-{shapes[0]}-{shapes[1]}-"
+                f"{validity_key[:12]}"
+            )
         )
         regime_id = (
-            f"{cohort_id}-square-{shapes[0]}-{shapes[1]}-"
-            f"{validity_key[:12]}"
+            (
+                f"{cohort_id}-fixed-n{searches[0].n}-k{searches[0].k}-"
+                f"m{shapes[0]}-{shapes[1]}-{validity_key[:12]}"
+            )
+            if latency_response
+            else (
+                f"{cohort_id}-square-{shapes[0]}-{shapes[1]}-"
+                f"{validity_key[:12]}"
+            )
         )
         confirmation_refs = [item.evidence_ref for item in confirmations]
+        response: dict[str, object] | None = None
+        response_model_standard_latency_ns = 0.0
+        if latency_response:
+            anchor_work = [
+                float(2 * size * searches[0].n * searches[0].k)
+                for size in shapes
+            ]
+            search_latencies = [
+                float(
+                    median(
+                        [
+                            item.median_ns
+                            for item in winners[size][2]
+                        ]
+                    )
+                )
+                for size in shapes
+            ]
+            slope_ns_per_work = (
+                search_latencies[1] - search_latencies[0]
+            ) / (anchor_work[1] - anchor_work[0])
+            if not isfinite(slope_ns_per_work) or slope_ns_per_work <= 0:
+                raise OperatorFrontierQualificationError(
+                    "latency response requires a positive asymptotic rate",
+                    reason_code="invalid-latency-response",
+                )
+            asymptotic_rate = 1_000_000_000.0 / slope_ns_per_work
+            setup_latency_ns = search_latencies[0] - (
+                anchor_work[0] * slope_ns_per_work
+            )
+            if not isfinite(setup_latency_ns) or setup_latency_ns < 0:
+                raise OperatorFrontierQualificationError(
+                    "latency response requires non-negative Setup Latency",
+                    reason_code="invalid-latency-response",
+                )
+            confirmation_work = float(
+                2 * confirmation_size * searches[0].n * searches[0].k
+            )
+            modeled_confirmation_latency = (
+                setup_latency_ns + confirmation_work * slope_ns_per_work
+            )
+            confirmation_latencies = [item.median_ns for item in confirmations]
+            observed_confirmation_latency = float(median(confirmation_latencies))
+            modeled_validation_latencies = [
+                setup_latency_ns + work * slope_ns_per_work
+                for work in anchor_work
+            ] + [modeled_confirmation_latency]
+            observed_validation_latencies = [
+                *anchor_latencies,
+                observed_confirmation_latency,
+            ]
+            validation_relative_errors = [
+                abs(observed - modeled) / observed
+                for observed, modeled in zip(
+                    observed_validation_latencies,
+                    modeled_validation_latencies,
+                    strict=True,
+                )
+            ]
+            response_model_standard_latency_ns = hypot(
+                max(
+                    abs(observed - modeled)
+                    for observed, modeled in zip(
+                        observed_validation_latencies,
+                        modeled_validation_latencies,
+                        strict=True,
+                    )
+                ),
+                float(stdev(confirmation_latencies)),
+            )
+            maximum_relative_error = policy.document.get(
+                "maximum_relative_error"
+            )
+            if (
+                not isinstance(maximum_relative_error, (int, float))
+                or isinstance(maximum_relative_error, bool)
+                or not 0 <= float(maximum_relative_error) <= 1
+                or any(
+                    modeled != observed
+                    for modeled, observed in zip(
+                        modeled_validation_latencies[:2],
+                        observed_validation_latencies[:2],
+                        strict=True,
+                    )
+                )
+                or max(validation_relative_errors)
+                > float(maximum_relative_error)
+            ):
+                raise OperatorFrontierQualificationError(
+                    "latency response failed the declared Error Budget",
+                    reason_code="latency-response-error-budget-failed",
+                )
+            maximum_setup_fraction = max(
+                setup_latency_ns / latency
+                for latency in observed_validation_latencies
+            )
+            classification = (
+                "steady"
+                if len(observed_validation_latencies) >= 3
+                and maximum_setup_fraction
+                <= float(maximum_setup_fraction_for_steady)
+                else "ramp"
+            )
+            response = {
+                "target": "latency",
+                "kind": "setup-plus-throughput",
+                "version": "v1",
+                "setup_latency_ns": setup_latency_ns,
+                "asymptotic_rate": asymptotic_rate,
+                "rate_unit": "FLOP/s",
+                "shape_regime": {
+                    "identity": regime_id,
+                    "classification": classification,
+                },
+                "fit_evidence_refs": [
+                    item.evidence_ref for item in searches
+                ],
+                "holdout_evidence_refs": [
+                    item.evidence_ref for item in holdouts
+                ],
+                "confirmation_evidence_refs": confirmation_refs,
+                "maximum_relative_error": float(maximum_relative_error),
+                "maximum_setup_fraction_for_steady": float(
+                    maximum_setup_fraction_for_steady
+                ),
+                "observed_confirmation_latency_ns": observed_confirmation_latency,
+                "modeled_confirmation_latency_ns": modeled_confirmation_latency,
+                "validation_relative_errors": validation_relative_errors,
+            }
         surface: dict[str, object] = {
             "surface_id": surface_id,
             "version": surface_version,
@@ -1075,22 +1318,36 @@ class OperatorFrontierBundleWriter:
             "anchor_lifecycle_policy": {
                 "policy_id": "frontier-anchor-lifecycle",
                 "version": "v2",
-                "scope": f"{cohort_id}-square-matmul",
+                "scope": (
+                    f"{cohort_id}-fixed-nk-matmul"
+                    if latency_response
+                    else f"{cohort_id}-square-matmul"
+                ),
                 "change_reason": "issue-31 first qualified NPU Frontier",
                 "revalidation": (
                     "on cohort, candidate, execution contract, anchor, or cell change"
                 ),
             },
             "coordinate": {
-                "axis": "s",
+                "axis": "m" if latency_response else "s",
                 "transform": "identity",
                 "transform_version": "v1",
             },
-            "work_formula": {
-                "kind": "square-matmul-2s3",
-                "version": "v1",
-                "work_unit": "FLOP",
-            },
+            "work_formula": (
+                {
+                    "kind": "matmul-2mnk-fixed-nk",
+                    "version": "v1",
+                    "fixed_n": searches[0].n,
+                    "fixed_k": searches[0].k,
+                    "work_unit": "FLOP",
+                }
+                if latency_response
+                else {
+                    "kind": "square-matmul-2s3",
+                    "version": "v1",
+                    "work_unit": "FLOP",
+                }
+            ),
             "anchors": anchors,
             "cells": [
                 {
@@ -1098,12 +1355,15 @@ class OperatorFrontierBundleWriter:
                     "anchor_ids": [anchor["anchor_id"] for anchor in anchors],
                     "status": "retained",
                     "regime_id": regime_id,
-                    "confirmation_shape": {"s": confirmation_size},
+                    "confirmation_shape": {
+                        "m" if latency_response else "s": confirmation_size
+                    },
                     "confirmation_observed_rate": confirmation_rate,
                     "confirmation_evidence_refs": confirmation_refs,
                     "interpolation_standard_uncertainty_rate": (
                         interpolation_standard_rate
                     ),
+                    **({"response": response} if response is not None else {}),
                 }
             ],
             "uncertainty_policy": {
@@ -1121,6 +1381,23 @@ class OperatorFrontierBundleWriter:
                     instrumentation_standard_rate
                 ),
                 "calibration_evidence_refs": confirmation_refs,
+                **(
+                    {
+                        "response_model_standard_uncertainty_latency_ns": (
+                            response_model_standard_latency_ns
+                        ),
+                        "boundary_uncertainty": {
+                            "status": "not_applicable",
+                            "reason_code": "single-retained-regime-has-no-internal-boundary",
+                        },
+                        "anchor_latency_covariance": latency_covariance,
+                        "instrumentation_standard_uncertainty_latency_ns": (
+                            searches[0].timer_resolution_ns
+                        ),
+                    }
+                    if latency_response
+                    else {}
+                ),
             },
             "evidence_refs": ["artifact://frontier/qualification.json"],
         }
@@ -1165,8 +1442,13 @@ class OperatorFrontierBundleWriter:
             "validated_shape_regime": {
                 "regime_id": regime_id,
                 "status": "validated",
-                "anchor_shapes": [{"s": size} for size in shapes],
-                "confirmation_shape": {"s": confirmation_size},
+                "anchor_shapes": [
+                    {"m" if latency_response else "s": size}
+                    for size in shapes
+                ],
+                "confirmation_shape": {
+                    "m" if latency_response else "s": confirmation_size
+                },
                 "cell_id": cell_id,
                 "candidate_family": selected_candidate_family,
                 "hardware_cohort": cohort_id,
@@ -1178,10 +1460,14 @@ class OperatorFrontierBundleWriter:
 
         queries = [
             {
-                "query_id": f"ascend-matmul-square-{size}",
+                "query_id": (
+                    f"ascend-matmul-fixed-nk-m{size}"
+                    if latency_response
+                    else f"ascend-matmul-square-{size}"
+                ),
                 "surface_id": surface["surface_id"],
                 "surface_version": surface["version"],
-                "shape": {"s": size},
+                "shape": {"m" if latency_response else "s": size},
                 "domain": domain,
             }
             for size in query_sizes
@@ -1193,7 +1479,9 @@ class OperatorFrontierBundleWriter:
             },
             "resolved_ir": {
                 "semantic_operation": "MatMul",
-                "shape_coordinate": "square-s",
+                "shape_coordinate": (
+                    "fixed-nk-m" if latency_response else "square-s"
+                ),
             },
             "hardware": {
                 "device": searches[0].runtime_device_name,
