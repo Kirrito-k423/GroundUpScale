@@ -1,0 +1,54 @@
+schema: groundupscale.dev/operator-frontier-qualification-policy/v1alpha1
+policy_id: ascend-910b2-matmul-bounded-m-sweep
+version: v1
+scope:
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  operation: MatMul
+  dtype: float32
+  layout: row-major-contiguous
+  fixed_n: 512
+  fixed_k: 512
+  anchor_m: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1024, 1536, 2048, 4096]
+  confirmation_m: [48, 160, 320, 448, 640, 896, 1280, 3072]
+  candidate_ids: [torch.matmul]
+minimum_search_sessions: 3
+minimum_holdout_sessions: 3
+minimum_confirmation_sessions: 3
+minimum_warmup_iterations: 100
+maximum_session_median_relative_range: 0.10
+minimum_candidate_coverage: C0_SINGLE
+holdout_candidate_scope: all-eligible-candidates
+uncertainty_combination: root-sum-of-squares
+target_coverage: 0.68
+sample_exclusion: none-preserve-all-raw-samples
+estimator: median(independent-holdout-session-medians)
+response_target: latency
+response_kind: setup-plus-throughput
+response_version: v1
+maximum_relative_error: 0.10
+maximum_setup_fraction_for_steady: 0.10
+collection_plan:
+  plan_id: ascend-910b2-matmul-bounded-m-sweep-v1
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  fixed_n: 512
+  fixed_k: 512
+  dtype: float32
+  layout: row-major-contiguous
+  candidate_ids: [torch.matmul]
+  execution_mode: pytorch-eager
+  warmup_iterations: 100
+  repetitions: 100
+  inner_iterations: 100
+  completion_boundary: end-event-synchronize-plus-device-synchronize
+  instrumentation_profile: ascend-npu-baseline-timing-v1
+  random_seed: 20260812
+  raw_sample_retention: preserve-all-no-selective-exclusion
+  main_sweep_m: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1024, 1536, 2048, 4096]
+  independent_holdout_m: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1024, 1536, 2048, 4096]
+  independent_validation_m: [48, 160, 320, 448, 640, 896, 1280, 3072]
+  supplemental_m: []
+  maximum_supplemental_rounds: 1
+  executed_supplemental_rounds: 0
+change_reason: qualify ticket-36 bounded real Ascend MatMul M sweep
+revalidation: on cohort, candidate, execution contract, corpus, policy, response, or boundary change
+evidence_ref: issue://github/Kirrito-k423/GroundUpScale/36

@@ -147,6 +147,7 @@ def _fixed_nk_measurement_run(
         "candidate": "torch.matmul",
         "warmup_iterations": 20,
         "repetitions": 5,
+        "inner_iterations": 1,
     }
     raw = _raw_hardware_collection(None, 0, case, {})
     raw["left_sha256"] = sha256(f"left-{m}-{k}".encode()).hexdigest()
@@ -232,6 +233,99 @@ def _fixed_nk_policy() -> dict[str, object]:
     policy["change_reason"] = "deterministic ticket-35 synthetic fixture"
     policy["evidence_ref"] = "test://ticket-35/fixed-nk-policy-v2"
     return policy
+
+
+def _bounded_m_sweep_policy() -> dict[str, object]:
+    policy = _fixed_nk_policy()
+    policy["policy_id"] = "test-bounded-ascend-matmul-m-sweep"
+    policy["version"] = "v3"
+    policy["collection_plan"] = {
+        "plan_id": "test-bounded-ascend-matmul-m-sweep-v1",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "dtype": "float32",
+        "layout": "row-major-contiguous",
+        "candidate_ids": ["torch.matmul"],
+        "execution_mode": "pytorch-eager",
+        "warmup_iterations": 20,
+        "repetitions": 5,
+        "inner_iterations": 1,
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "instrumentation_profile": "ascend-npu-baseline-timing-v1",
+        "random_seed": 20260812,
+        "raw_sample_retention": "preserve-all-no-selective-exclusion",
+        "main_sweep_m": [128, 512],
+        "independent_holdout_m": [128, 512],
+        "independent_validation_m": [320],
+        "supplemental_m": [],
+        "maximum_supplemental_rounds": 1,
+        "executed_supplemental_rounds": 0,
+    }
+    return policy
+
+
+def _bounded_m_sweep_inputs(
+    tmp_path: Path,
+    *,
+    steady: bool = False,
+) -> tuple[list[Path], list[Path], list[Path]]:
+    measurements = tmp_path / "bounded-m-sweep-measurements"
+    search: list[Path] = []
+    holdout: list[Path] = []
+    validation: list[Path] = []
+    process_id = 2_000
+    main_latencies = (
+        {
+            m: round(100_000 + (2 * m * 512 * 512) / 52.4288)
+            for m in (1, 16, 32, 128, 512, 768, 1024, 2048)
+        }
+        if steady
+        else {
+            1: 15_000,
+            16: 15_100,
+            32: 15_200,
+            128: 16_000,
+            512: 17_000,
+            768: 17_000,
+            1024: 18_000,
+            2048: 20_000,
+        }
+    )
+    for m, latency in main_latencies.items():
+        for session in range(3):
+            for lane, target in (("search", search), ("holdout", holdout)):
+                target.append(
+                    _fixed_nk_measurement_run(
+                    measurements,
+                    run_id=f"bounded-{lane}-m{m}-{session}",
+                    m=m,
+                    median_ns=latency + session,
+                    process_id=process_id,
+                )
+                )
+                process_id += 1
+    validation_latencies = (
+        [
+            (m, round(100_000 + (2 * m * 512 * 512) / 52.4288))
+            for m in (48, 320, 896, 1280)
+        ]
+        if steady
+        else [(48, 15_500), (320, 16_500), (896, 17_500), (1280, 18_500)]
+    )
+    for m, latency in validation_latencies:
+        for session in range(3):
+            validation.append(
+                _fixed_nk_measurement_run(
+                    measurements,
+                    run_id=f"bounded-validation-m{m}-{session}",
+                    m=m,
+                    median_ns=latency + session,
+                    process_id=process_id,
+                )
+            )
+            process_id += 1
+    return search, holdout, validation
 
 
 def _rewrite_candidate_identity(run: Path) -> None:
@@ -321,6 +415,20 @@ def _rewrite_bundle_artifact(
         + "\n",
         encoding="utf-8",
     )
+
+
+def _rewrite_case_plan_and_input_seed(run: Path, *, seed: int) -> None:
+    def set_seed(document: dict[str, object]) -> None:
+        document["seed"] = seed
+
+    def set_plan_seed(document: dict[str, object]) -> None:
+        case = document["case"]
+        assert isinstance(case, dict)
+        case["seed"] = seed
+
+    _rewrite_bundle_artifact(run, "benchmark-case", set_seed)
+    _rewrite_bundle_artifact(run, "timing-plan", set_plan_seed)
+    _rewrite_bundle_artifact(run, "input-corpus", set_seed)
 
 
 def _frontier_inputs(
@@ -747,6 +855,333 @@ def test_fixed_nk_synthetic_evidence_qualifies_latency_response_surface(
     assert "asymptotic-rate=0.524288000 TFLOP/s" in human.stdout
 
 
+def test_fixed_nk_qualification_enforces_bounded_collection_plan(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    collection_plan = policy["collection_plan"]
+    assert isinstance(collection_plan, dict)
+    collection_plan["executed_supplemental_rounds"] = 2
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-third-experiment-round",
+            qualification_policy=policy,
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(128, 320, 512),
+        )
+
+    assert captured.value.reason_code == "bounded-collection-plan-violated"
+    assert not (tmp_path / "frontier").exists()
+
+
+def test_fixed_nk_qualification_rejects_collection_plan_identity_mismatch(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    collection_plan = policy["collection_plan"]
+    assert isinstance(collection_plan, dict)
+    collection_plan["random_seed"] = 20260811
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-plan-evidence-identity-mismatch",
+            qualification_policy=policy,
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(128, 320, 512),
+        )
+
+    assert captured.value.reason_code == "collection-plan-evidence-mismatch"
+
+
+def test_fixed_nk_qualification_cross_checks_timing_and_input_artifacts(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    _rewrite_case_plan_and_input_seed(search[0], seed=20260811)
+    assert verify_run_bundle(search[0])["passed"] is False
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-cross-artifact-plan-mismatch",
+            qualification_policy=_bounded_m_sweep_policy(),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=confirmation,
+            query_sizes=(128, 320, 512),
+        )
+
+    assert captured.value.reason_code == "source-run-verification-failed"
+
+
+def test_bounded_m_sweep_publishes_replayable_rejected_qualification(
+    tmp_path: Path,
+) -> None:
+    search, holdout, validation = _bounded_m_sweep_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    policy["scope"] = {
+        **policy["scope"],
+        "anchor_m": [1, 16, 32, 128, 512, 768, 1024, 2048],
+        "confirmation_m": [48, 320, 896, 1280],
+    }
+    plan = policy["collection_plan"]
+    assert isinstance(plan, dict)
+    plan["main_sweep_m"] = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["independent_holdout_m"] = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["independent_validation_m"] = [48, 320, 896, 1280]
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="bounded-m-sweep-rejected-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=validation,
+        query_sizes=(128, 640, 1024, 4096),
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    assert qualification["status"] == "rejected"
+    assert qualification["reason_code"] == "latency-response-error-budget-failed"
+    assert qualification["stopping_decision"] == {
+        "status": "stopped",
+        "main_sweep_completed": True,
+        "supplemental_rounds_executed": 0,
+        "maximum_supplemental_rounds": 1,
+        "additional_model_complexity_allowed": False,
+    }
+    queries = diagnose_run_bundle(run)["capability_surface_queries"]
+    assert [query["status"] for query in queries] == ["unknown"] * 4
+    assert [query["reason_code"] for query in queries] == [
+        "qualification_rejected"
+    ] * 4
+
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(Path(__file__).parents[1] / "src")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "groundupscale.cli",
+            "diagnose",
+            str(run),
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == diagnose_run_bundle(run)
+
+
+def test_bounded_m_sweep_publishes_replayable_unknown_for_partial_corpus(
+    tmp_path: Path,
+) -> None:
+    search, _, _ = _bounded_m_sweep_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    plan = policy["collection_plan"]
+    assert isinstance(plan, dict)
+    main_shapes = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["main_sweep_m"] = main_shapes
+    plan["independent_holdout_m"] = main_shapes
+    plan["independent_validation_m"] = [48, 320, 896, 1280]
+    policy["scope"] = {
+        **policy["scope"],
+        "anchor_m": main_shapes,
+        "confirmation_m": [48, 320, 896, 1280],
+    }
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier-unknown",
+        run_id="bounded-m-sweep-unknown-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=[],
+        confirmation_runs=[],
+        query_sizes=(128, 1024, 512, 8192),
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    assert qualification["status"] == "unknown"
+    assert qualification["reason_code"] == "bounded-collection-corpus-incomplete"
+    assert qualification["stopping_decision"]["main_sweep_completed"] is True
+    queries = diagnose_run_bundle(run)["capability_surface_queries"]
+    assert [query["status"] for query in queries] == ["unknown"] * 4
+    assert [query["reason_code"] for query in queries] == [
+        "bounded-collection-corpus-incomplete"
+    ] * 4
+
+
+def test_bounded_m_sweep_does_not_reject_passing_surface(tmp_path: Path) -> None:
+    search, holdout, validation = _bounded_m_sweep_inputs(
+        tmp_path, steady=True
+    )
+    policy = _bounded_m_sweep_policy()
+    policy["scope"] = {
+        **policy["scope"],
+        "anchor_m": [1, 16, 32, 128, 512, 768, 1024, 2048],
+        "confirmation_m": [48, 320, 896, 1280],
+    }
+    plan = policy["collection_plan"]
+    assert isinstance(plan, dict)
+    plan["main_sweep_m"] = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["independent_holdout_m"] = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["independent_validation_m"] = [48, 320, 896, 1280]
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier-passing",
+        run_id="bounded-m-sweep-passing-surface",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=validation,
+        query_sizes=(8, 896, 512, 128, 4096),
+    )
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    assert qualification["status"] == "qualified"
+    assert {
+        cell["response"]["shape_regime"]["classification"]
+        for cell in qualification["surface"]["cells"]
+        if cell["status"] == "retained"
+    } == {"ramp", "steady"}
+    assert verify_run_bundle(run)["passed"] is True
+    queries = {
+        item["query_shape"]["m"]: item
+        for item in diagnose_run_bundle(run)["capability_surface_queries"]
+    }
+    assert queries[8]["status"] == "modeled"
+    assert queries[8]["shape_regime"]["classification"] == "ramp"
+    assert queries[896]["status"] == "modeled"
+    assert queries[896]["shape_regime"]["classification"] == "steady"
+    assert queries[512]["status"] == "exact_anchor"
+    assert queries[128]["status"] == "unknown"
+    assert queries[128]["reason_code"] == "shape_regime_unvalidated"
+    assert queries[4096]["status"] == "unknown"
+    assert queries[4096]["reason_code"] == "outside_validated_domain"
+
+
+def test_bounded_collection_policy_requires_three_independent_lanes(
+    tmp_path: Path,
+) -> None:
+    policy = _bounded_m_sweep_policy()
+    policy["minimum_search_sessions"] = 1
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="bounded-m-sweep-invalid-policy",
+            qualification_policy=policy,
+            search_runs=[],
+            holdout_runs=[],
+            confirmation_runs=[],
+            query_sizes=(128,),
+        )
+
+    assert captured.value.reason_code == "invalid-qualification-policy"
+
+
+def test_bounded_collection_rejects_scope_or_holdout_shape_mismatch(
+    tmp_path: Path,
+) -> None:
+    search, holdout, validation = _bounded_m_sweep_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    plan = policy["collection_plan"]
+    assert isinstance(plan, dict)
+    main_shapes = [1, 16, 32, 128, 512, 768, 1024, 2048]
+    plan["main_sweep_m"] = main_shapes
+    plan["independent_holdout_m"] = main_shapes[:-1]
+    plan["independent_validation_m"] = [48, 320, 896, 1280]
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-holdout-plan-mismatch",
+            qualification_policy=policy,
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=validation,
+            query_sizes=(128,),
+        )
+
+    assert captured.value.reason_code == "bounded-collection-corpus-incomplete"
+
+
+def test_bounded_partial_collection_rejects_shapes_outside_locked_plan(
+    tmp_path: Path,
+) -> None:
+    search, _, _ = _bounded_m_sweep_inputs(tmp_path)
+    policy = _bounded_m_sweep_policy()
+    plan = policy["collection_plan"]
+    assert isinstance(plan, dict)
+    plan["main_sweep_m"] = [1, 16, 32, 128, 512, 768, 1024]
+    plan["independent_holdout_m"] = list(plan["main_sweep_m"])
+    plan["independent_validation_m"] = [48, 320, 896, 1280]
+
+    with pytest.raises(OperatorFrontierQualificationError) as captured:
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="must-reject-partial-shape-outside-plan",
+            qualification_policy=policy,
+            search_runs=search,
+            holdout_runs=[],
+            confirmation_runs=[],
+            query_sizes=(128,),
+        )
+
+    assert captured.value.reason_code == "qualification-policy-scope-mismatch"
+
+
+def test_committed_issue36_unknown_matches_locked_collection_plan() -> None:
+    repository_root = Path(__file__).parents[1]
+    policy = yaml.safe_load(
+        (
+            repository_root
+            / "specs/policies/ascend-910b2-matmul-bounded-m-sweep-v1.yaml"
+        ).read_text(encoding="utf-8")
+    )
+    decision = json.loads(
+        (
+            repository_root
+            / "goal_process/issue-36-ascend-matmul-m-sweep/evidence/qualification-unknown.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert decision["status"] == "unknown"
+    assert decision["reason_code"] == "bounded-collection-corpus-incomplete"
+    assert decision["hardware_cohort"] == policy["scope"]["hardware_cohort"]
+    assert decision["main_sweep"]["declared_shapes"] == policy["collection_plan"][
+        "main_sweep_m"
+    ]
+    assert sorted(
+        int(shape)
+        for shape in decision["main_sweep"]["observed_session_medians_ns"]
+    ) == policy["collection_plan"]["main_sweep_m"]
+    assert decision["independent_validation"]["declared_shapes"] == policy[
+        "collection_plan"
+    ]["independent_validation_m"]
+    assert decision["supplemental_rounds"] == {"executed": 0, "maximum": 1}
+    assert decision["stopping_decision"]["additional_model_complexity_allowed"] is False
+
+
 def test_qualification_requires_an_explicit_versioned_policy(
     tmp_path: Path,
 ) -> None:
@@ -1005,6 +1440,72 @@ def test_frontier_verifier_recomputes_surface_input_digest(
 
     assert verification["passed"] is False
     assert "operator Frontier Surface input digest mismatch" in verification[
+        "failures"
+    ]
+
+
+def test_frontier_verifier_rejects_qualification_surface_status_mismatch(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="frontier-status-mismatch-v1",
+        qualification_policy=_qualification_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(384,),
+    )
+
+    def mutate_qualification(document: dict[str, object]) -> None:
+        surface = document["surface"]
+        assert isinstance(surface, dict)
+        surface["qualification_status"] = "unknown"
+        surface.pop("input_digest")
+        surface["input_digest"] = content_fingerprint(surface)
+
+    def mutate_diagnostic(document: dict[str, object]) -> None:
+        surfaces = document["capability_surfaces"]
+        assert isinstance(surfaces, list)
+        surface = surfaces[0]
+        assert isinstance(surface, dict)
+        surface["qualification_status"] = "unknown"
+        surface.pop("input_digest")
+        surface["input_digest"] = content_fingerprint(surface)
+
+    _rewrite_bundle_artifact(
+        run, "operator-frontier-qualification", mutate_qualification
+    )
+    _rewrite_bundle_artifact(run, "diagnostic-evidence", mutate_diagnostic)
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "operator Frontier qualification status mismatch" in verification[
+        "failures"
+    ]
+
+
+def test_frontier_verifier_rejects_top_level_anchor_mismatch(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _frontier_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="frontier-anchor-mismatch-v1",
+        qualification_policy=_qualification_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(384,),
+    )
+
+    def mutate(document: dict[str, object]) -> None:
+        document["anchors"] = []
+
+    _rewrite_bundle_artifact(run, "operator-frontier-qualification", mutate)
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "operator Frontier qualification anchors mismatch" in verification[
         "failures"
     ]
 

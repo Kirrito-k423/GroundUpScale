@@ -1218,6 +1218,8 @@ def _run_operator_frontier_qualification(args: argparse.Namespace) -> int:
         "hardware_cohort": qualification["hardware_cohort"],
         "anchor_count": len(qualification["anchors"]),
         "surface": qualification["surface"]["surface_id"],
+        "reason_code": qualification.get("reason_code"),
+        "stopping_decision": qualification.get("stopping_decision"),
         "query_statuses": {
             str(next(iter(query["query_shape"].values()))): query["status"]
             for query in result["capability_surface_queries"]

@@ -7128,6 +7128,8 @@ def _select_surface_cell(
             if left >= right or not left <= point[0] <= right:
                 continue
             if cell.get("status") == "regime_boundary":
+                if point[0] in {left, right}:
+                    continue
                 rejections.append(
                     _RejectedSurfaceCell(cell, "shape_regime_unvalidated")
                 )
@@ -8622,6 +8624,27 @@ def _capability_surface_results(
             results.append(
                 _unknown_surface_query(
                     query_value, surface, "surface_cohort_mismatch"
+                )
+            )
+            continue
+        if surface.get("qualification_status") == "rejected":
+            results.append(
+                _unknown_surface_query(
+                    query_value, surface, "qualification_rejected"
+                )
+            )
+            continue
+        if surface.get("qualification_status") == "unknown":
+            results.append(
+                _unknown_surface_query(
+                    query_value,
+                    surface,
+                    str(
+                        surface.get(
+                            "qualification_reason_code",
+                            "qualification_unknown",
+                        )
+                    ),
                 )
             )
             continue

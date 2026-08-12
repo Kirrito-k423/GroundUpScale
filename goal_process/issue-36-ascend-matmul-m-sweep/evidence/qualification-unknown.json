@@ -1,0 +1,59 @@
+{
+  "schema": "groundupscale.dev/operator-frontier-qualification-unknown/v1alpha1",
+  "issue": 36,
+  "status": "unknown",
+  "reason_code": "bounded-collection-corpus-incomplete",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "collection_plan_ref": "specs/policies/ascend-910b2-matmul-bounded-m-sweep-v1.yaml",
+  "main_sweep": {
+    "status": "completed-one-session-per-shape",
+    "shape_count": 24,
+    "declared_shapes": [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1024, 1536, 2048, 4096],
+    "observed_session_medians_ns": {
+      "1": 16291.5,
+      "2": 15172.0,
+      "4": 15606.0,
+      "8": 15833.5,
+      "16": 18218.5,
+      "32": 14488.0,
+      "64": 16513.5,
+      "96": 16388.5,
+      "127": 16130.5,
+      "128": 16518.0,
+      "129": 19190.0,
+      "192": 17398.0,
+      "255": 16927.5,
+      "256": 16701.0,
+      "257": 15967.5,
+      "384": 16729.0,
+      "511": 16913.0,
+      "512": 15902.0,
+      "513": 16723.5,
+      "768": 16406.0,
+      "1024": 17820.0,
+      "1536": 17257.5,
+      "2048": 19600.0,
+      "4096": 30945.0
+    }
+  },
+  "independent_validation": {
+    "status": "incomplete",
+    "declared_shapes": [48, 160, 320, 448, 640, 896, 1280, 3072]
+  },
+  "supplemental_rounds": {
+    "executed": 0,
+    "maximum": 1
+  },
+  "stopping_decision": {
+    "status": "stopped",
+    "reason": "remote-ssh-entry-closed-before-key-exchange",
+    "additional_experiment_rounds_allowed": false,
+    "additional_model_complexity_allowed": false
+  },
+  "representative_queries": [
+    {"kind": "ramp", "m": 128, "status": "unknown", "reason_code": "bounded-collection-corpus-incomplete"},
+    {"kind": "steady-hypothesis", "m": 1024, "status": "unknown", "reason_code": "bounded-collection-corpus-incomplete"},
+    {"kind": "exact-hypothesis", "m": 512, "status": "unknown", "reason_code": "bounded-collection-corpus-incomplete"},
+    {"kind": "outside-domain", "m": 8192, "status": "unknown", "reason_code": "bounded-collection-corpus-incomplete"}
+  ]
+}

@@ -96,6 +96,8 @@ class _QualificationPolicy:
             != "none-preserve-all-raw-samples"
             or document.get("estimator")
             != "median(independent-holdout-session-medians)"
+            or isinstance(document.get("collection_plan"), dict)
+            and any(cast(int, document[field]) < 3 for field in integer_fields[:3])
         ):
             raise OperatorFrontierQualificationError(
                 "qualification policy is incomplete or unsupported",
@@ -178,6 +180,8 @@ class _Observation:
     runtime_device_name: str
     logical_device: str
     warmup_iterations: int
+    repetitions: int
+    inner_iterations: int
     process_identity: tuple[int, str]
 
     @property
@@ -313,6 +317,8 @@ def _observation(path: str | Path) -> _Observation:
     timer_resolution_ns = raw_timing.get("timer_resolution_ns")
     seed = case.get("seed")
     warmup_iterations = execution.get("warmup_iterations")
+    repetitions = execution.get("repetitions")
+    inner_iterations = execution.get("inner_iterations")
     logical_device = execution.get("logical_device")
     observation_validity = manifest.get("observation_validity")
     if (
@@ -338,7 +344,20 @@ def _observation(path: str | Path) -> _Observation:
         or not isinstance(warmup_iterations, int)
         or isinstance(warmup_iterations, bool)
         or warmup_iterations < 0
+        or not isinstance(repetitions, int)
+        or isinstance(repetitions, bool)
+        or repetitions < 1
+        or not isinstance(inner_iterations, int)
+        or isinstance(inner_iterations, bool)
+        or inner_iterations < 1
         or timing_plan.get("warmup_iterations") != warmup_iterations
+        or timing_plan.get("repetitions") != repetitions
+        or timing_plan.get("inner_iterations") != inner_iterations
+        or not isinstance(timing_plan.get("case"), dict)
+        or timing_plan["case"].get("seed") != seed
+        or timing_plan["case"].get("warmup_iterations") != warmup_iterations
+        or timing_plan["case"].get("repetitions") != repetitions
+        or input_corpus.get("seed") != seed
         or not isinstance(logical_device, str)
         or not logical_device
         or preflight.get("eligible") is not True
@@ -410,6 +429,8 @@ def _observation(path: str | Path) -> _Observation:
         runtime_device_name=str(candidate.get("runtime_device_name")),
         logical_device=logical_device,
         warmup_iterations=warmup_iterations,
+        repetitions=repetitions,
+        inner_iterations=inner_iterations,
         process_identity=(
             int(session["process_id"]),
             str(session["process_started_at"]),
@@ -486,6 +507,85 @@ def _require_policy_scope(
         raise OperatorFrontierQualificationError(
             "source evidence does not meet the versioned warmup policy",
             reason_code="warmup-policy-failed",
+        )
+
+
+def _require_bounded_collection_rounds(policy: _QualificationPolicy) -> None:
+    collection_plan = policy.document.get("collection_plan")
+    if collection_plan is None:
+        return
+    maximum_rounds = (
+        collection_plan.get("maximum_supplemental_rounds")
+        if isinstance(collection_plan, dict)
+        else None
+    )
+    executed_rounds = (
+        collection_plan.get("executed_supplemental_rounds")
+        if isinstance(collection_plan, dict)
+        else None
+    )
+    if (
+        not isinstance(maximum_rounds, int)
+        or isinstance(maximum_rounds, bool)
+        or maximum_rounds < 0
+        or not isinstance(executed_rounds, int)
+        or isinstance(executed_rounds, bool)
+        or executed_rounds < 0
+        or executed_rounds > maximum_rounds
+    ):
+        raise OperatorFrontierQualificationError(
+            "collection evidence exceeds the declared supplemental-round limit",
+            reason_code="bounded-collection-plan-violated",
+        )
+
+
+def _require_collection_plan_identity(
+    policy: _QualificationPolicy,
+    observations: Sequence[_Observation],
+) -> None:
+    collection_plan = policy.document.get("collection_plan")
+    if collection_plan is None:
+        return
+    if not isinstance(collection_plan, dict) or not observations:
+        raise OperatorFrontierQualificationError(
+            "collection plan is incomplete",
+            reason_code="collection-plan-evidence-mismatch",
+        )
+    first = observations[0]
+    expected = {
+        "hardware_cohort": first.cohort_id,
+        "fixed_n": first.n,
+        "fixed_k": first.k,
+        "dtype": first.dtype,
+        "layout": first.layout,
+        "candidate_ids": sorted({item.candidate_id for item in observations}),
+        "execution_mode": first.execution_mode,
+        "warmup_iterations": first.warmup_iterations,
+        "repetitions": first.repetitions,
+        "inner_iterations": first.inner_iterations,
+        "completion_boundary": first.completion_protocol,
+        "instrumentation_profile": first.instrumentation_profile,
+        "random_seed": first.seed,
+        "raw_sample_retention": "preserve-all-no-selective-exclusion",
+    }
+    if any(collection_plan.get(key) != value for key, value in expected.items()) or any(
+        item.cohort_id != first.cohort_id
+        or item.n != first.n
+        or item.k != first.k
+        or item.dtype != first.dtype
+        or item.layout != first.layout
+        or item.execution_mode != first.execution_mode
+        or item.warmup_iterations != first.warmup_iterations
+        or item.repetitions != first.repetitions
+        or item.inner_iterations != first.inner_iterations
+        or item.completion_protocol != first.completion_protocol
+        or item.instrumentation_profile != first.instrumentation_profile
+        or item.seed != first.seed
+        for item in observations
+    ):
+        raise OperatorFrontierQualificationError(
+            "collection plan identity does not match source evidence",
+            reason_code="collection-plan-evidence-mismatch",
         )
 
 
@@ -621,6 +721,8 @@ def _source_record(
         "raw_samples_ns": list(observation.samples_ns),
         "median_ns": observation.median_ns,
         "warmup_iterations": observation.warmup_iterations,
+        "repetitions": observation.repetitions,
+        "inner_iterations": observation.inner_iterations,
         "timer": {
             "source": observation.timer_source,
             "resolution_ns": observation.timer_resolution_ns,
@@ -636,6 +738,855 @@ def _source_record(
         },
         "evidence_ref": observation.evidence_ref,
     }
+
+
+def _write_operator_frontier_documents(
+    runs_root: Path,
+    destination: Path,
+    *,
+    run_id: str,
+    cohort_id: str,
+    source_records: list[dict[str, object]],
+    surface: dict[str, object],
+    qualification: dict[str, object],
+    queries: list[dict[str, object]],
+    analysis_plan: str,
+    runtime_device_name: str,
+    logical_device: str,
+) -> Path:
+    policy_document = qualification["policy"]
+    inputs = {
+        "resolved_configuration": {
+            "analysis_plan": analysis_plan,
+            "qualification_policy": policy_document,
+        },
+        "resolved_ir": {
+            "semantic_operation": "MatMul",
+            "shape_coordinate": "fixed-nk-m",
+        },
+        "hardware": {
+            "device": runtime_device_name,
+            "partition": logical_device,
+            "cohort_id": cohort_id,
+        },
+        "cohort_id": cohort_id,
+        "execution_domain": surface["domain"],
+    }
+    evidence = {
+        "capability_surfaces": [surface],
+        "surface_queries": queries,
+        "operator_frontier_qualification_ref": "artifact://frontier/qualification.json",
+    }
+    diagnostic = {
+        "schema": DIAGNOSTIC_EVIDENCE_SCHEMA,
+        **inputs,
+        **evidence,
+        "digests": {
+            "input_sha256": _canonical_digest(inputs),
+            "evidence_sha256": _canonical_digest(evidence),
+        },
+    }
+    runs_root.mkdir(parents=True, exist_ok=True)
+    temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_root))
+    artifacts = []
+    for role, relative_path, document, inputs_list in (
+        ("operator-frontier-qualification", "frontier/qualification.json", qualification, []),
+        ("diagnostic-evidence", "diagnostic/evidence.json", diagnostic, ["operator-frontier-qualification"]),
+    ):
+        path = temporary / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(_json_bytes(document))
+        artifacts.append(
+            {
+                "role": role,
+                "path": relative_path,
+                "media_type": "application/json",
+                "schema": document["schema"],
+                "sha256": _sha256(path),
+                "produced_by": "groundupscale-operator-frontier-v1",
+                "inputs": inputs_list,
+            }
+        )
+    manifest = {
+        "schema": "groundupscale.dev/run-manifest/v1alpha1",
+        "bundle_kind": "operator-frontier",
+        "run_id": run_id,
+        "status": "completed",
+        "created_at": datetime.now(UTC).isoformat(),
+        "device": "ascend-npu",
+        "hardware_cohort": cohort_id,
+        "surface": {
+            "surface_id": surface["surface_id"],
+            "version": surface["version"],
+            "input_digest": surface["input_digest"],
+        },
+        "source_runs": source_records,
+        "artifacts": artifacts,
+        "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+    }
+    (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
+    os.replace(temporary, destination)
+    return destination
+
+
+def _write_unknown_bounded_collection_bundle(
+    artifact_store: str | Path,
+    *,
+    run_id: str,
+    policy: _QualificationPolicy,
+    searches: Sequence[_Observation],
+    holdouts: Sequence[_Observation],
+    confirmations: Sequence[_Observation],
+    query_sizes: Sequence[int],
+) -> Path:
+    if not searches:
+        raise OperatorFrontierQualificationError(
+            "bounded collection has no source evidence",
+            reason_code="bounded-collection-corpus-incomplete",
+        )
+    observations = [*searches, *holdouts, *confirmations]
+    _require_independent_sessions(observations)
+    cohort_id = _require_common_identity(observations)
+    _require_collection_plan_identity(policy, observations)
+    plan = cast(dict[str, Any], policy.document["collection_plan"])
+    main_shapes = sorted(cast(list[int], plan["main_sweep_m"]))
+    holdout_shapes = sorted(
+        cast(list[int], plan.get("independent_holdout_m", []))
+    )
+    validation_shapes = sorted(
+        cast(list[int], plan["independent_validation_m"])
+    )
+    scope = policy.document["scope"]
+    assert isinstance(scope, dict)
+    expected_scope = {
+        "hardware_cohort": cohort_id,
+        "operation": "MatMul",
+        "dtype": observations[0].dtype,
+        "layout": observations[0].layout,
+        "fixed_n": observations[0].n,
+        "fixed_k": observations[0].k,
+        "anchor_m": main_shapes,
+        "confirmation_m": validation_shapes,
+        "candidate_ids": sorted({item.candidate_id for item in observations}),
+    }
+    if (
+        holdout_shapes != main_shapes
+        or not {item.m for item in searches} <= set(main_shapes)
+        or not {item.m for item in holdouts} <= set(holdout_shapes)
+        or not {item.m for item in confirmations} <= set(validation_shapes)
+        or any(scope.get(key) != value for key, value in expected_scope.items())
+    ):
+        raise OperatorFrontierQualificationError(
+            "partial bounded corpus falls outside the declared policy scope",
+            reason_code="qualification-policy-scope-mismatch",
+        )
+    if any(
+        item.warmup_iterations < policy.minimum_warmup_iterations
+        for item in observations
+    ):
+        raise OperatorFrontierQualificationError(
+            "source evidence does not meet the versioned warmup policy",
+            reason_code="warmup-policy-failed",
+        )
+    runs_root = Path(artifact_store).resolve() / "runs"
+    destination = runs_root / run_id
+    if destination.exists():
+        raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+    source_records = [
+        *(
+            _source_record(item, lane="main-sweep", bundle_root=destination)
+            for item in searches
+        ),
+        *(
+            _source_record(item, lane="holdout", bundle_root=destination)
+            for item in holdouts
+        ),
+        *(
+            _source_record(item, lane="independent-validation", bundle_root=destination)
+            for item in confirmations
+        ),
+    ]
+    evidence_digest = _canonical_digest(
+        {
+            "policy": policy.digest,
+            "sources": sorted(item.manifest_sha256 for item in observations),
+            "status": "unknown",
+        }
+    )
+    surface: dict[str, object] = {
+        "surface_id": f"surface://{cohort_id}/matmul/fixed-nk/{evidence_digest[:16]}",
+        "version": f"v-{evidence_digest[:16]}",
+        "previous_version": None,
+        "qualification_status": "unknown",
+        "qualification_reason_code": "bounded-collection-corpus-incomplete",
+        "cohort_id": cohort_id,
+        "domain": {
+            "semantic_operation": "MatMul",
+            "dtype": searches[0].dtype,
+            "layout": searches[0].layout,
+            "fixed_n": searches[0].n,
+            "fixed_k": searches[0].k,
+            "varying_axis": "m",
+            "execution_mode": searches[0].execution_mode,
+        },
+        "candidate_family": searches[0].candidate_family,
+        "coordinate": {"axis": "m", "transform": "identity", "transform_version": "v1"},
+        "work_formula": {
+            "kind": "matmul-2mnk-fixed-nk",
+            "version": "v1",
+            "fixed_n": searches[0].n,
+            "fixed_k": searches[0].k,
+            "work_unit": "FLOP",
+        },
+        "anchors": [],
+        "cells": [],
+        "evidence_refs": ["artifact://frontier/qualification.json"],
+    }
+    surface["input_digest"] = _canonical_digest(surface)
+    policy_document = {**policy.document, "input_digest": policy.digest}
+    qualification: dict[str, object] = {
+        "schema": QUALIFICATION_SCHEMA,
+        "status": "unknown",
+        "reason_code": "bounded-collection-corpus-incomplete",
+        "policy": policy_document,
+        "hardware_cohort": cohort_id,
+        "collection_plan": plan,
+        "stopping_decision": {
+            "status": "stopped",
+            "main_sweep_completed": sorted({item.m for item in searches})
+            == main_shapes,
+            "supplemental_rounds_executed": plan["executed_supplemental_rounds"],
+            "maximum_supplemental_rounds": plan["maximum_supplemental_rounds"],
+            "additional_model_complexity_allowed": False,
+        },
+        "anchors": [],
+        "surface": surface,
+        "source_runs": source_records,
+    }
+    queries = [
+        {
+            "query_id": f"ascend-matmul-fixed-nk-m{size}",
+            "surface_id": surface["surface_id"],
+            "surface_version": surface["version"],
+            "shape": {"m": size},
+            "domain": surface["domain"],
+        }
+        for size in query_sizes
+    ]
+    return _write_operator_frontier_documents(
+        runs_root,
+        destination,
+        run_id=run_id,
+        cohort_id=cohort_id,
+        source_records=source_records,
+        surface=surface,
+        qualification=qualification,
+        queries=queries,
+        analysis_plan="issue-36-ascend-matmul-bounded-m-sweep",
+        runtime_device_name=searches[0].runtime_device_name,
+        logical_device=searches[0].logical_device,
+    )
+
+
+@dataclass(frozen=True)
+class _BoundedCorpus:
+    observations: tuple[_Observation, ...]
+    cohort_id: str
+    plan: dict[str, Any]
+    main_shapes: tuple[int, ...]
+    by_main_shape: dict[int, list[_Observation]]
+    by_holdout_shape: dict[int, list[_Observation]]
+    by_validation_shape: dict[int, list[_Observation]]
+
+
+@dataclass(frozen=True)
+class _BoundedResponseAnalysis:
+    fixed_n: int
+    fixed_k: int
+    slope_ns_per_work: float
+    setup_latency_ns: float
+    asymptotic_rate: float | None
+    validation_records: tuple[dict[str, object], ...]
+    ramp_validation: tuple[dict[str, object], ...]
+    steady_validation: tuple[dict[str, object], ...]
+    ramp_max_m: int | None
+    steady_min_m: int | None
+    boundary_confirmed: bool
+    error_budget_passed: bool
+    qualified: bool
+    reason_code: str | None
+
+
+def _bounded_corpus(
+    policy: _QualificationPolicy,
+    searches: Sequence[_Observation],
+    holdouts: Sequence[_Observation],
+    confirmations: Sequence[_Observation],
+) -> _BoundedCorpus:
+    observations = (*searches, *holdouts, *confirmations)
+    _require_independent_sessions(observations)
+    cohort_id = _require_common_identity(observations)
+    _require_collection_plan_identity(policy, observations)
+    plan = cast(dict[str, Any], policy.document["collection_plan"])
+    main_shapes = tuple(sorted(cast(list[int], plan["main_sweep_m"])))
+    holdout_shapes = tuple(
+        sorted(cast(list[int], plan.get("independent_holdout_m", [])))
+    )
+    validation_shapes = tuple(
+        sorted(cast(list[int], plan["independent_validation_m"]))
+    )
+    by_main_shape = {
+        shape: [item for item in searches if item.m == shape]
+        for shape in main_shapes
+    }
+    by_holdout_shape = {
+        shape: [item for item in holdouts if item.m == shape]
+        for shape in main_shapes
+    }
+    by_validation_shape = {
+        shape: [item for item in confirmations if item.m == shape]
+        for shape in validation_shapes
+    }
+    minimum_counts = (
+        policy.minimum_search_sessions,
+        policy.minimum_holdout_sessions,
+        policy.minimum_confirmation_sessions,
+    )
+    if (
+        holdout_shapes != main_shapes
+        or sorted({item.m for item in searches}) != list(main_shapes)
+        or sorted({item.m for item in holdouts}) != list(holdout_shapes)
+        or sorted({item.m for item in confirmations}) != list(validation_shapes)
+        or any(
+            len(records) < minimum
+            for groups, minimum in zip(
+                (
+                    by_main_shape.values(),
+                    by_holdout_shape.values(),
+                    by_validation_shape.values(),
+                ),
+                minimum_counts,
+                strict=True,
+            )
+            for records in groups
+        )
+        or any(
+            item.correctness != "passed" or item.timing_quality != "passed"
+            for item in observations
+        )
+        or any(
+            _relative_range([item.median_ns for item in records])
+            > policy.maximum_session_median_relative_range
+            for records in (
+                *by_main_shape.values(),
+                *by_holdout_shape.values(),
+                *by_validation_shape.values(),
+            )
+        )
+    ):
+        raise OperatorFrontierQualificationError(
+            "bounded collection corpus is incomplete or unstable",
+            reason_code="bounded-collection-corpus-incomplete",
+        )
+    scope = policy.document["scope"]
+    assert isinstance(scope, dict)
+    expected_scope = {
+        "hardware_cohort": cohort_id,
+        "operation": "MatMul",
+        "dtype": observations[0].dtype,
+        "layout": observations[0].layout,
+        "fixed_n": observations[0].n,
+        "fixed_k": observations[0].k,
+        "anchor_m": list(main_shapes),
+        "confirmation_m": list(validation_shapes),
+        "candidate_ids": sorted({item.candidate_id for item in observations}),
+    }
+    if any(scope.get(key) != value for key, value in expected_scope.items()):
+        raise OperatorFrontierQualificationError(
+            "qualification policy does not cover this bounded evidence corpus",
+            reason_code="qualification-policy-scope-mismatch",
+        )
+    if any(
+        item.warmup_iterations < policy.minimum_warmup_iterations
+        for item in observations
+    ):
+        raise OperatorFrontierQualificationError(
+            "source evidence does not meet the versioned warmup policy",
+            reason_code="warmup-policy-failed",
+        )
+    return _BoundedCorpus(
+        observations=observations,
+        cohort_id=cohort_id,
+        plan=plan,
+        main_shapes=main_shapes,
+        by_main_shape=by_main_shape,
+        by_holdout_shape=by_holdout_shape,
+        by_validation_shape=by_validation_shape,
+    )
+
+
+def _analyze_bounded_response(
+    policy: _QualificationPolicy,
+    corpus: _BoundedCorpus,
+) -> _BoundedResponseAnalysis:
+    first = corpus.observations[0]
+    fixed_n = first.n
+    fixed_k = first.k
+    points = [
+        (
+            float(2 * shape * fixed_n * fixed_k),
+            float(median([item.median_ns for item in records])),
+        )
+        for shape, records in sorted(corpus.by_main_shape.items())
+    ]
+    mean_work = sum(work for work, _ in points) / len(points)
+    mean_latency = sum(latency for _, latency in points) / len(points)
+    denominator = sum((work - mean_work) ** 2 for work, _ in points)
+    slope = sum(
+        (work - mean_work) * (latency - mean_latency)
+        for work, latency in points
+    ) / denominator
+    setup_latency_ns = mean_latency - slope * mean_work
+    asymptotic_rate = 1_000_000_000.0 / slope if slope > 0 else None
+    validation_records: list[dict[str, object]] = []
+    relative_errors: list[float] = []
+    for lane, grouped in (
+        ("independent-holdout", corpus.by_holdout_shape),
+        ("independent-validation", corpus.by_validation_shape),
+    ):
+        for shape, records in sorted(grouped.items()):
+            observed = float(median([item.median_ns for item in records]))
+            modeled = setup_latency_ns + (2 * shape * fixed_n * fixed_k) * slope
+            error = abs(observed - modeled) / observed
+            relative_errors.append(error)
+            validation_records.append(
+                {
+                    "lane": lane,
+                    "shape": {"m": shape},
+                    "observed_latency_ns": observed,
+                    "modeled_latency_ns": modeled,
+                    "relative_error": error,
+                    "evidence_refs": [item.evidence_ref for item in records],
+                }
+            )
+    independent_validation = [
+        record
+        for record in validation_records
+        if record["lane"] == "independent-validation"
+    ]
+    maximum_relative_error = policy.document.get("maximum_relative_error")
+    maximum_setup_fraction = policy.document.get(
+        "maximum_setup_fraction_for_steady"
+    )
+    valid_threshold = (
+        isinstance(maximum_setup_fraction, (int, float))
+        and not isinstance(maximum_setup_fraction, bool)
+        and 0 <= float(maximum_setup_fraction) <= 1
+    )
+    ramp_validation = tuple(
+        record
+        for record in independent_validation
+        if valid_threshold
+        and setup_latency_ns / float(record["observed_latency_ns"])
+        > float(maximum_setup_fraction)
+    )
+    steady_validation = tuple(
+        record
+        for record in independent_validation
+        if valid_threshold
+        and setup_latency_ns / float(record["observed_latency_ns"])
+        <= float(maximum_setup_fraction)
+    )
+    ramp_max_m = max(
+        (cast(dict[str, int], record["shape"])["m"] for record in ramp_validation),
+        default=None,
+    )
+    steady_min_m = min(
+        (cast(dict[str, int], record["shape"])["m"] for record in steady_validation),
+        default=None,
+    )
+    boundary_confirmed = (
+        ramp_max_m is not None
+        and steady_min_m is not None
+        and ramp_max_m < steady_min_m
+        and len(steady_validation) >= 3
+    )
+    error_budget_passed = (
+        isinstance(maximum_relative_error, (int, float))
+        and not isinstance(maximum_relative_error, bool)
+        and 0 <= float(maximum_relative_error) <= 1
+        and slope > 0
+        and setup_latency_ns >= 0
+        and bool(relative_errors)
+        and max(relative_errors) <= float(maximum_relative_error)
+    )
+    qualified = error_budget_passed and boundary_confirmed
+    return _BoundedResponseAnalysis(
+        fixed_n=fixed_n,
+        fixed_k=fixed_k,
+        slope_ns_per_work=slope,
+        setup_latency_ns=setup_latency_ns,
+        asymptotic_rate=asymptotic_rate,
+        validation_records=tuple(validation_records),
+        ramp_validation=ramp_validation,
+        steady_validation=steady_validation,
+        ramp_max_m=ramp_max_m,
+        steady_min_m=steady_min_m,
+        boundary_confirmed=boundary_confirmed,
+        error_budget_passed=error_budget_passed,
+        qualified=qualified,
+        reason_code=(
+            None
+            if qualified
+            else "latency-response-error-budget-failed"
+            if not error_budget_passed
+            else "shape-regime-boundary-not-qualified"
+        ),
+    )
+
+
+def _write_bounded_collection_bundle(
+    artifact_store: str | Path,
+    *,
+    run_id: str,
+    policy: _QualificationPolicy,
+    searches: Sequence[_Observation],
+    holdouts: Sequence[_Observation],
+    confirmations: Sequence[_Observation],
+    query_sizes: Sequence[int],
+) -> Path:
+    corpus = _bounded_corpus(policy, searches, holdouts, confirmations)
+    analysis = _analyze_bounded_response(policy, corpus)
+    observations = corpus.observations
+    cohort_id = corpus.cohort_id
+    plan = corpus.plan
+    main_shapes = corpus.main_shapes
+    by_main_shape = corpus.by_main_shape
+    by_holdout_shape = corpus.by_holdout_shape
+    fixed_n = analysis.fixed_n
+    fixed_k = analysis.fixed_k
+    slope = analysis.slope_ns_per_work
+    setup_latency_ns = analysis.setup_latency_ns
+    asymptotic_rate = analysis.asymptotic_rate
+    validation_records = analysis.validation_records
+    ramp_validation = analysis.ramp_validation
+    steady_validation = analysis.steady_validation
+    ramp_max_m = analysis.ramp_max_m
+    steady_min_m = analysis.steady_min_m
+    boundary_confirmed = analysis.boundary_confirmed
+    error_budget_passed = analysis.error_budget_passed
+    qualified = analysis.qualified
+    reason_code = analysis.reason_code
+    maximum_relative_error = policy.document.get("maximum_relative_error")
+    maximum_setup_fraction = policy.document.get(
+        "maximum_setup_fraction_for_steady"
+    )
+    runs_root = Path(artifact_store).resolve() / "runs"
+    destination = runs_root / run_id
+    if destination.exists():
+        raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+    source_records = [
+        *(
+            _source_record(item, lane="main-sweep", bundle_root=destination)
+            for item in searches
+        ),
+        *(
+            _source_record(item, lane="holdout", bundle_root=destination)
+            for item in holdouts
+        ),
+        *(
+            _source_record(item, lane="independent-validation", bundle_root=destination)
+            for item in confirmations
+        ),
+    ]
+    evidence_digest = _canonical_digest(
+        {
+            "policy": policy.digest,
+            "sources": sorted(item.manifest_sha256 for item in observations),
+        }
+    )
+    surface_id = f"surface://{cohort_id}/matmul/fixed-nk/{evidence_digest[:16]}"
+    domain = {
+        "semantic_operation": "MatMul",
+        "dtype": searches[0].dtype,
+        "layout": searches[0].layout,
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": True,
+        "working_set_regime": f"fixed-n{fixed_n}-k{fixed_k}-m{main_shapes[0]}-{main_shapes[-1]}",
+        "working_set_validated": True,
+        "kernel_dispatch_regime": searches[0].candidate_family,
+        "kernel_dispatch_validated": True,
+        "regime_validated": qualified,
+        "execution_mode": searches[0].execution_mode,
+        "threads": 1,
+        "candidate_protocol_digest": searches[0].candidate_protocol_digest,
+        "candidate_set_digest": _canonical_digest(
+            sorted({item.candidate_protocol_digest for item in observations})
+        ),
+        "execution_protocol_digest": searches[0].execution_protocol_digest,
+        "fixed_n": fixed_n,
+        "fixed_k": fixed_k,
+        "varying_axis": "m",
+    }
+    response_attempt: dict[str, object] = {
+        "target": "latency",
+        "kind": "setup-plus-throughput",
+        "version": "v1",
+        "setup_latency_ns": setup_latency_ns,
+        "asymptotic_rate": asymptotic_rate,
+        "rate_unit": "FLOP/s",
+        "validation_records": validation_records,
+        "error_budget_passed": error_budget_passed,
+        "shape_regime_boundary_confirmed": boundary_confirmed,
+        "boundary_evidence": {
+            "last_ramp_validation_m": ramp_max_m,
+            "first_steady_validation_m": steady_min_m,
+            "ramp_validation_count": len(ramp_validation),
+            "steady_validation_count": len(steady_validation),
+        },
+    }
+    anchors: list[dict[str, object]] = []
+    cells: list[dict[str, object]] = []
+    anchor_latency_variances: list[float] = []
+    if qualified:
+        retained_shapes = sorted(
+            {
+                shape
+                for shape in main_shapes
+                if shape <= cast(int, ramp_max_m)
+                or shape >= cast(int, steady_min_m)
+            }
+        )
+        for shape in retained_shapes:
+            search_records = by_main_shape[shape]
+            holdout_records = by_holdout_shape[shape]
+            holdout_medians = [item.median_ns for item in holdout_records]
+            latency_ns = float(median(holdout_medians))
+            work = float(2 * shape * fixed_n * fixed_k)
+            rates = [work / (value * 1e-9) for value in holdout_medians]
+            anchor_id = f"ascend-matmul-fixed-n{fixed_n}-k{fixed_k}-m{shape}-{evidence_digest[:12]}"
+            standard_latency = float(stdev(holdout_medians))
+            anchor_latency_variances.append(standard_latency**2)
+            anchors.append(
+                {
+                    "anchor_id": anchor_id,
+                    "anchor_version": f"v-{evidence_digest[:16]}",
+                    "shape": {"m": shape},
+                    "effective_rate": float(median(rates)),
+                    "rate_unit": "FLOP/s",
+                    "candidate_id": search_records[0].candidate_id,
+                    "candidate_family": search_records[0].candidate_family,
+                    "candidate_digest": search_records[0].candidate_digest,
+                    "candidate_protocol_digest": search_records[0].candidate_protocol_digest,
+                    "execution_protocol_digest": search_records[0].execution_protocol_digest,
+                    "cohort_id": cohort_id,
+                    "domain": domain,
+                    "observation_validity": "QUALIFIED",
+                    "frontier_role": "ACTIVE",
+                    "evidence_ref": "artifact://frontier/qualification.json",
+                    "state_transitions": _active_transitions(anchor_id),
+                    "latency_ns": latency_ns,
+                    "standard_uncertainty_rate": float(stdev(rates)),
+                    "standard_uncertainty_latency_ns": standard_latency,
+                    "search_run_ids": [item.run_id for item in search_records],
+                    "holdout_run_ids": [item.run_id for item in holdout_records],
+                    "holdout_session_medians_ns": holdout_medians,
+                }
+            )
+        anchor_by_m = {
+            cast(dict[str, int], item["shape"])["m"]: item for item in anchors
+        }
+        regime_shapes = {
+            "ramp": [
+                shape for shape in retained_shapes if shape <= cast(int, ramp_max_m)
+            ],
+            "steady": [
+                shape for shape in retained_shapes if shape >= cast(int, steady_min_m)
+            ],
+        }
+        validation_refs_by_regime = {
+            "ramp": [
+                ref
+                for record in ramp_validation
+                for ref in cast(list[str], record["evidence_refs"])
+            ],
+            "steady": [
+                ref
+                for record in steady_validation
+                for ref in cast(list[str], record["evidence_refs"])
+            ],
+        }
+        for classification, shapes in regime_shapes.items():
+            for left, right in zip(shapes, shapes[1:], strict=False):
+                regime_id = f"{cohort_id}-fixed-n{fixed_n}-k{fixed_k}-{classification}"
+                cells.append(
+                    {
+                        "cell_id": f"ascend-matmul-{classification}-m{left}-{right}-{evidence_digest[:12]}",
+                        "anchor_ids": [
+                            anchor_by_m[left]["anchor_id"],
+                            anchor_by_m[right]["anchor_id"],
+                        ],
+                        "status": "retained",
+                        "regime_id": regime_id,
+                        "confirmation_shape": {
+                            "m": ramp_max_m if classification == "ramp" else steady_min_m
+                        },
+                        "confirmation_observed_rate": asymptotic_rate,
+                        "confirmation_evidence_refs": validation_refs_by_regime[classification],
+                        "interpolation_standard_uncertainty_rate": 0.0,
+                        "response": {
+                            **response_attempt,
+                            "shape_regime": {
+                                "identity": regime_id,
+                                "classification": classification,
+                            },
+                            "fit_evidence_refs": [item.evidence_ref for item in searches],
+                            "holdout_evidence_refs": [item.evidence_ref for item in holdouts],
+                            "confirmation_evidence_refs": validation_refs_by_regime[classification],
+                            "maximum_relative_error": float(cast(float, maximum_relative_error)),
+                            "maximum_setup_fraction_for_steady": float(cast(float, maximum_setup_fraction)),
+                        },
+                    }
+                )
+        if all(regime_shapes.values()):
+            boundary_left = regime_shapes["ramp"][-1]
+            boundary_right = regime_shapes["steady"][0]
+            cells.append(
+                {
+                    "cell_id": f"ascend-matmul-boundary-m{boundary_left}-{boundary_right}-{evidence_digest[:12]}",
+                    "anchor_ids": [
+                        anchor_by_m[boundary_left]["anchor_id"],
+                        anchor_by_m[boundary_right]["anchor_id"],
+                    ],
+                    "status": "regime_boundary",
+                    "regime_id": f"{cohort_id}-fixed-n{fixed_n}-k{fixed_k}-boundary",
+                    "confirmation_shape": {
+                        "m": [ramp_max_m, steady_min_m]
+                    },
+                    "confirmation_observed_rate": asymptotic_rate,
+                    "confirmation_evidence_refs": [
+                        *validation_refs_by_regime["ramp"],
+                        *validation_refs_by_regime["steady"],
+                    ],
+                    "interpolation_standard_uncertainty_rate": 0.0,
+                }
+            )
+        if any(len(shapes) < 3 for shapes in regime_shapes.values()):
+            qualified = False
+            reason_code = "shape-regime-boundary-not-qualified"
+            anchors = []
+            cells = []
+            domain["regime_validated"] = False
+    status = "qualified" if qualified else "rejected"
+    surface: dict[str, object] = {
+        "surface_id": surface_id,
+        "version": f"v-{evidence_digest[:16]}",
+        "previous_version": None,
+        "qualification_status": status,
+        **({"rejection_reason_code": reason_code} if reason_code is not None else {}),
+        "cohort_id": cohort_id,
+        "domain": domain,
+        "candidate_family": searches[0].candidate_family,
+        "coordinate": {"axis": "m", "transform": "identity", "transform_version": "v1"},
+        "work_formula": {
+            "kind": "matmul-2mnk-fixed-nk",
+            "version": "v1",
+            "fixed_n": fixed_n,
+            "fixed_k": fixed_k,
+            "work_unit": "FLOP",
+        },
+        "anchors": anchors,
+        "cells": cells,
+        "response_attempt": response_attempt,
+        **(
+            {
+                "anchor_lifecycle_policy": {
+                    "policy_id": "frontier-anchor-lifecycle",
+                    "version": "v2",
+                    "scope": f"{cohort_id}-fixed-nk-matmul-bounded-m-sweep",
+                    "change_reason": "issue-36 qualified bounded M sweep",
+                    "revalidation": "on cohort, corpus, policy, response, or boundary change",
+                },
+                "uncertainty_policy": {
+                    "policy_id": "ascend-matmul-bounded-m-sweep-uncertainty",
+                    "version": "v1",
+                    "scope": "two independently validated fixed-N/K Shape regimes",
+                    "change_reason": "independent holdout and boundary validation",
+                    "revalidation": "on cohort, corpus, policy, response, or boundary change",
+                    "combination": policy.document["uncertainty_combination"],
+                    "target_coverage": policy.target_coverage,
+                    "anchor_covariance": [
+                        [0.0 for _ in anchors] for _ in anchors
+                    ],
+                    "anchor_latency_covariance": [
+                        [
+                            variance if row == column else 0.0
+                            for column, variance in enumerate(anchor_latency_variances)
+                        ]
+                        for row in range(len(anchor_latency_variances))
+                    ],
+                    "response_model_standard_uncertainty_latency_ns": max(
+                        abs(float(record["observed_latency_ns"]) - float(record["modeled_latency_ns"]))
+                        for record in validation_records
+                    ),
+                    "instrumentation_standard_uncertainty_rate": 0.0,
+                    "instrumentation_standard_uncertainty_latency_ns": searches[0].timer_resolution_ns,
+                    "boundary_standard_uncertainty_latency_ns": slope
+                    * float(2 * (cast(int, steady_min_m) - cast(int, ramp_max_m)) * fixed_n * fixed_k)
+                    / 2.0,
+                    "calibration_evidence_refs": [item.evidence_ref for item in confirmations],
+                },
+            }
+            if qualified
+            else {}
+        ),
+        "evidence_refs": ["artifact://frontier/qualification.json"],
+    }
+    surface["input_digest"] = _canonical_digest(surface)
+    policy_document = {**policy.document, "input_digest": policy.digest}
+    stopping_decision = {
+        "status": "stopped",
+        "main_sweep_completed": True,
+        "supplemental_rounds_executed": plan["executed_supplemental_rounds"],
+        "maximum_supplemental_rounds": plan["maximum_supplemental_rounds"],
+        "additional_model_complexity_allowed": False,
+    }
+    qualification: dict[str, object] = {
+        "schema": QUALIFICATION_SCHEMA,
+        "status": status,
+        **({"reason_code": reason_code} if reason_code is not None else {}),
+        "policy": policy_document,
+        "hardware_cohort": cohort_id,
+        "collection_plan": plan,
+        "stopping_decision": stopping_decision,
+        "response_attempt": surface["response_attempt"],
+        "anchors": anchors,
+        "surface": surface,
+        "source_runs": source_records,
+    }
+    queries = [
+        {
+            "query_id": f"ascend-matmul-fixed-nk-m{size}",
+            "surface_id": surface["surface_id"],
+            "surface_version": surface["version"],
+            "shape": {"m": size},
+            "domain": surface["domain"],
+        }
+        for size in query_sizes
+    ]
+    return _write_operator_frontier_documents(
+        runs_root,
+        destination,
+        run_id=run_id,
+        cohort_id=cohort_id,
+        source_records=source_records,
+        surface=surface,
+        qualification=qualification,
+        queries=queries,
+        analysis_plan="issue-36-ascend-matmul-bounded-m-sweep",
+        runtime_device_name=searches[0].runtime_device_name,
+        logical_device=searches[0].logical_device,
+    )
 
 
 class OperatorFrontierBundleWriter:
@@ -655,10 +1606,34 @@ class OperatorFrontierBundleWriter:
         if not RUN_ID_PATTERN.fullmatch(run_id):
             raise ValueError(f"unsafe run_id: {run_id!r}")
         policy = _QualificationPolicy.from_document(qualification_policy)
+        _require_bounded_collection_rounds(policy)
         searches = [_observation(path) for path in search_runs]
         holdouts = [_observation(path) for path in holdout_runs]
         confirmations = [_observation(path) for path in confirmation_runs]
         all_observations = [*searches, *holdouts, *confirmations]
+        bounded_plan = policy.document.get("collection_plan")
+        if isinstance(bounded_plan, dict) and len(
+            cast(list[object], bounded_plan.get("main_sweep_m", []))
+        ) > 2:
+            if not holdouts or not confirmations:
+                return _write_unknown_bounded_collection_bundle(
+                    artifact_store,
+                    run_id=run_id,
+                    policy=policy,
+                    searches=searches,
+                    holdouts=holdouts,
+                    confirmations=confirmations,
+                    query_sizes=query_sizes,
+                )
+            return _write_bounded_collection_bundle(
+                artifact_store,
+                run_id=run_id,
+                policy=policy,
+                searches=searches,
+                holdouts=holdouts,
+                confirmations=confirmations,
+                query_sizes=query_sizes,
+            )
         if not searches or not holdouts or not confirmations:
             raise OperatorFrontierQualificationError(
                 "search, holdout, and confirmation evidence are required",
@@ -666,6 +1641,7 @@ class OperatorFrontierBundleWriter:
             )
         _require_independent_sessions(all_observations)
         cohort_id = _require_common_identity(all_observations)
+        _require_collection_plan_identity(policy, all_observations)
         latency_response = policy.document.get("response_target") == "latency"
         if latency_response:
             maximum_setup_fraction_for_steady = policy.document.get(
@@ -1312,6 +2288,7 @@ class OperatorFrontierBundleWriter:
             "surface_id": surface_id,
             "version": surface_version,
             "previous_version": None,
+            "qualification_status": "qualified",
             "cohort_id": cohort_id,
             "domain": domain,
             "candidate_family": selected_candidate_family,

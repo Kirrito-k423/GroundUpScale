@@ -1602,7 +1602,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             or not isinstance(source_runs, list)
             or not source_runs
             or not isinstance(qualification, dict)
-            or qualification.get("status") != "qualified"
+            or qualification.get("status") not in {"qualified", "rejected", "unknown"}
             or qualification.get("hardware_cohort")
             != manifest.get("hardware_cohort")
             or qualification.get("source_runs") != source_runs
@@ -1627,6 +1627,67 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or diagnostic.get("cohort_id") != manifest.get("hardware_cohort")
             ):
                 failures.append("operator Frontier Surface identity mismatch")
+            if (
+                isinstance(surface, dict)
+                and surface.get(
+                    "qualification_status",
+                    "qualified",
+                )
+                != qualification.get("status")
+            ):
+                failures.append("operator Frontier qualification status mismatch")
+            if (
+                isinstance(surface, dict)
+                and qualification.get("anchors") != surface.get("anchors")
+            ):
+                failures.append("operator Frontier qualification anchors mismatch")
+            if (
+                qualification.get("status") == "qualified"
+                and (
+                    not isinstance(surface, dict)
+                    or not isinstance(surface.get("anchors"), list)
+                    or not surface["anchors"]
+                    or not isinstance(surface.get("cells"), list)
+                    or not any(
+                        isinstance(cell, dict)
+                        and cell.get("status") == "retained"
+                        for cell in surface["cells"]
+                    )
+                )
+            ):
+                failures.append("invalid qualified operator Frontier qualification")
+            if (
+                qualification.get("status") == "rejected"
+                and (
+                    not isinstance(surface, dict)
+                    or surface.get("qualification_status") != "rejected"
+                    or surface.get("rejection_reason_code")
+                    != qualification.get("reason_code")
+                    or not isinstance(qualification.get("reason_code"), str)
+                    or not qualification["reason_code"]
+                    or surface.get("anchors") != []
+                    or surface.get("cells") != []
+                    or not isinstance(qualification.get("stopping_decision"), dict)
+                    or qualification["stopping_decision"].get("status") != "stopped"
+                )
+            ):
+                failures.append("invalid rejected operator Frontier qualification")
+            if (
+                qualification.get("status") == "unknown"
+                and (
+                    not isinstance(surface, dict)
+                    or surface.get("qualification_status") != "unknown"
+                    or surface.get("qualification_reason_code")
+                    != qualification.get("reason_code")
+                    or not isinstance(qualification.get("reason_code"), str)
+                    or not qualification["reason_code"]
+                    or surface.get("anchors") != []
+                    or surface.get("cells") != []
+                    or not isinstance(qualification.get("stopping_decision"), dict)
+                    or qualification["stopping_decision"].get("status") != "stopped"
+                )
+            ):
+                failures.append("invalid unknown operator Frontier qualification")
             if isinstance(surface, dict):
                 expected_surface_digest = surface.get("input_digest")
                 surface_body = {
