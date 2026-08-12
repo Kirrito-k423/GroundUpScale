@@ -1,0 +1,97 @@
+{
+  "artifacts": [
+    {
+      "name": "hidden-input",
+      "role": "input",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          "B",
+          "S",
+          "H"
+        ]
+      }
+    },
+    {
+      "name": "hidden-output",
+      "role": "output",
+      "tensor": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          "B",
+          "S",
+          "H"
+        ]
+      }
+    }
+  ],
+  "compilation_fingerprint": "785e13ee9b612563e3afd259553b961bebd2b0f361113ee2f97e674cf64f281b",
+  "name": "transformer-prefill",
+  "provenance": [
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:4caab1a07c8da2e7a93d6374e9c20e237a648443374d72a2f2677cc0ac634a27",
+      "phase": "workload-build",
+      "rule": "core.workload-builder/v1alpha1:model-call",
+      "source_path": "WorkloadSpec/transformer-prefill@0.1.0",
+      "source_stable_path": "workload/transformer-prefill/request/model-prefill",
+      "target_node_ids": [
+        "workloadir:cea69617a60696575e0ac0902a3c1c85c951de9fc55572c6b94e940a43b0bcc2"
+      ],
+      "warnings": []
+    },
+    {
+      "assumptions": [],
+      "derivation_id": "derivation:335b67d81d2eb26e8b34d7361b984bc3ede0e9d6b2c72deaddf320cd8d036674",
+      "phase": "workload-build",
+      "rule": "core.workload-builder/v1alpha1:sequence",
+      "source_path": "WorkloadSpec/transformer-prefill@0.1.0",
+      "source_stable_path": "workload/transformer-prefill/request",
+      "target_node_ids": [
+        "workloadir:faae29eddc21bc0c9584e5aab847e3669dd6e54353f9afe49cefb34a28618f8e"
+      ],
+      "warnings": []
+    }
+  ],
+  "root": {
+    "children": [
+      {
+        "definition_id": "workload-definition/WorkloadSpec/transformer-prefill@0.1.0/workload/transformer-prefill/request/model-prefill",
+        "derivation_ids": [
+          "derivation:4caab1a07c8da2e7a93d6374e9c20e237a648443374d72a2f2677cc0ac634a27"
+        ],
+        "entrypoint": "prefill",
+        "inputs": [
+          [
+            "hidden",
+            "hidden-input"
+          ]
+        ],
+        "local_id": "model-prefill",
+        "model_name": "two-layer-transformer",
+        "model_reference": "specs/models/two-layer-transformer.yaml",
+        "model_version": "0.1.0",
+        "node_id": "workloadir:cea69617a60696575e0ac0902a3c1c85c951de9fc55572c6b94e940a43b0bcc2",
+        "outputs": [
+          [
+            "hidden",
+            "hidden-output"
+          ]
+        ],
+        "stable_path": "workload/transformer-prefill/request/model-prefill"
+      }
+    ],
+    "definition_id": "workload-definition/WorkloadSpec/transformer-prefill@0.1.0/workload/transformer-prefill/request",
+    "derivation_ids": [
+      "derivation:335b67d81d2eb26e8b34d7361b984bc3ede0e9d6b2c72deaddf320cd8d036674"
+    ],
+    "local_id": "request",
+    "node_id": "workloadir:faae29eddc21bc0c9584e5aab847e3669dd6e54353f9afe49cefb34a28618f8e",
+    "stable_path": "workload/transformer-prefill/request"
+  },
+  "schema": "groundupscale.dev/workload-ir/v1alpha1",
+  "source_sha256": "ab14e95fd9e69138b10f6cfdd8336b5c93bd0ac404565eea660aa65c6bcd12be",
+  "version": "0.1.0"
+}

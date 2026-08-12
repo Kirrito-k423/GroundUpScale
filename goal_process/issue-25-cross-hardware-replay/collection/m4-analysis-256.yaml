@@ -1,0 +1,15 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: AnalysisCase
+metadata:
+  name: issue25-m4-m256
+  version: 1.0.0
+spec:
+  shape:
+    kind: fixed
+    bindings: {B: 1, S: 256, H: 256, NH: 4, D: 64, I: 1024}
+    dtype: float32
+  driver:
+    kind: fixed_iterations
+    warmup_iterations: 10
+    measured_iterations: 20
+  observation_window: {kind: iterations, value: 20}

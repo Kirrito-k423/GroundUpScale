@@ -1,0 +1,1060 @@
+{
+  "baseline_timing_lane": {
+    "candidate_id": "torch.matmul.cpu.fp32",
+    "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "completion_boundary": {
+      "closed": true,
+      "kind": "synchronous-cpu-call-return",
+      "threadpool_joined": true
+    },
+    "evidence_ref": "artifact://issue-25/m4-baseline-observation",
+    "excluded_samples": [],
+    "execution_domain": {
+      "affinity": "os-managed-unpinned",
+      "alignment_bytes": 64,
+      "concurrency": 1,
+      "context": "single-process-cpu",
+      "dtype": "float32",
+      "execution_mode": "eager",
+      "layout": "row-major-contiguous",
+      "numa": "single-socket-unified-memory",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "not-applicable-cpu",
+      "threads": 4
+    },
+    "frontier_role": "NONE",
+    "instrumentation_profile": "baseline-timing/v1",
+    "lane_id": "issue25-m4-baseline",
+    "observation_validity": "QUALIFIED",
+    "pair_id": "issue25-m4-paired-lanes",
+    "raw_samples_ns": [
+      154345.21428571426,
+      154464.2857142857,
+      154541.64285714284,
+      154312.57142857142,
+      154523.7857142857,
+      154550.57142857142,
+      154514.85714285716,
+      154619.07142857142,
+      154523.85714285716,
+      154336.28571428574,
+      154357.14285714284,
+      154642.7857142857,
+      154631.0,
+      154577.35714285716,
+      154559.57142857142,
+      154440.5,
+      154568.5,
+      154550.64285714284,
+      154360.14285714284,
+      154595.14285714284
+    ],
+    "timer": {
+      "monotonic": true,
+      "resolution_ns": 41.66666666666667,
+      "source": "time.perf_counter_ns"
+    },
+    "warmup": {
+      "converged": true,
+      "iterations": 500
+    }
+  },
+  "candidate": {
+    "candidate_id": "torch.matmul.cpu.fp32",
+    "coverage": "C0_SINGLE",
+    "exact_shape_best_of_correct": {
+      "eligible_candidate_ids": [
+        "torch.matmul.cpu.fp32"
+      ],
+      "evidence_ref": "artifact://issue-25/m4-512-search",
+      "passed": true,
+      "search_session_ids": [
+        "m4-cpu-matmul512-v3-search-20260809-06",
+        "m4-cpu-matmul512-v3-search-20260809-07",
+        "m4-cpu-matmul512-v3-search-20260809-08"
+      ],
+      "search_sessions": [
+        {
+          "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "correctness_passed": true,
+          "evidence_ref": "artifact://issue-25/m4-512-search-m4-cpu-matmul512-v3-search-20260809-06",
+          "excluded_samples": [],
+          "lane_id": "issue25-m4-baseline",
+          "process_id": 62312,
+          "raw_samples_ns": [
+            154392.85714285716,
+            154547.57142857142,
+            154488.14285714284,
+            154470.2142857143,
+            154163.64285714284,
+            154627.92857142858,
+            154571.35714285716,
+            154500.0,
+            154562.42857142858,
+            154592.21428571426,
+            154369.0,
+            154666.64285714284,
+            154648.7857142857,
+            154502.92857142858,
+            154574.42857142858,
+            154511.85714285716,
+            154651.85714285713,
+            154627.92857142858,
+            154639.85714285716,
+            154479.2142857143
+          ],
+          "session_id": "m4-cpu-matmul512-v3-search-20260809-06",
+          "warmup": {
+            "converged": true,
+            "iterations": 500,
+            "median_drift": 0.0006759833871569102
+          }
+        },
+        {
+          "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "correctness_passed": true,
+          "evidence_ref": "artifact://issue-25/m4-512-search-m4-cpu-matmul512-v3-search-20260809-07",
+          "excluded_samples": [],
+          "lane_id": "issue25-m4-baseline",
+          "process_id": 62424,
+          "raw_samples_ns": [
+            154288.64285714284,
+            154131.0,
+            154136.92857142858,
+            154163.71428571426,
+            154157.71428571426,
+            154392.85714285713,
+            154363.07142857142,
+            154330.2857142857,
+            154392.85714285716,
+            154232.14285714284,
+            154360.14285714287,
+            154309.5,
+            154303.5,
+            154458.35714285716,
+            154416.64285714284,
+            154312.57142857142,
+            154425.64285714284,
+            154223.2142857143,
+            154437.57142857142,
+            154464.28571428574
+          ],
+          "session_id": "m4-cpu-matmul512-v3-search-20260809-07",
+          "warmup": {
+            "converged": true,
+            "iterations": 500,
+            "median_drift": 0.004016335369033876
+          }
+        },
+        {
+          "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "correctness_passed": true,
+          "evidence_ref": "artifact://issue-25/m4-512-search-m4-cpu-matmul512-v3-search-20260809-08",
+          "excluded_samples": [],
+          "lane_id": "issue25-m4-baseline",
+          "process_id": 62524,
+          "raw_samples_ns": [
+            155080.2857142857,
+            155020.7857142857,
+            155014.92857142858,
+            154976.2142857143,
+            155336.28571428574,
+            155035.64285714284,
+            154979.2142857143,
+            154985.07142857142,
+            155267.85714285713,
+            155086.2857142857,
+            155160.7142857143,
+            155160.7142857143,
+            155351.2142857143,
+            155333.28571428574,
+            155282.64285714284,
+            155309.5,
+            155309.57142857142,
+            155279.7857142857,
+            155196.42857142858,
+            155342.2857142857
+          ],
+          "session_id": "m4-cpu-matmul512-v3-search-20260809-08",
+          "warmup": {
+            "converged": true,
+            "iterations": 500,
+            "median_drift": 0.0012633276877166762
+          }
+        }
+      ],
+      "winner_candidate_id": "torch.matmul.cpu.fp32"
+    },
+    "family": "pytorch-cpu-matmul",
+    "implementation_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4"
+  },
+  "capability_surfaces": [
+    {
+      "anchor_lifecycle_policy": {
+        "change_reason": "ticket #25 real cross-hardware replay",
+        "policy_id": "issue25-frontier-anchor-lifecycle",
+        "revalidation": "on policy, cohort, execution contract, or evidence change",
+        "scope": "M4 q-proj Surface",
+        "version": "v2"
+      },
+      "anchors": [
+        {
+          "anchor_id": "issue25-m4-qproj-256",
+          "anchor_version": "v1",
+          "candidate_family": "torch.matmul.cpu.fp32",
+          "candidate_id": "torch.matmul.cpu.fp32",
+          "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "domain": {
+            "alignment_regime": "64-byte-aligned",
+            "alignment_validated": true,
+            "dtype": "float32",
+            "execution_mode": "eager",
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 4,
+            "working_set_regime": "m4-unified-memory-q-projection"
+          },
+          "effective_rate": 1328148097100.2646,
+          "evidence_ref": "artifact://issue-25/issue25-m4-qproj-256",
+          "frontier_role": "ACTIVE",
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "shape": {
+            "s": 256
+          },
+          "standard_uncertainty_rate": 805894465.4809324,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-256-search"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-256-qualification"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "anchor-qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-256-holdout"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        },
+        {
+          "anchor_id": "issue25-m4-qproj-512",
+          "anchor_version": "v1",
+          "candidate_family": "torch.matmul.cpu.fp32",
+          "candidate_id": "torch.matmul.cpu.fp32",
+          "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+          "domain": {
+            "alignment_regime": "64-byte-aligned",
+            "alignment_validated": true,
+            "dtype": "float32",
+            "execution_mode": "eager",
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 4,
+            "working_set_regime": "m4-unified-memory-q-projection"
+          },
+          "effective_rate": 1738970629826.237,
+          "evidence_ref": "artifact://issue-25/issue25-m4-qproj-512",
+          "frontier_role": "ACTIVE",
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "shape": {
+            "s": 512
+          },
+          "standard_uncertainty_rate": 29426563092.267925,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-512-search"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-search-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-512-qualification"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "anchor-qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://issue-25/issue25-m4-qproj-512-holdout"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        }
+      ],
+      "candidate_family": "torch.matmul.cpu.fp32",
+      "cells": [
+        {
+          "anchor_ids": [
+            "issue25-m4-qproj-256",
+            "issue25-m4-qproj-512"
+          ],
+          "cell_id": "issue25-m4-qproj-s256-s512",
+          "confirmation_evidence_refs": [
+            "artifact://issue-25/m4-surface-confirmation"
+          ],
+          "interpolation_standard_uncertainty_rate": 0.0,
+          "regime_id": "m4-qproj-eager-fp32-v1",
+          "status": "retained"
+        }
+      ],
+      "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+      "coordinate": {
+        "axis": "s",
+        "transform": "identity",
+        "transform_version": "v1"
+      },
+      "domain": {
+        "alignment_regime": "64-byte-aligned",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 4,
+        "working_set_regime": "m4-unified-memory-q-projection"
+      },
+      "evidence_refs": [
+        "artifact://issue-25/m4-surface-build"
+      ],
+      "input_digest": "bb7c98641068a3084ac2f6cd553334911ce4b8064c6ffe1c9e68deae523d5138",
+      "previous_version": null,
+      "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
+      "uncertainty_policy": {
+        "anchor_covariance": [
+          [
+            6.494658894927977e+17,
+            0.0
+          ],
+          [
+            0.0,
+            8.659226154232248e+20
+          ]
+        ],
+        "calibration_evidence_refs": [
+          "artifact://issue-25/m4-surface-uncertainty-calibration"
+        ],
+        "change_reason": "ticket #25 real cross-hardware replay",
+        "combination": "root-sum-of-squares",
+        "instrumentation_standard_uncertainty_rate": 0.0,
+        "policy_id": "issue25-m4-surface-uncertainty",
+        "revalidation": "on policy, cohort, execution contract, or evidence change",
+        "scope": "M4 q-proj Surface",
+        "target_coverage": 0.95,
+        "version": "v1"
+      },
+      "version": "v1",
+      "work_formula": {
+        "kind": "square-matmul-2s3",
+        "version": "v1",
+        "work_unit": "FLOP"
+      }
+    }
+  ],
+  "cohort_evidence": {
+    "evidence_ref": "artifact://issue-25/m4-cohort-match",
+    "observed_identity": {
+      "communication": {
+        "status": "not_applicable"
+      },
+      "device": "Apple M4 CPU",
+      "execution_context": {
+        "affinity": "os-managed-unpinned",
+        "concurrency": 1,
+        "context": "single-process-cpu",
+        "numa": "single-socket-unified-memory",
+        "stream": "not-applicable-cpu"
+      },
+      "numeric_execution": {
+        "alignment_bytes": 64,
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "threads": 4
+      },
+      "partition": "whole-device",
+      "power_clock": {
+        "clock_policy": "macos-default-managed",
+        "power_policy": "ac"
+      },
+      "software": "torch=2.13.0;Darwin=24.6.0;python=3.11.15",
+      "timer_protocol": {
+        "adapter_id": "apple-m4-cpu",
+        "adapter_version": "v1",
+        "completion_kind": "synchronous-cpu-call-return",
+        "duration_reducer": null,
+        "monotonic": true,
+        "protocol_id": "issue25-exact-shape-diagnostic",
+        "protocol_version": "v1",
+        "resolution_ns": 41.66666666666667,
+        "source": "time.perf_counter_ns"
+      },
+      "topology": "single-socket-unified-memory"
+    },
+    "reference_cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "reference_identity": {
+      "communication": {
+        "status": "not_applicable"
+      },
+      "device": "Apple M4 CPU",
+      "execution_context": {
+        "affinity": "os-managed-unpinned",
+        "concurrency": 1,
+        "context": "single-process-cpu",
+        "numa": "single-socket-unified-memory",
+        "stream": "not-applicable-cpu"
+      },
+      "numeric_execution": {
+        "alignment_bytes": 64,
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "threads": 4
+      },
+      "partition": "whole-device",
+      "power_clock": {
+        "clock_policy": "macos-default-managed",
+        "power_policy": "ac"
+      },
+      "software": "torch=2.13.0;Darwin=24.6.0;python=3.11.15",
+      "timer_protocol": {
+        "adapter_id": "apple-m4-cpu",
+        "adapter_version": "v1",
+        "completion_kind": "synchronous-cpu-call-return",
+        "duration_reducer": null,
+        "monotonic": true,
+        "protocol_id": "issue25-exact-shape-diagnostic",
+        "protocol_version": "v1",
+        "resolution_ns": 41.66666666666667,
+        "source": "time.perf_counter_ns"
+      },
+      "topology": "single-socket-unified-memory"
+    },
+    "transient_failures": []
+  },
+  "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+  "communication_identity": {
+    "status": "not_applicable"
+  },
+  "correctness": {
+    "evidence_ref": "artifact://issue-25/m4-correctness",
+    "oracle": "torch.float64.matmul",
+    "passed": true,
+    "policy_ref": "matmul-fp32-float64-oracle-v1/1.0.0"
+  },
+  "diagnostic_profiling_lane": {
+    "candidate_id": "torch.matmul.cpu.fp32",
+    "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "completion_boundary": {
+      "closed": true,
+      "kind": "synchronous-cpu-call-return",
+      "threadpool_joined": true
+    },
+    "evidence_ref": "artifact://issue-25/m4-diagnostic-lane-not-requested",
+    "excluded_samples": [],
+    "execution_domain": {
+      "affinity": "os-managed-unpinned",
+      "alignment_bytes": 64,
+      "concurrency": 1,
+      "context": "single-process-cpu",
+      "dtype": "float32",
+      "execution_mode": "eager",
+      "layout": "row-major-contiguous",
+      "numa": "single-socket-unified-memory",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "not-applicable-cpu",
+      "threads": 4
+    },
+    "frontier_role": "NONE",
+    "instrumentation_profile": "not-requested/v1",
+    "lane_id": "issue25-m4-diagnostic",
+    "observation_validity": "QUALIFIED",
+    "pair_id": "issue25-m4-paired-lanes",
+    "paired_baseline_lane_id": "issue25-m4-baseline",
+    "raw_samples_ns": [
+      154345.21428571426,
+      154464.2857142857,
+      154541.64285714284,
+      154312.57142857142,
+      154523.7857142857,
+      154550.57142857142,
+      154514.85714285716,
+      154619.07142857142,
+      154523.85714285716,
+      154336.28571428574,
+      154357.14285714284,
+      154642.7857142857,
+      154631.0,
+      154577.35714285716,
+      154559.57142857142,
+      154440.5,
+      154568.5,
+      154550.64285714284,
+      154360.14285714284,
+      154595.14285714284
+    ],
+    "timer": {
+      "monotonic": true,
+      "resolution_ns": 41.66666666666667,
+      "source": "time.perf_counter_ns"
+    },
+    "timing_used_for_frontier": false,
+    "warmup": {
+      "converged": true,
+      "iterations": 500
+    }
+  },
+  "digests": {
+    "evidence_sha256": "b7643456b2d439ca4304efad6dfa7e646549d29577c43db1fbbe9dd9588ea1e7",
+    "input_sha256": "41cf31f7b12fe8cb11b14734e570384462e5b96185c41af67624c36ce0d9e617"
+  },
+  "environment": {
+    "eligible": true,
+    "evidence_ref": "artifact://issue-25/m4-environment",
+    "preflight_ref": "artifact://issue-25/m4-preflight"
+  },
+  "execution_domain": {
+    "affinity": "os-managed-unpinned",
+    "alignment_bytes": 64,
+    "concurrency": 1,
+    "context": "single-process-cpu",
+    "dtype": "float32",
+    "execution_mode": "eager",
+    "layout": "row-major-contiguous",
+    "numa": "single-socket-unified-memory",
+    "shape": {
+      "k": 512,
+      "m": 512,
+      "n": 512
+    },
+    "stream": "not-applicable-cpu",
+    "threads": 4
+  },
+  "frontier_anchors": [
+    {
+      "anchor_id": "issue25-m4-qproj-512",
+      "baseline_lane_id": "issue25-m4-baseline",
+      "candidate_id": "torch.matmul.cpu.fp32",
+      "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+      "completion_boundary": {
+        "closed": true,
+        "kind": "synchronous-cpu-call-return",
+        "threadpool_joined": true
+      },
+      "correctness_passed": true,
+      "evidence_ref": "artifact://issue-25/issue25-m4-qproj-512",
+      "execution_domain": {
+        "affinity": "os-managed-unpinned",
+        "alignment_bytes": 64,
+        "concurrency": 1,
+        "context": "single-process-cpu",
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "numa": "single-socket-unified-memory",
+        "shape": {
+          "k": 512,
+          "m": 512,
+          "n": 512
+        },
+        "stream": "not-applicable-cpu",
+        "threads": 4
+      },
+      "frontier_role": "ACTIVE",
+      "holdout": {
+        "evidence_ref": "artifact://issue-25/issue25-m4-qproj-512-holdout",
+        "latency_ns": 154364.57142857142,
+        "passed": true,
+        "session_ids": [
+          "m4-cpu-matmul512-v3-holdout-20260809-01",
+          "m4-cpu-matmul512-v3-holdout-20260809-02",
+          "m4-cpu-matmul512-v3-holdout-20260809-03"
+        ],
+        "sessions": [
+          {
+            "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+            "correctness_passed": true,
+            "evidence_ref": "artifact://issue-25/m4-512-holdout-m4-cpu-matmul512-v3-holdout-20260809-01",
+            "excluded_samples": [],
+            "lane_id": "issue25-m4-baseline",
+            "process_id": 62618,
+            "raw_samples_ns": [
+              154306.57142857142,
+              154330.35714285716,
+              154273.7857142857,
+              154235.14285714287,
+              154187.5,
+              154187.5,
+              154449.42857142858,
+              154348.2857142857,
+              154145.85714285716,
+              154044.7142857143,
+              154196.5,
+              154345.21428571426,
+              154440.42857142858,
+              154315.5,
+              154306.57142857142,
+              154288.7142857143,
+              154214.2857142857,
+              154294.64285714284,
+              154074.35714285716,
+              154196.5
+            ],
+            "session_id": "m4-cpu-matmul512-v3-holdout-20260809-01",
+            "warmup": {
+              "converged": true,
+              "iterations": 500,
+              "median_drift": 0.0028924180108494115
+            }
+          },
+          {
+            "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+            "correctness_passed": true,
+            "evidence_ref": "artifact://issue-25/m4-512-holdout-m4-cpu-matmul512-v3-holdout-20260809-02",
+            "excluded_samples": [],
+            "lane_id": "issue25-m4-baseline",
+            "process_id": 62737,
+            "raw_samples_ns": [
+              161854.14285714284,
+              161386.92857142858,
+              157122.0,
+              157491.07142857142,
+              158038.64285714284,
+              157523.7857142857,
+              158306.5,
+              158717.21428571426,
+              158976.14285714284,
+              159541.64285714284,
+              157473.14285714284,
+              154654.7142857143,
+              152699.35714285716,
+              152913.7142857143,
+              159270.85714285716,
+              160678.57142857142,
+              160758.92857142858,
+              163104.14285714284,
+              164785.71428571426,
+              168160.7142857143
+            ],
+            "session_id": "m4-cpu-matmul512-v3-holdout-20260809-02",
+            "warmup": {
+              "converged": true,
+              "iterations": 500,
+              "median_drift": 0.007209730303251358
+            }
+          },
+          {
+            "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+            "correctness_passed": true,
+            "evidence_ref": "artifact://issue-25/m4-512-holdout-m4-cpu-matmul512-v3-holdout-20260809-03",
+            "excluded_samples": [],
+            "lane_id": "issue25-m4-baseline",
+            "process_id": 62954,
+            "raw_samples_ns": [
+              154500.0,
+              154506.0,
+              154720.2857142857,
+              154285.78571428574,
+              154339.2857142857,
+              154383.92857142858,
+              154226.2142857143,
+              154345.2857142857,
+              154330.35714285716,
+              154452.35714285716,
+              154369.0,
+              154273.85714285716,
+              154479.21428571426,
+              154455.35714285716,
+              154883.92857142858,
+              154372.07142857142,
+              154360.14285714284,
+              154330.2857142857,
+              154297.57142857142,
+              154342.2857142857
+            ],
+            "session_id": "m4-cpu-matmul512-v3-holdout-20260809-03",
+            "warmup": {
+              "converged": true,
+              "iterations": 500,
+              "median_drift": 0.037559081099688106
+            }
+          }
+        ]
+      },
+      "instrumentation_profile": "baseline-timing/v1",
+      "observation_validity": "QUALIFIED",
+      "raw_timing_ns": [
+        154281.25,
+        158846.67857142855,
+        154364.57142857142
+      ],
+      "state_transitions": [
+        {
+          "axis": "frontier_role",
+          "evidence_refs": [
+            "artifact://issue-25/issue25-m4-qproj-512-search"
+          ],
+          "from": "NONE",
+          "reason_code": "exact-shape-best-of-correct-search-winner",
+          "sequence": 1,
+          "to": "PROVISIONAL"
+        },
+        {
+          "axis": "observation_validity",
+          "evidence_refs": [
+            "artifact://issue-25/issue25-m4-qproj-512-qualification"
+          ],
+          "from": "COLLECTED",
+          "reason_code": "anchor-qualification-gates-satisfied",
+          "sequence": 2,
+          "to": "QUALIFIED"
+        },
+        {
+          "axis": "frontier_role",
+          "evidence_refs": [
+            "artifact://issue-25/issue25-m4-qproj-512-holdout"
+          ],
+          "from": "PROVISIONAL",
+          "reason_code": "independent-holdout-confirmed",
+          "sequence": 3,
+          "to": "ACTIVE"
+        }
+      ],
+      "timer": {
+        "monotonic": true,
+        "resolution_ns": 41.66666666666667,
+        "source": "time.perf_counter_ns"
+      },
+      "warmup": {
+        "converged": true,
+        "iterations": 500
+      }
+    }
+  ],
+  "hardware": {
+    "device": "Apple M4 CPU",
+    "partition": "whole-device",
+    "power_clock": {
+      "clock_policy": "macos-default-managed",
+      "power_policy": "ac"
+    },
+    "software": "torch=2.13.0;Darwin=24.6.0;python=3.11.15",
+    "topology": "single-socket-unified-memory"
+  },
+  "measurement_adapter": {
+    "adapter_id": "apple-m4-cpu",
+    "adapter_version": "v1",
+    "evidence_ref": "artifact://issue-25/m4-measurement-adapter",
+    "operation_evidence": [
+      {
+        "evidence_ref": "artifact://issue-25/m4-adapter-discover_capabilities",
+        "operation": "discover_capabilities"
+      },
+      {
+        "evidence_ref": "artifact://issue-25/m4-adapter-fingerprint_cohort",
+        "operation": "fingerprint_cohort"
+      },
+      {
+        "evidence_ref": "artifact://issue-25/m4-adapter-preflight",
+        "operation": "preflight"
+      },
+      {
+        "evidence_ref": "artifact://issue-25/m4-adapter-build_timing_plan",
+        "operation": "build_timing_plan"
+      },
+      {
+        "evidence_ref": "artifact://issue-25/m4-adapter-collect",
+        "operation": "collect"
+      }
+    ],
+    "protocol_id": "issue25-exact-shape-diagnostic",
+    "protocol_version": "v1"
+  },
+  "measurement_capability_manifest": {
+    "adapter_id": "apple-m4-cpu",
+    "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+    "evidence_ref": "artifact://issue-25/m4-capabilities",
+    "fields": [
+      {
+        "attribution": "single Apple M4 CPU process",
+        "field": "timer.primary",
+        "intrusion": "baseline",
+        "required_for_anchor": true,
+        "scope": "exact-shape MatMul",
+        "source": "python://time.perf_counter_ns",
+        "status": "measured",
+        "value": {
+          "resolution_ns": 41.66666666666667
+        }
+      },
+      {
+        "attribution": "single Apple M4 CPU process",
+        "field": "completion.boundary",
+        "intrusion": "baseline",
+        "required_for_anchor": true,
+        "scope": "exact-shape MatMul",
+        "source": "python://time.perf_counter_ns",
+        "status": "declared",
+        "value": "synchronous-cpu-call-return"
+      },
+      {
+        "attribution": "single Apple M4 CPU process",
+        "field": "counter.cpu_cycles",
+        "intrusion": "baseline",
+        "required_for_anchor": false,
+        "scope": "exact-shape MatMul",
+        "source": "python://time.perf_counter_ns",
+        "status": "not_requested"
+      }
+    ],
+    "manifest_id": "issue25-apple-m4-cpu-v1",
+    "status": "qualified"
+  },
+  "policies": {
+    "cohort": {
+      "change_reason": "ticket #25 real cross-hardware replay",
+      "maximum_retry_attempts": 1,
+      "policy_id": "issue25-m4-cohort",
+      "revalidation": "on policy, cohort, execution contract, or evidence change",
+      "scope": "Apple M4 CPU",
+      "version": "v1"
+    },
+    "observation": {
+      "change_reason": "ticket #25 real cross-hardware replay",
+      "policy_id": "issue25-m4-observation",
+      "revalidation": "on policy, cohort, execution contract, or evidence change",
+      "scope": "M4 q-proj",
+      "version": "v1"
+    },
+    "qualification": {
+      "change_reason": "ticket #25 real cross-hardware replay",
+      "minimum_independent_sessions": 3,
+      "policy_id": "issue25-m4-frontier-qualification",
+      "revalidation": "on policy, cohort, execution contract, or evidence change",
+      "scope": "M4 q-proj",
+      "version": "v2"
+    },
+    "schedule": {
+      "change_reason": "ticket #25 real cross-hardware replay",
+      "policy_id": "issue25-m4-schedule",
+      "revalidation": "on policy, cohort, execution contract, or evidence change",
+      "scope": "single-node q-proj",
+      "version": "v1"
+    }
+  },
+  "resolved_configuration": {
+    "analysis_plan": "specs/plans/mac-cpu-prefill.yaml",
+    "benchmark_case": "matmul-q-proj",
+    "e2e_case": "two-layer-prefill",
+    "evidence_ref": "artifact://issue-25/m4-resolved-configuration"
+  },
+  "resolved_ir": {
+    "operation": "MatMul",
+    "semantic_node": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+  },
+  "resource_physical_floor": {
+    "combination": "max-explicit-overlap",
+    "evidence_refs": [
+      "artifact://issue-25/m4-physical-floor"
+    ],
+    "may_be_unattainable": true,
+    "policy_ref": "docs/adr/0033-derive-empirical-hardware-floors/v1",
+    "resource_terms": [
+      {
+        "cohort_id": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+        "demand_unit": "FLOP",
+        "evidence_ref": "artifact://issue-25/m4-physical-floor-compute",
+        "execution_domain": {
+          "affinity": "os-managed-unpinned",
+          "alignment_bytes": 64,
+          "concurrency": 1,
+          "context": "single-process-cpu",
+          "dtype": "float32",
+          "execution_mode": "eager",
+          "layout": "row-major-contiguous",
+          "numa": "single-socket-unified-memory",
+          "shape": {
+            "k": 512,
+            "m": 512,
+            "n": 512
+          },
+          "stream": "not-applicable-cpu",
+          "threads": 4
+        },
+        "minimum_demand": 268435456,
+        "rate_unit": "FLOP/s",
+        "resource": "compute.fp32",
+        "validated": true,
+        "validated_rate_per_second": 1748450139577.8,
+        "validated_rate_resource": "compute.fp32"
+      }
+    ],
+    "status": "known",
+    "value_ns": 153527.65853810357
+  },
+  "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+  "single_node_schedule": {
+    "candidate_id": "torch.matmul.cpu.fp32",
+    "dependencies": [],
+    "evidence_refs": [
+      "artifact://issue-25/m4-schedule"
+    ],
+    "overlap_claims": [],
+    "schedule_id": "issue25-m4-single-node-qproj",
+    "transformations": [],
+    "version": "v1"
+  },
+  "source_runs": [
+    {
+      "role": "observation-and-e2e",
+      "run_bundle": "run-bundle://m4-cpu-exact-frontier-prediction-observation-20260810-v5",
+      "run_id": "m4-cpu-exact-frontier-prediction-observation-20260810-v5"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-01",
+      "run_id": "issue25-m4-modern-qproj-cube256-search-01"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-02",
+      "run_id": "issue25-m4-modern-qproj-cube256-search-02"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-search-03",
+      "run_id": "issue25-m4-modern-qproj-cube256-search-03"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-01",
+      "run_id": "issue25-m4-modern-qproj-cube256-holdout-01"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-02",
+      "run_id": "issue25-m4-modern-qproj-cube256-holdout-02"
+    },
+    {
+      "role": "surface-anchor-session",
+      "run_bundle": "run-bundle://issue25-m4-modern-qproj-cube256-holdout-03",
+      "run_id": "issue25-m4-modern-qproj-cube256-holdout-03"
+    }
+  ],
+  "surface_queries": [
+    {
+      "domain": {
+        "alignment_regime": "64-byte-aligned",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 4,
+        "working_set_regime": "m4-unified-memory-q-projection"
+      },
+      "query_id": "issue25-m4-qproj-512-exact",
+      "shape": {
+        "s": 512
+      },
+      "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
+      "surface_version": "v1"
+    },
+    {
+      "domain": {
+        "alignment_regime": "64-byte-aligned",
+        "alignment_validated": true,
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 4,
+        "working_set_regime": "m4-unified-memory-q-projection"
+      },
+      "query_id": "issue25-m4-qproj-384-interpolation",
+      "shape": {
+        "s": 384
+      },
+      "surface_id": "surface://issue-25/apple-m4/q-proj/1d",
+      "surface_version": "v1"
+    }
+  ],
+  "timing_plan": {
+    "baseline_lane_id": "issue25-m4-baseline",
+    "case": {
+      "benchmark_case": "matmul-q-proj",
+      "execution_domain": {
+        "affinity": "os-managed-unpinned",
+        "alignment_bytes": 64,
+        "concurrency": 1,
+        "context": "single-process-cpu",
+        "dtype": "float32",
+        "execution_mode": "eager",
+        "layout": "row-major-contiguous",
+        "numa": "single-socket-unified-memory",
+        "shape": {
+          "k": 512,
+          "m": 512,
+          "n": 512
+        },
+        "stream": "not-applicable-cpu",
+        "threads": 4
+      },
+      "semantic_node": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    "completion_boundary": {
+      "closed": true,
+      "kind": "synchronous-cpu-call-return",
+      "threadpool_joined": true
+    },
+    "diagnostic_lane_id": "issue25-m4-diagnostic",
+    "evidence_ref": "artifact://issue-25/m4-timing-plan",
+    "pair_id": "issue25-m4-paired-lanes"
+  }
+}

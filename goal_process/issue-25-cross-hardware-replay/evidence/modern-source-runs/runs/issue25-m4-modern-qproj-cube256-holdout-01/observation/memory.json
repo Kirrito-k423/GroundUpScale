@@ -1,0 +1,307 @@
+{
+  "authoritative_gate_metric": "framework_tensor_storage.peak_framework_tensor_bytes",
+  "framework_tensor_storage": {
+    "device": "cpu",
+    "excludes": [
+      "allocator reservation and fragmentation",
+      "driver allocations",
+      "kernel-private workspace",
+      "framework/runtime code and Python RSS"
+    ],
+    "includes": [
+      "parameters",
+      "buffers",
+      "input",
+      "live operation outputs"
+    ],
+    "observer": "weakref-live-unique-tensor-storage",
+    "observer_effect": "forward hooks and weak references; use for memory attribution, not latency truth",
+    "peak_framework_tensor_bytes": 14422016,
+    "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+    "schema": "groundupscale.dev/tensor-storage-observation/v1alpha1",
+    "timeline": [
+      {
+        "live_storage_bytes": 9179136,
+        "live_storage_count": 21,
+        "stable_path": "before-forward"
+      },
+      {
+        "live_storage_bytes": 9441280,
+        "live_storage_count": 22,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+      },
+      {
+        "live_storage_bytes": 9703424,
+        "live_storage_count": 23,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+      },
+      {
+        "live_storage_bytes": 9965568,
+        "live_storage_count": 24,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "live_storage_bytes": 11276288,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "live_storage_bytes": 12324864,
+        "live_storage_count": 27,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "live_storage_bytes": 13897728,
+        "live_storage_count": 30,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+      },
+      {
+        "live_storage_bytes": 9703424,
+        "live_storage_count": 23,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+      },
+      {
+        "live_storage_bytes": 9965568,
+        "live_storage_count": 24,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+      },
+      {
+        "live_storage_bytes": 11014144,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "live_storage_bytes": 12062720,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "live_storage_bytes": 13111296,
+        "live_storage_count": 27,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "live_storage_bytes": 14159872,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+      },
+      {
+        "live_storage_bytes": 9703424,
+        "live_storage_count": 23,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+      },
+      {
+        "live_storage_bytes": 9965568,
+        "live_storage_count": 24,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "live_storage_bytes": 11538432,
+        "live_storage_count": 27,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "live_storage_bytes": 12587008,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "live_storage_bytes": 13897728,
+        "live_storage_count": 30,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      },
+      {
+        "live_storage_bytes": 13897728,
+        "live_storage_count": 30,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      {
+        "live_storage_bytes": 14159872,
+        "live_storage_count": 31,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+      },
+      {
+        "live_storage_bytes": 9965568,
+        "live_storage_count": 24,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+      },
+      {
+        "live_storage_bytes": 10227712,
+        "live_storage_count": 25,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+      },
+      {
+        "live_storage_bytes": 11276288,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "live_storage_bytes": 12324864,
+        "live_storage_count": 27,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "live_storage_bytes": 13373440,
+        "live_storage_count": 28,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+      },
+      {
+        "live_storage_bytes": 14422016,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+      },
+      {
+        "live_storage_bytes": 13635584,
+        "live_storage_count": 29,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "live_storage_bytes": 10489856,
+        "live_storage_count": 26,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+      },
+      {
+        "live_storage_bytes": 9441280,
+        "live_storage_count": 22,
+        "stable_path": "after-forward"
+      }
+    ]
+  },
+  "runtime_point_samples": {
+    "after": {
+      "process_rss_bytes": 249348096
+    },
+    "attribution": "process-wide diagnostic; not framework-attributed",
+    "before": {
+      "process_rss_bytes": 247218176
+    },
+    "observer": "process_rss",
+    "peak_observed_bytes": 249348096
+  },
+  "schema": "groundupscale.dev/memory-observation/v1alpha1"
+}

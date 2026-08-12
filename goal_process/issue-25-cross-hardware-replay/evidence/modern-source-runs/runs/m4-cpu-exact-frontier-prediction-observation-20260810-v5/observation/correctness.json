@@ -1,0 +1,505 @@
+{
+  "full_model": {
+    "reason_codes": [
+      "independent-full-model-oracle-not-configured"
+    ],
+    "status": "not_evaluated_single_provider",
+    "target_audit": {
+      "alias_checks": [
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "Transpose",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+        },
+        {
+          "aliases_input_storage": true,
+          "operation": "View",
+          "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+        }
+      ],
+      "buffer_bytes": 2097152,
+      "buffer_devices": [
+        "cpu"
+      ],
+      "fallback_enabled": false,
+      "input_device": "cpu",
+      "leaf_output_devices": [
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+          "cpu"
+        ],
+        [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2",
+          "cpu"
+        ]
+      ],
+      "output_device": "cpu",
+      "parameter_bytes": 33562624,
+      "parameter_devices": [
+        "cpu"
+      ],
+      "requested_device": "cpu",
+      "semantic_leaf_count": 52
+    },
+    "target_output_sha256": "68e28b2a811bb18f6ab28c9faca3ce3dcd7338fc8ab6c3bb08af308859692b9c"
+  },
+  "hardware_cohort": "hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327",
+  "operator_cases": [
+    {
+      "candidate_identity": {
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "dispatch_mode": "eager",
+        "dispatch_provider_binaries": [
+          {
+            "name": "libtorch_cpu.dylib",
+            "role": "cpu-dispatch-provider",
+            "sha256": "f1584a65a2a09b5ddbe90a4e195ba824087b430a9f21cb1df9b8894177b99987"
+          }
+        ],
+        "family": "torch.matmul.cpu.fp32",
+        "module_class": "groundupscale.benchmark.reference.StateMatMul",
+        "module_source_sha256": "011848b16aeee03e573a50a38239b2bd3cf5823c431b4f92102fac3d70254837",
+        "operation": "torch.matmul",
+        "provider": "pytorch",
+        "runtime": {
+          "dispatch_provider_binaries": [
+            {
+              "name": "libtorch_cpu.dylib",
+              "role": "cpu-dispatch-provider",
+              "sha256": "f1584a65a2a09b5ddbe90a4e195ba824087b430a9f21cb1df9b8894177b99987"
+            }
+          ],
+          "runtime_binary": "_C.cpython-311-darwin.so",
+          "runtime_binary_sha256": "06b303bc0e60a65552970fa2e2ca395a6f32a70ea167e3dbba7be82d2d6cbc4f",
+          "torch_build_config_sha256": "1943041ad11240ec18f123ae0f5aa98ed16a9ebf53b479bb4f0c11ea4c6f12f1",
+          "torch_version": "2.13.0"
+        },
+        "schema": "groundupscale.dev/operator-candidate-identity/v1alpha1",
+        "status": "resolved",
+        "workspace_policy": "framework-managed-stable-after-warmup"
+      },
+      "case_id": "matmul-q-proj",
+      "correctness": {
+        "actual_output_sha256": "ae87586dbbc12893b986762a18d500bc8ecf04cfd6d749a45f958d14b680259d",
+        "candidate_digest": "076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4",
+        "candidate_family": "torch.matmul.cpu.fp32",
+        "finite": true,
+        "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+        "max_absolute_error": 1.905578929761731e-06,
+        "max_relative_error": 0.005299488588825703,
+        "oracle": {
+          "accumulation_dtype": "float64",
+          "atol": 1e-05,
+          "invariants": [
+            "shape-exact",
+            "finite-output"
+          ],
+          "policy_id": "matmul-fp32-float64-oracle-v1",
+          "provider": "torch.float64.matmul",
+          "rtol": 0.0001,
+          "version": "1.0.0"
+        },
+        "reference_output_sha256": "2aff659013b7d97680d303569333fee140923ad3b1b1c4e76ed9419a769c1a07",
+        "schema": "groundupscale.dev/operator-correctness-evidence/v1alpha1",
+        "shape_matches": true,
+        "status": "passed"
+      },
+      "execution_contract": {
+        "cache_state": "warm-reused-inputs-and-weights",
+        "concurrency": "single-operator-no-overlap",
+        "execution_contract_digest": "27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38",
+        "execution_mode": "eager",
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "row-major-contiguous",
+            "minimum_alignment_bytes": 64,
+            "shape": [
+              1,
+              512,
+              512
+            ],
+            "stride": [
+              262144,
+              512,
+              1
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "row-major-contiguous",
+            "minimum_alignment_bytes": 64,
+            "shape": [
+              512,
+              512
+            ],
+            "stride": [
+              512,
+              1
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "row-major-contiguous",
+          "minimum_alignment_bytes": 64,
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "schema": "groundupscale.dev/operator-execution-contract/v1alpha1",
+        "status": "resolved",
+        "working_set_bytes": 3145728
+      },
+      "input_corpus": {
+        "distribution": "deterministic-normal-fp32",
+        "generator": "groundupscale.reference.TwoLayerTransformer",
+        "input_corpus_digest": "d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6",
+        "schema": "groundupscale.dev/input-corpus-identity/v1alpha1",
+        "seed": 20260806,
+        "status": "resolved",
+        "tensor_sha256": [
+          "c789d664d5885e90efa710b592f4e2a03e69d8655a6512f9fb713b24ae3223d2",
+          "0cb26cd3b0cdc83dce2e3b695efa4b04db6f73e8b09c8a0e63bd81b9d15048e6"
+        ]
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "candidate_identity": {
+        "reason_codes": [
+          "candidate-identity-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "case_id": "rmsnorm-input",
+      "correctness": {
+        "reason_codes": [
+          "exact-oracle-unsupported"
+        ],
+        "status": "not_evaluated"
+      },
+      "execution_contract": {
+        "reason_codes": [
+          "execution-contract-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "input_corpus": {
+        "reason_codes": [
+          "input-corpus-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "candidate_identity": {
+        "reason_codes": [
+          "candidate-identity-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "case_id": "softmax-attention",
+      "correctness": {
+        "reason_codes": [
+          "exact-oracle-unsupported"
+        ],
+        "status": "not_evaluated"
+      },
+      "execution_contract": {
+        "reason_codes": [
+          "execution-contract-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "input_corpus": {
+        "reason_codes": [
+          "input-corpus-unsupported"
+        ],
+        "status": "unsupported"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    }
+  ],
+  "passed": true,
+  "schema": "groundupscale.dev/correctness-observation/v1alpha2",
+  "scope": "operator-specific-records-are-authoritative"
+}

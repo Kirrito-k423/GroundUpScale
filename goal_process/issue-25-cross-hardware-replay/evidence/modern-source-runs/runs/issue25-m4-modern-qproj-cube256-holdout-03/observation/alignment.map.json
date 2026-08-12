@@ -1,0 +1,608 @@
+{
+  "coverage": 1.0,
+  "entries": [
+    {
+      "compiled_node_ids": [
+        "semantic-region:0f6c204fee8a04b099a5d76a7be5eb63f5784c45c5f2ac4e49e3d59b3ac05c95"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_call",
+      "span_id": "span-00000",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:3699dd29b0d41b08c06f9bff28342d73eb094ad74466d892fbb1811357dcea04"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00001",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:72edb7920dea5a677227c76c302023b5a3fc360a4d7223a76eefa13c788fba79"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00002",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:2b4417a1dbbea5c8511df2e79fba7bf36e7638ae819c3a95cdd307a37faff503"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "RMSNorm",
+      "span_id": "span-00003",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:8b893b8c4d8574c93403715528bd4605468b25cd69fec04b759cb438abc3f5b9"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00004",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:155701271da29fbfbd2ee96d73f7a94d685775a2a341f21fa687007528e5449f"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00005",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:fc532b48acc84e41da23331443e14a92d66623fc87fb99f88bbe5903e3201e84"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00006",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:efc98eb1b877c5d86279ed31c18ee1e1f3fb410412e9dc96a9992a2f419d5028"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00007",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:98f8a543ba0b58c82f123652dc0a841b63adb667f1efd11757f692e54446ba93"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00008",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:67868ad8d1b207a50e040643991a4edf3a8a2bf11ba405f77126a2f8300de9ba"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00009",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:e8c8a354bb4e80c5e1122b3028126581015e75f13a5a9e910deeffbc30a1d898"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00010",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:8153fb9f408ceb71da52765b2e45e53f9e785089275620b20eb9fcb4656640fb"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00011",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:1e4eca7852d7258b7051981caec589297b443b04e21c6c05f614ec42639f9f09"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00012",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:f442c5458f17e990b698ee3816d666573381a6ee04d0295dc8a341d738676c89"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00013",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:c6cea1f3d801f83922b2f5ce5a818b442e3a1f3fd1031a15f51ffcd427d20990"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Mul",
+      "span_id": "span-00014",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:19783c167e10fec7decf712c63fbdc9022e3ba9f13b4dd405ab2c32abd31fd3a"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00015",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:9074f7aafe878b977bc6a089375d9706ec03b0a61b0854e54987603585c69000"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Softmax",
+      "span_id": "span-00016",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:8c5897077e912c28a1ec242b4bc22ceee81ecfc5fce99a57d9329c6d858a21a0"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00017",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:271d7bd6361ee1d47dac9a0c80bb6a20c19415c192bd9f33cb8aaaee601c5158"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00018",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:a639031264743cc63ecaa825b50e291111598c4d4d683234157c2ed54adc9059"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00019",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:ddde7b79e2aebc7bf8793a8c6cdc9ddca2435b135b7eb372c18e9bc95c50f27c"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00020",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:e8fc046bd0f11d631ec0d14688bbb0a58c3d026cff405caee6bed52337a44c76"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00021",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:90cb3eceb5be6aef3c0c3c15b150eba2d9c4a243f2f255a9b4d5549ccbe2a737"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00022",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:637948b17a2ca0091975530e3f4a30ce29a84185e8a088c90b00b0296ee5a71f"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "RMSNorm",
+      "span_id": "span-00023",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:31fd853dca7dd1aace03b3c90b34597553f6dae8a3c9e1da71ce76adb20346f4"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00024",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:b736e8f6b2da02fd22a1bb9b455b1c8b35d2003e483dbd81798de9910b0d5f2e"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00025",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:87ff17445ed20e63ff5ba8070b776f1945b5d9a7554e5864dae16a4e2dc70ad7"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00026",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:e35cefe8ef05b38801c031cc3d25e49ed1cdf82987ba91047fc3e627f3162b16"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "SiLU",
+      "span_id": "span-00027",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:e1325a4ba07329329dd34487fa1d89a9555d9b7114ccbe3f5c9e8ef758aa4172"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Mul",
+      "span_id": "span-00028",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:1d17be7e63ba9daa875061e37d09f34bfa28a3ae7823cd71b6d00aaf16c5dc09"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00029",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:5a0fc32b7dc85d022c9e846759508d6b12a208db052215d25537f1d9eeebe22f"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00030",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:cb300904f6ca8a212551d6ba11f544d32ca02e3b40e17d360b323176e70bd565"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00031",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:5061da33b942960c48ebf65650037c5208164fef6e85a8f867690107aead226c"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "RMSNorm",
+      "span_id": "span-00032",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:2c1cb347ad09378b3932e7a2885ac133960f9dd8f09dd584e65642009302500a"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00033",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:2750efaf3915a36cae73258502f2f4f8ca629a6de0b4d7a0b858bfee036bf80b"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00034",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:c704ba1e78a7467a3ecd21f37e3f06da60b694f910871a805f9ddedfc27332b7"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00035",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:f5f9e332ec39be4db3bccd981b8aab84f223eff1698ac409adcdd264aac83628"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00036",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:8174114ded3940b5e059be39f884506646ff4e1a1bd8bfeb8088f78d0b345bea"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00037",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:a3a74bcb6eb41187cf39dd3d2cadc8509d78920fea025e13f1230913aa38c6f9"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00038",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:c6317daf1b05babb9c26c7b9073d7e4cd20cc8a56eef332f011291268a8d4740"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00039",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:88cc0ce99a2c39f641ae657c02125a7c16808433a97de244a43fd4a0b2e5b6ad"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00040",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:fb16d5eb7e0cdeadca40b4045f214891b3e1e2b8921bd32f32b6e4d68ad1476b"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00041",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:3b485315b0b3ffe094eb6bd93f291c06a76bfc288964c801abdc7cdbe1babee6"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00042",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:cb9ff5dfc4d7f02789d06a5054fe41db53ece1118ea3fbccdb97a8fa42770b6f"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Mul",
+      "span_id": "span-00043",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:3f0666844a92dec79469b58f4e80c467a2b7c3c757be29e181749644827e9e79"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00044",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:e86265b20be89d05814659ecbbc85bff8031195d82f9cafaa3fb711b8100cc58"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Softmax",
+      "span_id": "span-00045",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:467d358a605560421a9d6af94900d78769a17e8e693cf8f5ed04854e347e3cbf"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00046",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:a38a61f5e4bd90e5737362eb9bf39d3c15b36ae3c0204c0b430333be6b2c81d5"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Transpose",
+      "span_id": "span-00047",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:564e029bff4db2e2aebd416586d8bf6c0d2d9e1c58badb0ee754c8aab728019d"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00048",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:bba027c8c510b224d5e9fa0ff0308e09df3a0abc89da614b6deaaaafa45e2935"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "View",
+      "span_id": "span-00049",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:d4c5550aaf33d2014b2c671d97c8793a8ad4e54708ee7852d28eec83e85b84e5"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00050",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:3bd9913811cb386c8fc66787a8090fa1d7fca6118da029010540ac2ac8ef99f8"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00051",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:fd0874b5d8546e98d8732ddd8d580d8e682b648754d6464e67b8fefd9b4bcc5c"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "RMSNorm",
+      "span_id": "span-00052",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-region:eaa20591c53b32718950840f40ef093b0c4cd20e0b003ae2b15870983423d745"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "model_entrypoint",
+      "span_id": "span-00053",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:8deefefb26ada03374fdea0a6e811f22e90a8b4772c45678ac2ddff487c1d616"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00054",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:ec1f698a04e35723062c83c8efca5482689005e9d46e1553cfd9d39663b3ffbe"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00055",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:509c8992f208478347f76c74896aeb0a60394e6851292b18a203025059c26bf0"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "SiLU",
+      "span_id": "span-00056",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:70ae48d208623365951e98f299eb6189d31a08e70400264992de884be9f07a86"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Mul",
+      "span_id": "span-00057",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:8a3d553251323e314c5ea4ff8fc05e07a54ae6c502fae08042902b6764bc6c0e"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "MatMul",
+      "span_id": "span-00058",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+    },
+    {
+      "compiled_node_ids": [
+        "semantic-op:7358127aa555653c04c609f0f59116d7c599b88edd393eb9c3d9822a4c762546"
+      ],
+      "confidence": 1.0,
+      "match_rule": "exact-stable-path",
+      "semantic_kind": "Add",
+      "span_id": "span-00059",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+    }
+  ],
+  "matched_spans": 60,
+  "schema": "groundupscale.dev/alignment-map/v1alpha1",
+  "total_spans": 60
+}

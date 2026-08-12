@@ -1,9 +1,30 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from groundupscale.run_bundle import verify_run_bundle
 from groundupscale.cross_hardware import (
     CROSS_HARDWARE_REPORT_SCHEMA,
     compare_cross_hardware,
+    compare_cross_hardware_inputs,
     render_cross_hardware_report,
+)
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+M4_DIAGNOSTIC_BUNDLE = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/runs"
+    / "issue25-m4-cpu-diagnostic-v1"
+)
+M4_SOURCE_BUNDLES = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-25-cross-hardware-replay/evidence/modern-source-runs/runs"
+)
+ASCEND_DIAGNOSTIC_BUNDLE = (
+    REPOSITORY_ROOT
+    / "goal_process/issue-32-ascend-diagnostic-bundle/evidence/runs"
+    / "issue32-ascend-910b2-diagnostic-v1"
 )
 
 
@@ -28,6 +49,26 @@ def _diagnosis(*, cohort: str, device: str, observation: float = 1000.0) -> dict
         "environment": {
             "eligible": True,
             "evidence_ref": "artifact://preflight",
+        },
+        "measurement_adapter": {
+            "adapter_id": "fixture-adapter",
+            "adapter_version": "v1",
+            "protocol_id": "fixture-protocol",
+            "protocol_version": "v1",
+            "evidence_ref": "artifact://adapter",
+            "operation_evidence": [
+                {
+                    "operation": operation,
+                    "evidence_ref": f"artifact://adapter/{operation}",
+                }
+                for operation in (
+                    "discover_capabilities",
+                    "fingerprint_cohort",
+                    "preflight",
+                    "build_timing_plan",
+                    "collect",
+                )
+            ],
         },
         "measurement_capability_manifest": {
             "status": "complete",
@@ -149,6 +190,32 @@ def test_compare_cross_hardware_fails_closed_when_required_evidence_is_missing()
     assert report["metrics"]["ascend"]["frontier_efficiency"]["status"] == "unknown"
 
 
+def test_compare_cross_hardware_accepts_partial_result_with_a_known_surface_query() -> None:
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    npu["status"] = "partial"
+    npu["capability_surface_queries"][0]["status"] = "exact_anchor"
+    npu["capability_surface_queries"].append(
+        {
+            "query_id": "outside-validated-domain",
+            "status": "unknown",
+            "reason_code": "outside_validated_domain",
+            "surface": {"surface_id": "surface-ascend-cohort", "version": "1"},
+            "evidence_refs": [],
+        }
+    )
+
+    report = compare_cross_hardware(
+        _diagnosis(cohort="m4-cohort", device="Apple M4 CPU"),
+        npu,
+    )
+
+    assert report["status"] == "complete"
+    assert report["sides"]["ascend"]["evidence_quality"] == {
+        "status": "known",
+        "reason_codes": [],
+    }
+
+
 def test_load_cross_hardware_inputs_keeps_source_identity(tmp_path) -> None:
     m4 = tmp_path / "m4.json"
     npu = tmp_path / "npu.json"
@@ -194,3 +261,68 @@ def test_bundle_without_diagnostic_artifact_is_reported_as_unknown(tmp_path) -> 
     assert report["status"] == "insufficient_evidence"
     assert report["sides"]["m4"]["evidence_quality"]["status"] == "unknown"
     assert report["sides"]["ascend"]["evidence_quality"]["status"] == "unknown"
+
+
+def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
+    assert verify_run_bundle(M4_DIAGNOSTIC_BUNDLE)["passed"] is True
+    assert verify_run_bundle(ASCEND_DIAGNOSTIC_BUNDLE)["passed"] is True
+    assert all(
+        verify_run_bundle(bundle)["passed"] is True
+        for bundle in M4_SOURCE_BUNDLES.iterdir()
+        if bundle.is_dir()
+    )
+
+    report = compare_cross_hardware_inputs(
+        M4_DIAGNOSTIC_BUNDLE,
+        ASCEND_DIAGNOSTIC_BUNDLE,
+    )
+
+    assert report["status"] == "complete"
+    assert report["shape_comparison"] == {
+        "status": "matched",
+        "shape": {"m": 512, "k": 512, "n": 512},
+    }
+    assert report["cohorts"]["m4"]["cohort_id"] != report["cohorts"][
+        "ascend"
+    ]["cohort_id"]
+    assert all(
+        isinstance(report["metrics"][side]["frontier_efficiency"], float)
+        for side in ("m4", "ascend")
+    )
+    assert all(
+        isinstance(report["metrics"][side]["combined_uncertainty_ns"], float)
+        for side in ("m4", "ascend")
+    )
+    assert isinstance(
+        report["cross_hardware_comparison"]["combined_uncertainty_ns"],
+        float,
+    )
+    assert report["cross_hardware_comparison"]["absolute_latency_comparison"] == (
+        "not-a-fair-efficiency-metric"
+    )
+    assert all(
+        report["evidence_index"][side][key]
+        for side in ("m4", "ascend")
+        for key in (
+            "source_run_refs",
+            "anchor_refs",
+            "surface_refs",
+            "policy_refs",
+            "derivation_refs",
+            "ledger_refs",
+        )
+    )
+    assert all(
+        report["evidence_index"]["ascend"][key]
+        for key in ("verdict_refs", "probe_refs")
+    )
+    verdicts = {
+        verdict["verdict"]
+        for side in ("m4", "ascend")
+        for verdict in report["sides"][side]["verdicts"]
+    }
+    assert {
+        "insufficient_evidence",
+        "integration_overhead",
+        "confirmed_bug",
+    } <= verdicts

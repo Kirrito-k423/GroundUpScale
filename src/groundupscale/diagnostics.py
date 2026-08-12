@@ -8456,6 +8456,9 @@ def diagnose_run_bundle(path: str | Path) -> dict[str, Any]:
                 "measurement_capability_manifest",
                 "diagnostic_profiling_lane",
                 "cohort_evidence",
+                "timing_plan",
+                "frontier_anchors",
+                "single_node_schedule",
             )
             if key in document
         },
