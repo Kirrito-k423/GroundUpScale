@@ -1,26 +1,44 @@
 {
   "artifacts": [
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-transformer-e2e-attribution",
+        "source-hardware-cohort",
+        "source-frontier-qualification",
+        "source-remote-execution",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/evidence.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-evidence",
       "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
-      "sha256": "5e0d0bb12c8f9d238053c261dc42046a60964cbfb60b9b7b3838e915675ef314"
+      "sha256": "c2ff5b377110347f941fd0d9f28ece821d61f41991edfb130ee7dde1d7a7e336"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/001.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "32f352206aef74ffea81553de7838667c833e00ed46945c2441befee439c0306",
+      "sha256": "d6b5e0992182b55501b7e3a80510817b8c0a036cf62a926ec44dadb6ec738275",
       "uri": "artifact://frontier/qualification.json"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/002.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -30,7 +48,12 @@
       "uri": "artifact://issue-32/adapter-build_timing_plan"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/003.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -40,7 +63,12 @@
       "uri": "artifact://issue-32/adapter-collect"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/004.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -50,7 +78,12 @@
       "uri": "artifact://issue-32/adapter-discover_capabilities"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/005.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -60,7 +93,12 @@
       "uri": "artifact://issue-32/adapter-fingerprint_cohort"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/006.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -70,7 +108,12 @@
       "uri": "artifact://issue-32/adapter-preflight"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/007.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -80,7 +123,12 @@
       "uri": "artifact://issue-32/baseline-q-proj-observation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/008.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -90,7 +138,12 @@
       "uri": "artifact://issue-32/capabilities"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/009.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -100,7 +153,12 @@
       "uri": "artifact://issue-32/cohort-identity"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/010.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -110,7 +168,12 @@
       "uri": "artifact://issue-32/cohort-match"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/011.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -120,7 +183,12 @@
       "uri": "artifact://issue-32/counterexample-fluctuation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/012.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -130,7 +198,12 @@
       "uri": "artifact://issue-32/counterexample-performance"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/013.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -140,27 +213,42 @@
       "uri": "artifact://issue-32/counterexample-proxy"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/014.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "4a2ffe9a6b2b76aac3b5fd3d72e860ad6dd869b3e4dc5f37a07ff093e3582784",
+      "sha256": "5c8136835a5e4d45935032d7b62f93674b4b7b01683f09006b683b8d199639e1",
       "uri": "artifact://issue-32/diagnostic-profiling-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/015.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "ee64afb118030326c2cf99da8e67470d3ece119944d540ec94637a2192c315ea",
+      "sha256": "186cd449371c230725b68961cee18c104cb6753c1385721a134463a18c8fe39a",
       "uri": "artifact://issue-32/direct-defect"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/016.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -170,7 +258,12 @@
       "uri": "artifact://issue-32/environment"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/017.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -180,7 +273,12 @@
       "uri": "artifact://issue-32/frontier-anchor"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/018.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -190,7 +288,12 @@
       "uri": "artifact://issue-32/frontier-holdout"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/019.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -200,7 +303,12 @@
       "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-01"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/020.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -210,7 +318,12 @@
       "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-02"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/021.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -220,7 +333,12 @@
       "uri": "artifact://issue-32/frontier-holdout-issue31-holdout-v4-s512-torch-matmul-03"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/022.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -230,7 +348,12 @@
       "uri": "artifact://issue-32/frontier-search"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/023.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -240,7 +363,12 @@
       "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-01"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/024.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -250,7 +378,12 @@
       "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-02"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/025.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -260,7 +393,12 @@
       "uri": "artifact://issue-32/frontier-search-issue31-search-v4-s512-torch-matmul-03"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/026.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -270,57 +408,87 @@
       "uri": "artifact://issue-32/global-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/027.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "06208864c128826f8167ef5cb75cce5b6dfd4ee2381db27dc8f22372dda2a17b",
+      "sha256": "d05dcc0c6015a73ffd02ce35200f1fd4394c1864c2770aa802cb9c183ddf5e56",
       "uri": "artifact://issue-32/integration-contract"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/028.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "95d05701c1ba6820d8d2630d7b41fbfb54747947ffd3b3d0fada88c7121576d3",
+      "sha256": "24b127da5fec49f82d39e14fcff24f5599f7e5040cdae53da1e95181796bff05",
       "uri": "artifact://issue-32/integration-copy"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/029.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "9268390d91a7124d713d73b6f7e36a7cf664b02a77fb1eee27ff728debdaff2c",
+      "sha256": "518e091dec71b4535f229e4b065d6797a25a48f5f0e7dbee5e5e6f9dc97f5833",
       "uri": "artifact://issue-32/integration-copy-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/030.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "6438596b5be6f79cabbb8153046b2d47cf803603a215291d0ec485bfb88be1ff",
+      "sha256": "60812a8b3917db240e31da7b239e2132fe6a4ce96a7d211c90c8dcb25e652913",
       "uri": "artifact://issue-32/integration-copy-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/031.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "ee43406480f13e94bb3b2b2d0663b58a9466368f6a3f5ffb85116e9bc974ac37",
+      "sha256": "0106f71eba17da00ec570ddb7ed667ba6ba3a920482defec5afe650a71f9983e",
       "uri": "artifact://issue-32/integration-copy-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/032.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -330,57 +498,87 @@
       "uri": "artifact://issue-32/integration-copy-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/033.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "9f045b38b85345d02d0a5dd8b9482d866602afbb957c50ef727b51d037f47473",
+      "sha256": "e536e4d5e202fea51b9bde00ee6378f029c2a5cf048c1d260a17b17edd25ccf9",
       "uri": "artifact://issue-32/integration-counterfactual"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/034.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "dc6b2c7fbff030b2c221bf0cc7a11692c2ae4eb3b7e66914a11553986c7f0dc9",
+      "sha256": "c9ae3be1b0332bdc947e20d838e22ccc40f42cfd22ce52362d6747aea27c01d1",
       "uri": "artifact://issue-32/integration-dispatch"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/035.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "6aee9d806fdc39a0af58bbc8b69ffe7514f39fc3a027119018c95e91c4a8b941",
+      "sha256": "63a6b48fdcb962fd1508507c85d2099edece6cf693784da8cb97b367031c400c",
       "uri": "artifact://issue-32/integration-dispatch-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/036.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "e6e3eed49e23532c700f0a4791e0415f47b9c5f4b8f4a7471338dbdba9eefa0a",
+      "sha256": "504028c188fdafb1ce286b711d50578d4efa4a642a770f04326a6aa4920f2fe6",
       "uri": "artifact://issue-32/integration-dispatch-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/037.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "0f71e2b81461b02a6bb76fdc5269e4cd5d04693332d2cabf2f60d54efe166630",
+      "sha256": "c6a5d944943d35e0949f895f326b3cbbb85bf1278def571f76358e10765a961b",
       "uri": "artifact://issue-32/integration-dispatch-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/038.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -390,67 +588,102 @@
       "uri": "artifact://issue-32/integration-dispatch-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/039.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "af62a5ef9253a55063dacb473e193d98b19193d0811909643caf391261e25b10",
+      "sha256": "83084d454dee389a4de899d111eb8bb841f79118b3af5ab5ddcda770d41b6b49",
       "uri": "artifact://issue-32/integration-ledger"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/040.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "69ac8ac6a618f2a66a445045c0469cdfc11501d03f645f7d62f5a9db7a79c65c",
+      "sha256": "6e59e3e13a4f1dd46ea003e0604b1d6e829bddad6c02f289ec5eef09b355f07b",
       "uri": "artifact://issue-32/integration-operator"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/041.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "ea1fe5735c066eca1b6085357b3af670da54d8a8a17e73cddf7d1ee7e777e8c9",
+      "sha256": "c839092826b8424be1c0dfed1fc8fbc849e9dcc8912010b96356c5bb01b2ba78",
       "uri": "artifact://issue-32/integration-profiling"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/042.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "ce6da222aab5311b3ad4d1ad1e42d4963d54f0fb05eab788e9b9df87df535611",
+      "sha256": "a50d42a54e4e5e8c0b3f407f5782827fc3873f81d75011d6f54ff98eb5683599",
       "uri": "artifact://issue-32/integration-profiling-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/043.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "2b799ea2f25ba439b058b33b72bf682251e16c9ae564e9eadab23579033d64ae",
+      "sha256": "2b35fbccf7a3732141ea9db0827e246a94e33d03ae21083a203233f391d372da",
       "uri": "artifact://issue-32/integration-profiling-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/044.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "0592ad1659660719e74675c213ef7e0802561b4bc9bc9284643822a80421c7dc",
+      "sha256": "e7ca522f0a89631ac5e748c3f7ee999844f335b9bff1467e17f0d8d9dd68d055",
       "uri": "artifact://issue-32/integration-profiling-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/045.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -460,57 +693,87 @@
       "uri": "artifact://issue-32/integration-profiling-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/046.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "acb6a3b7505bf68793cc22a0e985309219f62f6ab0574739960208d6037bba44",
+      "sha256": "979fe3e6b843efed8c0b8d899cf9f42df258c615ed7181319bbe8bf92f08c56b",
       "uri": "artifact://issue-32/integration-residual"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/047.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "43c35f5fc5302e6aef9541a9d1beba5621607f03c1013c02a2736cded4a409af",
+      "sha256": "eb2c548c77ffc4a58f38771330c6e8cd55215fa03bee90967915ce23e7c31e1f",
       "uri": "artifact://issue-32/integration-sync"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/048.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "62bcf3c2c27495835c33f06cc38a122006fd7fd5d7e46d1a5875916f4d060eb5",
+      "sha256": "0e9c81f3243188d91ae99e214d41aed3d3607a584f8e925ea498d2d55f3fb247",
       "uri": "artifact://issue-32/integration-sync-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/049.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "a61dbc3ce2d5babaf20bfd387df1b879cad1944ba61b4a2a38595c9106bcb45c",
+      "sha256": "34d948ef3d0e351e7943fc82842719b7d7ae1c0c5ba9ca94888cedbb52a820f4",
       "uri": "artifact://issue-32/integration-sync-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/050.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "e667f0b1a10d2ed1ce355d28292e42b54ec1d68cb0fde5a1fa1bb18eb31a7b28",
+      "sha256": "b4c6272fb94bc2494583e21c9a0e6455be1f0c41ff9ea154dff198bc81ae3a13",
       "uri": "artifact://issue-32/integration-sync-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/051.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -520,47 +783,72 @@
       "uri": "artifact://issue-32/integration-sync-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/052.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "bbfc8d0cdd24988b5c13a73d3265c96932b8abf8853683f7b6dc0dedaf564b9e",
+      "sha256": "837a7e8ebc4080a656e2014ec4ad6f7bc7a1c7fd28a0318eba6acf2c3d12bc81",
       "uri": "artifact://issue-32/integration-wrapped"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/053.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "fea25f90c7c5bfa6ac8762f9d8b7fefb5640c38e6f6ed9d18ce69d505d7cefcf",
+      "sha256": "7c50ec6df1761609a38b1d0c93ee21789e6411e379c7552b6c39581e3c983fe8",
       "uri": "artifact://issue-32/integration-wrapped-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/054.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "4ca2dbe5df831996bdbd05f5f99f2404d94f879d0ee975e27d6eb1eb0a225423",
+      "sha256": "b860d9d2b25a9a8e96e5b6eb7e0bf5ff33c829512031b0b49abe89c54a85950f",
       "uri": "artifact://issue-32/integration-wrapped-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/055.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "d4f8643c105afa8909577bf9d2d78ace64844edbbe132f2cf897d388a37a2434",
+      "sha256": "ef4ed4c968c6e915ec427b1201d73881b5662aec151c43bb78a3fb738c04b421",
       "uri": "artifact://issue-32/integration-wrapped-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/056.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -570,27 +858,42 @@
       "uri": "artifact://issue-32/integration-wrapped-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/057.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "64110ea5a4d4b62f7f25f57a70a8a00298b7812484e6d0bb273873db0ed8a0ac",
+      "sha256": "309f91f988fc81be8c902080d45c333e20c1e06ce03af961421beff9805d9508",
       "uri": "artifact://issue-32/k-proj-baseline-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/058.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "f1025d0f7c13d2e409f94e2c7e764fd0711c80112901db1c8d454da61a066314",
+      "sha256": "bd62d5688b7bf7223b9e9d9f65559a4bfd97ae2ba40879080082ae095783470e",
       "uri": "artifact://issue-32/k-proj-diagnostic-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/059.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -600,7 +903,12 @@
       "uri": "artifact://issue-32/k-proj-preflight"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/060.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -610,97 +918,147 @@
       "uri": "artifact://issue-32/measurement-adapter"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/061.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "12d64f13186eb183024205fc3f5fd0f67372eaf29f81937feb15753d58c4a503",
+      "sha256": "4a9ece05aa39e8cd0e8a99f0c2a6081b0d6b92bfedda8389f01d4f08e3c91478",
       "uri": "artifact://issue-32/negative-correctness-difference"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/062.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "5c8340ad4563c435603e179f453747fa9db1394a2d4aa0284745836bf438d075",
+      "sha256": "c24115057ca8511e72b99a0735a2d3116bd351eaad21a5de86b00093bb4eeaf2",
       "uri": "artifact://issue-32/negative-input-summary"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/063.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "832e08d9bb922bbed47145b464e32465c8e7c721ad3a12e1190fff118bbfcb1e",
+      "sha256": "a9335bd6e6838705cf75f6e8a8fb7860d7b815bb9ff457e6d14431d0878b1326",
       "uri": "artifact://issue-32/negative-repeat-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/064.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "6b68e0e0b765083d44d8b8505498c99ffcb80453028226f95ab702f3be65f7a2",
+      "sha256": "adcf7ffda0c14a6c0cc81e0793225f75f86c928c82e52e33924e10021169600c",
       "uri": "artifact://issue-32/negative-repeat-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/065.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "7af895f05a8e33fd9539908c0c1b80a692370903ee328bc370914c49c15a6104",
+      "sha256": "eef1931eaaf908cd24b115da9dd54bce8ad80450099f855da636eb1bd00a7d3a",
       "uri": "artifact://issue-32/negative-repeat-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/066.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "operator-frontier-evidence",
       "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
-      "sha256": "4c666f0deb1f3056bbe5d5e2509c8b7d8411fc4052ddeffd83fb543a655d4159",
+      "sha256": "fe77acdf88e0c780e0c63c0d67fe6b7867f7c9a9a7e1f2278dd28257a8fac024",
       "uri": "artifact://issue-32/operator-frontier"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/067.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "96543bd9f0ecb79f3262620e1e1947b18f5bf310da49dfe76c199091a8d547da",
+      "sha256": "4fda366198dfec8f167a58e1172875433d2d8b868fbe1a468b6c4f918d817bd5",
       "uri": "artifact://issue-32/physical-floor"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/068.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "f0bd8e77f4004f65fed200756ecb73dcc3eb2bc406c415d0dc916951b9cdca04",
+      "sha256": "0c8176c53d320c59d90e40b0ea72c3f30f594c44d50213fc1d14ec276ba20b8b",
       "uri": "artifact://issue-32/physical-floor-compute"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/069.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "5a4a21ee10e4d6db3f64273fba86d4df4050b5348b82d97edfadf66dfd372139",
+      "sha256": "c190609ed2e13a82d5214a6483c0163cdd256c5301a35a81a44a35143f64013e",
       "uri": "artifact://issue-32/physical-floor-memory"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/070.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -710,27 +1068,42 @@
       "uri": "artifact://issue-32/preflight"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/071.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "81f45b52745585600e64f5c2e1b1fd7353e08d1702b91c2859685b6c9adfac4d",
+      "sha256": "5d79a8c5ec656128c0284ca867fda35850250f777833af6e43a118f1bd22c2ab",
       "uri": "artifact://issue-32/profiling-ablation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/072.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "d24bb963f03db5f3b37ca46648ab33138cabb527dc6743fea32196cfe1625726",
+      "sha256": "b13a6dfc171ccb0f1a55871a38f14206c9a4b2d4d6f485dca9cf3a20a2d7d69f",
       "uri": "artifact://issue-32/profiling-holdout"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/073.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -740,7 +1113,12 @@
       "uri": "artifact://issue-32/profiling-selection"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/074.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -750,7 +1128,12 @@
       "uri": "artifact://issue-32/profiling-validity-domain"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/075.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -760,17 +1143,27 @@
       "uri": "artifact://issue-32/q-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/076.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "6dea82053ca8e3518324b30ab79c4cd496e1f07deabd30c608c88b472a5cbf11",
+      "sha256": "2f28705d29c4e673de16f070b81ce8005e637028cca952dd3421ca1b349790a4",
       "uri": "artifact://issue-32/q-probe"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/077.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -780,7 +1173,12 @@
       "uri": "artifact://issue-32/q-proj-baseline-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/078.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -790,7 +1188,12 @@
       "uri": "artifact://issue-32/q-proj-diagnostic-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/079.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -800,37 +1203,57 @@
       "uri": "artifact://issue-32/q-proj-preflight"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/080.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "a27543b5810b06307215044326ce3a789fecb59ae9f6e4ae28a86aed9cd103fe",
+      "sha256": "7c104469c2366816da5c65e8b59a1224d063868aed21d6d28f0305aadfefd52d",
       "uri": "artifact://issue-32/q-target-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/081.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "756b4f4f49b79cb34656421633ae7d9366dac0c0a4b55c8535e36a8ea2b18cf7",
+      "sha256": "de8d0f102e53f5dbdc4875d883e232f8e9556bedffb32d4ac6046de378cbbf89",
       "uri": "artifact://issue-32/q-target-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/082.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "21051e2889dd693c6db166b0d8a5504a75109e0ec9913d6d5420e0b01dce0d5f",
+      "sha256": "53b400bf81e4f3ee5f1e50f77ec31312798dd59b6feb44aa69360ee12a9a12e5",
       "uri": "artifact://issue-32/q-target-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/083.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -840,7 +1263,12 @@
       "uri": "artifact://issue-32/schedule"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/084.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -850,17 +1278,27 @@
       "uri": "artifact://issue-32/timing-plan"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/085.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "efd8f67f50c2889e76bdc3cd3d53e2407c47589e9e465d63a956c18437f2a88f",
+      "sha256": "c777592a6d6b63256207a392e71a59845cdab9df1775c72bb41c3597ccaaa7fb",
       "uri": "artifact://issue-32/torch-matmul-k-proj-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/086.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -870,7 +1308,12 @@
       "uri": "artifact://issue-32/torch-matmul-k-proj-family"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/087.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -880,47 +1323,72 @@
       "uri": "artifact://issue-32/torch-matmul-k-proj-implementation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/088.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "8fa22209e6c08ebf125913edcfa282799273752f19d2aad7bb2f8695fdc5ab7b",
+      "sha256": "ce42400b296ca942f8ed3df884f24051dbf4ddca9e534e94043edcc5d0b9a4f7",
       "uri": "artifact://issue-32/torch-matmul-k-proj-probe"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/089.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "a27543b5810b06307215044326ce3a789fecb59ae9f6e4ae28a86aed9cd103fe",
+      "sha256": "4da4774a9cfed499948c23f13551aa6353f868a6396312d6792fd23043b74a02",
       "uri": "artifact://issue-32/torch-matmul-k-proj-session-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/090.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "756b4f4f49b79cb34656421633ae7d9366dac0c0a4b55c8535e36a8ea2b18cf7",
+      "sha256": "eaccc70d2d575ace2476f6f8a57afeee5ff67b7088e0c7ae970e6a8ae8cdb474",
       "uri": "artifact://issue-32/torch-matmul-k-proj-session-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/091.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "21051e2889dd693c6db166b0d8a5504a75109e0ec9913d6d5420e0b01dce0d5f",
+      "sha256": "518802b48d05eaf926bbe7429ae738b130766936c16d38115ad1b1e42c718de1",
       "uri": "artifact://issue-32/torch-matmul-k-proj-session-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/092.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -930,7 +1398,12 @@
       "uri": "artifact://issue-32/torch-matmul-q-proj-family"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/093.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -940,17 +1413,27 @@
       "uri": "artifact://issue-32/torch-matmul-q-proj-implementation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/094.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "46d72590a48fa50acdf97842c9e8c413b0169031ae387b1bd9534f41927b8edb",
+      "sha256": "986e78128aa0dc070d11d317dd88455474f4d943a069a5f391694e61cda6bab6",
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-correctness"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/095.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -960,7 +1443,12 @@
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-family"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/096.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -970,145 +1458,150 @@
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-implementation"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/097.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "2a4efc68fff6d80d30f16564c3ef78c0c2896fd5a0a445c02ad74657a216cd63",
+      "sha256": "e61c5b433444a72f108b5e78ac45deac953bcee75e555a3b88ec71720b233690",
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-probe"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/098.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "d756f6dbaff30cef258a2a62b67af093fd0aad37b0c006f8a8bdf7edc4794da9",
+      "sha256": "bc21a8f92b86c19b0a4f99510faa2ad8ce8c216deae44cb4d0daf9af60a2ad01",
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/099.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "c8ccbb6cfcbb2284119495814b52694d182981e75003947f52fcfb5f02ef48b2",
+      "sha256": "8b45622421d0f51b85f13b320cb85611634b632f0b31ab686e1bb55c3a006a62",
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/100.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "ab1cd016cef3cd4e404c6fb8b8375bb4bc1b3b2ab3f87eea07bb833dc0b1f589",
+      "sha256": "69e83511be94fb9b750c15ccc1b505bf904f530d3a4865f70f6940b13a32733d",
       "uri": "artifact://issue-32/torch-matmul-v-proj-negative-session-3"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/101.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "uncertainty-component",
-      "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
-      "sha256": "007bfc91a8597755e730864eef62710030302ec68c3a4442bb4b370b2e311594",
-      "uri": "artifact://issue-32/uncertainty-anchor"
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "5ef466010dd1ffc7d3410d6ef72feb7a9c82e01670d141e9554994c9a7523110",
+      "uri": "artifact://issue-32/v-proj-baseline-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/102.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "uncertainty-calibration",
-      "schema": "groundupscale.dev/uncertainty-calibration/v1alpha1",
-      "sha256": "64a968ffb0a5eb23c6974bff1d7dd88c8044292a0c0028834343b9757c42b43d",
-      "uri": "artifact://issue-32/uncertainty-calibration"
+      "role": "diagnostic-supporting-evidence",
+      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
+      "sha256": "1317010f3f4b15bb3c526b3dde2fba50b319521218e482de39d184e5a3d8db87",
+      "uri": "artifact://issue-32/v-proj-diagnostic-lane"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "source-physical-floor",
+        "source-transformer-benchmark",
+        "source-frontier-qualification",
+        "source-diagnostic-session"
+      ],
       "media_type": "application/json",
       "path": "diagnostic/supporting/103.json",
-      "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "uncertainty-component",
-      "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
-      "sha256": "ddd6c8f1df454bdcd416da290cd74b329e07f0f44cf94a49458665dc40b8936c",
-      "uri": "artifact://issue-32/uncertainty-instrumentation"
-    },
-    {
-      "inputs": [],
-      "media_type": "application/json",
-      "path": "diagnostic/supporting/104.json",
-      "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "uncertainty-component",
-      "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
-      "sha256": "fca8ebb083b4f5108703e0e29a54f0a3c88a468ebd78271e17cc590cb6581db6",
-      "uri": "artifact://issue-32/uncertainty-interpolation"
-    },
-    {
-      "inputs": [],
-      "media_type": "application/json",
-      "path": "diagnostic/supporting/105.json",
-      "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "uncertainty-target-coverage",
-      "schema": "groundupscale.dev/uncertainty-target-coverage/v1alpha1",
-      "sha256": "64f0f60b8e8ef2c70e021ce202c8d28b3f13dc71505507773e3cb1f6b03f1873",
-      "uri": "artifact://issue-32/uncertainty-target-coverage"
-    },
-    {
-      "inputs": [],
-      "media_type": "application/json",
-      "path": "diagnostic/supporting/106.json",
-      "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "diagnostic-supporting-evidence",
-      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "1ca7fab77314da00a8d2e202a0889fde78f5d21da9ee45f7976b03b72b29f01c",
-      "uri": "artifact://issue-32/v-proj-negative-control-baseline-lane"
-    },
-    {
-      "inputs": [],
-      "media_type": "application/json",
-      "path": "diagnostic/supporting/107.json",
-      "produced_by": "issue-32-real-ascend-diagnostic-builder",
-      "role": "diagnostic-supporting-evidence",
-      "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
-      "sha256": "381e462cde86fc29bbd45f682ba021ebe0735cb3a8d56061128c1c47f94a788d",
-      "uri": "artifact://issue-32/v-proj-negative-control-diagnostic-lane"
-    },
-    {
-      "inputs": [],
-      "media_type": "application/json",
-      "path": "diagnostic/supporting/108.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "diagnostic-supporting-evidence",
       "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1",
       "sha256": "020c90bf558df48d8e40ed5e4e3f93b170108d6fc1628a43de931844c6878898",
-      "uri": "artifact://issue-32/v-proj-negative-control-preflight"
+      "uri": "artifact://issue-32/v-proj-preflight"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "run-bundle://ascend-910b2-matmul-floor-comparison-20260810-v2"
+      ],
       "media_type": "application/json",
       "path": "source/issue29-physical-floor.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-physical-floor",
       "schema": "groundupscale.dev/physical-floor-observation-comparison/v1alpha1",
-      "sha256": "1bba53e98d7320828903cff5d53763ca0a33bdb2a62373c8b98a75b748b1b1e3"
+      "sha256": "1bba53e98d7320828903cff5d53763ca0a33bdb2a62373c8b98a75b748b1b1e3",
+      "uri": "artifact://issue-32/source-physical-floor"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
       "media_type": "application/json",
       "path": "source/issue30-transformer-benchmark.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-transformer-benchmark",
       "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
-      "sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07"
+      "sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07",
+      "uri": "artifact://issue-32/source-transformer-benchmark"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue30-transformer-e2e-attribution.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-transformer-e2e-attribution",
+      "schema": "groundupscale.dev/error-attribution/v1alpha1",
+      "sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+      "uri": "artifact://issue-32/source-transformer-e2e-attribution"
+    },
+    {
+      "inputs": [
+        "run-bundle://ascend-910b2-transformer-demo-20260811-v1"
+      ],
       "media_type": "application/json",
       "path": "source/issue30-hardware-cohort.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
@@ -1117,65 +1610,123 @@
       "sha256": "0805095176a573b81417a8a906201b3b385b12b53d9e49e60df2dee88fc922b4"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "run-bundle://issue31-operator-frontier-v3"
+      ],
       "media_type": "application/json",
       "path": "source/issue31-frontier-qualification.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-frontier-qualification",
       "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
-      "sha256": "9522255c71e51a7cb3876d2c9f097f7f6a1c37ec313a96a5920f52c848ed8e93"
+      "sha256": "9522255c71e51a7cb3876d2c9f097f7f6a1c37ec313a96a5920f52c848ed8e93",
+      "uri": "artifact://issue-32/source-frontier-qualification"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "remote://A2-AK-225/issue32-collection"
+      ],
       "media_type": "application/json",
       "path": "source/issue32-remote-execution.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-remote-execution",
       "schema": "groundupscale.dev/remote-execution/v1alpha1",
-      "sha256": "51d6257e37477f319fbc73a141d034e9b6a2bc19eeff74a6878a5790891c38a8"
+      "sha256": "c17f6dd2cc2dc83f641eb202ffaf2290ed2e61db27f79d6e9f87e4fc4078296d",
+      "uri": "artifact://issue-32/source-remote-execution"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-01-v7"
+      ],
       "media_type": "application/json",
-      "path": "source/issue32-session-01.json",
+      "path": "source/issue32-q-session-01-v7.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-diagnostic-session",
       "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
-      "sha256": "0b49ad8e7e0da35ded3d4dfd031373444bf830e99b8ad0d849c86febe4504bc4"
+      "sha256": "5bc9a3e711fdc80c9832576e9b1268598b4d233d30a159b92d50c934e26c57fd",
+      "uri": "artifact://issue-32/raw-q-session-1"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-02-v7"
+      ],
       "media_type": "application/json",
-      "path": "source/issue32-session-02.json",
+      "path": "source/issue32-q-session-02-v7.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-diagnostic-session",
       "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
-      "sha256": "02310874a4dce3108d998c23c5d8135259ae56746da6eb54167b367ef263ce5f"
+      "sha256": "3f44abffbd546de4292a6165b786deaac59b59e42772e641142e50b16993f903",
+      "uri": "artifact://issue-32/raw-q-session-2"
     },
     {
-      "inputs": [],
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-03-v7"
+      ],
       "media_type": "application/json",
-      "path": "source/issue32-session-03.json",
+      "path": "source/issue32-q-session-03-v7.json",
       "produced_by": "issue-32-real-ascend-diagnostic-builder",
       "role": "source-diagnostic-session",
       "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
-      "sha256": "1ee10afa9d4de76d1f130024940517f3f6f0d22b85fa08cd245e4a4e5bfb4896"
+      "sha256": "4bcb97798897d60d73cbe1db132c1c107de4fe2470471b4da85e3f1b78b84825",
+      "uri": "artifact://issue-32/raw-q-session-3"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-01-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-01-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "37f7588af4138f5456ccd34d4a8e925dbf96e1cdb8f36fff5a8b44366e935caf",
+      "uri": "artifact://issue-32/raw-semantic-session-1"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-02-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-02-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "264db36b9b0302ac76879f29ee2e36aeadc378a615338ee97c239fa6d642d37c",
+      "uri": "artifact://issue-32/raw-semantic-session-2"
+    },
+    {
+      "inputs": [
+        "remote://A2-AK-225/issue32-session-03-v10"
+      ],
+      "media_type": "application/json",
+      "path": "source/issue32-semantic-session-03-v10.json",
+      "produced_by": "issue-32-real-ascend-diagnostic-builder",
+      "role": "source-diagnostic-session",
+      "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
+      "sha256": "0f5b3cdf2e6e3588ca2906fffed1c35b39423f9f3edadc0c9ca181e29fe30d23",
+      "uri": "artifact://issue-32/raw-semantic-session-3"
     }
   ],
   "device": "ascend-npu",
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "run_id": "issue32-ascend-910b2-diagnostic-v1",
   "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_manifest_integrity": "required",
   "source_runs": [
     {
+      "manifest_sha256": "5e83508b186bc6aaef0236ea11b09e7dfcd8ee1aa2e27d512797f826919da42e",
+      "path": "../../../../issue-29-ascend-physical-floor/evidence/runs/ascend-910b2-matmul-floor-comparison-20260810-v2",
       "role": "resource-physical-floor",
       "run_id": "ascend-910b2-matmul-floor-comparison-20260810-v2"
     },
     {
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "path": "../../../../issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
       "role": "observation",
       "run_id": "ascend-910b2-transformer-demo-20260811-v1"
     },
     {
+      "manifest_sha256": "774eaea555bbb5922d079d765717fabed728e6d479d0a7135ea1822364ccbe5b",
+      "path": "../../../../issue-31-ascend-matmul-frontier/evidence/runs/issue31-operator-frontier-v3",
       "role": "operator-frontier",
       "run_id": "issue31-operator-frontier-v3"
     }

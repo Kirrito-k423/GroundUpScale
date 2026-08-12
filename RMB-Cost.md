@@ -1,44 +1,44 @@
 # RMB Cost
 
-- Generated at: `2026-08-11T06:58:44Z`
+- Generated at: `2026-08-11T11:54:16Z`
 - Confidence: `estimate`
 - USD/CNY: `7.2`
-- Task: Issue #31 Ascend NPU MatMul Operator Frontier（主会话 + 双人 code-review/复审）
+- Task: Issue #32 Ascend NPU 四轴 Diagnostic Bundle（主会话 + 双人 code review；远端恢复待续）
 
 ## Token Usage
 
 | Item | Tokens | M tokens |
 |---|---:|---:|
-| Input total | 151,153,935 | 151.153935 |
-| Cached input | 148,823,040 | 148.823040 |
-| Uncached input | 2,330,895 | 2.330895 |
-| Output | 370,740 | 0.370740 |
-| Reasoning output, included in output when provider reports it that way | 118,182 | 0.118182 |
+| Input total | 150,743,446 | 150.743446 |
+| Cached input | 147,253,248 | 147.253248 |
+| Uncached input | 3,490,198 | 3.490198 |
+| Output | 486,243 | 0.486243 |
+| Reasoning output, included in output when provider reports it that way | 163,065 | 0.163065 |
 
 ## Price Assumptions
 
 | Model | Input USD/M | Cached input USD/M | Output USD/M | Note |
 |---|---:|---:|---:|---|
-| GPT/Codex estimate | 5 | 0.5 | 30 | Executed path; exact billable model and current official pricing were not verified in this run. |
-| DeepSeek counterfactual | 0.435 | 0.003625 | 0.87 | Same-token counterfactual only; no DeepSeek API call occurred and current pricing was not verified. |
+| gpt-5.5 | 5 | 0.5 | 30 | Script default; verify current OpenAI pricing before payable use. |
+| deepseek-v4-pro | 0.435 | 0.003625 | 0.87 | Script default; verify current DeepSeek pricing before payable use. |
 
 ## Cost Breakdown
 
 | Model | Component | Cache status | Tokens | M tokens | USD/M | USD | RMB |
 |---|---|---|---:|---:|---:|---:|---:|
-| GPT/Codex estimate | Input (cache miss) | not cached | 2,330,895 | 2.330895 | 5 | 11.65 | 83.91 |
-| GPT/Codex estimate | Input (cache hit) | cached | 148,823,040 | 148.823040 | 0.5 | 74.41 | 535.76 |
-| GPT/Codex estimate | Output | not applicable | 370,740 | 0.370740 | 30 | 11.12 | 80.08 |
-| DeepSeek counterfactual | Input (cache miss) | not cached | 2,330,895 | 2.330895 | 0.435 | 1.01 | 7.30 |
-| DeepSeek counterfactual | Input (cache hit) | cached | 148,823,040 | 148.823040 | 0.003625 | 0.5395 | 3.88 |
-| DeepSeek counterfactual | Output | not applicable | 370,740 | 0.370740 | 0.87 | 0.3225 | 2.32 |
+| gpt-5.5 | Input (cache miss) | not cached | 3,490,198 | 3.490198 | 5 | 17.45 | 125.65 |
+| gpt-5.5 | Input (cache hit) | cached | 147,253,248 | 147.253248 | 0.5 | 73.63 | 530.11 |
+| gpt-5.5 | Output | not applicable | 486,243 | 0.486243 | 30 | 14.59 | 105.03 |
+| deepseek-v4-pro | Input (cache miss) | not cached | 3,490,198 | 3.490198 | 0.435 | 1.52 | 10.93 |
+| deepseek-v4-pro | Input (cache hit) | cached | 147,253,248 | 147.253248 | 0.003625 | 0.5338 | 3.84 |
+| deepseek-v4-pro | Output | not applicable | 486,243 | 0.486243 | 0.87 | 0.4230 | 3.05 |
 
 ## Cost Summary
 
 | Model | Input cache miss RMB | Input cache hit RMB | Output RMB | Total RMB | Total USD |
 |---|---:|---:|---:|---:|---:|
-| GPT/Codex estimate | 83.91 | 535.76 | 80.08 | 699.76 | 97.19 |
-| DeepSeek counterfactual | 7.30 | 3.88 | 2.32 | 13.51 | 1.88 |
+| gpt-5.5 | 125.65 | 530.11 | 105.03 | 760.79 | 105.66 |
+| deepseek-v4-pro | 10.93 | 3.84 | 3.05 | 17.82 | 2.48 |
 
 ## Formula
 
@@ -54,10 +54,10 @@
 
 ## Notes
 
-- Usage window: `2026-08-11T03:35:57Z` to `2026-08-11T06:58:18Z`.
-- Token evidence sums the complete cumulative counters of the main session and two isolated code-review sessions:
-  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T11-35-57-019feee4-2836-7251-9896-c039d90acf4e.jsonl`
-  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T13-50-51-019fef5f-a9ee-7cb3-9d3d-8c922d5459fd.jsonl`
-  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T13-51-00-019fef5f-cbdf-75c0-90a0-809cfd4c03f2.jsonl`
+- Usage window: `2026-08-11T07:29:44Z` to `2026-08-11T11:54:05Z`; work remains blocked on restoration of the remote SSH path, so this report must be regenerated after the resumed collection/review/commit steps.
+- Token evidence sums the latest cumulative counters from the main session and the two isolated code-review sessions:
+  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T15-23-45-019fefb4-b793-7c23-aeb3-eaba39091ded.jsonl`
+  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T16-14-23-019fefe3-1069-7ff1-b1e4-fd8c8baf7032.jsonl`
+  - `/Users/Zhuanz/.codex/sessions/2026/08/11/rollout-2026-08-11T16-14-37-019fefe3-46aa-7e90-80d6-7da3933da483.jsonl`
 - Re-run with current official API prices and FX before using this for reimbursement or budget approval.
 - Codex goal `tokensUsed` can differ from raw session input/output because it is an effective meter, while session logs also expose cache hits and repeated context reads.

@@ -4,7 +4,7 @@
       "torch-matmul-k-proj"
     ],
     "case": {
-      "semantic": "batch-one Q projection MatMul",
+      "semantic": "batch-one K projection MatMul",
       "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
     },
     "cohort_id": "ascend-npu-23b93a89d5fecc79",

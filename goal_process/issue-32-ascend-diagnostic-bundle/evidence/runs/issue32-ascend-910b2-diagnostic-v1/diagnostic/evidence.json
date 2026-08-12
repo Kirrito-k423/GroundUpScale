@@ -423,6 +423,269 @@
     "family": "pytorch-ascend-matmul",
     "implementation_digest": "cbdad01d220507a8054900bdadd84ec3b6791cd96a50e314a6a5f0be7e58beb8"
   },
+  "capability_surfaces": [
+    {
+      "anchor_lifecycle_policy": {
+        "change_reason": "issue-31 first qualified NPU Frontier",
+        "policy_id": "frontier-anchor-lifecycle",
+        "revalidation": "on cohort, candidate, execution contract, anchor, or cell change",
+        "scope": "ascend-npu-23b93a89d5fecc79-square-matmul",
+        "version": "v2"
+      },
+      "anchors": [
+        {
+          "anchor_id": "ascend-matmul-square-256-2897f3312167",
+          "anchor_version": "v-fab9fb985107087d",
+          "candidate_digest": "6be550c70b06d57431768db26ec244231f253e34bbc447e36d9849250d92dda3",
+          "candidate_family": "pytorch-ascend-matmul",
+          "candidate_id": "torch.matmul",
+          "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "domain": {
+            "alignment_regime": "minimum-64-byte",
+            "alignment_validated": true,
+            "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+            "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+            "kernel_dispatch_regime": "pytorch-ascend-matmul",
+            "kernel_dispatch_validated": true,
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 1,
+            "working_set_regime": "square-256-512",
+            "working_set_validated": true
+          },
+          "effective_rate": 2055086939212.984,
+          "evidence_ref": "artifact://frontier/qualification.json",
+          "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+          "frontier_role": "ACTIVE",
+          "holdout_run_ids": [
+            "issue31-holdout-v4-s256-torch-matmul-01",
+            "issue31-holdout-v4-s256-torch-matmul-02",
+            "issue31-holdout-v4-s256-torch-matmul-03"
+          ],
+          "holdout_session_medians_ns": [
+            16327.5,
+            17190.5,
+            16222.0
+          ],
+          "latency_ns": 16327.5,
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "search_run_ids": [
+            "issue31-search-v4-s256-torch-matmul-01",
+            "issue31-search-v4-s256-torch-matmul-02",
+            "issue31-search-v4-s256-torch-matmul-03"
+          ],
+          "shape": {
+            "s": 256
+          },
+          "standard_uncertainty_rate": 63774412474.39749,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-holdout-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        },
+        {
+          "anchor_id": "ascend-matmul-square-512-2897f3312167",
+          "anchor_version": "v-fab9fb985107087d",
+          "candidate_digest": "cbdad01d220507a8054900bdadd84ec3b6791cd96a50e314a6a5f0be7e58beb8",
+          "candidate_family": "pytorch-ascend-matmul",
+          "candidate_id": "torch.matmul",
+          "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "domain": {
+            "alignment_regime": "minimum-64-byte",
+            "alignment_validated": true,
+            "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+            "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+            "kernel_dispatch_regime": "pytorch-ascend-matmul",
+            "kernel_dispatch_validated": true,
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 1,
+            "working_set_regime": "square-256-512",
+            "working_set_validated": true
+          },
+          "effective_rate": 16436668768943.451,
+          "evidence_ref": "artifact://frontier/qualification.json",
+          "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+          "frontier_role": "ACTIVE",
+          "holdout_run_ids": [
+            "issue31-holdout-v4-s512-torch-matmul-01",
+            "issue31-holdout-v4-s512-torch-matmul-02",
+            "issue31-holdout-v4-s512-torch-matmul-03"
+          ],
+          "holdout_session_medians_ns": [
+            16224.5,
+            16437.5,
+            16331.5
+          ],
+          "latency_ns": 16331.5,
+          "observation_validity": "QUALIFIED",
+          "rate_unit": "FLOP/s",
+          "search_run_ids": [
+            "issue31-search-v4-s512-torch-matmul-01",
+            "issue31-search-v4-s512-torch-matmul-02",
+            "issue31-search-v4-s512-torch-matmul-03"
+          ],
+          "shape": {
+            "s": 512
+          },
+          "standard_uncertainty_rate": 107199190020.224,
+          "state_transitions": [
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "NONE",
+              "reason_code": "exact-shape-best-of-correct-holdout-winner",
+              "sequence": 1,
+              "to": "PROVISIONAL"
+            },
+            {
+              "axis": "observation_validity",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "COLLECTED",
+              "reason_code": "qualification-gates-satisfied",
+              "sequence": 2,
+              "to": "QUALIFIED"
+            },
+            {
+              "axis": "frontier_role",
+              "evidence_refs": [
+                "artifact://frontier/qualification.json"
+              ],
+              "from": "PROVISIONAL",
+              "reason_code": "independent-holdout-confirmed",
+              "sequence": 3,
+              "to": "ACTIVE"
+            }
+          ]
+        }
+      ],
+      "candidate_family": "pytorch-ascend-matmul",
+      "cells": [
+        {
+          "anchor_ids": [
+            "ascend-matmul-square-256-2897f3312167",
+            "ascend-matmul-square-512-2897f3312167"
+          ],
+          "cell_id": "ascend-matmul-square-256-512-2897f3312167",
+          "confirmation_evidence_refs": [
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-01",
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-02",
+            "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-03"
+          ],
+          "confirmation_observed_rate": 6786086289549.377,
+          "confirmation_shape": {
+            "s": 384
+          },
+          "interpolation_standard_uncertainty_rate": 2461462914692.7686,
+          "regime_id": "ascend-npu-23b93a89d5fecc79-square-256-512-2897f3312167",
+          "status": "retained"
+        }
+      ],
+      "cohort_id": "ascend-npu-23b93a89d5fecc79",
+      "coordinate": {
+        "axis": "s",
+        "transform": "identity",
+        "transform_version": "v1"
+      },
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "evidence_refs": [
+        "artifact://frontier/qualification.json"
+      ],
+      "input_digest": "ee01f1daa738795e233ad3ec044ad45eedf489f8c39c4541efb3d91bd402bb94",
+      "previous_version": null,
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "uncertainty_policy": {
+        "anchor_covariance": [
+          [
+            4.067175686454586e+21,
+            0.0
+          ],
+          [
+            0.0,
+            1.1491666340992092e+22
+          ]
+        ],
+        "calibration_evidence_refs": [
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-01",
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-02",
+          "artifact://frontier/qualification.json#source-run-issue31-confirmation-v4-s384-torch-matmul-03"
+        ],
+        "change_reason": "independent holdout and interior confirmation",
+        "combination": "root-sum-of-squares",
+        "instrumentation_standard_uncertainty_rate": 1006686190.1052489,
+        "policy_id": "ascend-matmul-surface-uncertainty",
+        "revalidation": "on cohort, candidate, contract, anchor, or confirmation change",
+        "scope": "single validated square MatMul cell",
+        "target_coverage": 0.68,
+        "version": "v1"
+      },
+      "version": "v-fab9fb985107087d",
+      "work_formula": {
+        "kind": "square-matmul-2s3",
+        "version": "v1",
+        "work_unit": "FLOP"
+      }
+    }
+  ],
   "cohort_evidence": {
     "evidence_ref": "artifact://issue-32/cohort-match",
     "observed_identity": {
@@ -550,25 +813,25 @@
       "holdout": {
         "baseline_lane_id": "issue32-ascend-baseline",
         "baseline_raw_samples_ns": [
-          16006.600260734558,
-          15335.000157356262,
-          16301.000118255615
+          15894.500017166138,
+          15859.799981117249,
+          15206.300020217896
         ],
         "baseline_session_ids": [
-          "issue32-session-01-v3-baseline",
-          "issue32-session-02-v3-baseline",
-          "issue32-session-03-v3-baseline"
+          "issue32-session-01-v7-baseline",
+          "issue32-session-02-v7-baseline",
+          "issue32-session-03-v7-baseline"
         ],
         "diagnostic_lane_id": "issue32-ascend-diagnostic",
         "diagnostic_raw_samples_ns": [
-          198051.60522460938,
-          202806.70166015625,
-          196540.4987335205
+          212804.09812927246,
+          221654.10041809082,
+          202454.20455932617
         ],
         "diagnostic_session_ids": [
-          "issue32-session-01-v3-diagnostic",
-          "issue32-session-02-v3-diagnostic",
-          "issue32-session-03-v3-diagnostic"
+          "issue32-session-01-v7-diagnostic",
+          "issue32-session-02-v7-diagnostic",
+          "issue32-session-03-v7-diagnostic"
         ],
         "evidence_ref": "artifact://issue-32/profiling-holdout",
         "pair_id": "issue32-ascend-paired-lanes"
@@ -587,66 +850,66 @@
     "pair_id": "issue32-ascend-paired-lanes",
     "paired_baseline_lane_id": "issue32-ascend-baseline",
     "raw_samples_ns": [
-      204615.80276489258,
-      198864.99404907227,
-      198872.2038269043,
-      198957.80563354492,
-      199092.4072265625,
-      199347.1908569336,
-      197772.59826660156,
-      197377.3956298828,
-      197966.80450439453,
-      198351.00173950195,
-      197807.99865722656,
-      197912.00637817383,
-      198186.79809570312,
-      196740.20767211914,
-      197815.39916992188,
-      197449.39804077148,
-      197254.00924682617,
-      197716.1979675293,
-      199760.2081298828,
-      198136.40594482422,
-      210589.8094177246,
-      204252.7961730957,
-      203934.4024658203,
-      203537.1971130371,
-      202807.59811401367,
-      201940.40298461914,
-      202196.9985961914,
-      202056.99920654297,
-      200896.3966369629,
-      201175.59432983398,
-      202772.19772338867,
-      203292.19818115234,
-      202770.80535888672,
-      204139.1944885254,
-      202805.80520629883,
-      202367.59185791016,
-      203233.60443115234,
-      202141.20864868164,
-      204138.60321044922,
-      204184.39865112305,
-      209106.40716552734,
-      195599.59411621094,
-      197068.4051513672,
-      196499.99618530273,
-      196453.39965820312,
-      196581.00128173828,
-      195844.40231323242,
-      195480.59463500977,
-      194955.00564575195,
-      195870.80001831055,
-      196070.40405273438,
-      196372.2038269043,
-      196148.79608154297,
-      196933.8035583496,
-      197750.20599365234,
-      199602.20336914062,
-      198541.20254516602,
-      198651.79061889648,
-      198869.20928955078,
-      198971.00448608398
+      216784.5916748047,
+      211780.6053161621,
+      211657.39059448242,
+      209635.39123535156,
+      210993.00384521484,
+      210878.60107421875,
+      209883.19396972656,
+      210108.60443115234,
+      213224.39193725586,
+      213645.99227905273,
+      214437.40844726562,
+      214580.59310913086,
+      213764.19067382812,
+      212124.40490722656,
+      214655.79986572266,
+      213477.00119018555,
+      212929.19158935547,
+      212679.00466918945,
+      212597.19848632812,
+      214583.2061767578,
+      228936.99645996094,
+      223704.79583740234,
+      222784.80529785156,
+      221138.19122314453,
+      220828.9909362793,
+      220589.599609375,
+      220799.99923706055,
+      221333.0078125,
+      220158.99658203125,
+      221422.1954345703,
+      221619.20547485352,
+      221944.40841674805,
+      221688.99536132812,
+      222318.40133666992,
+      223111.59133911133,
+      222559.79537963867,
+      220785.19821166992,
+      222206.99310302734,
+      222042.59872436523,
+      221518.99337768555,
+      213763.19885253906,
+      203949.60403442383,
+      204086.79962158203,
+      209937.80136108398,
+      203224.39193725586,
+      204176.59759521484,
+      202421.6079711914,
+      201194.5915222168,
+      202511.9972229004,
+      202255.80215454102,
+      201076.20239257812,
+      202486.80114746094,
+      201092.3957824707,
+      201368.99948120117,
+      212300.79650878906,
+      200938.20571899414,
+      202329.19692993164,
+      201417.80853271484,
+      201519.60372924805,
+      202549.59106445312
     ],
     "timer": {
       "device_event_id": "issue32-npu-event-pair",
@@ -662,22 +925,57 @@
     "e2e_observation_ns": 50840320.0,
     "items": [
       {
-        "combined_uncertainty_ns": 500.0,
-        "observed_ns": 198051.60522460938,
-        "predicted_ns": 16331.5,
+        "combined_uncertainty_ns": 107.21727757774897,
+        "observation_basis": {
+          "kind": "benchmark-case",
+          "semantic": "batch-one Q projection MatMul",
+          "source_case_id": "matmul-q-proj",
+          "source_evidence_ref": "artifact://issue-32/source-transformer-benchmark",
+          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj"
+        },
+        "observed_ns": 44507.629499999995,
+        "predicted_ns": 16331.500000000002,
         "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj"
       },
       {
-        "combined_uncertainty_ns": 500.0,
-        "observed_ns": 44507.629499999995,
-        "predicted_ns": 16331.5,
+        "combined_uncertainty_ns": 107.21727757774897,
+        "observation_basis": {
+          "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+          "input_refs": [
+            "artifact://issue-32/raw-semantic-session-1",
+            "artifact://issue-32/raw-semantic-session-2",
+            "artifact://issue-32/raw-semantic-session-3"
+          ],
+          "kind": "session-variant-aggregate",
+          "lane": "baseline",
+          "reducer": "median-of-independent-session-medians",
+          "semantic": "batch-one K projection MatMul",
+          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj",
+          "variant": "k_baseline"
+        },
+        "observed_ns": 22093.199491500854,
+        "predicted_ns": 16331.500000000002,
         "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
       },
       {
-        "combined_uncertainty_ns": 500.0,
-        "observed_ns": 36393.40043067932,
-        "predicted_ns": 16331.5,
-        "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+        "combined_uncertainty_ns": 107.21727757774897,
+        "observation_basis": {
+          "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+          "input_refs": [
+            "artifact://issue-32/raw-semantic-session-1",
+            "artifact://issue-32/raw-semantic-session-2",
+            "artifact://issue-32/raw-semantic-session-3"
+          ],
+          "kind": "session-variant-aggregate",
+          "lane": "baseline",
+          "reducer": "median-of-independent-session-medians",
+          "semantic": "batch-one V projection MatMul",
+          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj",
+          "variant": "v_baseline"
+        },
+        "observed_ns": 22077.500820159912,
+        "predicted_ns": 16331.500000000002,
+        "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
       }
     ],
     "policy": {
@@ -686,10 +984,12 @@
       "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
       "scope": "exact-shape-performance-diagnosis",
       "version": "v1"
-    }
+    },
+    "source_evidence_ref": "artifact://issue-32/source-transformer-e2e-attribution",
+    "source_evidence_required": true
   },
   "digests": {
-    "evidence_sha256": "459d22208dc16bf6c5aeed12f873039b6788ad7b049abf69a4d4b269f782b548",
+    "evidence_sha256": "8e01e51c091c7d3fe0c04298cb7a062b7cb0776509c081ae6ded99ff85f51630",
     "input_sha256": "6dad7a582cf5ba392923db1dfc538250ceb082444f7d9bd27e609fe2c908c686"
   },
   "environment": {
@@ -1536,6 +1836,7 @@
         "minimum_demand": 268435456,
         "rate_unit": "FLOP/s",
         "resource": "compute.fp32",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
         "validated": true,
         "validated_rate_per_second": 19175995339398.254,
         "validated_rate_resource": "compute.fp32"
@@ -1564,13 +1865,14 @@
         "minimum_demand": 3145728,
         "rate_unit": "B/s",
         "resource": "memory.hbm",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
         "validated": true,
         "validated_rate_per_second": 1408047205172.7576,
         "validated_rate_resource": "memory.hbm"
       }
     ],
     "status": "known",
-    "value_ns": 13998.514874921928
+    "value_ns": 13998.514874921926
   },
   "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
   "shape_disambiguation_probes": [
@@ -1607,93 +1909,93 @@
               "evidence_ref": "artifact://issue-32/q-target-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 16006.600260734558,
-              "process_id": 2512236,
+              "latency_ns": 16792.70029067993,
+              "process_id": 2783368,
               "raw_samples_ns": [
-                10637.400150299072,
-                14576.799869537354,
-                16160.199642181396,
-                16236.200332641602,
-                16294.000148773193,
-                15871.200561523438,
-                16021.20041847229,
-                16165.599822998047,
-                15651.400089263916,
-                15795.999765396118,
-                15813.39955329895,
-                16119.799613952637,
-                15992.000102996826,
-                16092.20027923584,
-                16076.799631118774,
-                16240.400075912476,
-                15772.600173950195,
-                15717.999935150146,
-                16130.399703979492,
-                15858.00051689148
+                15937.199592590332,
+                16793.800592422485,
+                16877.599954605103,
+                16866.400241851807,
+                17011.4004611969,
+                16822.199821472168,
+                16725.000143051147,
+                16722.400188446045,
+                16808.799505233765,
+                16784.39974784851,
+                16741.000413894653,
+                16653.599739074707,
+                16462.199687957764,
+                16772.40014076233,
+                16878.80039215088,
+                16848.000288009644,
+                16791.599988937378,
+                16952.600479125977,
+                16663.999557495117,
+                17019.599676132202
               ],
-              "session_id": "issue32-session-01-v3"
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/q-target-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 15335.000157356262,
-              "process_id": 2513462,
+              "latency_ns": 16164.000034332275,
+              "process_id": 2784432,
               "raw_samples_ns": [
-                14655.200242996216,
-                15731.799602508545,
-                15300.19998550415,
-                15237.400531768799,
-                15491.199493408203,
-                15293.999910354614,
-                15369.800329208374,
-                15290.800333023071,
-                15635.199546813965,
-                15372.999906539917,
-                15399.399995803833,
-                15150.200128555298,
-                15732.59949684143,
-                15078.999996185303,
-                14766.80040359497,
-                14932.600259780884,
-                15425.200462341309,
-                15428.999662399292,
-                15198.60029220581,
-                15883.400440216064
+                15839.999914169312,
+                16260.99944114685,
+                16356.799602508545,
+                16140.999794006348,
+                16333.800554275513,
+                16167.600154876709,
+                15925.999879837036,
+                16066.399812698364,
+                16064.800024032593,
+                16327.799558639526,
+                16256.799697875977,
+                16095.800399780273,
+                15997.999906539917,
+                16262.199878692627,
+                16294.80004310608,
+                16160.399913787842,
+                16037.600040435791,
+                16148.600578308105,
+                16270.20001411438,
+                16275.00057220459
               ],
-              "session_id": "issue32-session-02-v3"
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/q-target-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 16301.000118255615,
-              "process_id": 2515110,
+              "latency_ns": 16292.299628257751,
+              "process_id": 2785721,
               "raw_samples_ns": [
-                15321.799516677856,
-                16212.799549102783,
-                16557.799577713013,
-                16448.999643325806,
-                16311.60020828247,
-                16151.599884033203,
-                16308.000087738037,
-                16520.800590515137,
-                16271.799802780151,
-                16294.000148773193,
-                16118.199825286865,
-                16428.200006484985,
-                16394.799947738647,
-                16688.400506973267,
-                16371.79970741272,
-                16424.399614334106,
-                15933.799743652344,
-                16164.20030593872,
-                14606.200456619263,
-                16245.59998512268
+                15705.599784851074,
+                16483.00051689148,
+                16445.000171661377,
+                16443.599462509155,
+                16083.600521087646,
+                16263.600587844849,
+                16213.799715042114,
+                16305.999755859375,
+                16278.599500656128,
+                16327.199935913086,
+                16314.400434494019,
+                16367.3996925354,
+                16250.59962272644,
+                16054.999828338623,
+                16478.19995880127,
+                16226.400136947632,
+                16464.200019836426,
+                16174.19958114624,
+                16245.00036239624,
+                16434.799432754517
               ],
-              "session_id": "issue32-session-03-v3"
+              "session_id": "issue32-session-03-v7"
             }
           ]
         }
@@ -1730,6 +2032,19 @@
                 "rtol": 0.001
               }
             },
+            "derivation": {
+              "cumulative_variant": "dispatch",
+              "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+              "input_refs": [
+                "artifact://issue-32/raw-q-session-1",
+                "artifact://issue-32/raw-q-session-2",
+                "artifact://issue-32/raw-q-session-3"
+              ],
+              "prior_cumulative_variants": [
+                "frontier_adapter"
+              ],
+              "sample_semantics": "derived-paired-session-delta"
+            },
             "evidence_ref": "artifact://issue-32/integration-dispatch",
             "kind": "dispatch",
             "lane_id": "issue32-ascend-diagnostic",
@@ -1740,39 +2055,39 @@
             "sessions": [
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  0.0
+                ],
                 "evidence_ref": "artifact://issue-32/integration-dispatch-1",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
                 "latency_ns": 0.0,
-                "process_id": 2512236,
-                "raw_samples_ns": [
-                  0.0
-                ],
-                "session_id": "issue32-session-01-v3"
+                "process_id": 2783368,
+                "session_id": "issue32-session-01-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  0.0
+                ],
                 "evidence_ref": "artifact://issue-32/integration-dispatch-2",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
                 "latency_ns": 0.0,
-                "process_id": 2513462,
-                "raw_samples_ns": [
-                  0.0
-                ],
-                "session_id": "issue32-session-02-v3"
+                "process_id": 2784432,
+                "session_id": "issue32-session-02-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  0.0
+                ],
                 "evidence_ref": "artifact://issue-32/integration-dispatch-3",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
                 "latency_ns": 0.0,
-                "process_id": 2515110,
-                "raw_samples_ns": [
-                  0.0
-                ],
-                "session_id": "issue32-session-03-v3"
+                "process_id": 2785721,
+                "session_id": "issue32-session-03-v7"
               }
             ]
           },
@@ -1792,6 +2107,20 @@
                 "rtol": 0.001
               }
             },
+            "derivation": {
+              "cumulative_variant": "copy",
+              "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+              "input_refs": [
+                "artifact://issue-32/raw-q-session-1",
+                "artifact://issue-32/raw-q-session-2",
+                "artifact://issue-32/raw-q-session-3"
+              ],
+              "prior_cumulative_variants": [
+                "frontier_adapter",
+                "dispatch"
+              ],
+              "sample_semantics": "derived-paired-session-delta"
+            },
             "evidence_ref": "artifact://issue-32/integration-copy",
             "kind": "copy",
             "lane_id": "issue32-ascend-diagnostic",
@@ -1802,39 +2131,39 @@
             "sessions": [
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  25157.899856567383
+                ],
                 "evidence_ref": "artifact://issue-32/integration-copy-1",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 24439.872875685316,
-                "process_id": 2512236,
-                "raw_samples_ns": [
-                  24439.872875685316
-                ],
-                "session_id": "issue32-session-01-v3"
+                "latency_ns": 25157.899856567383,
+                "process_id": 2783368,
+                "session_id": "issue32-session-01-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  27221.100330352783
+                ],
                 "evidence_ref": "artifact://issue-32/integration-copy-2",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 24955.927937962915,
-                "process_id": 2513462,
-                "raw_samples_ns": [
-                  24955.927937962915
-                ],
-                "session_id": "issue32-session-02-v3"
+                "latency_ns": 27221.100330352783,
+                "process_id": 2784432,
+                "session_id": "issue32-session-02-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  25504.69934940338
+                ],
                 "evidence_ref": "artifact://issue-32/integration-copy-3",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 25837.92449205001,
-                "process_id": 2515110,
-                "raw_samples_ns": [
-                  25837.92449205001
-                ],
-                "session_id": "issue32-session-03-v3"
+                "latency_ns": 25504.69934940338,
+                "process_id": 2785721,
+                "session_id": "issue32-session-03-v7"
               }
             ]
           },
@@ -1854,6 +2183,21 @@
                 "rtol": 0.001
               }
             },
+            "derivation": {
+              "cumulative_variant": "sync",
+              "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+              "input_refs": [
+                "artifact://issue-32/raw-q-session-1",
+                "artifact://issue-32/raw-q-session-2",
+                "artifact://issue-32/raw-q-session-3"
+              ],
+              "prior_cumulative_variants": [
+                "frontier_adapter",
+                "dispatch",
+                "copy"
+              ],
+              "sample_semantics": "derived-paired-session-delta"
+            },
             "evidence_ref": "artifact://issue-32/integration-sync",
             "kind": "sync",
             "lane_id": "issue32-ascend-diagnostic",
@@ -1864,39 +2208,39 @@
             "sessions": [
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  127363.99412155151
+                ],
                 "evidence_ref": "artifact://issue-32/integration-sync-1",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 123359.42434561998,
-                "process_id": 2512236,
-                "raw_samples_ns": [
-                  123359.42434561998
-                ],
-                "session_id": "issue32-session-01-v3"
+                "latency_ns": 127363.99412155151,
+                "process_id": 2783368,
+                "session_id": "issue32-session-01-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  135278.000831604
+                ],
                 "evidence_ref": "artifact://issue-32/integration-sync-2",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 127686.29550689198,
-                "process_id": 2513462,
-                "raw_samples_ns": [
-                  127686.29550689198
-                ],
-                "session_id": "issue32-session-02-v3"
+                "latency_ns": 135278.000831604,
+                "process_id": 2784432,
+                "session_id": "issue32-session-02-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  125586.00425720215
+                ],
                 "evidence_ref": "artifact://issue-32/integration-sync-3",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 115843.68077353225,
-                "process_id": 2515110,
-                "raw_samples_ns": [
-                  115843.68077353225
-                ],
-                "session_id": "issue32-session-03-v3"
+                "latency_ns": 125586.00425720215,
+                "process_id": 2785721,
+                "session_id": "issue32-session-03-v7"
               }
             ]
           },
@@ -1916,6 +2260,22 @@
                 "rtol": 0.001
               }
             },
+            "derivation": {
+              "cumulative_variant": "profiling",
+              "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+              "input_refs": [
+                "artifact://issue-32/raw-q-session-1",
+                "artifact://issue-32/raw-q-session-2",
+                "artifact://issue-32/raw-q-session-3"
+              ],
+              "prior_cumulative_variants": [
+                "frontier_adapter",
+                "dispatch",
+                "copy",
+                "sync"
+              ],
+              "sample_semantics": "derived-paired-session-delta"
+            },
             "evidence_ref": "artifact://issue-32/integration-profiling",
             "kind": "profiling",
             "lane_id": "issue32-ascend-diagnostic",
@@ -1926,39 +2286,39 @@
             "sessions": [
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  43489.50386047363
+                ],
                 "evidence_ref": "artifact://issue-32/integration-profiling-1",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 33177.71873553917,
-                "process_id": 2512236,
-                "raw_samples_ns": [
-                  33177.71873553917
-                ],
-                "session_id": "issue32-session-01-v3"
+                "latency_ns": 43489.50386047363,
+                "process_id": 2783368,
+                "session_id": "issue32-session-01-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  42990.99922180176
+                ],
                 "evidence_ref": "artifact://issue-32/integration-profiling-2",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 33729.652680291925,
-                "process_id": 2513462,
-                "raw_samples_ns": [
-                  33729.652680291925
-                ],
-                "session_id": "issue32-session-02-v3"
+                "latency_ns": 42990.99922180176,
+                "process_id": 2784432,
+                "session_id": "issue32-session-02-v7"
               },
               {
                 "cohort_id": "ascend-npu-23b93a89d5fecc79",
+                "derived_samples_ns": [
+                  35071.20132446289
+                ],
                 "evidence_ref": "artifact://issue-32/integration-profiling-3",
                 "excluded_samples": [],
                 "lane_id": "issue32-ascend-diagnostic",
-                "latency_ns": 37500.49656369576,
-                "process_id": 2515110,
-                "raw_samples_ns": [
-                  37500.49656369576
-                ],
-                "session_id": "issue32-session-03-v3"
+                "latency_ns": 35071.20132446289,
+                "process_id": 2785721,
+                "session_id": "issue32-session-03-v7"
               }
             ]
           }
@@ -1966,7 +2326,7 @@
         "cohort_id": "ascend-npu-23b93a89d5fecc79",
         "counterfactual": {
           "counterfactual_id": "remove-integration-overhead",
-          "declared_recovered_ns": 182045.00496387482,
+          "declared_recovered_ns": 195859.69269275665,
           "evidence_refs": [
             "artifact://issue-32/integration-counterfactual"
           ],
@@ -1982,14 +2342,14 @@
           "artifact://issue-32/integration-contract"
         ],
         "exclusive_ledger": {
-          "e2e_duration_ns": 198051.60522460938,
+          "e2e_duration_ns": 212804.09812927246,
           "evidence_refs": [
             "artifact://issue-32/integration-ledger"
           ],
           "leaf_semantics": "mutually-exclusive",
           "leaves": [
             {
-              "duration_ns": 16006.600260734558,
+              "duration_ns": 16292.299628257751,
               "evidence_refs": [
                 "artifact://issue-32/integration-operator"
               ],
@@ -2005,7 +2365,7 @@
               "leaf_id": "dispatch-overhead"
             },
             {
-              "duration_ns": 24955.927937962915,
+              "duration_ns": 25504.69934940338,
               "evidence_refs": [
                 "artifact://issue-32/integration-copy"
               ],
@@ -2013,7 +2373,7 @@
               "leaf_id": "copy-overhead"
             },
             {
-              "duration_ns": 123359.42434561998,
+              "duration_ns": 127363.99412155151,
               "evidence_refs": [
                 "artifact://issue-32/integration-sync"
               ],
@@ -2021,7 +2381,7 @@
               "leaf_id": "sync-overhead"
             },
             {
-              "duration_ns": 33729.652680291925,
+              "duration_ns": 42990.99922180176,
               "evidence_refs": [
                 "artifact://issue-32/integration-profiling"
               ],
@@ -2055,7 +2415,7 @@
             }
           ],
           "residual": {
-            "duration_ns": 0.0,
+            "duration_ns": 652.1058082580566,
             "evidence_refs": [
               "artifact://issue-32/integration-residual"
             ],
@@ -2066,7 +2426,7 @@
         },
         "operator_frontier": {
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
-          "combined_uncertainty_ns": 500.0,
+          "combined_uncertainty_ns": 107.21727757774897,
           "evidence_ref": "artifact://issue-32/operator-frontier",
           "evidence_refs": [
             "artifact://issue-32/operator-frontier"
@@ -2089,142 +2449,61 @@
             "threads": 1
           },
           "frontier_role": "ACTIVE",
-          "latency_ns": 16331.5,
+          "latency_ns": 16331.500000000002,
           "observation_validity": "QUALIFIED",
           "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
           "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
           "surface": {
-            "surface_id": "ascend-910b2-square-matmul",
-            "version": "v1"
+            "input_digest": "ee01f1daa738795e233ad3ec044ad45eedf489f8c39c4541efb3d91bd402bb94",
+            "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+            "version": "v-fab9fb985107087d"
+          },
+          "uncertainty_basis": {
+            "kind": "verified-capability-surface-query",
+            "latency_interval": {
+              "lower_ns": 16225.672253436398,
+              "upper_ns": 16438.71727757775
+            },
+            "qualification_evidence_ref": "artifact://issue-32/source-frontier-qualification",
+            "query": {
+              "domain": {
+                "alignment_regime": "minimum-64-byte",
+                "alignment_validated": true,
+                "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+                "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+                "dtype": "float32",
+                "execution_mode": "pytorch-eager",
+                "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+                "kernel_dispatch_regime": "pytorch-ascend-matmul",
+                "kernel_dispatch_validated": true,
+                "layout": "row-major-contiguous",
+                "regime_validated": true,
+                "semantic_operation": "MatMul",
+                "threads": 1,
+                "working_set_regime": "square-256-512",
+                "working_set_validated": true
+              },
+              "query_id": "ascend-matmul-square-512",
+              "shape": {
+                "s": 512
+              },
+              "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+              "surface_version": "v-fab9fb985107087d"
+            },
+            "source_policy": {
+              "combination": "root-sum-of-squares",
+              "policy_id": "ascend-matmul-surface-uncertainty",
+              "target_coverage": 0.68,
+              "version": "v1"
+            },
+            "surface_uncertainty_ns": 107.21727757774897
           },
           "uncertainty_policy": {
-            "calibration": {
-              "estimator": {
-                "change_reason": "Calibrate every uncertainty component before replay.",
-                "method": "max-absolute-residual",
-                "policy_id": "component-max-absolute-residual",
-                "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
-                "scope": "independent-ascend-uncertainty-calibration",
-                "version": "v1"
-              },
-              "evidence_ref": "artifact://issue-32/uncertainty-calibration",
-              "records": [
-                {
-                  "component_id": "anchor",
-                  "observed_samples_ns": [
-                    10300.0
-                  ],
-                  "partition": "calibration",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200001,
-                  "session_id": "issue32-anchor-calibration",
-                  "target_id": "anchor-calibration"
-                },
-                {
-                  "component_id": "interpolation",
-                  "observed_samples_ns": [
-                    10000.0
-                  ],
-                  "partition": "calibration",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200002,
-                  "session_id": "issue32-interpolation-calibration",
-                  "target_id": "interpolation-calibration"
-                },
-                {
-                  "component_id": "instrumentation",
-                  "observed_samples_ns": [
-                    10400.0
-                  ],
-                  "partition": "calibration",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200003,
-                  "session_id": "issue32-instrumentation-calibration",
-                  "target_id": "instrumentation-calibration"
-                },
-                {
-                  "component_id": "anchor",
-                  "observed_samples_ns": [
-                    10270.0
-                  ],
-                  "partition": "validation",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200011,
-                  "session_id": "issue32-anchor-validation",
-                  "target_id": "anchor-validation"
-                },
-                {
-                  "component_id": "interpolation",
-                  "observed_samples_ns": [
-                    10000.0
-                  ],
-                  "partition": "validation",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200012,
-                  "session_id": "issue32-interpolation-validation",
-                  "target_id": "interpolation-validation"
-                },
-                {
-                  "component_id": "instrumentation",
-                  "observed_samples_ns": [
-                    10360.0
-                  ],
-                  "partition": "validation",
-                  "predicted_ns": 10000.0,
-                  "process_id": 4200013,
-                  "session_id": "issue32-instrumentation-validation",
-                  "target_id": "instrumentation-validation"
-                }
-              ]
-            },
-            "change_reason": "Bind the #31 active anchor to calibrated diagnostic uncertainty.",
-            "combination_rule": "root-sum-square",
-            "policy_id": "issue32-frontier-uncertainty",
-            "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
-            "scope": "ascend-910b2-exact-shape-matmul",
-            "target_coverage": {
-              "cohort_id": "ascend-npu-23b93a89d5fecc79",
-              "coverage_method": "independent-validation-absolute-residual-within-limit",
-              "evidence_ref": "artifact://issue-32/uncertainty-target-coverage",
-              "execution_domain_sha256": "064e8582ff660acc8699579c9da35116957719aa206f44ca163d0cbdd4a6aed0",
-              "minimum_calibration_records": 3,
-              "minimum_fraction": 1.0,
-              "minimum_validation_records": 3,
-              "required_calibration_target_ids": [
-                "anchor-calibration",
-                "interpolation-calibration",
-                "instrumentation-calibration"
-              ],
-              "required_validation_target_ids": [
-                "anchor-validation",
-                "interpolation-validation",
-                "instrumentation-validation"
-              ],
-              "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
-              "surface": {
-                "surface_id": "ascend-910b2-square-matmul",
-                "version": "v1"
-              }
-            },
+            "combination": "root-sum-of-squares",
+            "policy_id": "ascend-matmul-surface-uncertainty",
+            "target_coverage": 0.68,
             "version": "v1"
-          },
-          "uncertainty_records": [
-            {
-              "component_id": "anchor",
-              "evidence_ref": "artifact://issue-32/uncertainty-anchor",
-              "standard_uncertainty_ns": 300.0
-            },
-            {
-              "component_id": "interpolation",
-              "evidence_ref": "artifact://issue-32/uncertainty-interpolation",
-              "standard_uncertainty_ns": 0.0
-            },
-            {
-              "component_id": "instrumentation",
-              "evidence_ref": "artifact://issue-32/uncertainty-instrumentation",
-              "standard_uncertainty_ns": 400.0
-            }
-          ]
+          }
         },
         "paired_lanes": {
           "baseline_lane_id": "issue32-ascend-baseline",
@@ -2266,93 +2545,93 @@
               "evidence_ref": "artifact://issue-32/integration-wrapped-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 198051.60522460938,
-              "process_id": 2512236,
+              "latency_ns": 212804.09812927246,
+              "process_id": 2783368,
               "raw_samples_ns": [
-                204615.80276489258,
-                198864.99404907227,
-                198872.2038269043,
-                198957.80563354492,
-                199092.4072265625,
-                199347.1908569336,
-                197772.59826660156,
-                197377.3956298828,
-                197966.80450439453,
-                198351.00173950195,
-                197807.99865722656,
-                197912.00637817383,
-                198186.79809570312,
-                196740.20767211914,
-                197815.39916992188,
-                197449.39804077148,
-                197254.00924682617,
-                197716.1979675293,
-                199760.2081298828,
-                198136.40594482422
+                216784.5916748047,
+                211780.6053161621,
+                211657.39059448242,
+                209635.39123535156,
+                210993.00384521484,
+                210878.60107421875,
+                209883.19396972656,
+                210108.60443115234,
+                213224.39193725586,
+                213645.99227905273,
+                214437.40844726562,
+                214580.59310913086,
+                213764.19067382812,
+                212124.40490722656,
+                214655.79986572266,
+                213477.00119018555,
+                212929.19158935547,
+                212679.00466918945,
+                212597.19848632812,
+                214583.2061767578
               ],
-              "session_id": "issue32-session-01-v3"
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/integration-wrapped-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 202806.70166015625,
-              "process_id": 2513462,
+              "latency_ns": 221654.10041809082,
+              "process_id": 2784432,
               "raw_samples_ns": [
-                210589.8094177246,
-                204252.7961730957,
-                203934.4024658203,
-                203537.1971130371,
-                202807.59811401367,
-                201940.40298461914,
-                202196.9985961914,
-                202056.99920654297,
-                200896.3966369629,
-                201175.59432983398,
-                202772.19772338867,
-                203292.19818115234,
-                202770.80535888672,
-                204139.1944885254,
-                202805.80520629883,
-                202367.59185791016,
-                203233.60443115234,
-                202141.20864868164,
-                204138.60321044922,
-                204184.39865112305
+                228936.99645996094,
+                223704.79583740234,
+                222784.80529785156,
+                221138.19122314453,
+                220828.9909362793,
+                220589.599609375,
+                220799.99923706055,
+                221333.0078125,
+                220158.99658203125,
+                221422.1954345703,
+                221619.20547485352,
+                221944.40841674805,
+                221688.99536132812,
+                222318.40133666992,
+                223111.59133911133,
+                222559.79537963867,
+                220785.19821166992,
+                222206.99310302734,
+                222042.59872436523,
+                221518.99337768555
               ],
-              "session_id": "issue32-session-02-v3"
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/integration-wrapped-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 196540.4987335205,
-              "process_id": 2515110,
+              "latency_ns": 202454.20455932617,
+              "process_id": 2785721,
               "raw_samples_ns": [
-                209106.40716552734,
-                195599.59411621094,
-                197068.4051513672,
-                196499.99618530273,
-                196453.39965820312,
-                196581.00128173828,
-                195844.40231323242,
-                195480.59463500977,
-                194955.00564575195,
-                195870.80001831055,
-                196070.40405273438,
-                196372.2038269043,
-                196148.79608154297,
-                196933.8035583496,
-                197750.20599365234,
-                199602.20336914062,
-                198541.20254516602,
-                198651.79061889648,
-                198869.20928955078,
-                198971.00448608398
+                213763.19885253906,
+                203949.60403442383,
+                204086.79962158203,
+                209937.80136108398,
+                203224.39193725586,
+                204176.59759521484,
+                202421.6079711914,
+                201194.5915222168,
+                202511.9972229004,
+                202255.80215454102,
+                201076.20239257812,
+                202486.80114746094,
+                201092.3957824707,
+                201368.99948120117,
+                212300.79650878906,
+                200938.20571899414,
+                202329.19692993164,
+                201417.80853271484,
+                201519.60372924805,
+                202549.59106445312
               ],
-              "session_id": "issue32-session-03-v3"
+              "session_id": "issue32-session-03-v7"
             }
           ]
         }
@@ -2620,7 +2899,7 @@
             "records": [
               {
                 "expected": 0.0,
-                "observed": 0.0001220703125
+                "observed": 0.0001373291015625
               }
             ],
             "tolerance": {
@@ -2629,6 +2908,7 @@
             }
           },
           "eligible": true,
+          "evidence_lane": "baseline",
           "implementation_family": {
             "family_id": "pytorch-ascend-matmul",
             "implementation_ref": "artifact://issue-32/torch-matmul-k-proj-implementation",
@@ -2643,95 +2923,104 @@
               "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 16006.600260734558,
-              "process_id": 2512236,
+              "latency_ns": 19603.300094604492,
+              "process_id": 2477077,
               "raw_samples_ns": [
-                10637.400150299072,
-                14576.799869537354,
-                16160.199642181396,
-                16236.200332641602,
-                16294.000148773193,
-                15871.200561523438,
-                16021.20041847229,
-                16165.599822998047,
-                15651.400089263916,
-                15795.999765396118,
-                15813.39955329895,
-                16119.799613952637,
-                15992.000102996826,
-                16092.20027923584,
-                16076.799631118774,
-                16240.400075912476,
-                15772.600173950195,
-                15717.999935150146,
-                16130.399703979492,
-                15858.00051689148
+                19924.800395965576,
+                19263.1995677948,
+                20311.999320983887,
+                19428.800344467163,
+                18750.799894332886,
+                19537.800550460815,
+                19137.200117111206,
+                19839.999675750732,
+                20007.998943328857,
+                19472.800493240356,
+                19440.799951553345,
+                20889.999866485596,
+                21141.40033721924,
+                19931.199550628662,
+                19342.199563980103,
+                19457.600116729736,
+                19904.799461364746,
+                19255.199432373047,
+                20039.99948501587,
+                19668.79963874817
               ],
-              "session_id": "issue32-session-01-v3"
+              "session_id": "issue32-session-01-v10"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 15335.000157356262,
-              "process_id": 2513462,
+              "latency_ns": 22093.199491500854,
+              "process_id": 2478462,
               "raw_samples_ns": [
-                14655.200242996216,
-                15731.799602508545,
-                15300.19998550415,
-                15237.400531768799,
-                15491.199493408203,
-                15293.999910354614,
-                15369.800329208374,
-                15290.800333023071,
-                15635.199546813965,
-                15372.999906539917,
-                15399.399995803833,
-                15150.200128555298,
-                15732.59949684143,
-                15078.999996185303,
-                14766.80040359497,
-                14932.600259780884,
-                15425.200462341309,
-                15428.999662399292,
-                15198.60029220581,
-                15883.400440216064
+                22424.399852752686,
+                22129.600048065186,
+                22399.59955215454,
+                22002.39896774292,
+                22142.999172210693,
+                22548.398971557617,
+                21947.00002670288,
+                21990.599632263184,
+                21981.201171875,
+                21946.59948348999,
+                22316.79916381836,
+                21745.600700378418,
+                22510.8003616333,
+                22381.79922103882,
+                21854.99906539917,
+                21911.799907684326,
+                22319.600582122803,
+                21975.600719451904,
+                22274.200916290283,
+                22056.798934936523
               ],
-              "session_id": "issue32-session-02-v3"
+              "session_id": "issue32-session-02-v10"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 16301.000118255615,
-              "process_id": 2515110,
+              "latency_ns": 22767.10033416748,
+              "process_id": 2479753,
               "raw_samples_ns": [
-                15321.799516677856,
-                16212.799549102783,
-                16557.799577713013,
-                16448.999643325806,
-                16311.60020828247,
-                16151.599884033203,
-                16308.000087738037,
-                16520.800590515137,
-                16271.799802780151,
-                16294.000148773193,
-                16118.199825286865,
-                16428.200006484985,
-                16394.799947738647,
-                16688.400506973267,
-                16371.79970741272,
-                16424.399614334106,
-                15933.799743652344,
-                16164.20030593872,
-                14606.200456619263,
-                16245.59998512268
+                22845.59965133667,
+                22786.800861358643,
+                22786.800861358643,
+                22431.199550628662,
+                23071.999549865723,
+                23034.59882736206,
+                22339.398860931396,
+                22503.39984893799,
+                22406.399250030518,
+                22538.80023956299,
+                22902.20022201538,
+                22844.600677490234,
+                22587.599754333496,
+                22367.000579833984,
+                22646.20065689087,
+                22747.39980697632,
+                23206.400871276855,
+                22581.6011428833,
+                22860.60094833374,
+                22990.798950195312
               ],
-              "session_id": "issue32-session-03-v3"
+              "session_id": "issue32-session-03-v10"
             }
-          ]
+          ],
+          "source_replay": {
+            "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+            "input_refs": [
+              "artifact://issue-32/raw-semantic-session-1",
+              "artifact://issue-32/raw-semantic-session-2",
+              "artifact://issue-32/raw-semantic-session-3"
+            ],
+            "variant": "k_baseline"
+          }
         }
       ],
       "counterexamples": [
@@ -2896,7 +3185,7 @@
           "threads": 1
         },
         "layout": "row-major-contiguous",
-        "semantic": "batch-one Q projection MatMul",
+        "semantic": "batch-one K projection MatMul",
         "shape": {
           "left": [
             1,
@@ -2937,7 +3226,7 @@
             "torch-matmul-k-proj"
           ],
           "case": {
-            "semantic": "batch-one Q projection MatMul",
+            "semantic": "batch-one K projection MatMul",
             "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
           },
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
@@ -2977,7 +3266,7 @@
             "torch-matmul-k-proj"
           ],
           "case": {
-            "semantic": "batch-one Q projection MatMul",
+            "semantic": "batch-one K projection MatMul",
             "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
           },
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
@@ -3028,7 +3317,7 @@
             "records": [
               {
                 "expected": 0.0,
-                "observed": 0.01012420654296875
+                "observed": 0.0100860595703125
               }
             ],
             "tolerance": {
@@ -3037,6 +3326,7 @@
             }
           },
           "eligible": true,
+          "evidence_lane": "diagnostic",
           "implementation_family": {
             "family_id": "pytorch-ascend-matmul",
             "implementation_ref": "artifact://issue-32/torch-matmul-v-proj-negative-implementation",
@@ -3050,96 +3340,105 @@
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-1",
               "excluded_samples": [],
-              "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 36393.40043067932,
-              "process_id": 2512236,
+              "lane_id": "issue32-ascend-diagnostic",
+              "latency_ns": 45213.99974822998,
+              "process_id": 2477077,
               "raw_samples_ns": [
-                37221.999168395996,
-                36614.79949951172,
-                36691.200733184814,
-                36027.99892425537,
-                36450.60062408447,
-                36594.40040588379,
-                36584.200859069824,
-                36644.79970932007,
-                36417.00029373169,
-                36656.200885772705,
-                36163.79976272583,
-                36558.00104141235,
-                36369.80056762695,
-                36347.999572753906,
-                36356.99987411499,
-                36127.400398254395,
-                36354.99954223633,
-                36032.400131225586,
-                36040.799617767334,
-                36133.999824523926
+                47204.39910888672,
+                45463.600158691406,
+                45642.80033111572,
+                45686.99836730957,
+                45962.80097961426,
+                45865.99826812744,
+                45104.39872741699,
+                44815.00148773193,
+                44991.59812927246,
+                44592.599868774414,
+                45294.39926147461,
+                44805.39798736572,
+                45083.39881896973,
+                44956.19773864746,
+                44969.801902770996,
+                45476.39846801758,
+                45133.60023498535,
+                45380.802154541016,
+                44625.60176849365,
+                45312.80040740967
               ],
-              "session_id": "issue32-session-01-v3"
+              "session_id": "issue32-session-01-v10"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-2",
               "excluded_samples": [],
-              "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 35801.50008201599,
-              "process_id": 2513462,
+              "lane_id": "issue32-ascend-diagnostic",
+              "latency_ns": 46806.39982223511,
+              "process_id": 2478462,
               "raw_samples_ns": [
-                35587.39900588989,
-                35828.19938659668,
-                35636.000633239746,
-                35913.20037841797,
-                35662.79888153076,
-                35774.8007774353,
-                35871.40083312988,
-                35834.40065383911,
-                35510.79988479614,
-                36043.60103607178,
-                35903.99980545044,
-                35961.39907836914,
-                36028.80001068115,
-                35533.599853515625,
-                35911.40031814575,
-                35717.7996635437,
-                35455.20067214966,
-                35724.59936141968,
-                35918.60055923462,
-                35569.000244140625
+                48936.40041351318,
+                47576.19857788086,
+                47639.99938964844,
+                47161.598205566406,
+                47941.79916381836,
+                47346.00067138672,
+                47015.80047607422,
+                46733.999252319336,
+                47462.801933288574,
+                46697.2017288208,
+                46863.39855194092,
+                46466.39823913574,
+                46421.99993133545,
+                46691.79916381836,
+                46561.598777770996,
+                46749.4010925293,
+                46864.1996383667,
+                46373.20041656494,
+                46364.19773101807,
+                46055.59825897217
               ],
-              "session_id": "issue32-session-02-v3"
+              "session_id": "issue32-session-02-v10"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
               "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-3",
               "excluded_samples": [],
-              "lane_id": "issue32-ascend-baseline",
-              "latency_ns": 37168.59936714172,
-              "process_id": 2515110,
+              "lane_id": "issue32-ascend-diagnostic",
+              "latency_ns": 49914.398193359375,
+              "process_id": 2479753,
               "raw_samples_ns": [
-                38197.00002670288,
-                37344.2006111145,
-                36922.80054092407,
-                37178.19929122925,
-                37281.40115737915,
-                37106.39953613281,
-                37158.9994430542,
-                37106.39953613281,
-                37142.40074157715,
-                37042.999267578125,
-                37594.19918060303,
-                37286.79895401001,
-                37005.00011444092,
-                37302.99949645996,
-                37303.80058288574,
-                37546.000480651855,
-                37404.000759124756,
-                36906.80027008057,
-                36931.20002746582,
-                36927.80017852783
+                51767.20142364502,
+                50938.401222229004,
+                51025.800704956055,
+                49691.200256347656,
+                49117.398262023926,
+                50010.39981842041,
+                49840.00205993652,
+                49871.99783325195,
+                50004.60147857666,
+                49627.59971618652,
+                49989.800453186035,
+                49779.0002822876,
+                50255.19847869873,
+                49956.7985534668,
+                49530.20095825195,
+                49551.00059509277,
+                49966.00151062012,
+                49520.40195465088,
+                49367.1989440918,
+                50102.00023651123
               ],
-              "session_id": "issue32-session-03-v3"
+              "session_id": "issue32-session-03-v10"
             }
-          ]
+          ],
+          "source_replay": {
+            "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+            "input_refs": [
+              "artifact://issue-32/raw-semantic-session-1",
+              "artifact://issue-32/raw-semantic-session-2",
+              "artifact://issue-32/raw-semantic-session-3"
+            ],
+            "variant": "negative_control"
+          }
         }
       ],
       "counterexamples": [
@@ -3268,24 +3567,24 @@
           },
           "preflight": {
             "eligible": true,
-            "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+            "evidence_ref": "artifact://issue-32/v-proj-preflight"
           }
         },
         "evidence_ref": "artifact://issue-32/direct-defect",
         "failure": {
           "evidence_ref": "artifact://issue-32/negative-correctness-difference",
-          "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+          "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
           "failure_kind": "correctness_difference",
-          "max_abs_difference": 0.01012420654296875,
-          "mismatched_elements": 81259,
-          "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+          "max_abs_difference": 0.0100860595703125,
+          "mismatched_elements": 80864,
+          "observed_sha256": "3f76c8a0018beb56dea991dc58f9eeeef32af2c7d97879345b1b8291cbadb1b8",
           "oracle": "cpu-float32-same-seed-matmul"
         },
         "input_summary": {
           "alignment_bytes": 512,
           "dtype": "float32",
           "evidence_ref": "artifact://issue-32/negative-input-summary",
-          "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+          "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
           "layout": "row-major-contiguous",
           "shape": {
             "left": [
@@ -3323,24 +3622,24 @@
         "repetitions": [
           {
             "evidence_ref": "artifact://issue-32/negative-repeat-1",
-            "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+            "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
             "outcome": "violation",
-            "process_id": 2512236,
-            "session_id": "issue32-session-01-v3"
+            "process_id": 2477077,
+            "session_id": "issue32-session-01-v10"
           },
           {
             "evidence_ref": "artifact://issue-32/negative-repeat-2",
-            "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+            "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
             "outcome": "violation",
-            "process_id": 2513462,
-            "session_id": "issue32-session-02-v3"
+            "process_id": 2478462,
+            "session_id": "issue32-session-02-v10"
           },
           {
             "evidence_ref": "artifact://issue-32/negative-repeat-3",
-            "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+            "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
             "outcome": "violation",
-            "process_id": 2515110,
-            "session_id": "issue32-session-03-v3"
+            "process_id": 2479753,
+            "session_id": "issue32-session-03-v10"
           }
         ],
         "schema": "groundupscale.dev/direct-defect-evidence/v1alpha1",
@@ -3462,7 +3761,7 @@
         "dtype": "float32",
         "environment": {
           "eligible": true,
-          "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+          "evidence_ref": "artifact://issue-32/v-proj-preflight"
         },
         "execution_domain": {
           "affinity": "192-223",
@@ -3482,7 +3781,7 @@
           "threads": 1
         },
         "layout": "row-major-contiguous",
-        "semantic": "batch-one Q projection MatMul",
+        "semantic": "batch-one V projection MatMul negative control",
         "shape": {
           "left": [
             1,
@@ -3523,8 +3822,8 @@
             "torch-matmul-v-proj-negative"
           ],
           "case": {
-            "semantic": "batch-one Q projection MatMul",
-            "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+            "semantic": "batch-one V projection MatMul negative control",
+            "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
           },
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
           "completion_boundary": {
@@ -3535,7 +3834,7 @@
             "stream_id": "default-npu-stream",
             "stream_synchronized": true
           },
-          "evidence_ref": "artifact://issue-32/v-proj-negative-control-baseline-lane",
+          "evidence_ref": "artifact://issue-32/v-proj-baseline-lane",
           "execution_domain": {
             "affinity": "192-223",
             "alignment_bytes": 512,
@@ -3563,8 +3862,8 @@
             "torch-matmul-v-proj-negative"
           ],
           "case": {
-            "semantic": "batch-one Q projection MatMul",
-            "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+            "semantic": "batch-one V projection MatMul negative control",
+            "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
           },
           "cohort_id": "ascend-npu-23b93a89d5fecc79",
           "completion_boundary": {
@@ -3575,7 +3874,7 @@
             "stream_id": "default-npu-stream",
             "stream_synchronized": true
           },
-          "evidence_ref": "artifact://issue-32/v-proj-negative-control-diagnostic-lane",
+          "evidence_ref": "artifact://issue-32/v-proj-diagnostic-lane",
           "execution_domain": {
             "affinity": "192-223",
             "alignment_bytes": 512,
@@ -3602,7 +3901,7 @@
         }
       },
       "probe_id": "issue32-torch-matmul-v-proj-negative-probe",
-      "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
     }
   ],
   "single_node_schedule": {
@@ -3618,16 +3917,99 @@
   },
   "source_runs": [
     {
+      "manifest_sha256": "5e83508b186bc6aaef0236ea11b09e7dfcd8ee1aa2e27d512797f826919da42e",
+      "path": "../../../../issue-29-ascend-physical-floor/evidence/runs/ascend-910b2-matmul-floor-comparison-20260810-v2",
       "role": "resource-physical-floor",
       "run_id": "ascend-910b2-matmul-floor-comparison-20260810-v2"
     },
     {
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "path": "../../../../issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
       "role": "observation",
       "run_id": "ascend-910b2-transformer-demo-20260811-v1"
     },
     {
+      "manifest_sha256": "774eaea555bbb5922d079d765717fabed728e6d479d0a7135ea1822364ccbe5b",
+      "path": "../../../../issue-31-ascend-matmul-frontier/evidence/runs/issue31-operator-frontier-v3",
       "role": "operator-frontier",
       "run_id": "issue31-operator-frontier-v3"
+    }
+  ],
+  "surface_queries": [
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-512",
+      "shape": {
+        "s": 512
+      },
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
+    },
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-384",
+      "shape": {
+        "s": 384
+      },
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
+    },
+    {
+      "domain": {
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": true,
+        "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+        "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+        "kernel_dispatch_regime": "pytorch-ascend-matmul",
+        "kernel_dispatch_validated": true,
+        "layout": "row-major-contiguous",
+        "regime_validated": true,
+        "semantic_operation": "MatMul",
+        "threads": 1,
+        "working_set_regime": "square-256-512",
+        "working_set_validated": true
+      },
+      "query_id": "ascend-matmul-square-640",
+      "shape": {
+        "s": 640
+      },
+      "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+      "surface_version": "v-fab9fb985107087d"
     }
   ],
   "timing_plan": {

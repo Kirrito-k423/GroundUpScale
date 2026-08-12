@@ -32,93 +32,93 @@
             "evidence_ref": "artifact://issue-32/q-target-1",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 16006.600260734558,
-            "process_id": 2512236,
+            "latency_ns": 16792.70029067993,
+            "process_id": 2783368,
             "raw_samples_ns": [
-              10637.400150299072,
-              14576.799869537354,
-              16160.199642181396,
-              16236.200332641602,
-              16294.000148773193,
-              15871.200561523438,
-              16021.20041847229,
-              16165.599822998047,
-              15651.400089263916,
-              15795.999765396118,
-              15813.39955329895,
-              16119.799613952637,
-              15992.000102996826,
-              16092.20027923584,
-              16076.799631118774,
-              16240.400075912476,
-              15772.600173950195,
-              15717.999935150146,
-              16130.399703979492,
-              15858.00051689148
+              15937.199592590332,
+              16793.800592422485,
+              16877.599954605103,
+              16866.400241851807,
+              17011.4004611969,
+              16822.199821472168,
+              16725.000143051147,
+              16722.400188446045,
+              16808.799505233765,
+              16784.39974784851,
+              16741.000413894653,
+              16653.599739074707,
+              16462.199687957764,
+              16772.40014076233,
+              16878.80039215088,
+              16848.000288009644,
+              16791.599988937378,
+              16952.600479125977,
+              16663.999557495117,
+              17019.599676132202
             ],
-            "session_id": "issue32-session-01-v3"
+            "session_id": "issue32-session-01-v7"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/q-target-2",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 15335.000157356262,
-            "process_id": 2513462,
+            "latency_ns": 16164.000034332275,
+            "process_id": 2784432,
             "raw_samples_ns": [
-              14655.200242996216,
-              15731.799602508545,
-              15300.19998550415,
-              15237.400531768799,
-              15491.199493408203,
-              15293.999910354614,
-              15369.800329208374,
-              15290.800333023071,
-              15635.199546813965,
-              15372.999906539917,
-              15399.399995803833,
-              15150.200128555298,
-              15732.59949684143,
-              15078.999996185303,
-              14766.80040359497,
-              14932.600259780884,
-              15425.200462341309,
-              15428.999662399292,
-              15198.60029220581,
-              15883.400440216064
+              15839.999914169312,
+              16260.99944114685,
+              16356.799602508545,
+              16140.999794006348,
+              16333.800554275513,
+              16167.600154876709,
+              15925.999879837036,
+              16066.399812698364,
+              16064.800024032593,
+              16327.799558639526,
+              16256.799697875977,
+              16095.800399780273,
+              15997.999906539917,
+              16262.199878692627,
+              16294.80004310608,
+              16160.399913787842,
+              16037.600040435791,
+              16148.600578308105,
+              16270.20001411438,
+              16275.00057220459
             ],
-            "session_id": "issue32-session-02-v3"
+            "session_id": "issue32-session-02-v7"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/q-target-3",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 16301.000118255615,
-            "process_id": 2515110,
+            "latency_ns": 16292.299628257751,
+            "process_id": 2785721,
             "raw_samples_ns": [
-              15321.799516677856,
-              16212.799549102783,
-              16557.799577713013,
-              16448.999643325806,
-              16311.60020828247,
-              16151.599884033203,
-              16308.000087738037,
-              16520.800590515137,
-              16271.799802780151,
-              16294.000148773193,
-              16118.199825286865,
-              16428.200006484985,
-              16394.799947738647,
-              16688.400506973267,
-              16371.79970741272,
-              16424.399614334106,
-              15933.799743652344,
-              16164.20030593872,
-              14606.200456619263,
-              16245.59998512268
+              15705.599784851074,
+              16483.00051689148,
+              16445.000171661377,
+              16443.599462509155,
+              16083.600521087646,
+              16263.600587844849,
+              16213.799715042114,
+              16305.999755859375,
+              16278.599500656128,
+              16327.199935913086,
+              16314.400434494019,
+              16367.3996925354,
+              16250.59962272644,
+              16054.999828338623,
+              16478.19995880127,
+              16226.400136947632,
+              16464.200019836426,
+              16174.19958114624,
+              16245.00036239624,
+              16434.799432754517
             ],
-            "session_id": "issue32-session-03-v3"
+            "session_id": "issue32-session-03-v7"
           }
         ]
       }
@@ -152,6 +152,19 @@
               "rtol": 0.001
             }
           },
+          "derivation": {
+            "cumulative_variant": "dispatch",
+            "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+            "input_refs": [
+              "artifact://issue-32/raw-q-session-1",
+              "artifact://issue-32/raw-q-session-2",
+              "artifact://issue-32/raw-q-session-3"
+            ],
+            "prior_cumulative_variants": [
+              "frontier_adapter"
+            ],
+            "sample_semantics": "derived-paired-session-delta"
+          },
           "evidence_ref": "artifact://issue-32/integration-dispatch",
           "kind": "dispatch",
           "lane_id": "issue32-ascend-diagnostic",
@@ -162,39 +175,39 @@
           "sessions": [
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                0.0
+              ],
               "evidence_ref": "artifact://issue-32/integration-dispatch-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
               "latency_ns": 0.0,
-              "process_id": 2512236,
-              "raw_samples_ns": [
-                0.0
-              ],
-              "session_id": "issue32-session-01-v3"
+              "process_id": 2783368,
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                0.0
+              ],
               "evidence_ref": "artifact://issue-32/integration-dispatch-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
               "latency_ns": 0.0,
-              "process_id": 2513462,
-              "raw_samples_ns": [
-                0.0
-              ],
-              "session_id": "issue32-session-02-v3"
+              "process_id": 2784432,
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                0.0
+              ],
               "evidence_ref": "artifact://issue-32/integration-dispatch-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
               "latency_ns": 0.0,
-              "process_id": 2515110,
-              "raw_samples_ns": [
-                0.0
-              ],
-              "session_id": "issue32-session-03-v3"
+              "process_id": 2785721,
+              "session_id": "issue32-session-03-v7"
             }
           ]
         },
@@ -214,6 +227,20 @@
               "rtol": 0.001
             }
           },
+          "derivation": {
+            "cumulative_variant": "copy",
+            "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+            "input_refs": [
+              "artifact://issue-32/raw-q-session-1",
+              "artifact://issue-32/raw-q-session-2",
+              "artifact://issue-32/raw-q-session-3"
+            ],
+            "prior_cumulative_variants": [
+              "frontier_adapter",
+              "dispatch"
+            ],
+            "sample_semantics": "derived-paired-session-delta"
+          },
           "evidence_ref": "artifact://issue-32/integration-copy",
           "kind": "copy",
           "lane_id": "issue32-ascend-diagnostic",
@@ -224,39 +251,39 @@
           "sessions": [
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                25157.899856567383
+              ],
               "evidence_ref": "artifact://issue-32/integration-copy-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 24439.872875685316,
-              "process_id": 2512236,
-              "raw_samples_ns": [
-                24439.872875685316
-              ],
-              "session_id": "issue32-session-01-v3"
+              "latency_ns": 25157.899856567383,
+              "process_id": 2783368,
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                27221.100330352783
+              ],
               "evidence_ref": "artifact://issue-32/integration-copy-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 24955.927937962915,
-              "process_id": 2513462,
-              "raw_samples_ns": [
-                24955.927937962915
-              ],
-              "session_id": "issue32-session-02-v3"
+              "latency_ns": 27221.100330352783,
+              "process_id": 2784432,
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                25504.69934940338
+              ],
               "evidence_ref": "artifact://issue-32/integration-copy-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 25837.92449205001,
-              "process_id": 2515110,
-              "raw_samples_ns": [
-                25837.92449205001
-              ],
-              "session_id": "issue32-session-03-v3"
+              "latency_ns": 25504.69934940338,
+              "process_id": 2785721,
+              "session_id": "issue32-session-03-v7"
             }
           ]
         },
@@ -276,6 +303,21 @@
               "rtol": 0.001
             }
           },
+          "derivation": {
+            "cumulative_variant": "sync",
+            "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+            "input_refs": [
+              "artifact://issue-32/raw-q-session-1",
+              "artifact://issue-32/raw-q-session-2",
+              "artifact://issue-32/raw-q-session-3"
+            ],
+            "prior_cumulative_variants": [
+              "frontier_adapter",
+              "dispatch",
+              "copy"
+            ],
+            "sample_semantics": "derived-paired-session-delta"
+          },
           "evidence_ref": "artifact://issue-32/integration-sync",
           "kind": "sync",
           "lane_id": "issue32-ascend-diagnostic",
@@ -286,39 +328,39 @@
           "sessions": [
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                127363.99412155151
+              ],
               "evidence_ref": "artifact://issue-32/integration-sync-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 123359.42434561998,
-              "process_id": 2512236,
-              "raw_samples_ns": [
-                123359.42434561998
-              ],
-              "session_id": "issue32-session-01-v3"
+              "latency_ns": 127363.99412155151,
+              "process_id": 2783368,
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                135278.000831604
+              ],
               "evidence_ref": "artifact://issue-32/integration-sync-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 127686.29550689198,
-              "process_id": 2513462,
-              "raw_samples_ns": [
-                127686.29550689198
-              ],
-              "session_id": "issue32-session-02-v3"
+              "latency_ns": 135278.000831604,
+              "process_id": 2784432,
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                125586.00425720215
+              ],
               "evidence_ref": "artifact://issue-32/integration-sync-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 115843.68077353225,
-              "process_id": 2515110,
-              "raw_samples_ns": [
-                115843.68077353225
-              ],
-              "session_id": "issue32-session-03-v3"
+              "latency_ns": 125586.00425720215,
+              "process_id": 2785721,
+              "session_id": "issue32-session-03-v7"
             }
           ]
         },
@@ -338,6 +380,22 @@
               "rtol": 0.001
             }
           },
+          "derivation": {
+            "cumulative_variant": "profiling",
+            "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+            "input_refs": [
+              "artifact://issue-32/raw-q-session-1",
+              "artifact://issue-32/raw-q-session-2",
+              "artifact://issue-32/raw-q-session-3"
+            ],
+            "prior_cumulative_variants": [
+              "frontier_adapter",
+              "dispatch",
+              "copy",
+              "sync"
+            ],
+            "sample_semantics": "derived-paired-session-delta"
+          },
           "evidence_ref": "artifact://issue-32/integration-profiling",
           "kind": "profiling",
           "lane_id": "issue32-ascend-diagnostic",
@@ -348,39 +406,39 @@
           "sessions": [
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                43489.50386047363
+              ],
               "evidence_ref": "artifact://issue-32/integration-profiling-1",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 33177.71873553917,
-              "process_id": 2512236,
-              "raw_samples_ns": [
-                33177.71873553917
-              ],
-              "session_id": "issue32-session-01-v3"
+              "latency_ns": 43489.50386047363,
+              "process_id": 2783368,
+              "session_id": "issue32-session-01-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                42990.99922180176
+              ],
               "evidence_ref": "artifact://issue-32/integration-profiling-2",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 33729.652680291925,
-              "process_id": 2513462,
-              "raw_samples_ns": [
-                33729.652680291925
-              ],
-              "session_id": "issue32-session-02-v3"
+              "latency_ns": 42990.99922180176,
+              "process_id": 2784432,
+              "session_id": "issue32-session-02-v7"
             },
             {
               "cohort_id": "ascend-npu-23b93a89d5fecc79",
+              "derived_samples_ns": [
+                35071.20132446289
+              ],
               "evidence_ref": "artifact://issue-32/integration-profiling-3",
               "excluded_samples": [],
               "lane_id": "issue32-ascend-diagnostic",
-              "latency_ns": 37500.49656369576,
-              "process_id": 2515110,
-              "raw_samples_ns": [
-                37500.49656369576
-              ],
-              "session_id": "issue32-session-03-v3"
+              "latency_ns": 35071.20132446289,
+              "process_id": 2785721,
+              "session_id": "issue32-session-03-v7"
             }
           ]
         }
@@ -388,7 +446,7 @@
       "cohort_id": "ascend-npu-23b93a89d5fecc79",
       "counterfactual": {
         "counterfactual_id": "remove-integration-overhead",
-        "declared_recovered_ns": 182045.00496387482,
+        "declared_recovered_ns": 195859.69269275665,
         "evidence_refs": [
           "artifact://issue-32/integration-counterfactual"
         ],
@@ -404,14 +462,14 @@
         "artifact://issue-32/integration-contract"
       ],
       "exclusive_ledger": {
-        "e2e_duration_ns": 198051.60522460938,
+        "e2e_duration_ns": 212804.09812927246,
         "evidence_refs": [
           "artifact://issue-32/integration-ledger"
         ],
         "leaf_semantics": "mutually-exclusive",
         "leaves": [
           {
-            "duration_ns": 16006.600260734558,
+            "duration_ns": 16292.299628257751,
             "evidence_refs": [
               "artifact://issue-32/integration-operator"
             ],
@@ -427,7 +485,7 @@
             "leaf_id": "dispatch-overhead"
           },
           {
-            "duration_ns": 24955.927937962915,
+            "duration_ns": 25504.69934940338,
             "evidence_refs": [
               "artifact://issue-32/integration-copy"
             ],
@@ -435,7 +493,7 @@
             "leaf_id": "copy-overhead"
           },
           {
-            "duration_ns": 123359.42434561998,
+            "duration_ns": 127363.99412155151,
             "evidence_refs": [
               "artifact://issue-32/integration-sync"
             ],
@@ -443,7 +501,7 @@
             "leaf_id": "sync-overhead"
           },
           {
-            "duration_ns": 33729.652680291925,
+            "duration_ns": 42990.99922180176,
             "evidence_refs": [
               "artifact://issue-32/integration-profiling"
             ],
@@ -477,7 +535,7 @@
           }
         ],
         "residual": {
-          "duration_ns": 0.0,
+          "duration_ns": 652.1058082580566,
           "evidence_refs": [
             "artifact://issue-32/integration-residual"
           ],
@@ -488,7 +546,7 @@
       },
       "operator_frontier": {
         "cohort_id": "ascend-npu-23b93a89d5fecc79",
-        "combined_uncertainty_ns": 500.0,
+        "combined_uncertainty_ns": 107.21727757774897,
         "evidence_ref": "artifact://issue-32/operator-frontier",
         "evidence_refs": [
           "artifact://issue-32/operator-frontier"
@@ -511,142 +569,61 @@
           "threads": 1
         },
         "frontier_role": "ACTIVE",
-        "latency_ns": 16331.5,
+        "latency_ns": 16331.500000000002,
         "observation_validity": "QUALIFIED",
         "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
         "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
         "surface": {
-          "surface_id": "ascend-910b2-square-matmul",
-          "version": "v1"
+          "input_digest": "ee01f1daa738795e233ad3ec044ad45eedf489f8c39c4541efb3d91bd402bb94",
+          "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+          "version": "v-fab9fb985107087d"
+        },
+        "uncertainty_basis": {
+          "kind": "verified-capability-surface-query",
+          "latency_interval": {
+            "lower_ns": 16225.672253436398,
+            "upper_ns": 16438.71727757775
+          },
+          "qualification_evidence_ref": "artifact://issue-32/source-frontier-qualification",
+          "query": {
+            "domain": {
+              "alignment_regime": "minimum-64-byte",
+              "alignment_validated": true,
+              "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+              "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+              "dtype": "float32",
+              "execution_mode": "pytorch-eager",
+              "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+              "kernel_dispatch_regime": "pytorch-ascend-matmul",
+              "kernel_dispatch_validated": true,
+              "layout": "row-major-contiguous",
+              "regime_validated": true,
+              "semantic_operation": "MatMul",
+              "threads": 1,
+              "working_set_regime": "square-256-512",
+              "working_set_validated": true
+            },
+            "query_id": "ascend-matmul-square-512",
+            "shape": {
+              "s": 512
+            },
+            "surface_id": "surface://ascend-npu-23b93a89d5fecc79/matmul/square/2897f33121678193",
+            "surface_version": "v-fab9fb985107087d"
+          },
+          "source_policy": {
+            "combination": "root-sum-of-squares",
+            "policy_id": "ascend-matmul-surface-uncertainty",
+            "target_coverage": 0.68,
+            "version": "v1"
+          },
+          "surface_uncertainty_ns": 107.21727757774897
         },
         "uncertainty_policy": {
-          "calibration": {
-            "estimator": {
-              "change_reason": "Calibrate every uncertainty component before replay.",
-              "method": "max-absolute-residual",
-              "policy_id": "component-max-absolute-residual",
-              "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
-              "scope": "independent-ascend-uncertainty-calibration",
-              "version": "v1"
-            },
-            "evidence_ref": "artifact://issue-32/uncertainty-calibration",
-            "records": [
-              {
-                "component_id": "anchor",
-                "observed_samples_ns": [
-                  10300.0
-                ],
-                "partition": "calibration",
-                "predicted_ns": 10000.0,
-                "process_id": 4200001,
-                "session_id": "issue32-anchor-calibration",
-                "target_id": "anchor-calibration"
-              },
-              {
-                "component_id": "interpolation",
-                "observed_samples_ns": [
-                  10000.0
-                ],
-                "partition": "calibration",
-                "predicted_ns": 10000.0,
-                "process_id": 4200002,
-                "session_id": "issue32-interpolation-calibration",
-                "target_id": "interpolation-calibration"
-              },
-              {
-                "component_id": "instrumentation",
-                "observed_samples_ns": [
-                  10400.0
-                ],
-                "partition": "calibration",
-                "predicted_ns": 10000.0,
-                "process_id": 4200003,
-                "session_id": "issue32-instrumentation-calibration",
-                "target_id": "instrumentation-calibration"
-              },
-              {
-                "component_id": "anchor",
-                "observed_samples_ns": [
-                  10270.0
-                ],
-                "partition": "validation",
-                "predicted_ns": 10000.0,
-                "process_id": 4200011,
-                "session_id": "issue32-anchor-validation",
-                "target_id": "anchor-validation"
-              },
-              {
-                "component_id": "interpolation",
-                "observed_samples_ns": [
-                  10000.0
-                ],
-                "partition": "validation",
-                "predicted_ns": 10000.0,
-                "process_id": 4200012,
-                "session_id": "issue32-interpolation-validation",
-                "target_id": "interpolation-validation"
-              },
-              {
-                "component_id": "instrumentation",
-                "observed_samples_ns": [
-                  10360.0
-                ],
-                "partition": "validation",
-                "predicted_ns": 10000.0,
-                "process_id": 4200013,
-                "session_id": "issue32-instrumentation-validation",
-                "target_id": "instrumentation-validation"
-              }
-            ]
-          },
-          "change_reason": "Bind the #31 active anchor to calibrated diagnostic uncertainty.",
-          "combination_rule": "root-sum-square",
-          "policy_id": "issue32-frontier-uncertainty",
-          "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
-          "scope": "ascend-910b2-exact-shape-matmul",
-          "target_coverage": {
-            "cohort_id": "ascend-npu-23b93a89d5fecc79",
-            "coverage_method": "independent-validation-absolute-residual-within-limit",
-            "evidence_ref": "artifact://issue-32/uncertainty-target-coverage",
-            "execution_domain_sha256": "064e8582ff660acc8699579c9da35116957719aa206f44ca163d0cbdd4a6aed0",
-            "minimum_calibration_records": 3,
-            "minimum_fraction": 1.0,
-            "minimum_validation_records": 3,
-            "required_calibration_target_ids": [
-              "anchor-calibration",
-              "interpolation-calibration",
-              "instrumentation-calibration"
-            ],
-            "required_validation_target_ids": [
-              "anchor-validation",
-              "interpolation-validation",
-              "instrumentation-validation"
-            ],
-            "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
-            "surface": {
-              "surface_id": "ascend-910b2-square-matmul",
-              "version": "v1"
-            }
-          },
+          "combination": "root-sum-of-squares",
+          "policy_id": "ascend-matmul-surface-uncertainty",
+          "target_coverage": 0.68,
           "version": "v1"
-        },
-        "uncertainty_records": [
-          {
-            "component_id": "anchor",
-            "evidence_ref": "artifact://issue-32/uncertainty-anchor",
-            "standard_uncertainty_ns": 300.0
-          },
-          {
-            "component_id": "interpolation",
-            "evidence_ref": "artifact://issue-32/uncertainty-interpolation",
-            "standard_uncertainty_ns": 0.0
-          },
-          {
-            "component_id": "instrumentation",
-            "evidence_ref": "artifact://issue-32/uncertainty-instrumentation",
-            "standard_uncertainty_ns": 400.0
-          }
-        ]
+        }
       },
       "paired_lanes": {
         "baseline_lane_id": "issue32-ascend-baseline",
@@ -688,93 +665,93 @@
             "evidence_ref": "artifact://issue-32/integration-wrapped-1",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-diagnostic",
-            "latency_ns": 198051.60522460938,
-            "process_id": 2512236,
+            "latency_ns": 212804.09812927246,
+            "process_id": 2783368,
             "raw_samples_ns": [
-              204615.80276489258,
-              198864.99404907227,
-              198872.2038269043,
-              198957.80563354492,
-              199092.4072265625,
-              199347.1908569336,
-              197772.59826660156,
-              197377.3956298828,
-              197966.80450439453,
-              198351.00173950195,
-              197807.99865722656,
-              197912.00637817383,
-              198186.79809570312,
-              196740.20767211914,
-              197815.39916992188,
-              197449.39804077148,
-              197254.00924682617,
-              197716.1979675293,
-              199760.2081298828,
-              198136.40594482422
+              216784.5916748047,
+              211780.6053161621,
+              211657.39059448242,
+              209635.39123535156,
+              210993.00384521484,
+              210878.60107421875,
+              209883.19396972656,
+              210108.60443115234,
+              213224.39193725586,
+              213645.99227905273,
+              214437.40844726562,
+              214580.59310913086,
+              213764.19067382812,
+              212124.40490722656,
+              214655.79986572266,
+              213477.00119018555,
+              212929.19158935547,
+              212679.00466918945,
+              212597.19848632812,
+              214583.2061767578
             ],
-            "session_id": "issue32-session-01-v3"
+            "session_id": "issue32-session-01-v7"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/integration-wrapped-2",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-diagnostic",
-            "latency_ns": 202806.70166015625,
-            "process_id": 2513462,
+            "latency_ns": 221654.10041809082,
+            "process_id": 2784432,
             "raw_samples_ns": [
-              210589.8094177246,
-              204252.7961730957,
-              203934.4024658203,
-              203537.1971130371,
-              202807.59811401367,
-              201940.40298461914,
-              202196.9985961914,
-              202056.99920654297,
-              200896.3966369629,
-              201175.59432983398,
-              202772.19772338867,
-              203292.19818115234,
-              202770.80535888672,
-              204139.1944885254,
-              202805.80520629883,
-              202367.59185791016,
-              203233.60443115234,
-              202141.20864868164,
-              204138.60321044922,
-              204184.39865112305
+              228936.99645996094,
+              223704.79583740234,
+              222784.80529785156,
+              221138.19122314453,
+              220828.9909362793,
+              220589.599609375,
+              220799.99923706055,
+              221333.0078125,
+              220158.99658203125,
+              221422.1954345703,
+              221619.20547485352,
+              221944.40841674805,
+              221688.99536132812,
+              222318.40133666992,
+              223111.59133911133,
+              222559.79537963867,
+              220785.19821166992,
+              222206.99310302734,
+              222042.59872436523,
+              221518.99337768555
             ],
-            "session_id": "issue32-session-02-v3"
+            "session_id": "issue32-session-02-v7"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/integration-wrapped-3",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-diagnostic",
-            "latency_ns": 196540.4987335205,
-            "process_id": 2515110,
+            "latency_ns": 202454.20455932617,
+            "process_id": 2785721,
             "raw_samples_ns": [
-              209106.40716552734,
-              195599.59411621094,
-              197068.4051513672,
-              196499.99618530273,
-              196453.39965820312,
-              196581.00128173828,
-              195844.40231323242,
-              195480.59463500977,
-              194955.00564575195,
-              195870.80001831055,
-              196070.40405273438,
-              196372.2038269043,
-              196148.79608154297,
-              196933.8035583496,
-              197750.20599365234,
-              199602.20336914062,
-              198541.20254516602,
-              198651.79061889648,
-              198869.20928955078,
-              198971.00448608398
+              213763.19885253906,
+              203949.60403442383,
+              204086.79962158203,
+              209937.80136108398,
+              203224.39193725586,
+              204176.59759521484,
+              202421.6079711914,
+              201194.5915222168,
+              202511.9972229004,
+              202255.80215454102,
+              201076.20239257812,
+              202486.80114746094,
+              201092.3957824707,
+              201368.99948120117,
+              212300.79650878906,
+              200938.20571899414,
+              202329.19692993164,
+              201417.80853271484,
+              201519.60372924805,
+              202549.59106445312
             ],
-            "session_id": "issue32-session-03-v3"
+            "session_id": "issue32-session-03-v7"
           }
         ]
       }

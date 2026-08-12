@@ -1,9 +1,9 @@
 {
   "payload": {
-    "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+    "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
     "outcome": "violation",
-    "process_id": 2512236,
-    "session_id": "issue32-session-01-v3"
+    "process_id": 2477077,
+    "session_id": "issue32-session-01-v10"
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

@@ -1,5 +1,42 @@
 {
-  "component_id": "anchor",
-  "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
-  "standard_uncertainty_ns": 300.0
+  "payload": {
+    "candidate_ids": [
+      "torch-matmul-v-proj-negative"
+    ],
+    "case": {
+      "semantic": "batch-one V projection MatMul negative control",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
+    },
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "completion_boundary": {
+      "absolute_timestamps_subtracted": false,
+      "closed": true,
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event-stream-completion",
+      "stream_id": "default-npu-stream",
+      "stream_synchronized": true
+    },
+    "execution_domain": {
+      "affinity": "192-223",
+      "alignment_bytes": 512,
+      "concurrency": 1,
+      "context": "pytorch-eager",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "row-major-contiguous",
+      "numa": "6",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "default-npu-stream",
+      "threads": 1
+    },
+    "instrumentation_profile": "baseline-timing/v1",
+    "lane_id": "issue32-ascend-baseline",
+    "pair_id": "issue32-ascend-paired-lanes",
+    "timer_source": "torch.npu.Event.elapsed_time"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

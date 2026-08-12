@@ -1,14 +1,14 @@
 {
   "payload": {
     "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "derived_samples_ns": [
+      43489.50386047363
+    ],
     "excluded_samples": [],
     "lane_id": "issue32-ascend-diagnostic",
-    "latency_ns": 33177.71873553917,
-    "process_id": 2512236,
-    "raw_samples_ns": [
-      33177.71873553917
-    ],
-    "session_id": "issue32-session-01-v3"
+    "latency_ns": 43489.50386047363,
+    "process_id": 2783368,
+    "session_id": "issue32-session-01-v7"
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

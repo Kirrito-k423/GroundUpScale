@@ -22,6 +22,7 @@
     "minimum_demand": 3145728,
     "rate_unit": "B/s",
     "resource": "memory.hbm",
+    "source_evidence_ref": "artifact://issue-32/source-physical-floor",
     "validated": true,
     "validated_rate_per_second": 1408047205172.7576,
     "validated_rate_resource": "memory.hbm"

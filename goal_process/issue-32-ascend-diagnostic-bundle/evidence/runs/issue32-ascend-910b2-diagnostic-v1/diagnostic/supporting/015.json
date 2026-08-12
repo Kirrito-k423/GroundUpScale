@@ -96,23 +96,23 @@
       },
       "preflight": {
         "eligible": true,
-        "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+        "evidence_ref": "artifact://issue-32/v-proj-preflight"
       }
     },
     "failure": {
       "evidence_ref": "artifact://issue-32/negative-correctness-difference",
-      "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+      "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
       "failure_kind": "correctness_difference",
-      "max_abs_difference": 0.01012420654296875,
-      "mismatched_elements": 81259,
-      "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+      "max_abs_difference": 0.0100860595703125,
+      "mismatched_elements": 80864,
+      "observed_sha256": "3f76c8a0018beb56dea991dc58f9eeeef32af2c7d97879345b1b8291cbadb1b8",
       "oracle": "cpu-float32-same-seed-matmul"
     },
     "input_summary": {
       "alignment_bytes": 512,
       "dtype": "float32",
       "evidence_ref": "artifact://issue-32/negative-input-summary",
-      "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+      "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
       "layout": "row-major-contiguous",
       "shape": {
         "left": [
@@ -150,24 +150,24 @@
     "repetitions": [
       {
         "evidence_ref": "artifact://issue-32/negative-repeat-1",
-        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
         "outcome": "violation",
-        "process_id": 2512236,
-        "session_id": "issue32-session-01-v3"
+        "process_id": 2477077,
+        "session_id": "issue32-session-01-v10"
       },
       {
         "evidence_ref": "artifact://issue-32/negative-repeat-2",
-        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
         "outcome": "violation",
-        "process_id": 2513462,
-        "session_id": "issue32-session-02-v3"
+        "process_id": 2478462,
+        "session_id": "issue32-session-02-v10"
       },
       {
         "evidence_ref": "artifact://issue-32/negative-repeat-3",
-        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
         "outcome": "violation",
-        "process_id": 2515110,
-        "session_id": "issue32-session-03-v3"
+        "process_id": 2479753,
+        "session_id": "issue32-session-03-v10"
       }
     ],
     "schema": "groundupscale.dev/direct-defect-evidence/v1alpha1",

@@ -1,5 +1,6 @@
 {
-  "component_id": "instrumentation",
-  "schema": "groundupscale.dev/uncertainty-component/v1alpha1",
-  "standard_uncertainty_ns": 400.0
+  "payload": {
+    "eligible": true
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

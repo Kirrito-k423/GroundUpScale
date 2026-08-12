@@ -1,10 +1,86 @@
 {
   "payload": {
-    "axis": "frontier_role",
-    "from": "NONE",
-    "reason_code": "exact-shape-best-of-correct-holdout-winner",
-    "sequence": 1,
-    "to": "PROVISIONAL"
+    "anchor_id": "ascend-matmul-square-512-2897f3312167",
+    "anchor_version": "v-fab9fb985107087d",
+    "candidate_digest": "cbdad01d220507a8054900bdadd84ec3b6791cd96a50e314a6a5f0be7e58beb8",
+    "candidate_family": "pytorch-ascend-matmul",
+    "candidate_id": "torch.matmul",
+    "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "domain": {
+      "alignment_regime": "minimum-64-byte",
+      "alignment_validated": true,
+      "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+      "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+      "kernel_dispatch_regime": "pytorch-ascend-matmul",
+      "kernel_dispatch_validated": true,
+      "layout": "row-major-contiguous",
+      "regime_validated": true,
+      "semantic_operation": "MatMul",
+      "threads": 1,
+      "working_set_regime": "square-256-512",
+      "working_set_validated": true
+    },
+    "effective_rate": 16436668768943.451,
+    "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+    "frontier_role": "ACTIVE",
+    "holdout_run_ids": [
+      "issue31-holdout-v4-s512-torch-matmul-01",
+      "issue31-holdout-v4-s512-torch-matmul-02",
+      "issue31-holdout-v4-s512-torch-matmul-03"
+    ],
+    "holdout_session_medians_ns": [
+      16224.5,
+      16437.5,
+      16331.5
+    ],
+    "latency_ns": 16331.5,
+    "observation_validity": "QUALIFIED",
+    "rate_unit": "FLOP/s",
+    "search_run_ids": [
+      "issue31-search-v4-s512-torch-matmul-01",
+      "issue31-search-v4-s512-torch-matmul-02",
+      "issue31-search-v4-s512-torch-matmul-03"
+    ],
+    "shape": {
+      "s": 512
+    },
+    "standard_uncertainty_rate": 107199190020.224,
+    "state_transitions": [
+      {
+        "axis": "frontier_role",
+        "evidence_refs": [
+          "artifact://frontier/qualification.json"
+        ],
+        "from": "NONE",
+        "reason_code": "exact-shape-best-of-correct-holdout-winner",
+        "sequence": 1,
+        "to": "PROVISIONAL"
+      },
+      {
+        "axis": "observation_validity",
+        "evidence_refs": [
+          "artifact://frontier/qualification.json"
+        ],
+        "from": "COLLECTED",
+        "reason_code": "qualification-gates-satisfied",
+        "sequence": 2,
+        "to": "QUALIFIED"
+      },
+      {
+        "axis": "frontier_role",
+        "evidence_refs": [
+          "artifact://frontier/qualification.json"
+        ],
+        "from": "PROVISIONAL",
+        "reason_code": "independent-holdout-confirmed",
+        "sequence": 3,
+        "to": "ACTIVE"
+      }
+    ]
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

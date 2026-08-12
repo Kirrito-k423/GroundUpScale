@@ -9,7 +9,7 @@
           "records": [
             {
               "expected": 0.0,
-              "observed": 0.0001220703125
+              "observed": 0.0001373291015625
             }
           ],
           "tolerance": {
@@ -18,6 +18,7 @@
           }
         },
         "eligible": true,
+        "evidence_lane": "baseline",
         "implementation_family": {
           "family_id": "pytorch-ascend-matmul",
           "implementation_ref": "artifact://issue-32/torch-matmul-k-proj-implementation",
@@ -32,95 +33,104 @@
             "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-1",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 16006.600260734558,
-            "process_id": 2512236,
+            "latency_ns": 19603.300094604492,
+            "process_id": 2477077,
             "raw_samples_ns": [
-              10637.400150299072,
-              14576.799869537354,
-              16160.199642181396,
-              16236.200332641602,
-              16294.000148773193,
-              15871.200561523438,
-              16021.20041847229,
-              16165.599822998047,
-              15651.400089263916,
-              15795.999765396118,
-              15813.39955329895,
-              16119.799613952637,
-              15992.000102996826,
-              16092.20027923584,
-              16076.799631118774,
-              16240.400075912476,
-              15772.600173950195,
-              15717.999935150146,
-              16130.399703979492,
-              15858.00051689148
+              19924.800395965576,
+              19263.1995677948,
+              20311.999320983887,
+              19428.800344467163,
+              18750.799894332886,
+              19537.800550460815,
+              19137.200117111206,
+              19839.999675750732,
+              20007.998943328857,
+              19472.800493240356,
+              19440.799951553345,
+              20889.999866485596,
+              21141.40033721924,
+              19931.199550628662,
+              19342.199563980103,
+              19457.600116729736,
+              19904.799461364746,
+              19255.199432373047,
+              20039.99948501587,
+              19668.79963874817
             ],
-            "session_id": "issue32-session-01-v3"
+            "session_id": "issue32-session-01-v10"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-2",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 15335.000157356262,
-            "process_id": 2513462,
+            "latency_ns": 22093.199491500854,
+            "process_id": 2478462,
             "raw_samples_ns": [
-              14655.200242996216,
-              15731.799602508545,
-              15300.19998550415,
-              15237.400531768799,
-              15491.199493408203,
-              15293.999910354614,
-              15369.800329208374,
-              15290.800333023071,
-              15635.199546813965,
-              15372.999906539917,
-              15399.399995803833,
-              15150.200128555298,
-              15732.59949684143,
-              15078.999996185303,
-              14766.80040359497,
-              14932.600259780884,
-              15425.200462341309,
-              15428.999662399292,
-              15198.60029220581,
-              15883.400440216064
+              22424.399852752686,
+              22129.600048065186,
+              22399.59955215454,
+              22002.39896774292,
+              22142.999172210693,
+              22548.398971557617,
+              21947.00002670288,
+              21990.599632263184,
+              21981.201171875,
+              21946.59948348999,
+              22316.79916381836,
+              21745.600700378418,
+              22510.8003616333,
+              22381.79922103882,
+              21854.99906539917,
+              21911.799907684326,
+              22319.600582122803,
+              21975.600719451904,
+              22274.200916290283,
+              22056.798934936523
             ],
-            "session_id": "issue32-session-02-v3"
+            "session_id": "issue32-session-02-v10"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/torch-matmul-k-proj-session-3",
             "excluded_samples": [],
             "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 16301.000118255615,
-            "process_id": 2515110,
+            "latency_ns": 22767.10033416748,
+            "process_id": 2479753,
             "raw_samples_ns": [
-              15321.799516677856,
-              16212.799549102783,
-              16557.799577713013,
-              16448.999643325806,
-              16311.60020828247,
-              16151.599884033203,
-              16308.000087738037,
-              16520.800590515137,
-              16271.799802780151,
-              16294.000148773193,
-              16118.199825286865,
-              16428.200006484985,
-              16394.799947738647,
-              16688.400506973267,
-              16371.79970741272,
-              16424.399614334106,
-              15933.799743652344,
-              16164.20030593872,
-              14606.200456619263,
-              16245.59998512268
+              22845.59965133667,
+              22786.800861358643,
+              22786.800861358643,
+              22431.199550628662,
+              23071.999549865723,
+              23034.59882736206,
+              22339.398860931396,
+              22503.39984893799,
+              22406.399250030518,
+              22538.80023956299,
+              22902.20022201538,
+              22844.600677490234,
+              22587.599754333496,
+              22367.000579833984,
+              22646.20065689087,
+              22747.39980697632,
+              23206.400871276855,
+              22581.6011428833,
+              22860.60094833374,
+              22990.798950195312
             ],
-            "session_id": "issue32-session-03-v3"
+            "session_id": "issue32-session-03-v10"
           }
-        ]
+        ],
+        "source_replay": {
+          "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+          "input_refs": [
+            "artifact://issue-32/raw-semantic-session-1",
+            "artifact://issue-32/raw-semantic-session-2",
+            "artifact://issue-32/raw-semantic-session-3"
+          ],
+          "variant": "k_baseline"
+        }
       }
     ],
     "counterexamples": [
@@ -282,7 +292,7 @@
         "threads": 1
       },
       "layout": "row-major-contiguous",
-      "semantic": "batch-one Q projection MatMul",
+      "semantic": "batch-one K projection MatMul",
       "shape": {
         "left": [
           1,
@@ -323,7 +333,7 @@
           "torch-matmul-k-proj"
         ],
         "case": {
-          "semantic": "batch-one Q projection MatMul",
+          "semantic": "batch-one K projection MatMul",
           "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
         },
         "cohort_id": "ascend-npu-23b93a89d5fecc79",
@@ -363,7 +373,7 @@
           "torch-matmul-k-proj"
         ],
         "case": {
-          "semantic": "batch-one Q projection MatMul",
+          "semantic": "batch-one K projection MatMul",
           "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/k-proj"
         },
         "cohort_id": "ascend-npu-23b93a89d5fecc79",

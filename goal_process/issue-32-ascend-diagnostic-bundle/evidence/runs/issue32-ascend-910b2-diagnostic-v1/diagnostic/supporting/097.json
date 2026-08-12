@@ -9,7 +9,7 @@
           "records": [
             {
               "expected": 0.0,
-              "observed": 0.01012420654296875
+              "observed": 0.0100860595703125
             }
           ],
           "tolerance": {
@@ -18,6 +18,7 @@
           }
         },
         "eligible": true,
+        "evidence_lane": "diagnostic",
         "implementation_family": {
           "family_id": "pytorch-ascend-matmul",
           "implementation_ref": "artifact://issue-32/torch-matmul-v-proj-negative-implementation",
@@ -31,96 +32,105 @@
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-1",
             "excluded_samples": [],
-            "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 36393.40043067932,
-            "process_id": 2512236,
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 45213.99974822998,
+            "process_id": 2477077,
             "raw_samples_ns": [
-              37221.999168395996,
-              36614.79949951172,
-              36691.200733184814,
-              36027.99892425537,
-              36450.60062408447,
-              36594.40040588379,
-              36584.200859069824,
-              36644.79970932007,
-              36417.00029373169,
-              36656.200885772705,
-              36163.79976272583,
-              36558.00104141235,
-              36369.80056762695,
-              36347.999572753906,
-              36356.99987411499,
-              36127.400398254395,
-              36354.99954223633,
-              36032.400131225586,
-              36040.799617767334,
-              36133.999824523926
+              47204.39910888672,
+              45463.600158691406,
+              45642.80033111572,
+              45686.99836730957,
+              45962.80097961426,
+              45865.99826812744,
+              45104.39872741699,
+              44815.00148773193,
+              44991.59812927246,
+              44592.599868774414,
+              45294.39926147461,
+              44805.39798736572,
+              45083.39881896973,
+              44956.19773864746,
+              44969.801902770996,
+              45476.39846801758,
+              45133.60023498535,
+              45380.802154541016,
+              44625.60176849365,
+              45312.80040740967
             ],
-            "session_id": "issue32-session-01-v3"
+            "session_id": "issue32-session-01-v10"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-2",
             "excluded_samples": [],
-            "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 35801.50008201599,
-            "process_id": 2513462,
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 46806.39982223511,
+            "process_id": 2478462,
             "raw_samples_ns": [
-              35587.39900588989,
-              35828.19938659668,
-              35636.000633239746,
-              35913.20037841797,
-              35662.79888153076,
-              35774.8007774353,
-              35871.40083312988,
-              35834.40065383911,
-              35510.79988479614,
-              36043.60103607178,
-              35903.99980545044,
-              35961.39907836914,
-              36028.80001068115,
-              35533.599853515625,
-              35911.40031814575,
-              35717.7996635437,
-              35455.20067214966,
-              35724.59936141968,
-              35918.60055923462,
-              35569.000244140625
+              48936.40041351318,
+              47576.19857788086,
+              47639.99938964844,
+              47161.598205566406,
+              47941.79916381836,
+              47346.00067138672,
+              47015.80047607422,
+              46733.999252319336,
+              47462.801933288574,
+              46697.2017288208,
+              46863.39855194092,
+              46466.39823913574,
+              46421.99993133545,
+              46691.79916381836,
+              46561.598777770996,
+              46749.4010925293,
+              46864.1996383667,
+              46373.20041656494,
+              46364.19773101807,
+              46055.59825897217
             ],
-            "session_id": "issue32-session-02-v3"
+            "session_id": "issue32-session-02-v10"
           },
           {
             "cohort_id": "ascend-npu-23b93a89d5fecc79",
             "evidence_ref": "artifact://issue-32/torch-matmul-v-proj-negative-session-3",
             "excluded_samples": [],
-            "lane_id": "issue32-ascend-baseline",
-            "latency_ns": 37168.59936714172,
-            "process_id": 2515110,
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 49914.398193359375,
+            "process_id": 2479753,
             "raw_samples_ns": [
-              38197.00002670288,
-              37344.2006111145,
-              36922.80054092407,
-              37178.19929122925,
-              37281.40115737915,
-              37106.39953613281,
-              37158.9994430542,
-              37106.39953613281,
-              37142.40074157715,
-              37042.999267578125,
-              37594.19918060303,
-              37286.79895401001,
-              37005.00011444092,
-              37302.99949645996,
-              37303.80058288574,
-              37546.000480651855,
-              37404.000759124756,
-              36906.80027008057,
-              36931.20002746582,
-              36927.80017852783
+              51767.20142364502,
+              50938.401222229004,
+              51025.800704956055,
+              49691.200256347656,
+              49117.398262023926,
+              50010.39981842041,
+              49840.00205993652,
+              49871.99783325195,
+              50004.60147857666,
+              49627.59971618652,
+              49989.800453186035,
+              49779.0002822876,
+              50255.19847869873,
+              49956.7985534668,
+              49530.20095825195,
+              49551.00059509277,
+              49966.00151062012,
+              49520.40195465088,
+              49367.1989440918,
+              50102.00023651123
             ],
-            "session_id": "issue32-session-03-v3"
+            "session_id": "issue32-session-03-v10"
           }
-        ]
+        ],
+        "source_replay": {
+          "execution_evidence_ref": "artifact://issue-32/source-remote-execution",
+          "input_refs": [
+            "artifact://issue-32/raw-semantic-session-1",
+            "artifact://issue-32/raw-semantic-session-2",
+            "artifact://issue-32/raw-semantic-session-3"
+          ],
+          "variant": "negative_control"
+        }
       }
     ],
     "counterexamples": [
@@ -249,24 +259,24 @@
         },
         "preflight": {
           "eligible": true,
-          "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+          "evidence_ref": "artifact://issue-32/v-proj-preflight"
         }
       },
       "evidence_ref": "artifact://issue-32/direct-defect",
       "failure": {
         "evidence_ref": "artifact://issue-32/negative-correctness-difference",
-        "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+        "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
         "failure_kind": "correctness_difference",
-        "max_abs_difference": 0.01012420654296875,
-        "mismatched_elements": 81259,
-        "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+        "max_abs_difference": 0.0100860595703125,
+        "mismatched_elements": 80864,
+        "observed_sha256": "3f76c8a0018beb56dea991dc58f9eeeef32af2c7d97879345b1b8291cbadb1b8",
         "oracle": "cpu-float32-same-seed-matmul"
       },
       "input_summary": {
         "alignment_bytes": 512,
         "dtype": "float32",
         "evidence_ref": "artifact://issue-32/negative-input-summary",
-        "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+        "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
         "layout": "row-major-contiguous",
         "shape": {
           "left": [
@@ -304,24 +314,24 @@
       "repetitions": [
         {
           "evidence_ref": "artifact://issue-32/negative-repeat-1",
-          "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+          "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
           "outcome": "violation",
-          "process_id": 2512236,
-          "session_id": "issue32-session-01-v3"
+          "process_id": 2477077,
+          "session_id": "issue32-session-01-v10"
         },
         {
           "evidence_ref": "artifact://issue-32/negative-repeat-2",
-          "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+          "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
           "outcome": "violation",
-          "process_id": 2513462,
-          "session_id": "issue32-session-02-v3"
+          "process_id": 2478462,
+          "session_id": "issue32-session-02-v10"
         },
         {
           "evidence_ref": "artifact://issue-32/negative-repeat-3",
-          "input_sha256": "6aecb4361f427430ee0b8b45c9df886cd9b4baec5700c1a7776314d0870b3e13",
+          "input_sha256": "103d7d228b9718140cbab882e3a6692262d6bdf2b498b7faaa8e88b531753298",
           "outcome": "violation",
-          "process_id": 2515110,
-          "session_id": "issue32-session-03-v3"
+          "process_id": 2479753,
+          "session_id": "issue32-session-03-v10"
         }
       ],
       "schema": "groundupscale.dev/direct-defect-evidence/v1alpha1",
@@ -440,7 +450,7 @@
       "dtype": "float32",
       "environment": {
         "eligible": true,
-        "evidence_ref": "artifact://issue-32/v-proj-negative-control-preflight"
+        "evidence_ref": "artifact://issue-32/v-proj-preflight"
       },
       "execution_domain": {
         "affinity": "192-223",
@@ -460,7 +470,7 @@
         "threads": 1
       },
       "layout": "row-major-contiguous",
-      "semantic": "batch-one Q projection MatMul",
+      "semantic": "batch-one V projection MatMul negative control",
       "shape": {
         "left": [
           1,
@@ -501,8 +511,8 @@
           "torch-matmul-v-proj-negative"
         ],
         "case": {
-          "semantic": "batch-one Q projection MatMul",
-          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+          "semantic": "batch-one V projection MatMul negative control",
+          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
         },
         "cohort_id": "ascend-npu-23b93a89d5fecc79",
         "completion_boundary": {
@@ -513,7 +523,7 @@
           "stream_id": "default-npu-stream",
           "stream_synchronized": true
         },
-        "evidence_ref": "artifact://issue-32/v-proj-negative-control-baseline-lane",
+        "evidence_ref": "artifact://issue-32/v-proj-baseline-lane",
         "execution_domain": {
           "affinity": "192-223",
           "alignment_bytes": 512,
@@ -541,8 +551,8 @@
           "torch-matmul-v-proj-negative"
         ],
         "case": {
-          "semantic": "batch-one Q projection MatMul",
-          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+          "semantic": "batch-one V projection MatMul negative control",
+          "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
         },
         "cohort_id": "ascend-npu-23b93a89d5fecc79",
         "completion_boundary": {
@@ -553,7 +563,7 @@
           "stream_id": "default-npu-stream",
           "stream_synchronized": true
         },
-        "evidence_ref": "artifact://issue-32/v-proj-negative-control-diagnostic-lane",
+        "evidence_ref": "artifact://issue-32/v-proj-diagnostic-lane",
         "execution_domain": {
           "affinity": "192-223",
           "alignment_bytes": 512,
@@ -580,7 +590,7 @@
       }
     },
     "probe_id": "issue32-torch-matmul-v-proj-negative-probe",
-    "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj-negative-control"
+    "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/v-proj"
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

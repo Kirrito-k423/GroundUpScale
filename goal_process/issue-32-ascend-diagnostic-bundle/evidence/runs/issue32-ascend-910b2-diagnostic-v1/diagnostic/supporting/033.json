@@ -1,7 +1,7 @@
 {
   "payload": {
     "counterfactual_id": "remove-integration-overhead",
-    "declared_recovered_ns": 182045.00496387482,
+    "declared_recovered_ns": 195859.69269275665,
     "kind": "declared-component-removal",
     "removed_leaf_ids": [
       "dispatch-overhead",

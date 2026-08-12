@@ -2,22 +2,25 @@
 """Build ticket #32's immutable, digest-verifiable diagnostic Run Bundle.
 
 Every timing input comes from the committed real Ascend 910B2 evidence of
-tickets #29-#31 or from the three independent ticket #32 collection sessions.
+tickets #29-#31 or from six independent ticket #32 collection sessions (three
+qualified Q integration replays and three K/V semantic-path replays).
 The script performs deterministic derivations only and refuses to overwrite an
 existing run id.
 """
 
 from __future__ import annotations
 
+import json
+import os
 from copy import deepcopy
 from hashlib import sha256
-import json
 from math import hypot
 from pathlib import Path
 from re import fullmatch
 from statistics import median
 from typing import Any
 
+from groundupscale.run_bundle import verify_run_bundle
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 WORK_ROOT = Path(__file__).resolve().parent
@@ -51,20 +54,52 @@ K_PATH = (
     "semantic/model/two-layer-transformer/transformer/"
     "layer-0/attention/k-proj"
 )
-V_NEGATIVE_PATH = (
+V_PATH = (
     "semantic/model/two-layer-transformer/transformer/"
-    "layer-0/attention/v-proj-negative-control"
+    "layer-0/attention/v-proj"
 )
 BASELINE_LANE = "issue32-ascend-baseline"
 DIAGNOSTIC_LANE = "issue32-ascend-diagnostic"
 PAIR_ID = "issue32-ascend-paired-lanes"
+SOURCE_FRONTIER_REF = "artifact://issue-32/source-frontier-qualification"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
-        raise ValueError(f"expected JSON object: {path}")
+        raise TypeError(f"expected JSON object: {path}")
     return value
+
+
+def _verified_source_manifest(
+    root: Path, *, expected_run_id: str
+) -> dict[str, Any]:
+    verification = verify_run_bundle(root)
+    if not verification["passed"]:
+        raise ValueError(
+            f"source Run Bundle failed verification: {root}: "
+            f"{verification['failures']}"
+        )
+    manifest = _read_json(root / "run.manifest.json")
+    if (
+        manifest.get("run_id") != expected_run_id
+        or manifest.get("status") != "completed"
+        or manifest.get("hardware_cohort") != COHORT_ID
+    ):
+        raise ValueError(f"source Run Bundle identity mismatch: {root}")
+    return manifest
+
+
+def _source_run_lineage(
+    root: Path, manifest: dict[str, Any], role: str
+) -> dict[str, Any]:
+    manifest_path = root / "run.manifest.json"
+    return {
+        "run_id": manifest["run_id"],
+        "role": role,
+        "path": os.path.relpath(root, RUN_ROOT),
+        "manifest_sha256": sha256(manifest_path.read_bytes()).hexdigest(),
+    }
 
 
 def _json_bytes(value: object) -> bytes:
@@ -274,13 +309,8 @@ def _session_measurement(
     *,
     lane_id: str,
     evidence_ref: str,
-    samples: list[float] | None = None,
 ) -> dict[str, Any]:
-    raw_samples = (
-        list(raw["variants"][variant]["raw_samples_ns"])
-        if samples is None
-        else samples
-    )
+    raw_samples = list(raw["variants"][variant]["raw_samples_ns"])
     return {
         "session_id": raw["session_id"],
         "process_id": raw["process_id"],
@@ -288,6 +318,25 @@ def _session_measurement(
         "cohort_id": COHORT_ID,
         "latency_ns": float(median(raw_samples)),
         "raw_samples_ns": raw_samples,
+        "excluded_samples": [],
+        "evidence_ref": evidence_ref,
+    }
+
+
+def _derived_session_measurement(
+    raw: dict[str, Any],
+    *,
+    value_ns: float,
+    lane_id: str,
+    evidence_ref: str,
+) -> dict[str, Any]:
+    return {
+        "session_id": raw["session_id"],
+        "process_id": raw["process_id"],
+        "lane_id": lane_id,
+        "cohort_id": COHORT_ID,
+        "latency_ns": value_ns,
+        "derived_samples_ns": [value_ns],
         "excluded_samples": [],
         "evidence_ref": evidence_ref,
     }
@@ -411,76 +460,60 @@ def _frontier_anchor(
 
 
 def _frontier_uncertainty(
-    *, stable_path: str, domain: dict[str, Any]
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    surface = {"surface_id": "ascend-910b2-square-matmul", "version": "v1"}
-    components = {
-        "anchor": 300.0,
-        "interpolation": 0.0,
-        "instrumentation": 400.0,
-    }
-    records = [
-        {
-            "component_id": component,
-            "standard_uncertainty_ns": value,
-            "evidence_ref": f"artifact://issue-32/uncertainty-{component}",
-        }
-        for component, value in components.items()
-    ]
-    calibration_records = []
-    for partition, offset in (("calibration", 0), ("validation", 10)):
-        for index, (component, limit) in enumerate(components.items(), start=1):
-            observed_delta = limit if partition == "calibration" else limit * 0.9
-            calibration_records.append(
-                {
-                    "target_id": f"{component}-{partition}",
-                    "partition": partition,
-                    "session_id": f"issue32-{component}-{partition}",
-                    "process_id": 4_200_000 + offset + index,
-                    "component_id": component,
-                    "predicted_ns": 10_000.0,
-                    "observed_samples_ns": [10_000.0 + observed_delta],
-                }
-            )
-    target = {
-        "stable_path": stable_path,
-        "surface": surface,
-        "execution_domain_sha256": _canonical_digest(domain),
-        "cohort_id": COHORT_ID,
-        "coverage_method": (
-            "independent-validation-absolute-residual-within-limit"
+    *,
+    stable_path: str,
+    domain: dict[str, Any],
+    qualification: dict[str, Any],
+    frontier_diagnostic: dict[str, Any],
+) -> dict[str, Any]:
+    source_surface = qualification["surface"]
+    source_anchor = next(
+        anchor
+        for anchor in source_surface["anchors"]
+        if anchor["shape"] == {"s": 512}
+    )
+    query = next(
+        item
+        for item in frontier_diagnostic["surface_queries"]
+        if item["query_id"] == "ascend-matmul-square-512"
+    )
+    source_policy = source_surface["uncertainty_policy"]
+    combined_standard_rate = hypot(
+        source_anchor["standard_uncertainty_rate"],
+        0.0,
+        source_policy["instrumentation_standard_uncertainty_rate"],
+    )
+    effective_rate = float(source_anchor["effective_rate"])
+    declared_work = 2.0 * 512**3
+    latency_ns = declared_work / effective_rate * 1_000_000_000.0
+    latency_interval = {
+        "lower_ns": (
+            declared_work
+            / (effective_rate + combined_standard_rate)
+            * 1_000_000_000.0
         ),
-        "minimum_fraction": 1.0,
-        "minimum_calibration_records": 3,
-        "minimum_validation_records": 3,
-        "required_calibration_target_ids": [
-            f"{component}-calibration" for component in components
-        ],
-        "required_validation_target_ids": [
-            f"{component}-validation" for component in components
-        ],
-        "evidence_ref": "artifact://issue-32/uncertainty-target-coverage",
-    }
-    uncertainty_policy = {
-        **_policy(
-            "issue32-frontier-uncertainty",
-            "ascend-910b2-exact-shape-matmul",
-            "Bind the #31 active anchor to calibrated diagnostic uncertainty.",
+        "upper_ns": (
+            declared_work
+            / (effective_rate - combined_standard_rate)
+            * 1_000_000_000.0
         ),
-        "combination_rule": "root-sum-square",
-        "target_coverage": target,
-        "calibration": {
-            "estimator": {
-                **_policy(
-                    "component-max-absolute-residual",
-                    "independent-ascend-uncertainty-calibration",
-                    "Calibrate every uncertainty component before replay.",
-                ),
-                "method": "max-absolute-residual",
-            },
-            "records": calibration_records,
-            "evidence_ref": "artifact://issue-32/uncertainty-calibration",
-        },
+    }
+    surface_uncertainty_ns = max(
+        latency_ns - latency_interval["lower_ns"],
+        latency_interval["upper_ns"] - latency_ns,
+    )
+    surface = {
+        key: source_surface[key]
+        for key in ("surface_id", "version", "input_digest")
+    }
+    source_policy_identity = {
+        key: deepcopy(source_policy[key])
+        for key in (
+            "policy_id",
+            "version",
+            "combination",
+            "target_coverage",
+        )
     }
     frontier = {
         "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
@@ -490,25 +523,33 @@ def _frontier_uncertainty(
         "cohort_id": COHORT_ID,
         "execution_domain": domain,
         "surface": surface,
-        "latency_ns": 16_331.5,
-        "combined_uncertainty_ns": hypot(*components.values()),
-        "uncertainty_records": records,
-        "uncertainty_policy": uncertainty_policy,
+        "latency_ns": latency_ns,
+        "combined_uncertainty_ns": surface_uncertainty_ns,
+        "uncertainty_policy": deepcopy(source_policy_identity),
+        "uncertainty_basis": {
+            "kind": "verified-capability-surface-query",
+            "qualification_evidence_ref": SOURCE_FRONTIER_REF,
+            "query": deepcopy(query),
+            "source_policy": deepcopy(source_policy_identity),
+            "latency_interval": latency_interval,
+            "surface_uncertainty_ns": surface_uncertainty_ns,
+        },
         "evidence_ref": "artifact://issue-32/operator-frontier",
         "evidence_refs": ["artifact://issue-32/operator-frontier"],
     }
-    return frontier, records
+    return frontier
 
 
 def _locked_contract(
     *,
     stable_path: str,
+    semantic: str,
     candidate_ids: list[str],
     hardware: dict[str, Any],
     domain: dict[str, Any],
 ) -> dict[str, Any]:
     return {
-        "semantic": "batch-one Q projection MatMul",
+        "semantic": semantic,
         "shape": {
             "left": [1, 512, 512],
             "right": [512, 512],
@@ -611,10 +652,13 @@ def _integration_probe(
     *,
     hardware: dict[str, Any],
     domain: dict[str, Any],
+    qualification: dict[str, Any],
+    frontier_diagnostic: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     candidate_id = "torch-matmul-q-proj"
     contract = _locked_contract(
         stable_path=Q_PATH,
+        semantic="batch-one Q projection MatMul",
         candidate_ids=[candidate_id],
         hardware=hardware,
         domain=domain,
@@ -622,7 +666,7 @@ def _integration_probe(
     target_sessions = [
         _session_measurement(
             raw,
-            "standalone",
+            "frontier_adapter",
             lane_id=BASELINE_LANE,
             evidence_ref=f"artifact://issue-32/q-target-{index}",
         )
@@ -645,27 +689,30 @@ def _integration_probe(
         for index, raw in enumerate(sessions, start=1)
     ]
 
+    cumulative_stages = (
+        "frontier_adapter",
+        "dispatch",
+        "copy",
+        "sync",
+        "profiling",
+    )
     per_session_components: list[dict[str, float]] = []
     for raw in sessions:
         medians = {
             name: float(median(value["raw_samples_ns"]))
             for name, value in raw["variants"].items()
         }
-        per_session_components.append(
-            {
-                "dispatch": max(0.0, medians["dispatch"] - medians["standalone"]),
-                "copy": max(
-                    0.0,
-                    medians["copy"]
-                    - max(medians["dispatch"], medians["standalone"]),
-                ),
-                "sync": max(0.0, medians["sync"] - medians["copy"]),
-                "profiling": max(
-                    0.0, medians["profiling"] - medians["sync"]
-                ),
-            }
-        )
-    standalone_ns = float(
+        previous_cumulative_ns = medians[cumulative_stages[0]]
+        components: dict[str, float] = {}
+        for kind in cumulative_stages[1:]:
+            components[kind] = max(
+                0.0, medians[kind] - previous_cumulative_ns
+            )
+            previous_cumulative_ns = max(
+                previous_cumulative_ns, medians[kind]
+            )
+        per_session_components.append(components)
+    operator_ns = float(
         median(session["latency_ns"] for session in target_sessions)
     )
     wrapped_ns = float(
@@ -675,23 +722,10 @@ def _integration_probe(
         kind: float(median(item[kind] for item in per_session_components))
         for kind in ("dispatch", "copy", "sync", "profiling")
     }
-    raw_recovered = sum(component_medians.values())
-    measured_excess = wrapped_ns - standalone_ns
-    normalization = measured_excess / raw_recovered
-    normalized_components = [
-        {kind: value * normalization for kind, value in item.items()}
-        for item in per_session_components
-    ]
-    normalized_medians = {
-        kind: float(median(item[kind] for item in normalized_components))
-        for kind in ("dispatch", "copy", "sync", "profiling")
-    }
-    recovered = sum(normalized_medians.values())
-    if abs(recovered - measured_excess) > 1e-6:
-        raise ValueError("exclusive integration components do not conserve E2E")
+    recovered = sum(component_medians.values())
 
     ablations: list[dict[str, Any]] = []
-    for kind in ("dispatch", "copy", "sync", "profiling"):
+    for stage_index, kind in enumerate(cumulative_stages[1:], start=1):
         leaf_id = f"{kind}-overhead"
         ablations.append(
             {
@@ -704,34 +738,53 @@ def _integration_probe(
                 ),
                 "removed_leaf_ids": [leaf_id],
                 "sessions": [
-                    _session_measurement(
+                    _derived_session_measurement(
                         raw,
-                        kind if kind in raw["variants"] else "profiling",
+                        value_ns=per_session_components[index - 1][kind],
                         lane_id=DIAGNOSTIC_LANE,
                         evidence_ref=(
                             f"artifact://issue-32/integration-{kind}-{index}"
                         ),
-                        samples=[normalized_components[index - 1][kind]],
                     )
                     for index, raw in enumerate(sessions, start=1)
                 ],
+                "derivation": {
+                    "formula": (
+                        "max(0, median(cumulative_variant) - "
+                        "max(median(prior_cumulative_variants)))"
+                    ),
+                    "sample_semantics": "derived-paired-session-delta",
+                    "cumulative_variant": kind,
+                    "prior_cumulative_variants": list(
+                        cumulative_stages[:stage_index]
+                    ),
+                    "input_refs": [
+                        f"artifact://issue-32/raw-q-session-{index}"
+                        for index in range(1, len(sessions) + 1)
+                    ],
+                },
                 "evidence_ref": f"artifact://issue-32/integration-{kind}",
             }
         )
 
-    frontier, _ = _frontier_uncertainty(stable_path=Q_PATH, domain=domain)
+    frontier = _frontier_uncertainty(
+        stable_path=Q_PATH,
+        domain=domain,
+        qualification=qualification,
+        frontier_diagnostic=frontier_diagnostic,
+    )
     leaves = [
         {
             "leaf_id": "operator",
             "kind": "operator",
-            "duration_ns": standalone_ns,
+            "duration_ns": operator_ns,
             "evidence_refs": ["artifact://issue-32/integration-operator"],
         },
         *[
             {
                 "leaf_id": f"{kind}-overhead",
                 "kind": kind,
-                "duration_ns": normalized_medians[kind],
+                "duration_ns": component_medians[kind],
                 "evidence_refs": [f"artifact://issue-32/integration-{kind}"],
             }
             for kind in ("dispatch", "copy", "sync", "profiling")
@@ -843,29 +896,39 @@ def _simple_probe(
     domain: dict[str, Any],
     negative_control: bool,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    semantic = (
+        "batch-one V projection MatMul negative control"
+        if negative_control
+        else "batch-one K projection MatMul"
+    )
     contract = _locked_contract(
         stable_path=stable_path,
+        semantic=semantic,
         candidate_ids=[candidate_id],
         hardware=hardware,
         domain=domain,
     )
-    variant = "negative_control" if negative_control else "standalone"
+    variant = "negative_control" if negative_control else "k_baseline"
+    evidence_lane = "diagnostic" if negative_control else "baseline"
+    evidence_lane_id = (
+        DIAGNOSTIC_LANE if negative_control else BASELINE_LANE
+    )
     candidate_sessions = [
         _session_measurement(
             raw,
             variant,
-            lane_id=BASELINE_LANE,
+            lane_id=evidence_lane_id,
             evidence_ref=f"artifact://issue-32/{candidate_id}-session-{index}",
         )
         for index, raw in enumerate(sessions, start=1)
     ]
-    observed = (
-        max(
-            raw["negative_control"]["correctness"]["max_abs_difference"]
-            for raw in sessions
-        )
-        if negative_control
-        else 0.0001220703125
+    observed = max(
+        (
+            raw["negative_control"]["correctness"]
+            if negative_control
+            else raw["path_correctness"]["k"]
+        )["max_abs_difference"]
+        for raw in sessions
     )
     correctness = _correctness(
         f"artifact://issue-32/{candidate_id}-correctness",
@@ -877,6 +940,17 @@ def _simple_probe(
         sessions=candidate_sessions,
         correctness=correctness,
     )
+    target["evidence_lane"] = evidence_lane
+    target["source_replay"] = {
+        "variant": variant,
+        "input_refs": [
+            f"artifact://issue-32/raw-semantic-session-{index}"
+            for index in range(1, len(sessions) + 1)
+        ],
+        "execution_evidence_ref": (
+            "artifact://issue-32/source-remote-execution"
+        ),
+    }
     probe = {
         "probe_id": f"issue32-{candidate_id}-probe",
         "stable_path": stable_path,
@@ -913,7 +987,9 @@ def _simple_probe(
     if negative_control:
         input_sha256 = sha256(
             json.dumps(
-                sessions[0]["input"], separators=(",", ":"), sort_keys=True
+                sessions[0]["path_inputs"]["v"],
+                separators=(",", ":"),
+                sort_keys=True,
             ).encode("utf-8")
         ).hexdigest()
         negative = sessions[0]["negative_control"]["correctness"]
@@ -986,22 +1062,35 @@ def _capability_manifest(source: dict[str, Any]) -> dict[str, Any]:
 
 
 def _global_document(
-    sessions: list[dict[str, Any]],
+    q_sessions: list[dict[str, Any]],
+    semantic_sessions: list[dict[str, Any]],
+    floor_comparison: dict[str, Any],
     qualification: dict[str, Any],
+    frontier_diagnostic: dict[str, Any],
     benchmark: dict[str, Any],
+    error_attribution: dict[str, Any],
     cohort: dict[str, Any],
     capabilities: dict[str, Any],
+    source_runs: list[dict[str, Any]],
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     domain = _execution_domain()
     hardware = _hardware(cohort)
     cohort_identity = _hardware_validity_identity(hardware, domain)
     anchor, search_sessions = _frontier_anchor(qualification, domain)
-    q_case = next(case for case in benchmark["cases"] if case["case_id"] == "matmul-q-proj")
+    q_case = next(
+        case
+        for case in benchmark["cases"]
+        if case["case_id"] == "matmul-q-proj"
+    )
     q_probe, q_artifacts = _integration_probe(
-        sessions, hardware=hardware, domain=domain
+        q_sessions,
+        hardware=hardware,
+        domain=domain,
+        qualification=qualification,
+        frontier_diagnostic=frontier_diagnostic,
     )
     k_probe, k_artifacts = _simple_probe(
-        sessions,
+        semantic_sessions,
         stable_path=K_PATH,
         candidate_id="torch-matmul-k-proj",
         hardware=hardware,
@@ -1009,8 +1098,8 @@ def _global_document(
         negative_control=False,
     )
     negative_probe, negative_artifacts = _simple_probe(
-        sessions,
-        stable_path=V_NEGATIVE_PATH,
+        semantic_sessions,
+        stable_path=V_PATH,
         candidate_id="torch-matmul-v-proj-negative",
         hardware=hardware,
         domain=domain,
@@ -1021,29 +1110,67 @@ def _global_document(
         **k_artifacts,
         **negative_artifacts,
     }
-    observed = {
-        Q_PATH: float(
+    baseline_observation_ns = float(q_case["latency"]["median_ns"])
+    semantic_source_refs = [
+        f"artifact://issue-32/raw-semantic-session-{index}"
+        for index in range(1, len(semantic_sessions) + 1)
+    ]
+    semantic_observations = {
+        variant: float(
             median(
-                median(raw["variants"]["profiling"]["raw_samples_ns"])
-                for raw in sessions
+                median(raw["variants"][variant]["raw_samples_ns"])
+                for raw in semantic_sessions
             )
-        ),
-        K_PATH: float(q_case["latency"]["median_ns"]),
-        V_NEGATIVE_PATH: float(
-            median(
-                median(raw["variants"]["negative_control"]["raw_samples_ns"])
-                for raw in sessions
-            )
-        ),
+        )
+        for variant in ("k_baseline", "v_baseline")
     }
+    q_frontier = q_probe["integration_overhead_evidence"][
+        "operator_frontier"
+    ]
     trigger_items = [
         {
-            "stable_path": stable_path,
-            "predicted_ns": 16_331.5,
-            "observed_ns": latency,
-            "combined_uncertainty_ns": 500.0,
-        }
-        for stable_path, latency in observed.items()
+            "stable_path": Q_PATH,
+            "predicted_ns": q_frontier["latency_ns"],
+            "observed_ns": baseline_observation_ns,
+            "combined_uncertainty_ns": q_frontier[
+                "combined_uncertainty_ns"
+            ],
+            "observation_basis": {
+                "kind": "benchmark-case",
+                "source_evidence_ref": (
+                    "artifact://issue-32/source-transformer-benchmark"
+                ),
+                "source_case_id": "matmul-q-proj",
+                "stable_path": Q_PATH,
+                "semantic": "batch-one Q projection MatMul",
+            },
+        },
+        *[
+            {
+                "stable_path": stable_path,
+                "predicted_ns": q_frontier["latency_ns"],
+                "observed_ns": semantic_observations[variant],
+                "combined_uncertainty_ns": q_frontier[
+                    "combined_uncertainty_ns"
+                ],
+                "observation_basis": {
+                    "kind": "session-variant-aggregate",
+                    "variant": variant,
+                    "stable_path": stable_path,
+                    "semantic": semantic,
+                    "lane": "baseline",
+                    "reducer": "median-of-independent-session-medians",
+                    "input_refs": semantic_source_refs,
+                    "execution_evidence_ref": (
+                        "artifact://issue-32/source-remote-execution"
+                    ),
+                },
+            }
+            for stable_path, variant, semantic in (
+                (K_PATH, "k_baseline", "batch-one K projection MatMul"),
+                (V_PATH, "v_baseline", "batch-one V projection MatMul"),
+            )
+        ],
     ]
     completion = _completion_boundary()
     baseline_lane = {
@@ -1075,7 +1202,7 @@ def _global_document(
         "timing_used_for_frontier": False,
         "raw_samples_ns": [
             sample
-            for raw in sessions
+            for raw in q_sessions
             for sample in raw["variants"]["profiling"]["raw_samples_ns"]
         ],
         "completion_boundary": completion,
@@ -1094,18 +1221,18 @@ def _global_document(
                 "baseline_lane_id": BASELINE_LANE,
                 "diagnostic_lane_id": DIAGNOSTIC_LANE,
                 "baseline_session_ids": [
-                    f"{raw['session_id']}-baseline" for raw in sessions
+                    f"{raw['session_id']}-baseline" for raw in q_sessions
                 ],
                 "diagnostic_session_ids": [
-                    f"{raw['session_id']}-diagnostic" for raw in sessions
+                    f"{raw['session_id']}-diagnostic" for raw in q_sessions
                 ],
                 "baseline_raw_samples_ns": [
-                    float(median(raw["variants"]["standalone"]["raw_samples_ns"]))
-                    for raw in sessions
+                    float(median(raw["variants"]["dispatch"]["raw_samples_ns"]))
+                    for raw in q_sessions
                 ],
                 "diagnostic_raw_samples_ns": [
                     float(median(raw["variants"]["profiling"]["raw_samples_ns"]))
-                    for raw in sessions
+                    for raw in q_sessions
                 ],
                 "evidence_ref": "artifact://issue-32/profiling-holdout",
             },
@@ -1113,9 +1240,18 @@ def _global_document(
         },
         "evidence_ref": "artifact://issue-32/diagnostic-profiling-lane",
     }
-    source_rate = 19_175_995_339_398.254
-    memory_rate = 1_408_047_205_172.7576
-    floor_value = 268_435_456 / source_rate * 1_000_000_000
+    source_floor = floor_comparison["physical_floor"]
+    capability_by_resource = {
+        capability["resource"]: capability
+        for capability in source_floor["capabilities"]
+    }
+    source_rate = float(
+        capability_by_resource["compute.fp32"]["robust_achievable_rate"]
+    )
+    memory_rate = float(
+        capability_by_resource["memory.hbm"]["robust_achievable_rate"]
+    )
+    floor_value = float(source_floor["resource_physical_floor_ns"])
     document: dict[str, Any] = {
         "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
         "resolved_configuration": {
@@ -1173,7 +1309,10 @@ def _global_document(
             "status": "known",
             "value_ns": floor_value,
             "combination": "max-explicit-overlap",
-            "policy_ref": "docs/adr/0033-model-resource-floors-separately-from-full-duration.md",
+            "policy_ref": (
+                "docs/adr/0033-model-resource-floors-"
+                "separately-from-full-duration.md"
+            ),
             "resource_terms": [
                 {
                     "resource": "compute.fp32",
@@ -1186,6 +1325,9 @@ def _global_document(
                     "cohort_id": COHORT_ID,
                     "execution_domain": domain,
                     "evidence_ref": "artifact://issue-32/physical-floor-compute",
+                    "source_evidence_ref": (
+                        "artifact://issue-32/source-physical-floor"
+                    ),
                 },
                 {
                     "resource": "memory.hbm",
@@ -1198,6 +1340,9 @@ def _global_document(
                     "cohort_id": COHORT_ID,
                     "execution_domain": domain,
                     "evidence_ref": "artifact://issue-32/physical-floor-memory",
+                    "source_evidence_ref": (
+                        "artifact://issue-32/source-physical-floor"
+                    ),
                 },
             ],
             "evidence_refs": ["artifact://issue-32/physical-floor"],
@@ -1280,6 +1425,8 @@ def _global_document(
             "evidence_ref": "artifact://issue-32/cohort-match",
         },
         "frontier_anchors": [anchor],
+        "capability_surfaces": [deepcopy(qualification["surface"])],
+        "surface_queries": deepcopy(frontier_diagnostic["surface_queries"]),
         "single_node_schedule": {
             "schedule_id": "issue32-single-node-q-proj",
             "version": "v1",
@@ -1295,7 +1442,13 @@ def _global_document(
                 "exact-shape-performance-diagnosis",
                 "Run diagnostics only beyond combined uncertainty and materiality.",
             ),
-            "e2e_observation_ns": 50_840_320.0,
+            "e2e_observation_ns": float(
+                error_attribution["e2e_trace_host_ns"]
+            ),
+            "source_evidence_ref": (
+                "artifact://issue-32/source-transformer-e2e-attribution"
+            ),
+            "source_evidence_required": True,
             "items": trigger_items,
         },
         "verdict_policy": {
@@ -1308,20 +1461,7 @@ def _global_document(
             "suspected_regression_gate": "undefined",
         },
         "shape_disambiguation_probes": [q_probe, k_probe, negative_probe],
-        "source_runs": [
-            {
-                "run_id": "ascend-910b2-matmul-floor-comparison-20260810-v2",
-                "role": "resource-physical-floor",
-            },
-            {
-                "run_id": "ascend-910b2-transformer-demo-20260811-v1",
-                "role": "observation",
-            },
-            {
-                "run_id": "issue31-operator-frontier-v3",
-                "role": "operator-frontier",
-            },
-        ],
+        "source_runs": deepcopy(source_runs),
     }
     inputs = {
         key: document[key]
@@ -1458,6 +1598,13 @@ def _artifact_documents(
     collect(document)
     artifacts: dict[str, tuple[str, str, dict[str, Any]]] = {}
     for artifact_ref in sorted(refs):
+        if artifact_ref.startswith(
+            (
+                "artifact://issue-32/source-",
+                "artifact://issue-32/raw-",
+            )
+        ):
+            continue
         if artifact_ref in implementations:
             content = implementations[artifact_ref]
             if content["schema"].endswith("candidate-implementation/v1alpha1"):
@@ -1510,54 +1657,84 @@ def _copy_source_artifacts(root: Path) -> list[dict[str, Any]]:
             ISSUE29_RUN / "comparison/physical-floor-vs-observation.json",
             "source/issue29-physical-floor.json",
             "source-physical-floor",
+            "artifact://issue-32/source-physical-floor",
+            "run-bundle://ascend-910b2-matmul-floor-comparison-20260810-v2",
         ),
         (
             ISSUE30_RUN / "observation/raw/benchmark.json",
             "source/issue30-transformer-benchmark.json",
             "source-transformer-benchmark",
+            "artifact://issue-32/source-transformer-benchmark",
+            "run-bundle://ascend-910b2-transformer-demo-20260811-v1",
+        ),
+        (
+            ISSUE30_RUN / "comparison/error-attribution.json",
+            "source/issue30-transformer-e2e-attribution.json",
+            "source-transformer-e2e-attribution",
+            "artifact://issue-32/source-transformer-e2e-attribution",
+            "run-bundle://ascend-910b2-transformer-demo-20260811-v1",
         ),
         (
             ISSUE30_RUN / "adapter/cohort.json",
             "source/issue30-hardware-cohort.json",
             "source-hardware-cohort",
+            None,
+            "run-bundle://ascend-910b2-transformer-demo-20260811-v1",
         ),
         (
             ISSUE31_RUN / "frontier/qualification.json",
             "source/issue31-frontier-qualification.json",
             "source-frontier-qualification",
+            SOURCE_FRONTIER_REF,
+            "run-bundle://issue31-operator-frontier-v3",
         ),
         (
             WORK_ROOT / "evidence/remote-execution.json",
             "source/issue32-remote-execution.json",
             "source-remote-execution",
+            "artifact://issue-32/source-remote-execution",
+            "remote://A2-AK-225/issue32-collection",
         ),
         *[
             (
-                SESSION_ROOT / f"issue32-session-0{index}-v3.json",
-                f"source/issue32-session-0{index}.json",
+                SESSION_ROOT / f"issue32-session-0{index}-v7.json",
+                f"source/issue32-q-session-0{index}-v7.json",
                 "source-diagnostic-session",
+                f"artifact://issue-32/raw-q-session-{index}",
+                f"remote://A2-AK-225/issue32-session-0{index}-v7",
+            )
+            for index in range(1, 4)
+        ],
+        *[
+            (
+                SESSION_ROOT / f"issue32-session-0{index}-v10.json",
+                f"source/issue32-semantic-session-0{index}-v10.json",
+                "source-diagnostic-session",
+                f"artifact://issue-32/raw-semantic-session-{index}",
+                f"remote://A2-AK-225/issue32-session-0{index}-v10",
             )
             for index in range(1, 4)
         ],
     ]
     artifacts = []
-    for source, relative, role in sources:
+    for source, relative, role, uri, source_input in sources:
         payload = source.read_bytes()
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(payload)
         schema = _read_json(source)["schema"]
-        artifacts.append(
-            {
-                "role": role,
-                "path": relative,
-                "schema": schema,
-                "media_type": "application/json",
-                "sha256": sha256(payload).hexdigest(),
-                "produced_by": PRODUCER,
-                "inputs": [],
-            }
-        )
+        artifact = {
+            "role": role,
+            "path": relative,
+            "schema": schema,
+            "media_type": "application/json",
+            "sha256": sha256(payload).hexdigest(),
+            "produced_by": PRODUCER,
+            "inputs": [source_input],
+        }
+        if uri is not None:
+            artifact["uri"] = uri
+        artifacts.append(artifact)
     return artifacts
 
 
@@ -1567,26 +1744,164 @@ def main() -> int:
     temporary = RUN_ROOT.with_name(f".{RUN_ID}.building")
     if temporary.exists():
         raise FileExistsError(f"stale build directory exists: {temporary}")
+    source_manifests = [
+        (
+            ISSUE29_RUN,
+            _verified_source_manifest(
+                ISSUE29_RUN,
+                expected_run_id=(
+                    "ascend-910b2-matmul-floor-comparison-20260810-v2"
+                ),
+            ),
+            "resource-physical-floor",
+        ),
+        (
+            ISSUE30_RUN,
+            _verified_source_manifest(
+                ISSUE30_RUN,
+                expected_run_id="ascend-910b2-transformer-demo-20260811-v1",
+            ),
+            "observation",
+        ),
+        (
+            ISSUE31_RUN,
+            _verified_source_manifest(
+                ISSUE31_RUN,
+                expected_run_id="issue31-operator-frontier-v3",
+            ),
+            "operator-frontier",
+        ),
+    ]
+    source_runs = [
+        _source_run_lineage(root, manifest, role)
+        for root, manifest, role in source_manifests
+    ]
+    floor_comparison = _read_json(
+        ISSUE29_RUN / "comparison/physical-floor-vs-observation.json"
+    )
     benchmark = _read_json(ISSUE30_RUN / "observation/raw/benchmark.json")
+    error_attribution = _read_json(
+        ISSUE30_RUN / "comparison/error-attribution.json"
+    )
     cohort = _read_json(ISSUE30_RUN / "adapter/cohort.json")
     capabilities = _read_json(ISSUE30_RUN / "adapter/capabilities.json")
     qualification = _read_json(ISSUE31_RUN / "frontier/qualification.json")
-    sessions = [
-        _read_json(SESSION_ROOT / f"issue32-session-0{index}-v3.json")
+    frontier_diagnostic = _read_json(
+        ISSUE31_RUN / "diagnostic/evidence.json"
+    )
+    q_sessions = [
+        _read_json(SESSION_ROOT / f"issue32-session-0{index}-v7.json")
         for index in range(1, 4)
     ]
+    semantic_sessions = [
+        _read_json(SESSION_ROOT / f"issue32-session-0{index}-v10.json")
+        for index in range(1, 4)
+    ]
+    all_sessions = [*q_sessions, *semantic_sessions]
+    remote_execution = _read_json(WORK_ROOT / "evidence/remote-execution.json")
+    expected_session_digests = {
+        item["session_id"]: item["sha256"]
+        for item in remote_execution["sessions"]
+    }
+
+    def semantic_session_valid(item: dict[str, Any]) -> bool:
+        contracts = item["execution_contract"].get("variant_contracts")
+        path_inputs = item.get("path_inputs")
+        expected = {
+            "k_baseline": (
+                "batch-one K projection MatMul",
+                K_PATH,
+                "baseline",
+                "k",
+            ),
+            "v_baseline": (
+                "batch-one V projection MatMul",
+                V_PATH,
+                "baseline",
+                "v",
+            ),
+            "negative_control": (
+                "batch-one V projection MatMul negative control",
+                V_PATH,
+                "diagnostic",
+                "v",
+            ),
+        }
+        return bool(
+            isinstance(contracts, dict)
+            and isinstance(path_inputs, dict)
+            and set(path_inputs) == {"q", "k", "v"}
+            and item.get("input")
+            == {"seed": 20260811, **path_inputs["q"]}
+            and len(
+                {
+                    (identity["left_sha256"], identity["right_sha256"])
+                    for identity in path_inputs.values()
+                }
+            )
+            == 3
+            and all(
+                contracts.get(variant)
+                == {
+                    "semantic": semantic,
+                    "stable_path": stable_path,
+                    "lane": lane,
+                    "input_identity": path_inputs[path],
+                }
+                for variant, (
+                    semantic,
+                    stable_path,
+                    lane,
+                    path,
+                ) in expected.items()
+            )
+            and all(
+                item["path_correctness"][path]["passed"]
+                for path in ("q", "k", "v")
+            )
+            and len(
+                {
+                    item["path_correctness"][path]["expected_sha256"]
+                    for path in ("q", "k", "v")
+                }
+            )
+            == 3
+        )
+
     if (
-        len({item["process_id"] for item in sessions}) != 3
-        or {item["cohort_id"] for item in sessions} != {COHORT_ID}
-        or any(not item["correctness"]["passed"] for item in sessions)
+        len({item["process_id"] for item in all_sessions}) != 6
+        or {item["cohort_id"] for item in all_sessions} != {COHORT_ID}
+        or any(not item["correctness"]["passed"] for item in all_sessions)
         or any(
             item["negative_control"]["correctness"]["passed"]
-            for item in sessions
+            for item in semantic_sessions
         )
+        or any(
+            expected_session_digests.get(item["session_id"])
+            != sha256(
+                (SESSION_ROOT / f"{item['session_id']}.json").read_bytes()
+            ).hexdigest()
+            for item in all_sessions
+        )
+        or any(
+            item["execution_contract"].get("semantic")
+            != "batch-one Q projection MatMul"
+            for item in q_sessions
+        )
+        or any(not semantic_session_valid(item) for item in semantic_sessions)
     ):
         raise ValueError("real NPU sessions do not satisfy the locked replay gates")
     document, implementations = _global_document(
-        sessions, qualification, benchmark, cohort, capabilities
+        q_sessions,
+        semantic_sessions,
+        floor_comparison,
+        qualification,
+        frontier_diagnostic,
+        benchmark,
+        error_attribution,
+        cohort,
+        capabilities,
+        source_runs,
     )
     temporary.mkdir(parents=True)
     evidence_digest = _write_json(
@@ -1600,7 +1915,15 @@ def main() -> int:
             "media_type": "application/json",
             "sha256": evidence_digest,
             "produced_by": PRODUCER,
-            "inputs": [],
+            "inputs": [
+                "source-physical-floor",
+                "source-transformer-benchmark",
+                "source-transformer-e2e-attribution",
+                "source-hardware-cohort",
+                "source-frontier-qualification",
+                "source-remote-execution",
+                "source-diagnostic-session",
+            ],
         }
     ]
     for index, (artifact_ref, artifact) in enumerate(
@@ -1618,7 +1941,12 @@ def main() -> int:
                 "media_type": "application/json",
                 "sha256": digest,
                 "produced_by": PRODUCER,
-                "inputs": [],
+                "inputs": [
+                    "source-physical-floor",
+                    "source-transformer-benchmark",
+                    "source-frontier-qualification",
+                    "source-diagnostic-session",
+                ],
             }
         )
     manifest_artifacts.extend(_copy_source_artifacts(temporary))
@@ -1630,20 +1958,8 @@ def main() -> int:
             "status": "completed",
             "device": "ascend-npu",
             "hardware_cohort": COHORT_ID,
-            "source_runs": [
-                {
-                    "run_id": "ascend-910b2-matmul-floor-comparison-20260810-v2",
-                    "role": "resource-physical-floor",
-                },
-                {
-                    "run_id": "ascend-910b2-transformer-demo-20260811-v1",
-                    "role": "observation",
-                },
-                {
-                    "run_id": "issue31-operator-frontier-v3",
-                    "role": "operator-frontier",
-                },
-            ],
+            "source_manifest_integrity": "required",
+            "source_runs": source_runs,
             "artifacts": manifest_artifacts,
         },
     )

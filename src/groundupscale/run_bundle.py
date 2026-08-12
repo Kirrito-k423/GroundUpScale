@@ -1248,6 +1248,60 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     if not isinstance(artifacts, list):
         artifacts = []
         failures.append("manifest artifacts must be a list")
+    if manifest.get("source_manifest_integrity") == "required":
+        source_runs = manifest.get("source_runs")
+        seen_source_ids: set[str] = set()
+        seen_source_paths: set[Path] = set()
+        if not isinstance(source_runs, list) or not source_runs:
+            failures.append("source manifest integrity requires source_runs")
+        else:
+            for source in source_runs:
+                if not isinstance(source, dict):
+                    failures.append("invalid source manifest lineage")
+                    continue
+                source_id = source.get("run_id")
+                relative_path = source.get("path")
+                manifest_digest = source.get("manifest_sha256")
+                if (
+                    not isinstance(source_id, str)
+                    or not source_id
+                    or source_id in seen_source_ids
+                    or not isinstance(relative_path, str)
+                    or not relative_path
+                    or Path(relative_path).is_absolute()
+                    or not isinstance(manifest_digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", manifest_digest) is None
+                ):
+                    failures.append("invalid source manifest lineage")
+                    continue
+                source_root = (root / relative_path).resolve()
+                source_manifest_path = source_root / "run.manifest.json"
+                if source_root in seen_source_paths:
+                    failures.append("duplicate source manifest lineage path")
+                    continue
+                seen_source_ids.add(source_id)
+                seen_source_paths.add(source_root)
+                if not source_manifest_path.is_file():
+                    failures.append(f"missing source Run manifest: {source_id}")
+                    continue
+                if _sha256(source_manifest_path) != manifest_digest:
+                    failures.append(
+                        f"source Run manifest digest mismatch: {source_id}"
+                    )
+                    continue
+                try:
+                    source_manifest = json.loads(
+                        source_manifest_path.read_text(encoding="utf-8")
+                    )
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                    failures.append(f"invalid source Run manifest: {source_id}")
+                    continue
+                if (
+                    not isinstance(source_manifest, dict)
+                    or source_manifest.get("run_id") != source_id
+                    or source_manifest.get("status") != "completed"
+                ):
+                    failures.append(f"source Run identity mismatch: {source_id}")
     exact_shape = manifest.get("bundle_kind") == "exact-shape-measurement"
     floor_comparison = (
         manifest.get("bundle_kind") == "physical-floor-observation-comparison"

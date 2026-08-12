@@ -27,6 +27,7 @@
         "minimum_demand": 268435456,
         "rate_unit": "FLOP/s",
         "resource": "compute.fp32",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
         "validated": true,
         "validated_rate_per_second": 19175995339398.254,
         "validated_rate_resource": "compute.fp32"
@@ -55,13 +56,14 @@
         "minimum_demand": 3145728,
         "rate_unit": "B/s",
         "resource": "memory.hbm",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
         "validated": true,
         "validated_rate_per_second": 1408047205172.7576,
         "validated_rate_resource": "memory.hbm"
       }
     ],
     "status": "known",
-    "value_ns": 13998.514874921928
+    "value_ns": 13998.514874921926
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
 }

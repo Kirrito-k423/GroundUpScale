@@ -1,10 +1,10 @@
 {
   "payload": {
-    "expected_sha256": "e17dbbf2db9b39e84fdc88ed96d79a4dbb1266de10c10d9d95287cce89f60e2f",
+    "expected_sha256": "87008bbd3ba46079e4dc25274c9ae155439142bdce91715a33d364d1a5e54066",
     "failure_kind": "correctness_difference",
-    "max_abs_difference": 0.01012420654296875,
-    "mismatched_elements": 81259,
-    "observed_sha256": "627d4243b02fc38f2c49cbc79a4724c364452a2225f4aee24192e92464a254ba",
+    "max_abs_difference": 0.0100860595703125,
+    "mismatched_elements": 80864,
+    "observed_sha256": "3f76c8a0018beb56dea991dc58f9eeeef32af2c7d97879345b1b8291cbadb1b8",
     "oracle": "cpu-float32-same-seed-matmul"
   },
   "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"

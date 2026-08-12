@@ -22,6 +22,7 @@
     "minimum_demand": 268435456,
     "rate_unit": "FLOP/s",
     "resource": "compute.fp32",
+    "source_evidence_ref": "artifact://issue-32/source-physical-floor",
     "validated": true,
     "validated_rate_per_second": 19175995339398.254,
     "validated_rate_resource": "compute.fp32"

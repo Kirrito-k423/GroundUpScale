@@ -1,10 +1,10 @@
 {
   "payload": {
-    "e2e_duration_ns": 198051.60522460938,
+    "e2e_duration_ns": 212804.09812927246,
     "leaf_semantics": "mutually-exclusive",
     "leaves": [
       {
-        "duration_ns": 16006.600260734558,
+        "duration_ns": 16292.299628257751,
         "evidence_refs": [
           "artifact://issue-32/integration-operator"
         ],
@@ -20,7 +20,7 @@
         "leaf_id": "dispatch-overhead"
       },
       {
-        "duration_ns": 24955.927937962915,
+        "duration_ns": 25504.69934940338,
         "evidence_refs": [
           "artifact://issue-32/integration-copy"
         ],
@@ -28,7 +28,7 @@
         "leaf_id": "copy-overhead"
       },
       {
-        "duration_ns": 123359.42434561998,
+        "duration_ns": 127363.99412155151,
         "evidence_refs": [
           "artifact://issue-32/integration-sync"
         ],
@@ -36,7 +36,7 @@
         "leaf_id": "sync-overhead"
       },
       {
-        "duration_ns": 33729.652680291925,
+        "duration_ns": 42990.99922180176,
         "evidence_refs": [
           "artifact://issue-32/integration-profiling"
         ],
@@ -70,7 +70,7 @@
       }
     ],
     "residual": {
-      "duration_ns": 0.0,
+      "duration_ns": 652.1058082580566,
       "evidence_refs": [
         "artifact://issue-32/integration-residual"
       ],

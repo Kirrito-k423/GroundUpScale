@@ -9,23 +9,34 @@ digest-verifying diagnostic seam.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from contextlib import nullcontext
 from datetime import UTC, datetime
 from hashlib import sha256
-import json
-import os
 from pathlib import Path
 from statistics import median
 
 import torch
 import torch_npu
 
-
 SHAPE = 512
 SEED = 20260811
 WARMUP = 100
 SAMPLES = 20
 INNER_ITERATIONS = 100
+Q_PATH = (
+    "semantic/model/two-layer-transformer/transformer/"
+    "layer-0/attention/q-proj"
+)
+K_PATH = (
+    "semantic/model/two-layer-transformer/transformer/"
+    "layer-0/attention/k-proj"
+)
+V_PATH = (
+    "semantic/model/two-layer-transformer/transformer/"
+    "layer-0/attention/v-proj"
+)
 
 
 def _tensor_sha256(value: torch.Tensor) -> str:
@@ -74,7 +85,7 @@ def _correctness(
     atol: float,
     rtol: float,
 ) -> dict[str, object]:
-    expected = torch.matmul(left_cpu, right_cpu)
+    expected = torch.matmul(left_cpu.unsqueeze(0), right_cpu)
     actual = observed.detach().cpu()
     difference = (actual - expected).abs()
     tolerance = atol + rtol * expected.abs()
@@ -100,15 +111,36 @@ def main() -> int:
     torch.manual_seed(SEED)
     left_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
     right_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
+    k_left_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
+    k_right_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
+    v_left_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
+    v_right_cpu = torch.randn((SHAPE, SHAPE), dtype=torch.float32)
     left = left_cpu.to("npu:0")
     right = right_cpu.to("npu:0")
+    k_left = k_left_cpu.to("npu:0")
+    k_right = k_right_cpu.to("npu:0")
+    v_left = v_left_cpu.to("npu:0")
+    v_right = v_right_cpu.to("npu:0")
     left_batched = left.unsqueeze(0)
+    frontier_left = left_batched[0]
+    k_frontier_left = k_left.unsqueeze(0)[0]
+    v_frontier_left = v_left.unsqueeze(0)[0]
+
+    def frontier_adapter() -> torch.Tensor:
+        """Measure #31's 2-D kernel; logical batch views stay outside timing."""
+        return torch.matmul(frontier_left, right)
 
     def standalone() -> torch.Tensor:
-        return torch.matmul(left, right)
+        return torch.ops.aten.matmul.default(frontier_left, right)
 
     def dispatched() -> torch.Tensor:
-        return torch.matmul(left_batched, right)
+        return torch.matmul(frontier_left, right)
+
+    def k_baseline() -> torch.Tensor:
+        return torch.ops.aten.matmul.default(k_frontier_left, k_right)
+
+    def v_baseline() -> torch.Tensor:
+        return torch.ops.aten.matmul.default(v_frontier_left, v_right)
 
     def copied() -> torch.Tensor:
         return dispatched().clone().clone()
@@ -120,11 +152,14 @@ def main() -> int:
         return output
 
     def injected_bias() -> torch.Tensor:
-        return standalone() + 0.01
+        return v_baseline() + 0.01
 
     for operation in (
+        frontier_adapter,
         standalone,
         dispatched,
+        k_baseline,
+        v_baseline,
         copied,
         synchronized,
         injected_bias,
@@ -134,8 +169,11 @@ def main() -> int:
         torch.npu.synchronize()
 
     variants = {
+        "frontier_adapter": _device_samples(frontier_adapter),
         "standalone": _device_samples(standalone),
         "dispatch": _device_samples(dispatched),
+        "k_baseline": _device_samples(k_baseline),
+        "v_baseline": _device_samples(v_baseline),
         "copy": _device_samples(copied),
         "sync": _device_samples(synchronized),
         "profiling": _device_samples(synchronized, profiled=True),
@@ -143,8 +181,10 @@ def main() -> int:
     }
     torch.npu.synchronize()
 
-    good = standalone()
-    bad = good + 0.01
+    q_good = dispatched().unsqueeze(0)
+    k_good = k_baseline().unsqueeze(0)
+    v_good = v_baseline().unsqueeze(0)
+    bad = v_good + 0.01
     torch.npu.synchronize()
     output = {
         "schema": "groundupscale.dev/ascend-diagnostic-session/v1alpha1",
@@ -163,6 +203,7 @@ def main() -> int:
         },
         "execution_contract": {
             "semantic": "batch-one Q projection MatMul",
+            "stable_path": Q_PATH,
             "shape": {
                 "left": [1, SHAPE, SHAPE],
                 "right": [SHAPE, SHAPE],
@@ -178,11 +219,67 @@ def main() -> int:
             "warmup_iterations": WARMUP,
             "samples": SAMPLES,
             "inner_iterations": INNER_ITERATIONS,
+            "operator_baseline_adapter": (
+                "batch-one input/output are zero-copy views outside the timed "
+                "2-D torch.matmul kernel"
+            ),
+            "cumulative_variant_order": [
+                "frontier_adapter",
+                "dispatch",
+                "copy",
+                "sync",
+                "profiling",
+            ],
+            "variant_contracts": {
+                "k_baseline": {
+                    "semantic": "batch-one K projection MatMul",
+                    "stable_path": K_PATH,
+                    "lane": "baseline",
+                    "input_identity": {
+                        "left_sha256": _tensor_sha256(k_left_cpu),
+                        "right_sha256": _tensor_sha256(k_right_cpu),
+                    },
+                },
+                "v_baseline": {
+                    "semantic": "batch-one V projection MatMul",
+                    "stable_path": V_PATH,
+                    "lane": "baseline",
+                    "input_identity": {
+                        "left_sha256": _tensor_sha256(v_left_cpu),
+                        "right_sha256": _tensor_sha256(v_right_cpu),
+                    },
+                },
+                "negative_control": {
+                    "semantic": (
+                        "batch-one V projection MatMul negative control"
+                    ),
+                    "stable_path": V_PATH,
+                    "lane": "diagnostic",
+                    "input_identity": {
+                        "left_sha256": _tensor_sha256(v_left_cpu),
+                        "right_sha256": _tensor_sha256(v_right_cpu),
+                    },
+                },
+            },
         },
         "input": {
             "seed": SEED,
             "left_sha256": _tensor_sha256(left_cpu),
             "right_sha256": _tensor_sha256(right_cpu),
+        },
+        "path_inputs": {
+            "q": {
+                "left_sha256": _tensor_sha256(left_cpu),
+                "right_sha256": _tensor_sha256(right_cpu),
+            },
+            "k": {
+                "left_sha256": _tensor_sha256(k_left_cpu),
+                "right_sha256": _tensor_sha256(k_right_cpu),
+            },
+            "v": {
+                "left_sha256": _tensor_sha256(v_left_cpu),
+                "right_sha256": _tensor_sha256(v_right_cpu),
+            },
         },
         "timer": {
             "source": "torch.npu.Event.elapsed_time",
@@ -193,22 +290,62 @@ def main() -> int:
             name: {
                 "raw_samples_ns": samples,
                 "median_ns": median(samples),
+                "semantic": (
+                    "batch-one K projection MatMul baseline"
+                    if name == "k_baseline"
+                    else "batch-one V projection MatMul baseline"
+                    if name == "v_baseline"
+                    else "batch-one V projection MatMul negative control"
+                    if name == "negative_control"
+                    else "cumulative Q projection 2-D Frontier-kernel wrapper stage"
+                    if name in {
+                        "frontier_adapter",
+                        "dispatch",
+                        "copy",
+                        "sync",
+                        "profiling",
+                    }
+                    else "2-D Frontier-kernel diagnostic control"
+                ),
             }
             for name, samples in variants.items()
         },
         "correctness": _correctness(
             left_cpu,
             right_cpu,
-            good,
+            q_good,
             atol=0.001,
             rtol=0.001,
         ),
+        "path_correctness": {
+            "q": _correctness(
+                left_cpu,
+                right_cpu,
+                q_good,
+                atol=0.001,
+                rtol=0.001,
+            ),
+            "k": _correctness(
+                k_left_cpu,
+                k_right_cpu,
+                k_good,
+                atol=0.001,
+                rtol=0.001,
+            ),
+            "v": _correctness(
+                v_left_cpu,
+                v_right_cpu,
+                v_good,
+                atol=0.001,
+                rtol=0.001,
+            ),
+        },
         "negative_control": {
             "kind": "injected-output-bias",
             "injected_bias": 0.01,
             "correctness": _correctness(
-                left_cpu,
-                right_cpu,
+                v_left_cpu,
+                v_right_cpu,
                 bad,
                 atol=0.001,
                 rtol=0.001,
