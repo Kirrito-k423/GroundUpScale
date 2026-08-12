@@ -58,6 +58,10 @@ The default local Artifact Store uses `.groundupscale/`, which is ignored by Git
 ```text
 .groundupscale/
 ├── cache/
+├── trusted-hardware-ci/
+│   └── <attempt-tag>/
+│       ├── trusted-hardware-ci-report.json
+│       └── failure evidence, when present
 └── runs/
     └── <run-id>/
         ├── run.manifest.json
@@ -230,5 +234,8 @@ identity. The digest, Schema, role, and lineage remain stable.
 - Writers use a temporary directory and atomically publish the final manifest.
 - Secrets and unrestricted environment dumps are never captured.
 - Cache cleanup and Run Bundle retention are separate operations.
+- Trusted hardware reports retain the attempt status, failure evidence, and
+  Run Manifest identity; retention cleanup must not delete the last qualified
+  evidence referenced by a later report.
 - CI uploads the complete manifest plus all locally available referenced files.
 - `latest` may be a convenience index but cannot be cited as evidence.

@@ -178,5 +178,25 @@ Profile 精确锁定 device、硬件 cohort、CostIR fingerprint、Case 集、th
 
 - `.github/workflows/compiler-ci.yml` 在 GitHub-hosted Linux runner 上运行，不执行 MPS benchmark。
 - 个人 Mac 不注册为公共 PR 的通用 self-hosted runner。
-- `scripts/run-local-m4-evidence.sh <tag>` 只由本机用户对已信任代码手动执行；不上传环境变量或凭证。
+- 确定性 compiler CI 与真实硬件 attempt 是独立 lane；本机硬件脚本不会在
+  strict preflight 前运行 `pytest`，避免测试负载污染 load guard。
+- M4 CPU attempt 只由本机用户对已信任代码手动执行：
+
+  ```sh
+  scripts/run-local-m4-evidence.sh \
+    --device cpu \
+    --tag manual-20260808-01 \
+    --artifact-store .groundupscale
+  ```
+
+  每个 tag 只能使用一次。脚本在
+  `.groundupscale/trusted-hardware-ci/<tag>/trusted-hardware-ci-report.json`
+  写入版本化报告，状态严格为 `evidence_collected`、`quarantined` 或
+  `hardware_unavailable`。环境漂移、采集失败、Bundle 校验失败和超过当前 M4
+  `3%` noise policy 的证据会保留并 quarantine；硬件不可用使用独立状态，不伪装成
+  性能回退。旧合格证据通过 Run ID 与 Run Manifest SHA-256 引用；Manifest 缺失或
+  摘要变化会 fail closed。
+- 该 local-first lane 固定写入 `promotion_allowed: false`。它不运行 calibration
+  promotion，也不创建 Anchor/Surface；候选晋级仍须使用独立 fit/holdout、显式策略和
+  审批流程。旧 Bundle、失败证据和报告不会被覆盖，便于保留与回放。
 - 环境 artifact 使用 allowlist；Run Bundle 不采集 unrestricted environment dump。

@@ -219,6 +219,33 @@ Use different decisions for different evidence:
 - Promotion creates a reviewed, immutable Calibration Profile version and keeps
   the Base Prediction and prior profiles addressable.
 
+## Local M4 trusted attempt contract
+
+The local M4 helper is a trusted evidence lane, not a public pull-request
+runner and not a promotion command. It accepts only an explicit CPU attempt:
+
+```text
+run-local-m4-evidence.sh
+  -> strict environment preflight
+  -> CPU Run Bundle collection
+  -> manifest/digest verification
+  -> per-Case IQR/median noise gate
+  -> versioned trusted-hardware-ci report
+```
+
+The report schema is
+`groundupscale.dev/trusted-hardware-ci-report/v1alpha1`. A successful report
+references the immutable Run Bundle and its Run Manifest digest. A failed
+attempt retains its failure evidence and is `quarantined`; an unsupported
+platform or device is `hardware_unavailable`. Neither status can set
+`promotion_allowed` to true. Reusing a tag is rejected before any existing
+report or Bundle can be overwritten.
+
+The deterministic lane remains `.github/workflows/compiler-ci.yml`: it runs
+the full test suite and canonical compilation replay on ordinary hosted CI.
+Trusted hardware evidence is therefore retained as a separately addressable
+artifact and cannot be used to weaken deterministic compiler checks.
+
 ## First vertical slice
 
 The initial implementation should prove the complete loop with deliberately
