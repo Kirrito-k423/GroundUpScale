@@ -1,0 +1,6 @@
+{
+  "payload": {
+    "operation": "fingerprint_cohort"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

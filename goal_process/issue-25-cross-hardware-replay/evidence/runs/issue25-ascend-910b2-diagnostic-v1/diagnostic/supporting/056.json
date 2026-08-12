@@ -1,0 +1,16 @@
+{
+  "payload": {
+    "passed": true,
+    "records": [
+      {
+        "expected": 0.0,
+        "observed": 0.0001220703125
+      }
+    ],
+    "tolerance": {
+      "atol": 0.001,
+      "rtol": 0.001
+    }
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

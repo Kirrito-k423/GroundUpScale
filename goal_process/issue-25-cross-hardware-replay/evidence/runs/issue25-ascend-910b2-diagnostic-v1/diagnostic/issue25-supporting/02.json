@@ -1,0 +1,622 @@
+{
+  "payload": {
+    "ablations": [
+      {
+        "ablation_id": "remove-dispatch",
+        "correctness": {
+          "evidence_ref": "artifact://issue-32/integration-dispatch-correctness",
+          "passed": true,
+          "records": [
+            {
+              "expected": 0.0,
+              "observed": 0.0001220703125
+            }
+          ],
+          "tolerance": {
+            "atol": 0.001,
+            "rtol": 0.001
+          }
+        },
+        "derivation": {
+          "cumulative_variant": "dispatch",
+          "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+          "input_refs": [
+            "artifact://issue-32/raw-q-session-1",
+            "artifact://issue-32/raw-q-session-2",
+            "artifact://issue-32/raw-q-session-3"
+          ],
+          "prior_cumulative_variants": [
+            "frontier_adapter"
+          ],
+          "sample_semantics": "derived-paired-session-delta"
+        },
+        "evidence_ref": "artifact://issue-32/integration-dispatch",
+        "kind": "dispatch",
+        "lane_id": "issue32-ascend-diagnostic",
+        "measurement_id": "issue32-dispatch-exclusive-attribution",
+        "removed_leaf_ids": [
+          "dispatch-overhead"
+        ],
+        "sessions": [
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              0.0
+            ],
+            "evidence_ref": "artifact://issue-32/integration-dispatch-1",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 0.0,
+            "process_id": 2783368,
+            "session_id": "issue32-session-01-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              0.0
+            ],
+            "evidence_ref": "artifact://issue-32/integration-dispatch-2",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 0.0,
+            "process_id": 2784432,
+            "session_id": "issue32-session-02-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              0.0
+            ],
+            "evidence_ref": "artifact://issue-32/integration-dispatch-3",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 0.0,
+            "process_id": 2785721,
+            "session_id": "issue32-session-03-v7"
+          }
+        ]
+      },
+      {
+        "ablation_id": "remove-copy",
+        "correctness": {
+          "evidence_ref": "artifact://issue-32/integration-copy-correctness",
+          "passed": true,
+          "records": [
+            {
+              "expected": 0.0,
+              "observed": 0.0001220703125
+            }
+          ],
+          "tolerance": {
+            "atol": 0.001,
+            "rtol": 0.001
+          }
+        },
+        "derivation": {
+          "cumulative_variant": "copy",
+          "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+          "input_refs": [
+            "artifact://issue-32/raw-q-session-1",
+            "artifact://issue-32/raw-q-session-2",
+            "artifact://issue-32/raw-q-session-3"
+          ],
+          "prior_cumulative_variants": [
+            "frontier_adapter",
+            "dispatch"
+          ],
+          "sample_semantics": "derived-paired-session-delta"
+        },
+        "evidence_ref": "artifact://issue-32/integration-copy",
+        "kind": "copy",
+        "lane_id": "issue32-ascend-diagnostic",
+        "measurement_id": "issue32-copy-exclusive-attribution",
+        "removed_leaf_ids": [
+          "copy-overhead"
+        ],
+        "sessions": [
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              25157.899856567383
+            ],
+            "evidence_ref": "artifact://issue-32/integration-copy-1",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 25157.899856567383,
+            "process_id": 2783368,
+            "session_id": "issue32-session-01-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              27221.100330352783
+            ],
+            "evidence_ref": "artifact://issue-32/integration-copy-2",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 27221.100330352783,
+            "process_id": 2784432,
+            "session_id": "issue32-session-02-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              25504.69934940338
+            ],
+            "evidence_ref": "artifact://issue-32/integration-copy-3",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 25504.69934940338,
+            "process_id": 2785721,
+            "session_id": "issue32-session-03-v7"
+          }
+        ]
+      },
+      {
+        "ablation_id": "remove-sync",
+        "correctness": {
+          "evidence_ref": "artifact://issue-32/integration-sync-correctness",
+          "passed": true,
+          "records": [
+            {
+              "expected": 0.0,
+              "observed": 0.0001220703125
+            }
+          ],
+          "tolerance": {
+            "atol": 0.001,
+            "rtol": 0.001
+          }
+        },
+        "derivation": {
+          "cumulative_variant": "sync",
+          "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+          "input_refs": [
+            "artifact://issue-32/raw-q-session-1",
+            "artifact://issue-32/raw-q-session-2",
+            "artifact://issue-32/raw-q-session-3"
+          ],
+          "prior_cumulative_variants": [
+            "frontier_adapter",
+            "dispatch",
+            "copy"
+          ],
+          "sample_semantics": "derived-paired-session-delta"
+        },
+        "evidence_ref": "artifact://issue-32/integration-sync",
+        "kind": "sync",
+        "lane_id": "issue32-ascend-diagnostic",
+        "measurement_id": "issue32-sync-exclusive-attribution",
+        "removed_leaf_ids": [
+          "sync-overhead"
+        ],
+        "sessions": [
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              127363.99412155151
+            ],
+            "evidence_ref": "artifact://issue-32/integration-sync-1",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 127363.99412155151,
+            "process_id": 2783368,
+            "session_id": "issue32-session-01-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              135278.000831604
+            ],
+            "evidence_ref": "artifact://issue-32/integration-sync-2",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 135278.000831604,
+            "process_id": 2784432,
+            "session_id": "issue32-session-02-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              125586.00425720215
+            ],
+            "evidence_ref": "artifact://issue-32/integration-sync-3",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 125586.00425720215,
+            "process_id": 2785721,
+            "session_id": "issue32-session-03-v7"
+          }
+        ]
+      },
+      {
+        "ablation_id": "remove-profiling",
+        "correctness": {
+          "evidence_ref": "artifact://issue-32/integration-profiling-correctness",
+          "passed": true,
+          "records": [
+            {
+              "expected": 0.0,
+              "observed": 0.0001220703125
+            }
+          ],
+          "tolerance": {
+            "atol": 0.001,
+            "rtol": 0.001
+          }
+        },
+        "derivation": {
+          "cumulative_variant": "profiling",
+          "formula": "max(0, median(cumulative_variant) - max(median(prior_cumulative_variants)))",
+          "input_refs": [
+            "artifact://issue-32/raw-q-session-1",
+            "artifact://issue-32/raw-q-session-2",
+            "artifact://issue-32/raw-q-session-3"
+          ],
+          "prior_cumulative_variants": [
+            "frontier_adapter",
+            "dispatch",
+            "copy",
+            "sync"
+          ],
+          "sample_semantics": "derived-paired-session-delta"
+        },
+        "evidence_ref": "artifact://issue-32/integration-profiling",
+        "kind": "profiling",
+        "lane_id": "issue32-ascend-diagnostic",
+        "measurement_id": "issue32-profiling-exclusive-attribution",
+        "removed_leaf_ids": [
+          "profiling-overhead"
+        ],
+        "sessions": [
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              43489.50386047363
+            ],
+            "evidence_ref": "artifact://issue-32/integration-profiling-1",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 43489.50386047363,
+            "process_id": 2783368,
+            "session_id": "issue32-session-01-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              42990.99922180176
+            ],
+            "evidence_ref": "artifact://issue-32/integration-profiling-2",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 42990.99922180176,
+            "process_id": 2784432,
+            "session_id": "issue32-session-02-v7"
+          },
+          {
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "derived_samples_ns": [
+              35071.20132446289
+            ],
+            "evidence_ref": "artifact://issue-32/integration-profiling-3",
+            "excluded_samples": [],
+            "lane_id": "issue32-ascend-diagnostic",
+            "latency_ns": 35071.20132446289,
+            "process_id": 2785721,
+            "session_id": "issue32-session-03-v7"
+          }
+        ]
+      }
+    ],
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "counterfactual": {
+      "counterfactual_id": "remove-integration-overhead",
+      "declared_recovered_ns": 195859.69269275665,
+      "evidence_refs": [
+        "artifact://issue-32/integration-counterfactual"
+      ],
+      "kind": "declared-component-removal",
+      "removed_leaf_ids": [
+        "dispatch-overhead",
+        "copy-overhead",
+        "sync-overhead",
+        "profiling-overhead"
+      ]
+    },
+    "exclusive_ledger": {
+      "e2e_duration_ns": 212804.09812927246,
+      "evidence_refs": [
+        "artifact://issue-32/integration-ledger"
+      ],
+      "leaf_semantics": "mutually-exclusive",
+      "leaves": [
+        {
+          "duration_ns": 16292.299628257751,
+          "evidence_refs": [
+            "artifact://issue-32/integration-operator"
+          ],
+          "kind": "operator",
+          "leaf_id": "operator"
+        },
+        {
+          "duration_ns": 0.0,
+          "evidence_refs": [
+            "artifact://issue-32/integration-dispatch"
+          ],
+          "kind": "dispatch",
+          "leaf_id": "dispatch-overhead"
+        },
+        {
+          "duration_ns": 25504.69934940338,
+          "evidence_refs": [
+            "artifact://issue-32/integration-copy"
+          ],
+          "kind": "copy",
+          "leaf_id": "copy-overhead"
+        },
+        {
+          "duration_ns": 127363.99412155151,
+          "evidence_refs": [
+            "artifact://issue-32/integration-sync"
+          ],
+          "kind": "sync",
+          "leaf_id": "sync-overhead"
+        },
+        {
+          "duration_ns": 42990.99922180176,
+          "evidence_refs": [
+            "artifact://issue-32/integration-profiling"
+          ],
+          "kind": "profiling",
+          "leaf_id": "profiling-overhead"
+        }
+      ],
+      "ledger_id": "issue32-q-proj-exclusive-ledger",
+      "parents": [
+        {
+          "additive": false,
+          "child_parent_ids": [
+            "q-projection-wrapper"
+          ],
+          "kind": "e2e",
+          "leaf_ids": [],
+          "span_id": "wrapped-e2e"
+        },
+        {
+          "additive": false,
+          "child_parent_ids": [],
+          "kind": "module",
+          "leaf_ids": [
+            "operator",
+            "dispatch-overhead",
+            "copy-overhead",
+            "sync-overhead",
+            "profiling-overhead"
+          ],
+          "span_id": "q-projection-wrapper"
+        }
+      ],
+      "residual": {
+        "duration_ns": 652.1058082580566,
+        "evidence_refs": [
+          "artifact://issue-32/integration-residual"
+        ],
+        "kind": "unattributed",
+        "residual_id": "unattributed-residual"
+      },
+      "version": "v1"
+    },
+    "operator_frontier": {
+      "cohort_id": "ascend-npu-23b93a89d5fecc79",
+      "combined_uncertainty_ns": 874.8525783371635,
+      "evidence_ref": "artifact://issue-25/ascend-integration-operator-frontier",
+      "evidence_refs": [
+        "artifact://issue-25/ascend-integration-operator-frontier"
+      ],
+      "execution_domain": {
+        "affinity": "192-223",
+        "alignment_bytes": 512,
+        "concurrency": 1,
+        "context": "pytorch-eager",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numa": "6",
+        "shape": {
+          "k": 512,
+          "m": 512,
+          "n": 512
+        },
+        "stream": "default-npu-stream",
+        "threads": 1
+      },
+      "frontier_role": "ACTIVE",
+      "latency_ns": 15487.000346183777,
+      "observation_validity": "QUALIFIED",
+      "schema": "groundupscale.dev/operator-frontier-evidence/v1alpha1",
+      "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+      "surface": {
+        "input_digest": "5f4aa4c09a7a6efe8682e0b8cc89a1fe6139ac94d16b0b9b8958cce799c9f2ac",
+        "surface_id": "surface://issue-25/ascend-910b2/q-proj/1d",
+        "version": "v1"
+      },
+      "uncertainty_basis": {
+        "kind": "verified-capability-surface-query",
+        "latency_interval": {
+          "lower_ns": 14612.147767846613,
+          "upper_ns": 16361.852924520941
+        },
+        "qualification_evidence_ref": "artifact://issue-25/ascend-frontier-qualification",
+        "query": {
+          "domain": {
+            "alignment_regime": "minimum-64-byte",
+            "alignment_validated": true,
+            "candidate_protocol_digest": "0cbdba157ebb6a8d6a58761d38266d7e8e267da49730252a55027479a31fd5e4",
+            "candidate_set_digest": "b1f913d7ce15ac58c017cd0357f1a72e889d43b8cf4a34b1bddbb0fa8a65fabd",
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "execution_protocol_digest": "d01190c774bea78951d58d21a88b05b6b97cec84b97ac000dbd54274eb8caf79",
+            "kernel_dispatch_regime": "pytorch-ascend-matmul",
+            "kernel_dispatch_validated": true,
+            "layout": "row-major-contiguous",
+            "regime_validated": true,
+            "semantic_operation": "MatMul",
+            "threads": 1,
+            "working_set_regime": "fixed-n512-k512-m-ramp-256-512",
+            "working_set_validated": true
+          },
+          "query_id": "issue25-ascend-qproj-512-exact",
+          "shape": {
+            "m": 512
+          },
+          "surface_id": "surface://issue-25/ascend-910b2/q-proj/1d",
+          "surface_version": "v1"
+        },
+        "source_policy": {
+          "combination": "root-sum-of-squares",
+          "policy_id": "issue25-ascend-surface-uncertainty",
+          "target_coverage": 0.68,
+          "version": "v1"
+        },
+        "surface_uncertainty_ns": 874.8525783371635
+      },
+      "uncertainty_policy": {
+        "combination": "root-sum-of-squares",
+        "policy_id": "issue25-ascend-surface-uncertainty",
+        "target_coverage": 0.68,
+        "version": "v1"
+      }
+    },
+    "paired_lanes": {
+      "baseline_lane_id": "issue32-ascend-baseline",
+      "diagnostic_lane_id": "issue32-ascend-diagnostic",
+      "pair_id": "issue32-ascend-paired-lanes"
+    },
+    "policy": {
+      "change_reason": "Replay the preregistered paired component ablation.",
+      "maximum_recovery_error_fraction": 0.05,
+      "minimum_independent_sessions": 3,
+      "policy_id": "issue32-integration-overhead",
+      "revalidation": "revalidate on policy, cohort, execution contract, or evidence change",
+      "scope": "ascend-910b2-q-projection",
+      "version": "v1"
+    },
+    "schema": "groundupscale.dev/integration-overhead-evidence/v1alpha1",
+    "stable_path": "semantic/model/two-layer-transformer/transformer/layer-0/attention/q-proj",
+    "wrapped_e2e": {
+      "correctness": {
+        "evidence_ref": "artifact://issue-32/integration-wrapped-correctness",
+        "passed": true,
+        "records": [
+          {
+            "expected": 0.0,
+            "observed": 0.0001220703125
+          }
+        ],
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      },
+      "evidence_ref": "artifact://issue-32/integration-wrapped",
+      "lane_id": "issue32-ascend-diagnostic",
+      "measurement_id": "q-proj-copy-sync-profiled-wrapper",
+      "sessions": [
+        {
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "evidence_ref": "artifact://issue-32/integration-wrapped-1",
+          "excluded_samples": [],
+          "lane_id": "issue32-ascend-diagnostic",
+          "latency_ns": 212804.09812927246,
+          "process_id": 2783368,
+          "raw_samples_ns": [
+            216784.5916748047,
+            211780.6053161621,
+            211657.39059448242,
+            209635.39123535156,
+            210993.00384521484,
+            210878.60107421875,
+            209883.19396972656,
+            210108.60443115234,
+            213224.39193725586,
+            213645.99227905273,
+            214437.40844726562,
+            214580.59310913086,
+            213764.19067382812,
+            212124.40490722656,
+            214655.79986572266,
+            213477.00119018555,
+            212929.19158935547,
+            212679.00466918945,
+            212597.19848632812,
+            214583.2061767578
+          ],
+          "session_id": "issue32-session-01-v7"
+        },
+        {
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "evidence_ref": "artifact://issue-32/integration-wrapped-2",
+          "excluded_samples": [],
+          "lane_id": "issue32-ascend-diagnostic",
+          "latency_ns": 221654.10041809082,
+          "process_id": 2784432,
+          "raw_samples_ns": [
+            228936.99645996094,
+            223704.79583740234,
+            222784.80529785156,
+            221138.19122314453,
+            220828.9909362793,
+            220589.599609375,
+            220799.99923706055,
+            221333.0078125,
+            220158.99658203125,
+            221422.1954345703,
+            221619.20547485352,
+            221944.40841674805,
+            221688.99536132812,
+            222318.40133666992,
+            223111.59133911133,
+            222559.79537963867,
+            220785.19821166992,
+            222206.99310302734,
+            222042.59872436523,
+            221518.99337768555
+          ],
+          "session_id": "issue32-session-02-v7"
+        },
+        {
+          "cohort_id": "ascend-npu-23b93a89d5fecc79",
+          "evidence_ref": "artifact://issue-32/integration-wrapped-3",
+          "excluded_samples": [],
+          "lane_id": "issue32-ascend-diagnostic",
+          "latency_ns": 202454.20455932617,
+          "process_id": 2785721,
+          "raw_samples_ns": [
+            213763.19885253906,
+            203949.60403442383,
+            204086.79962158203,
+            209937.80136108398,
+            203224.39193725586,
+            204176.59759521484,
+            202421.6079711914,
+            201194.5915222168,
+            202511.9972229004,
+            202255.80215454102,
+            201076.20239257812,
+            202486.80114746094,
+            201092.3957824707,
+            201368.99948120117,
+            212300.79650878906,
+            200938.20571899414,
+            202329.19692993164,
+            201417.80853271484,
+            201519.60372924805,
+            202549.59106445312
+          ],
+          "session_id": "issue32-session-03-v7"
+        }
+      ]
+    }
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

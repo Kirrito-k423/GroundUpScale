@@ -1,0 +1,69 @@
+{
+  "payload": {
+    "combination": "max-explicit-overlap",
+    "policy_ref": "docs/adr/0033-model-resource-floors-separately-from-full-duration.md",
+    "resource_terms": [
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "demand_unit": "FLOP",
+        "evidence_ref": "artifact://issue-32/physical-floor-compute",
+        "execution_domain": {
+          "affinity": "192-223",
+          "alignment_bytes": 512,
+          "concurrency": 1,
+          "context": "pytorch-eager",
+          "dtype": "float32",
+          "execution_mode": "pytorch-eager",
+          "layout": "row-major-contiguous",
+          "numa": "6",
+          "shape": {
+            "k": 512,
+            "m": 512,
+            "n": 512
+          },
+          "stream": "default-npu-stream",
+          "threads": 1
+        },
+        "minimum_demand": 268435456,
+        "rate_unit": "FLOP/s",
+        "resource": "compute.fp32",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
+        "validated": true,
+        "validated_rate_per_second": 19175995339398.254,
+        "validated_rate_resource": "compute.fp32"
+      },
+      {
+        "cohort_id": "ascend-npu-23b93a89d5fecc79",
+        "demand_unit": "B",
+        "evidence_ref": "artifact://issue-32/physical-floor-memory",
+        "execution_domain": {
+          "affinity": "192-223",
+          "alignment_bytes": 512,
+          "concurrency": 1,
+          "context": "pytorch-eager",
+          "dtype": "float32",
+          "execution_mode": "pytorch-eager",
+          "layout": "row-major-contiguous",
+          "numa": "6",
+          "shape": {
+            "k": 512,
+            "m": 512,
+            "n": 512
+          },
+          "stream": "default-npu-stream",
+          "threads": 1
+        },
+        "minimum_demand": 3145728,
+        "rate_unit": "B/s",
+        "resource": "memory.hbm",
+        "source_evidence_ref": "artifact://issue-32/source-physical-floor",
+        "validated": true,
+        "validated_rate_per_second": 1408047205172.7576,
+        "validated_rate_resource": "memory.hbm"
+      }
+    ],
+    "status": "known",
+    "value_ns": 13998.514874921926
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

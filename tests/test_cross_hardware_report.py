@@ -28,8 +28,8 @@ M4_CONFIRMATION_BUNDLES = (
 )
 ASCEND_DIAGNOSTIC_BUNDLE = (
     REPOSITORY_ROOT
-    / "goal_process/issue-32-ascend-diagnostic-bundle/evidence/runs"
-    / "issue32-ascend-910b2-diagnostic-v1"
+    / "goal_process/issue-25-cross-hardware-replay/evidence/runs"
+    / "issue25-ascend-910b2-diagnostic-v1"
 )
 
 
@@ -129,6 +129,12 @@ def _diagnosis(*, cohort: str, device: str, observation: float = 1000.0) -> dict
                 "query_id": "surface-query-1",
                 "status": "known",
                 "surface": {"surface_id": f"surface-{cohort}", "version": "1"},
+                "query_shape": {"m": 512},
+                "response": {
+                    "primary_response": "latency_ns",
+                    "response_identity": f"response-{cohort}",
+                    "shape_regime_identity": f"regime-{cohort}",
+                },
                 "evidence_refs": ["artifact://surface"],
             }
         ],
@@ -234,6 +240,21 @@ def test_compare_cross_hardware_accepts_partial_result_with_a_known_surface_quer
     }
 
 
+def test_compare_cross_hardware_rejects_non_latency_primary_surface_query() -> None:
+    npu = _diagnosis(cohort="ascend-cohort", device="Ascend 910B2")
+    npu["capability_surface_queries"][0].pop("response")
+
+    report = compare_cross_hardware(
+        _diagnosis(cohort="m4-cohort", device="Apple M4 CPU"),
+        npu,
+    )
+
+    assert report["status"] == "insufficient_evidence"
+    assert "capability-surface-query-not-qualified" in report["sides"][
+        "ascend"
+    ]["evidence_quality"]["reason_codes"]
+
+
 def test_load_cross_hardware_inputs_keeps_source_identity(tmp_path) -> None:
     m4 = tmp_path / "m4.json"
     npu = tmp_path / "npu.json"
@@ -325,6 +346,10 @@ def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
         "not-a-fair-efficiency-metric"
     )
     m4_result = diagnose_run_bundle(M4_DIAGNOSTIC_BUNDLE)
+    ascend_result = diagnose_run_bundle(ASCEND_DIAGNOSTIC_BUNDLE)
+    assert ascend_result["axes"]["operator_achievable_frontier"][
+        "anchor_id"
+    ] == "issue25-ascend-qproj-512"
     diagnostic_lane = m4_result["evidence"]["diagnostic_profiling_lane"]
     assert diagnostic_lane["status"] == "not_requested"
     assert diagnostic_lane["timing_used_for_frontier"] is False
@@ -351,6 +376,49 @@ def test_issue25_replays_two_real_hardware_cohorts_end_to_end() -> None:
     assert interpolated["work_rate_latency"]["declared_work"] == (
         2 * 384 * 512 * 512
     )
+    ascend_surface = ascend_result["capability_surfaces"][0]
+    assert ascend_surface["coordinate"]["axis"] == "m"
+    assert ascend_surface["response_model"]["primary_response"] == "latency_ns"
+    assert ascend_surface["response_model"]["fixed_dimensions"] == {
+        "n": 512,
+        "k": 512,
+    }
+    assert ascend_surface["work_formula"] == {
+        "kind": "matmul-2mnk",
+        "fixed_n": 512,
+        "fixed_k": 512,
+        "version": "v2",
+        "work_unit": "FLOP",
+    }
+    ascend_queries = {
+        query["query_id"]: query
+        for query in ascend_result["capability_surface_queries"]
+    }
+    assert ascend_queries["issue25-ascend-qproj-512-exact"]["status"] == (
+        "exact_anchor"
+    )
+    assert all(
+        anchor["evidence_ref"].startswith("artifact://issue-25/")
+        for anchor in ascend_queries[
+            "issue25-ascend-qproj-512-exact"
+        ]["anchors"]
+    )
+    assert ascend_queries[
+        "issue25-ascend-qproj-384-interpolation"
+    ]["status"] == "interpolated"
+    integration_verdict = next(
+        verdict
+        for verdict in ascend_result["performance_diagnosis_verdicts"]
+        if verdict["verdict"] == "integration_overhead"
+    )
+    assert integration_verdict["metrics"]["operator_frontier_ns"] == (
+        ascend_result["axes"]["operator_achievable_frontier"]["value_ns"]
+    )
+    assert integration_verdict["metrics"][
+        "operator_frontier_combined_uncertainty_ns"
+    ] == ascend_queries["issue25-ascend-qproj-512-exact"]["uncertainty"][
+        "combined_standard_ns"
+    ]
     assert all(
         report["evidence_index"][side][key]
         for side in ("m4", "ascend")

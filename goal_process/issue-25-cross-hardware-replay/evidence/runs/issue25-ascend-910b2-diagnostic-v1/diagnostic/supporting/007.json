@@ -1,0 +1,71 @@
+{
+  "payload": {
+    "candidate_id": "torch.matmul",
+    "cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "completion_boundary": {
+      "absolute_timestamps_subtracted": false,
+      "closed": true,
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event-stream-completion",
+      "stream_id": "default-npu-stream",
+      "stream_synchronized": true
+    },
+    "execution_domain": {
+      "affinity": "192-223",
+      "alignment_bytes": 512,
+      "concurrency": 1,
+      "context": "pytorch-eager",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "row-major-contiguous",
+      "numa": "6",
+      "shape": {
+        "k": 512,
+        "m": 512,
+        "n": 512
+      },
+      "stream": "default-npu-stream",
+      "threads": 1
+    },
+    "frontier_role": "NONE",
+    "instrumentation_profile": "baseline-timing/v1",
+    "lane_id": "issue32-ascend-baseline",
+    "observation_validity": "QUALIFIED",
+    "pair_id": "issue32-ascend-paired-lanes",
+    "raw_samples_ns": [
+      46593.521,
+      45146.24,
+      45028.32,
+      45192.581,
+      44973.74,
+      44956.718,
+      44358.059,
+      44528.759,
+      44419.781,
+      44358.841,
+      44670.219,
+      44821.06,
+      44769.661,
+      44171.162,
+      44486.5,
+      44406.879,
+      44422.779,
+      44408.92,
+      44414.879,
+      44411.339
+    ],
+    "timer": {
+      "device_event_id": "issue32-npu-event-pair",
+      "kind": "device-event",
+      "monotonic": true,
+      "resolution_ns": 20,
+      "source": "torch.npu.Event.elapsed_time",
+      "stream_id": "default-npu-stream"
+    },
+    "warmup": {
+      "converged": true,
+      "iterations": 10
+    }
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

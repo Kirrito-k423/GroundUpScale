@@ -2704,6 +2704,13 @@ def _integration_operator_frontier_valid(
             else None
         )
         execution_shape = contract.get("execution_domain", {}).get("shape", {})
+        response_model = source_surface.get("response_model")
+        expected_query_shape = (
+            {"m": execution_shape.get("m")}
+            if isinstance(response_model, dict)
+            and response_model.get("primary_response") == "latency_ns"
+            else {"s": execution_shape.get("m")}
+        )
         if (
             result.get("status") != "exact_anchor"
             or not isinstance(work_rate_latency, dict)
@@ -2712,7 +2719,7 @@ def _integration_operator_frontier_valid(
             or not _finite_number(interval.get("lower_ns"))
             or not _finite_number(interval.get("upper_ns"))
             or result.get("surface") != surface
-            or query.get("shape") != {"s": execution_shape.get("m")}
+            or query.get("shape") != expected_query_shape
         ):
             return False
         latency_ns = float(work_rate_latency["value_ns"])
@@ -6817,6 +6824,8 @@ def _surface_summary(
         "anchor_lifecycle_policy": surface.get(
             "anchor_lifecycle_policy"
         ),
+        "coordinate": surface.get("coordinate"),
+        "work_formula": surface.get("work_formula"),
         "response_model": surface.get("response_model"),
         "anchor_ids": [
             anchor.get("anchor_id")

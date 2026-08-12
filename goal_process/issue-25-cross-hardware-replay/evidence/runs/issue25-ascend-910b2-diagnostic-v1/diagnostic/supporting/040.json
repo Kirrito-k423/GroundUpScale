@@ -1,0 +1,8 @@
+{
+  "payload": {
+    "duration_ns": 16292.299628257751,
+    "kind": "operator",
+    "leaf_id": "operator"
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

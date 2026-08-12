@@ -307,7 +307,31 @@ def _evidence_quality(result: Mapping[str, Any]) -> dict[str, Any]:
         surface_id = query.get("surface_id")
         if isinstance(surface, Mapping):
             surface_id = surface.get("surface_id", surface_id)
-        return _string(surface_id)
+        response = query.get("response")
+        query_shape = query.get("query_shape")
+        shape_valid = (
+            isinstance(query_shape, Mapping)
+            and bool(query_shape)
+            and all(
+                isinstance(value, int)
+                and not isinstance(value, bool)
+                and value > 0
+                for value in query_shape.values()
+            )
+        )
+        if (
+            isinstance(resolved_ir, Mapping)
+            and resolved_ir.get("operation") == "MatMul"
+        ):
+            shape_valid = shape_valid and set(query_shape) == {"m"}
+        return bool(
+            _string(surface_id)
+            and isinstance(response, Mapping)
+            and response.get("primary_response") == "latency_ns"
+            and _string(response.get("response_identity"))
+            and _string(response.get("shape_regime_identity"))
+            and shape_valid
+        )
 
     query_valid = (
         isinstance(queries, list)

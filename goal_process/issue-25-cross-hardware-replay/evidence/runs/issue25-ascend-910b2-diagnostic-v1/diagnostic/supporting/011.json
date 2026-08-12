@@ -1,0 +1,9 @@
+{
+  "payload": {
+    "counterexample_id": "single-fluctuation-only",
+    "reason_codes": [
+      "single-fluctuation-is-not-reproducible"
+    ]
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}

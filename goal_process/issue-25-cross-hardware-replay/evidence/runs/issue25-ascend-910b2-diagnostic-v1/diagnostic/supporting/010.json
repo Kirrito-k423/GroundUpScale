@@ -1,0 +1,83 @@
+{
+  "payload": {
+    "observed_identity": {
+      "communication": {
+        "status": "not_applicable"
+      },
+      "device": "Ascend910B2",
+      "execution_context": {
+        "affinity": "192-223",
+        "concurrency": 1,
+        "context": "pytorch-eager",
+        "numa": "6",
+        "stream": "default-npu-stream"
+      },
+      "numeric_execution": {
+        "alignment_bytes": 512,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "threads": 1
+      },
+      "partition": "physical-npu=0/chip=0;logical-device=npu:0;ASCEND_RT_VISIBLE_DEVICES=0;chip-logic-id=0",
+      "power_clock": {
+        "clock_policy": "hbm-1600mhz-ai-core-unobserved",
+        "power_policy": "unsupported(npu-smi-work-mode-query)"
+      },
+      "software": "cann=8.5.0;driver=25.3.rc1;firmware=7.8.0.2.212;kernel=5.10.0-60.18.0.50.oe2203.aarch64;os=openEuler 22.03 LTS;python=3.11.14;torch=2.7.1+cpu;torch_npu=2.7.1",
+      "timer_protocol": {
+        "adapter_id": "ascend-npu",
+        "adapter_version": "v1",
+        "completion_kind": "device-event-stream-completion",
+        "duration_reducer": null,
+        "monotonic": true,
+        "protocol_id": "issue32-exact-shape-diagnostic",
+        "protocol_version": "v1",
+        "resolution_ns": 20,
+        "source": "torch.npu.Event.elapsed_time"
+      },
+      "topology": "single-node-single-npu"
+    },
+    "reference_cohort_id": "ascend-npu-23b93a89d5fecc79",
+    "reference_identity": {
+      "communication": {
+        "status": "not_applicable"
+      },
+      "device": "Ascend910B2",
+      "execution_context": {
+        "affinity": "192-223",
+        "concurrency": 1,
+        "context": "pytorch-eager",
+        "numa": "6",
+        "stream": "default-npu-stream"
+      },
+      "numeric_execution": {
+        "alignment_bytes": 512,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "threads": 1
+      },
+      "partition": "physical-npu=0/chip=0;logical-device=npu:0;ASCEND_RT_VISIBLE_DEVICES=0;chip-logic-id=0",
+      "power_clock": {
+        "clock_policy": "hbm-1600mhz-ai-core-unobserved",
+        "power_policy": "unsupported(npu-smi-work-mode-query)"
+      },
+      "software": "cann=8.5.0;driver=25.3.rc1;firmware=7.8.0.2.212;kernel=5.10.0-60.18.0.50.oe2203.aarch64;os=openEuler 22.03 LTS;python=3.11.14;torch=2.7.1+cpu;torch_npu=2.7.1",
+      "timer_protocol": {
+        "adapter_id": "ascend-npu",
+        "adapter_version": "v1",
+        "completion_kind": "device-event-stream-completion",
+        "duration_reducer": null,
+        "monotonic": true,
+        "protocol_id": "issue32-exact-shape-diagnostic",
+        "protocol_version": "v1",
+        "resolution_ns": 20,
+        "source": "torch.npu.Event.elapsed_time"
+      },
+      "topology": "single-node-single-npu"
+    },
+    "transient_failures": []
+  },
+  "schema": "groundupscale.dev/diagnostic-supporting-evidence/v1alpha1"
+}
