@@ -1,0 +1,67 @@
+schema: groundupscale.dev/operator-frontier-qualification-policy/v1alpha1
+policy_id: ascend-910b2-flash-attention-bounded-sequence-sweep
+version: v1
+scope:
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  operation: FlashAttentionForward
+  sequence_count: 1
+  head_count: 8
+  head_dimension: 64
+  dtype: float16
+  layout: TND
+  causal: false
+  mask: none
+  dropout_probability: 0.0
+  mode: forward
+  anchor_sequence_lengths: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1023, 1024, 1025, 1536, 2047, 2048, 2049, 3072, 4095, 4096, 4097, 6144, 8192]
+  confirmation_sequence_lengths: [48, 160, 320, 448, 640, 896, 1280, 1792, 2560, 3584, 5120, 7168]
+  candidate_ids: [torch_npu.npu_fusion_attention]
+minimum_search_sessions: 3
+minimum_holdout_sessions: 3
+minimum_confirmation_sessions: 3
+minimum_warmup_iterations: 20
+maximum_session_median_relative_range: 0.10
+minimum_candidate_coverage: C0_SINGLE
+holdout_candidate_scope: all-eligible-candidates
+uncertainty_combination: root-sum-of-squares
+target_coverage: 0.68
+sample_exclusion: none-preserve-all-raw-samples
+estimator: median(independent-holdout-session-medians)
+response_target: latency
+response_kind: setup-plus-throughput
+response_version: v1
+maximum_relative_error: 0.10
+maximum_setup_fraction_for_steady: 0.10
+collection_plan:
+  plan_id: ascend-910b2-flash-attention-bounded-sequence-sweep-v1
+  hardware_cohort: ascend-npu-23b93a89d5fecc79
+  operation: FlashAttentionForward
+  sequence_count: 1
+  head_count: 8
+  head_dimension: 64
+  dtype: float16
+  layout: TND
+  causal: false
+  mask: none
+  dropout_probability: 0.0
+  mode: forward
+  candidate_ids: [torch_npu.npu_fusion_attention]
+  execution_mode: pytorch-eager
+  warmup_iterations: 20
+  repetitions: 100
+  inner_iterations: 1
+  completion_boundary: end-event-synchronize-plus-device-synchronize
+  instrumentation_profile: ascend-npu-baseline-timing-v1
+  random_seed: 20260813
+  raw_sample_retention: preserve-all-no-selective-exclusion
+  minimum_independent_process_sessions_per_lane: 3
+  main_sweep_sequence_lengths: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1023, 1024, 1025, 1536, 2047, 2048, 2049, 3072, 4095, 4096, 4097, 6144, 8192]
+  independent_holdout_sequence_lengths: [1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256, 257, 384, 511, 512, 513, 768, 1023, 1024, 1025, 1536, 2047, 2048, 2049, 3072, 4095, 4096, 4097, 6144, 8192]
+  independent_validation_sequence_lengths: [48, 160, 320, 448, 640, 896, 1280, 1792, 2560, 3584, 5120, 7168]
+  supplemental_sequence_lengths: []
+  supplemental_trigger: candidate-switch-residual-or-boundary-evidence-only
+  maximum_supplemental_rounds: 1
+  executed_supplemental_rounds: 0
+change_reason: qualify ticket-38 bounded real Ascend equal-length TND sequence sweep
+revalidation: on cohort, domain, candidate, corpus, policy, response, or boundary change
+evidence_ref: issue://github/Kirrito-k423/GroundUpScale/38

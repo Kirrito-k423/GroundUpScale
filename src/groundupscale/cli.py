@@ -143,14 +143,27 @@ def _parser() -> argparse.ArgumentParser:
         "--device", required=True, choices=available_measurement_devices()
     )
     measure_command.add_argument("--logical-device-index", type=int, default=0)
-    measure_command.add_argument("--m", type=int, required=True)
-    measure_command.add_argument("--n", type=int, required=True)
-    measure_command.add_argument("--k", type=int, required=True)
+    measure_command.add_argument(
+        "--operation",
+        choices=("MatMul", "FlashAttentionForward"),
+        default="MatMul",
+    )
+    measure_command.add_argument("--m", type=int)
+    measure_command.add_argument("--n", type=int)
+    measure_command.add_argument("--k", type=int)
+    measure_command.add_argument("--sequence-count", type=int)
+    measure_command.add_argument("--sequence-length", type=int)
+    measure_command.add_argument("--head-count", type=int)
+    measure_command.add_argument("--head-dimension", type=int)
     measure_command.add_argument("--dtype", default="float32")
     measure_command.add_argument("--layout", default="row-major-contiguous")
     measure_command.add_argument(
         "--candidate",
-        choices=("torch.matmul", "torch.matmul.k-split-2"),
+        choices=(
+            "torch.matmul",
+            "torch.matmul.k-split-2",
+            "torch_npu.npu_fusion_attention",
+        ),
         default="torch.matmul",
     )
     measure_command.add_argument("--seed", type=int, default=20260810)
@@ -756,14 +769,14 @@ def _run_verify(args: argparse.Namespace) -> int:
     return 0 if result["passed"] else 1
 
 
-def _run_measurement(args: argparse.Namespace) -> int:
-    case = {
-        "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
-        "operation": "MatMul",
-        "shape": {
-            "left": [args.m, args.k],
-            "right": [args.k, args.n],
-        },
+def _run_measurement(
+    args: argparse.Namespace,
+    *,
+    measurement_adapter_factory: Callable[..., MeasurementAdapter] = (
+        create_measurement_adapter
+    ),
+) -> int:
+    common = {
         "dtype": args.dtype,
         "layout": args.layout,
         "seed": args.seed,
@@ -772,7 +785,51 @@ def _run_measurement(args: argparse.Namespace) -> int:
         "repetitions": args.repetitions,
         "inner_iterations": args.inner_iterations,
     }
-    adapter = create_measurement_adapter(
+    if args.operation == "MatMul":
+        if any(value is None for value in (args.m, args.n, args.k)):
+            raise SystemExit("MatMul measurement requires --m, --n and --k")
+        case = {
+            "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha1",
+            "operation": "MatMul",
+            "shape": {
+                "left": [args.m, args.k],
+                "right": [args.k, args.n],
+            },
+            **common,
+        }
+    else:
+        dimensions = (
+            args.sequence_count,
+            args.sequence_length,
+            args.head_count,
+            args.head_dimension,
+        )
+        if any(value is None or value <= 0 for value in dimensions):
+            raise SystemExit(
+                "FlashAttentionForward measurement requires positive "
+                "--sequence-count, --sequence-length, --head-count and "
+                "--head-dimension"
+            )
+        case = {
+            "schema": (
+                "groundupscale.dev/"
+                "exact-shape-flash-attention-tnd-case/v1alpha1"
+            ),
+            "operation": "FlashAttentionForward",
+            "shape": {
+                "sequence_count": args.sequence_count,
+                "sequence_lengths": [args.sequence_length]
+                * args.sequence_count,
+                "head_count": args.head_count,
+                "head_dimension": args.head_dimension,
+            },
+            "causal": False,
+            "mask": "none",
+            "dropout_probability": 0.0,
+            "mode": "forward",
+            **common,
+        }
+    adapter = measurement_adapter_factory(
         args.device,
         logical_device_index=args.logical_device_index,
     )
@@ -1377,7 +1434,9 @@ def main(
             execution_runtime_factory=execution_runtime_factory,
         )
     if args.command == "measure":
-        return _run_measurement(args)
+        return _run_measurement(
+            args, measurement_adapter_factory=measurement_adapter_factory
+        )
     if args.command == "compare-measurement":
         return _run_compare_measurement(args)
     if args.command == "qualify-frontier":

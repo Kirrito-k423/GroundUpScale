@@ -239,6 +239,41 @@ def _flash_attention_policy() -> dict[str, object]:
     }
 
 
+def test_bounded_flash_attention_publishes_replayable_unknown_for_partial_corpus(
+    tmp_path: Path,
+) -> None:
+    search, _, _ = _flash_attention_inputs(tmp_path)
+    policy = _flash_attention_policy()
+
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier-unknown",
+        run_id="flash-attention-bounded-unknown-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=[],
+        confirmation_runs=[],
+        query_sizes=(128, 4096, 8192, 9000),
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    diagnostic = json.loads(
+        (run / "diagnostic/evidence.json").read_text(encoding="utf-8")
+    )
+    assert diagnostic["resolved_configuration"]["analysis_plan"] == (
+        "test-ascend-flash-attention-tnd-forward-v1"
+    )
+    assert qualification["status"] == "unknown"
+    assert qualification["reason_code"] == (
+        "bounded-collection-corpus-incomplete"
+    )
+    assert qualification["stopping_decision"]["main_sweep_completed"] is True
+    queries = diagnose_run_bundle(run)["capability_surface_queries"]
+    assert [query["status"] for query in queries] == ["unknown"] * 4
+
+
 def test_equal_length_tnd_flash_attention_qualifies_and_queries_public_surface(
     tmp_path: Path,
 ) -> None:

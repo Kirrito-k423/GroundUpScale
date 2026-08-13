@@ -1,0 +1,125 @@
+{
+  "schema": "groundupscale.dev/operator-frontier-qualification-unknown/v1alpha1",
+  "issue": 38,
+  "status": "unknown",
+  "reason_code": "bounded-collection-corpus-incomplete",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "machine": {
+    "name": "A2-AK-225",
+    "host": "192.168.9.225",
+    "actual_login_user": "root",
+    "remote_hostname": "localhost.localdomain",
+    "workspace": "/home/t00906153/GroundUpScale-issue38-20260813"
+  },
+  "policy": "specs/policies/ascend-910b2-flash-attention-bounded-sequence-sweep-v1.yaml",
+  "fixed_domain": {
+    "operation": "FlashAttentionForward",
+    "sequence_count": 1,
+    "head_count": 8,
+    "head_dimension": 64,
+    "dtype": "float16",
+    "layout": "TND",
+    "causal": false,
+    "mask": "none",
+    "dropout_probability": 0.0,
+    "mode": "forward",
+    "candidate_ids": [
+      "torch_npu.npu_fusion_attention"
+    ]
+  },
+  "collection": {
+    "main": {
+      "status": "complete",
+      "verified_run_bundles": 99,
+      "sequence_lengths": [
+        1, 2, 4, 8, 16, 32, 64, 96, 127, 128, 129, 192, 255, 256,
+        257, 384, 511, 512, 513, 768, 1023, 1024, 1025, 1536, 2047,
+        2048, 2049, 3072, 4095, 4096, 4097, 6144, 8192
+      ],
+      "independent_process_sessions_per_shape": 3,
+      "correctness": "passed-all-verified-runs",
+      "timing_quality": "passed-all-verified-runs",
+      "raw_samples": "preserved-all"
+    },
+    "holdout": {
+      "status": "complete",
+      "verified_run_bundles": 99,
+      "independent_process_sessions_per_shape": 3,
+      "last_read_only_inventory_at": "2026-08-13T12:35:00+08:00"
+    },
+    "validation": {
+      "status": "incomplete",
+      "verified_run_bundles": 21,
+      "last_confirmed_sequence_length": 1280,
+      "declared_run_bundles": 36
+    },
+    "supplemental": {
+      "status": "not-run",
+      "verified_run_bundles": 0,
+      "trigger_observed": false
+    }
+  },
+  "main_session_median_ns": {
+    "1": 164490,
+    "128": 171890,
+    "512": 166170,
+    "1024": 169600,
+    "2048": 240560,
+    "4095": 595130,
+    "4096": 588710,
+    "4097": 625680,
+    "6144": 989300,
+    "8192": 1699220
+  },
+  "four_k_hypothesis": {
+    "status": "not-confirmed-by-main-sweep",
+    "global_boundary_published": false,
+    "supplemental_triggered": false,
+    "note": "The 4095/4096/4097 neighborhood did not establish a hard boundary; 4K remains only a domain-local hypothesis."
+  },
+  "interruption": {
+    "stage": "independent-validation",
+    "reason": "UniVPN-backed SSH path closed before key exchange",
+    "last_observation": "TCP/22 accepted, then kex_exchange_identification closed by remote host",
+    "same_cohort_preserved": true,
+    "raw_run_bundles_deleted": false
+  },
+  "stopping_decision": {
+    "status": "stopped",
+    "supplemental_rounds_executed": 0,
+    "maximum_supplemental_rounds": 1,
+    "additional_model_complexity_allowed": false,
+    "different_hardware_cohort_allowed": false
+  },
+  "representative_queries": [
+    {
+      "shape": {"sequence_length": 128},
+      "intended_role": "ramp",
+      "status": "unknown",
+      "reason_code": "bounded-collection-corpus-incomplete"
+    },
+    {
+      "shape": {"sequence_length": 4096},
+      "intended_role": "exact",
+      "status": "unknown",
+      "reason_code": "bounded-collection-corpus-incomplete"
+    },
+    {
+      "shape": {"sequence_length": 6144},
+      "intended_role": "steady",
+      "status": "unknown",
+      "reason_code": "bounded-collection-corpus-incomplete"
+    },
+    {
+      "shape": {"sequence_length": 9000},
+      "intended_role": "outside-domain",
+      "status": "unknown",
+      "reason_code": "bounded-collection-corpus-incomplete"
+    }
+  ],
+  "replay": {
+    "resume_validation": "bash goal_process/issue-38-ascend-flash-attention-sequence-sweep/collect_bounded_sequence_sweep.sh validation",
+    "publish": "python goal_process/issue-38-ascend-flash-attention-sequence-sweep/publish_qualification.py --workspace /home/t00906153/GroundUpScale-issue38-20260813",
+    "behavior": "existing immutable Run Bundles are verified and skipped before missing runs are collected"
+  }
+}

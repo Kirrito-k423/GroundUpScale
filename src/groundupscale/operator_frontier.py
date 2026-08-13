@@ -1205,31 +1205,76 @@ def _write_unknown_bounded_collection_bundle(
     cohort_id = _require_common_identity(observations)
     _require_collection_plan_identity(policy, observations)
     plan = cast(dict[str, Any], policy.document["collection_plan"])
-    main_shapes = sorted(cast(list[int], plan["main_sweep_m"]))
+    first = observations[0]
+    reference_shape = first.operator_shape
+    operation = reference_shape.operation
+    is_matmul = operation == "MatMul"
+    main_key = (
+        "main_sweep_m" if is_matmul else "main_sweep_sequence_lengths"
+    )
+    holdout_key = (
+        "independent_holdout_m"
+        if is_matmul
+        else "independent_holdout_sequence_lengths"
+    )
+    validation_key = (
+        "independent_validation_m"
+        if is_matmul
+        else "independent_validation_sequence_lengths"
+    )
+    main_shapes = sorted(cast(list[int], plan[main_key]))
     holdout_shapes = sorted(
-        cast(list[int], plan.get("independent_holdout_m", []))
+        cast(list[int], plan.get(holdout_key, []))
     )
     validation_shapes = sorted(
-        cast(list[int], plan["independent_validation_m"])
+        cast(list[int], plan[validation_key])
     )
     scope = policy.document["scope"]
     assert isinstance(scope, dict)
-    expected_scope = {
-        "hardware_cohort": cohort_id,
-        "operation": "MatMul",
-        "dtype": observations[0].dtype,
-        "layout": observations[0].layout,
-        "fixed_n": observations[0].n,
-        "fixed_k": observations[0].k,
-        "anchor_m": main_shapes,
-        "confirmation_m": validation_shapes,
-        "candidate_ids": sorted({item.candidate_id for item in observations}),
+    if is_matmul:
+        expected_scope = {
+            "hardware_cohort": cohort_id,
+            "operation": operation,
+            "dtype": first.dtype,
+            "layout": first.layout,
+            "fixed_n": first.n,
+            "fixed_k": first.k,
+            "anchor_m": main_shapes,
+            "confirmation_m": validation_shapes,
+            "candidate_ids": sorted(
+                {item.candidate_id for item in observations}
+            ),
+        }
+    else:
+        expected_scope = {
+            "hardware_cohort": cohort_id,
+            **{
+                key: value
+                for key, value in reference_shape.domain_facets.items()
+                if key != "semantic_operation"
+            },
+            "operation": operation,
+            "anchor_sequence_lengths": main_shapes,
+            "confirmation_sequence_lengths": validation_shapes,
+            "candidate_ids": sorted(
+                {item.candidate_id for item in observations}
+            ),
+        }
+    search_shapes = {
+        cast(int, item.operator_shape.coordinate_value) for item in searches
+    }
+    observed_holdout_shapes = {
+        cast(int, item.operator_shape.coordinate_value) for item in holdouts
+    }
+    observed_validation_shapes = {
+        cast(int, item.operator_shape.coordinate_value)
+        for item in confirmations
     }
     if (
         holdout_shapes != main_shapes
-        or not {item.m for item in searches} <= set(main_shapes)
-        or not {item.m for item in holdouts} <= set(holdout_shapes)
-        or not {item.m for item in confirmations} <= set(validation_shapes)
+        or not search_shapes <= set(main_shapes)
+        or not observed_holdout_shapes <= set(holdout_shapes)
+        or not observed_validation_shapes <= set(validation_shapes)
         or any(scope.get(key) != value for key, value in expected_scope.items())
     ):
         raise OperatorFrontierQualificationError(
@@ -1269,31 +1314,39 @@ def _write_unknown_bounded_collection_bundle(
             "status": "unknown",
         }
     )
+    operation_slug = (
+        "matmul/fixed-nk"
+        if is_matmul
+        else "flash-attention/tnd-forward/equal-length"
+    )
+    coordinate_axis = reference_shape.coordinate_axis
+    domain = {
+        **reference_shape.domain_facets,
+        **(
+            {"fixed_n": first.n, "fixed_k": first.k}
+            if is_matmul
+            else {"sequence_distribution": "equal-length"}
+        ),
+        "varying_axis": coordinate_axis,
+        "execution_mode": first.execution_mode,
+    }
     surface: dict[str, object] = {
-        "surface_id": f"surface://{cohort_id}/matmul/fixed-nk/{evidence_digest[:16]}",
+        "surface_id": (
+            f"surface://{cohort_id}/{operation_slug}/{evidence_digest[:16]}"
+        ),
         "version": f"v-{evidence_digest[:16]}",
         "previous_version": None,
         "qualification_status": "unknown",
         "qualification_reason_code": "bounded-collection-corpus-incomplete",
         "cohort_id": cohort_id,
-        "domain": {
-            "semantic_operation": "MatMul",
-            "dtype": searches[0].dtype,
-            "layout": searches[0].layout,
-            "fixed_n": searches[0].n,
-            "fixed_k": searches[0].k,
-            "varying_axis": "m",
-            "execution_mode": searches[0].execution_mode,
+        "domain": domain,
+        "candidate_family": first.candidate_family,
+        "coordinate": {
+            "axis": coordinate_axis,
+            "transform": "identity",
+            "transform_version": "v1",
         },
-        "candidate_family": searches[0].candidate_family,
-        "coordinate": {"axis": "m", "transform": "identity", "transform_version": "v1"},
-        "work_formula": {
-            "kind": "matmul-2mnk-fixed-nk",
-            "version": "v1",
-            "fixed_n": searches[0].n,
-            "fixed_k": searches[0].k,
-            "work_unit": "FLOP",
-        },
+        "work_formula": reference_shape.work_formula,
         "anchors": [],
         "cells": [],
         "evidence_refs": ["artifact://frontier/qualification.json"],
@@ -1309,8 +1362,7 @@ def _write_unknown_bounded_collection_bundle(
         "collection_plan": plan,
         "stopping_decision": {
             "status": "stopped",
-            "main_sweep_completed": sorted({item.m for item in searches})
-            == main_shapes,
+            "main_sweep_completed": sorted(search_shapes) == main_shapes,
             "supplemental_rounds_executed": plan["executed_supplemental_rounds"],
             "maximum_supplemental_rounds": plan["maximum_supplemental_rounds"],
             "additional_model_complexity_allowed": False,
@@ -1321,10 +1373,14 @@ def _write_unknown_bounded_collection_bundle(
     }
     queries = [
         {
-            "query_id": f"ascend-matmul-fixed-nk-m{size}",
+            "query_id": (
+                f"ascend-matmul-fixed-nk-m{size}"
+                if is_matmul
+                else f"ascend-flash-attention-tnd-s{size}"
+            ),
             "surface_id": surface["surface_id"],
             "surface_version": surface["version"],
-            "shape": {"m": size},
+            "shape": {coordinate_axis: size},
             "domain": surface["domain"],
         }
         for size in query_sizes
@@ -1338,9 +1394,9 @@ def _write_unknown_bounded_collection_bundle(
         surface=surface,
         qualification=qualification,
         queries=queries,
-        analysis_plan="issue-36-ascend-matmul-bounded-m-sweep",
-        runtime_device_name=searches[0].runtime_device_name,
-        logical_device=searches[0].logical_device,
+        analysis_plan=str(plan["plan_id"]),
+        runtime_device_name=first.runtime_device_name,
+        logical_device=first.logical_device,
     )
 
 

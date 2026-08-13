@@ -7132,7 +7132,13 @@ def _select_surface_cell(
             if left >= right or not left <= point[0] <= right:
                 continue
             if cell.get("status") == "regime_boundary":
-                if point[0] in {left, right}:
+                rejection_evidence_refs = cell.get(
+                    "rejection_evidence_refs"
+                )
+                if point[0] in {left, right} and not (
+                    isinstance(rejection_evidence_refs, list)
+                    and rejection_evidence_refs
+                ):
                     continue
                 rejections.append(
                     _RejectedSurfaceCell(cell, "shape_regime_unvalidated")

@@ -635,13 +635,209 @@ def _collect_exact_shape_matmul(
     }
 
 
+def _collect_exact_shape_flash_attention(
+    torch: object,
+    logical_device_index: int,
+    case: dict[str, object],
+    timing_plan: dict[str, object],
+) -> dict[str, object]:
+    import torch_npu
+
+    runtime: Any = torch
+    shape = case.get("shape")
+    if (
+        case.get("operation") != "FlashAttentionForward"
+        or case.get("candidate") != "torch_npu.npu_fusion_attention"
+        or case.get("dtype") != "float16"
+        or case.get("layout") != "TND"
+        or case.get("causal") is not False
+        or case.get("mask") != "none"
+        or case.get("dropout_probability") != 0.0
+        or case.get("mode") != "forward"
+        or not isinstance(shape, dict)
+    ):
+        raise ValueError("unsupported exact-Shape TND FlashAttention case")
+    sequence_count = shape.get("sequence_count")
+    sequence_lengths = shape.get("sequence_lengths")
+    head_count = shape.get("head_count")
+    head_dimension = shape.get("head_dimension")
+    if (
+        not isinstance(sequence_count, int)
+        or sequence_count < 1
+        or not isinstance(sequence_lengths, list)
+        or len(sequence_lengths) != sequence_count
+        or not all(isinstance(length, int) and length > 0 for length in sequence_lengths)
+        or len(set(sequence_lengths)) != 1
+        or not isinstance(head_count, int)
+        or head_count < 1
+        or not isinstance(head_dimension, int)
+        or head_dimension < 1
+    ):
+        raise ValueError("invalid equal-length TND FlashAttention dimensions")
+    warmup_iterations = timing_plan.get("warmup_iterations")
+    repetitions = timing_plan.get("repetitions")
+    inner_iterations = timing_plan.get("inner_iterations", 1)
+    if (
+        not isinstance(warmup_iterations, int)
+        or warmup_iterations < 0
+        or not isinstance(repetitions, int)
+        or repetitions < 1
+        or not isinstance(inner_iterations, int)
+        or inner_iterations < 1
+    ):
+        raise ValueError("invalid timing plan iteration counts")
+
+    runtime.npu.set_device(logical_device_index)
+    logical_device = f"npu:{logical_device_index}"
+    generator = runtime.Generator(device="cpu").manual_seed(int(case["seed"]))
+    tensor_shape = (sum(sequence_lengths), head_count, head_dimension)
+    q_cpu = runtime.randn(tensor_shape, dtype=runtime.float16, generator=generator)
+    k_cpu = runtime.randn(tensor_shape, dtype=runtime.float16, generator=generator)
+    v_cpu = runtime.randn(tensor_shape, dtype=runtime.float16, generator=generator)
+    allocated_before = int(runtime.npu.memory_allocated())
+    q = q_cpu.to(logical_device)
+    k = k_cpu.to(logical_device)
+    v = v_cpu.to(logical_device)
+    runtime.npu.synchronize()
+    cumulative_lengths: list[int] = []
+    total = 0
+    for length in sequence_lengths:
+        total += length
+        cumulative_lengths.append(total)
+    scale = head_dimension**-0.5
+
+    def invoke_candidate() -> object:
+        return torch_npu.npu_fusion_attention(
+            q,
+            k,
+            v,
+            head_count,
+            pse=None,
+            atten_mask=None,
+            scale=scale,
+            keep_prob=1.0,
+            input_layout="TND",
+            actual_seq_qlen=tuple(cumulative_lengths),
+            actual_seq_kvlen=tuple(cumulative_lengths),
+        )[0]
+
+    def measure() -> tuple[object, int]:
+        start = runtime.npu.Event(enable_timing=True)
+        end = runtime.npu.Event(enable_timing=True)
+        runtime.npu.synchronize()
+        start.record()
+        result = None
+        for _ in range(inner_iterations):
+            result = invoke_candidate()
+        end.record()
+        end.synchronize()
+        runtime.npu.synchronize()
+        assert result is not None
+        return (
+            result,
+            round(float(start.elapsed_time(end)) * 1_000_000 / inner_iterations),
+        )
+
+    for _ in range(warmup_iterations):
+        warmup_result, _ = measure()
+        if warmup_result.device.type != "npu":
+            raise RuntimeError("cpu-fallback-detected")
+
+    actual = invoke_candidate()
+    runtime.npu.synchronize()
+    if actual.device.type != "npu":
+        raise RuntimeError("cpu-fallback-detected")
+    oracle = runtime.empty_like(actual, dtype=runtime.float32)
+    start_index = 0
+    for length in sequence_lengths:
+        end_index = start_index + length
+        for head in range(head_count):
+            q_head = q[start_index:end_index, head, :].float()
+            k_head = k[start_index:end_index, head, :].float()
+            v_head = v[start_index:end_index, head, :].float()
+            probabilities = runtime.softmax(
+                runtime.matmul(q_head, k_head.transpose(0, 1)) * scale,
+                dim=-1,
+            )
+            oracle[start_index:end_index, head, :] = runtime.matmul(
+                probabilities, v_head
+            )
+        start_index = end_index
+    runtime.npu.synchronize()
+    actual_float = actual.float()
+    absolute_error = (actual_float - oracle).abs()
+    relative_error = absolute_error / oracle.abs().clamp_min(1e-12)
+    finite = bool(
+        runtime.isfinite(actual_float).all() and runtime.isfinite(oracle).all()
+    )
+    shape_exact = tuple(actual_float.shape) == tuple(oracle.shape)
+    atol = 0.02
+    rtol = 0.02
+    passed = bool(
+        finite
+        and shape_exact
+        and runtime.allclose(actual_float, oracle, atol=atol, rtol=rtol)
+    )
+    actual_cpu = actual_float.cpu()
+    samples: list[int] = []
+    for _ in range(repetitions):
+        result, elapsed_ns = measure()
+        if result.device.type != "npu":
+            raise RuntimeError("cpu-fallback-detected")
+        if elapsed_ns <= 0:
+            raise RuntimeError("invalid-primary-timer-sample")
+        samples.append(elapsed_ns)
+
+    def tensor_digest(tensor: Any) -> str:
+        return sha256(tensor.contiguous().numpy().tobytes()).hexdigest()
+
+    def pointer_alignment(pointer: int) -> int:
+        return pointer & -pointer
+
+    return {
+        "runtime_device_name": str(
+            runtime.npu.get_device_name(logical_device_index)
+        ),
+        "candidate_device": str(actual.device),
+        "cpu_fallback": actual.device.type == "cpu",
+        "minimum_alignment_bytes": min(
+            pointer_alignment(int(q.data_ptr())),
+            pointer_alignment(int(k.data_ptr())),
+            pointer_alignment(int(v.data_ptr())),
+        ),
+        "q_sha256": tensor_digest(q_cpu),
+        "k_sha256": tensor_digest(k_cpu),
+        "v_sha256": tensor_digest(v_cpu),
+        "target_output_sha256": tensor_digest(actual_cpu),
+        "correctness": {
+            "status": "passed" if passed else "failed",
+            "oracle": "npu-float32-decomposed-attention",
+            "atol": atol,
+            "rtol": rtol,
+            "max_absolute_error": float(absolute_error.max().item()),
+            "max_relative_error": float(relative_error.max().item()),
+            "finite": finite,
+            "shape_exact": shape_exact,
+        },
+        "raw_samples_ns": samples,
+        "memory": {
+            "allocated_bytes_before": allocated_before,
+            "allocated_bytes_after": int(runtime.npu.memory_allocated()),
+            "reserved_bytes_after": int(runtime.npu.memory_reserved()),
+            "maximum_allocated_bytes": int(runtime.npu.max_memory_allocated()),
+        },
+        "device_event_id": "per-sample-torch-npu-event-pair",
+        "stream_id": "default-npu-stream",
+    }
+
+
 class AscendNpuMeasurementAdapter:
     def __init__(
         self,
         *,
         logical_device_index: int = 0,
         runtime_loader: RuntimeLoader = _load_runtime,
-        collection_executor: CollectionExecutor = _collect_exact_shape_matmul,
+        collection_executor: CollectionExecutor | None = None,
         system_probe: SystemProbe = _collect_system_probe,
     ) -> None:
         if logical_device_index < 0:
@@ -1206,7 +1402,14 @@ class AscendNpuMeasurementAdapter:
         timing_plan: dict[str, object],
     ) -> Mapping[str, object]:
         torch, torch_npu = self._runtime_loader()
-        raw = self._collection_executor(
+        collection_executor = self._collection_executor
+        if collection_executor is None:
+            collection_executor = (
+                _collect_exact_shape_flash_attention
+                if case.get("operation") == "FlashAttentionForward"
+                else _collect_exact_shape_matmul
+            )
+        raw = collection_executor(
             torch,
             self.logical_device_index,
             deepcopy(case),
