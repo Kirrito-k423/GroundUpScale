@@ -47,6 +47,20 @@ def test_reference_model_matches_cost_state_and_semantic_leaf_counts() -> None:
     assert cpu.audit.output_device == "cpu"
     assert len(cpu.audit.alias_checks) == 16
     assert all(check.aliases_input_storage for check in cpu.audit.alias_checks)
+    assert all(
+        check.input_storage_identity == check.output_storage_identity
+        for check in cpu.audit.alias_checks
+    )
+    q_transpose = next(
+        check
+        for check in cpu.audit.alias_checks
+        if check.stable_path.endswith("/layer_0/attention/q_transpose")
+    )
+    assert q_transpose.input_contract.shape == (1, 512, 8, 64)
+    assert q_transpose.input_contract.stride == (262144, 512, 64, 1)
+    assert q_transpose.output_contract.shape == (1, 8, 512, 64)
+    assert q_transpose.output_contract.stride == (262144, 64, 512, 1)
+    assert q_transpose.output_contract.layout == "strided"
     semantic_paths = {
         operation.stable_path
         for operation in SemanticCompiler().compile(_request()).semantic_ir.walk_operations()

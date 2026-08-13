@@ -339,19 +339,33 @@ class TwoLayerTransformer(nn.Module):
 
 
 @dataclass(frozen=True)
-class AliasAudit:
-    stable_path: str
-    operation: str
-    aliases_input_storage: bool
-
-
-@dataclass(frozen=True)
 class TensorExecutionContract:
     device: str
     dtype: str
     shape: tuple[int, ...]
     stride: tuple[int, ...]
     is_contiguous: bool
+
+
+@dataclass(frozen=True)
+class AliasTensorExecutionContract:
+    device: str
+    dtype: str
+    shape: tuple[int, ...]
+    stride: tuple[int, ...]
+    is_contiguous: bool
+    layout: str
+
+
+@dataclass(frozen=True)
+class AliasAudit:
+    stable_path: str
+    operation: str
+    aliases_input_storage: bool
+    input_storage_identity: str
+    output_storage_identity: str
+    input_contract: AliasTensorExecutionContract
+    output_contract: AliasTensorExecutionContract
 
 
 @dataclass(frozen=True)
@@ -469,6 +483,21 @@ class ReferenceRunner:
                 is_contiguous=tensor.is_contiguous(),
             )
 
+        def alias_tensor_contract(tensor: Tensor) -> AliasTensorExecutionContract:
+            contract = tensor_contract(tensor)
+            return AliasTensorExecutionContract(
+                device=contract.device,
+                dtype=contract.dtype,
+                shape=contract.shape,
+                stride=contract.stride,
+                is_contiguous=contract.is_contiguous,
+                layout=("contiguous" if contract.is_contiguous else "strided"),
+            )
+
+        def storage_identity(tensor: Tensor) -> str:
+            storage = tensor.untyped_storage()
+            return f"{tensor_contract(tensor).device}:{storage.data_ptr()}:{storage.nbytes()}"
+
         def audit_hook(module: SemanticLeaf, inputs: tuple[Any, ...], output: Any) -> None:
             if not isinstance(output, Tensor):
                 raise RuntimeError(f"semantic leaf {module.stable_path} returned non-Tensor")
@@ -491,6 +520,10 @@ class ReferenceRunner:
                         stable_path=module.stable_path,
                         operation=module.operation,
                         aliases_input_storage=aliases,
+                        input_storage_identity=storage_identity(input_tensor),
+                        output_storage_identity=storage_identity(output),
+                        input_contract=alias_tensor_contract(input_tensor),
+                        output_contract=alias_tensor_contract(output),
                     )
                 )
 

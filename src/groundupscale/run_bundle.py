@@ -31,6 +31,10 @@ from groundupscale.benchmark.explanation import (
     render_report_html,
 )
 from groundupscale.benchmark.prediction import predict_live_set
+from groundupscale.alias_materialization import (
+    build_alias_materialization_evidence,
+    verify_alias_materialization_evidence,
+)
 from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
@@ -838,6 +842,7 @@ class RunBundleWriter:
         comparison: dict[str, Any] | None = None
         explanation: dict[str, Any] | None = None
         correctness: dict[str, Any] | None = None
+        alias_materialization: dict[str, Any] | None = None
         current_stage = "benchmark"
         try:
             benchmark = benchmark_runner.run(
@@ -970,6 +975,61 @@ class RunBundleWriter:
                         if key in full_model_correctness
                     }
                 )
+            target_audit = correctness.get("target_audit")
+            alias_audits = (
+                target_audit.get("alias_checks", [])
+                if isinstance(target_audit, dict)
+                else []
+            )
+            alias_operations = [
+                operation
+                for operation in self.compiled.cost.cost_ir.walk_operations()
+                if operation.operation in {"View", "Transpose"}
+            ]
+            hardware_candidates = {
+                candidate.stable_path.removeprefix("cost/"): candidate
+                for candidate in (
+                    self.compiled.hardware_prediction.candidates
+                    if self.compiled.hardware_prediction is not None
+                    else ()
+                )
+            }
+            selected_candidates: dict[str, object] = {}
+            for operation in alias_operations:
+                stable_path = operation.stable_path.removeprefix("cost/")
+                selected = hardware_candidates.get(stable_path)
+                selected_candidates[stable_path] = (
+                    selected.candidate_id
+                    if selected is not None
+                    else "runtime-candidate:"
+                    + content_fingerprint(
+                        stable_path,
+                        operation.operation,
+                        device,
+                        self.compiled.cost.compilation_fingerprint,
+                    )
+                )
+            alias_materialization = build_alias_materialization_evidence(
+                alias_audits=(
+                    alias_audits if isinstance(alias_audits, list) else []
+                ),
+                expected_operations=[
+                    {
+                        "stable_path": operation.stable_path.removeprefix("cost/"),
+                        "operation": operation.operation,
+                        "logical_read_bytes": operation.metrics.logical_read_bytes,
+                        "logical_write_bytes": operation.metrics.logical_write_bytes,
+                    }
+                    for operation in alias_operations
+                ],
+                selected_candidates=selected_candidates,
+                execution_mode=(
+                    "pytorch-eager"
+                    if self.execution_runtime is not None
+                    else "eager"
+                ),
+                hardware_cohort=str(cohort["cohort_id"]),
+            )
             current_stage = "trace"
             trace = TraceRunner(
                 self.compiled.bundle,
@@ -1225,6 +1285,21 @@ class RunBundleWriter:
                 ),
             )
             write_json("correctness-observation", "observation/correctness.json", correctness, correctness["schema"], ("resolved-input-lock", "environment"))
+            write_json(
+                "alias-materialization-evidence",
+                "observation/alias-materialization.json",
+                alias_materialization,
+                str(alias_materialization["schema"]),
+                (
+                    "correctness-observation",
+                    "cost-ir",
+                    *(
+                        ("hardware-backend-prediction",)
+                        if self.compiled.hardware_prediction is not None
+                        else ()
+                    ),
+                ),
+            )
             if self.execution_runtime is not None:
                 execution_contract = {
                     "schema": "groundupscale.dev/transformer-execution-contract/v1alpha1",
@@ -1290,6 +1365,7 @@ class RunBundleWriter:
 
             manifest = {
                 "schema": "groundupscale.dev/run-manifest/v1alpha1",
+                "alias_materialization_evidence": "v1alpha1",
                 **(
                     {
                         "bundle_kind": "transformer-demo",
@@ -1497,6 +1573,14 @@ class RunBundleWriter:
                         str(correctness["schema"]),
                         ("resolved-input-lock",),
                     )
+                if alias_materialization is not None:
+                    write_json_once(
+                        "alias-materialization-evidence",
+                        "observation/alias-materialization.json",
+                        alias_materialization,
+                        str(alias_materialization["schema"]),
+                        ("correctness-observation",),
+                    )
                 transfers = self.execution_runtime.transfer_evidence()
                 write_json_once(
                     "transfer-observation",
@@ -1540,6 +1624,9 @@ class RunBundleWriter:
                 )
                 manifest = {
                     "schema": "groundupscale.dev/run-manifest/v1alpha1",
+                    "alias_materialization_evidence": (
+                        "v1alpha1" if alias_materialization is not None else None
+                    ),
                     "bundle_kind": "transformer-demo",
                     "producer_lineage": _transformer_demo_producer_lineage(),
                     "run_id": selected_run_id,
@@ -1889,6 +1976,36 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append("model E2E human report projection mismatch")
                 if manifest.get("status") != expected.get("status"):
                     failures.append("model E2E manifest status mismatch")
+
+    alias_entries = [
+        artifact
+        for artifact in artifacts
+        if isinstance(artifact, dict)
+        and artifact.get("role") == "alias-materialization-evidence"
+    ]
+    if (
+        manifest.get("alias_materialization_evidence") == "v1alpha1"
+        and len(alias_entries) != 1
+    ):
+        failures.append("missing required artifact role: alias-materialization-evidence")
+    if len(alias_entries) > 1:
+        failures.append("duplicate artifact role: alias-materialization-evidence")
+    elif alias_entries:
+        alias_path = (root / str(alias_entries[0].get("path"))).resolve()
+        if alias_path.is_file():
+            try:
+                alias_document = json.loads(alias_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                failures.append("invalid alias materialization evidence")
+            else:
+                if not isinstance(alias_document, dict):
+                    failures.append("invalid alias materialization evidence")
+                else:
+                    failures.extend(
+                        verify_alias_materialization_evidence(alias_document)[
+                            "failures"
+                        ]
+                    )
 
     if operator_frontier:
         qualification = documents_by_role.get(

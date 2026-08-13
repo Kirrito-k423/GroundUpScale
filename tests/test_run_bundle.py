@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from pathlib import Path
 import subprocess
 import sys
@@ -90,6 +91,7 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
         "alignment-map",
         "memory-observation",
         "correctness-observation",
+        "alias-materialization-evidence",
         "error-attribution",
         "explanation-graph",
         "html-report",
@@ -97,6 +99,15 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     verification = verify_run_bundle(run)
     assert verification["passed"]
     assert verification["artifact_count"] == len(manifest["artifacts"])
+    alias_evidence = json.loads(
+        (run / "observation/alias-materialization.json").read_text(encoding="utf-8")
+    )
+    assert alias_evidence["status"] == "qualified"
+    assert len(alias_evidence["operations"]) == 16
+    assert {
+        operation["decision"] for operation in alias_evidence["operations"]
+    } == {"alias-preserving"}
+    assert alias_evidence["hardware_cohort"] == manifest["hardware_cohort"]
     trace_lines = (run / "observation/observation.trace.jsonl").read_text(
         encoding="utf-8"
     ).splitlines()
@@ -420,6 +431,45 @@ def test_run_cli_can_isolate_one_exact_shape_benchmark_case(
         "matmul-layer0-qk"
     ]
     assert verify_run_bundle(run)["passed"] is True
+
+
+def test_run_bundle_verifier_rejects_tampered_alias_materialization_summary(
+    tmp_path: Path,
+) -> None:
+    compiled = compile_analysis_plan(
+        REPOSITORY_ROOT, REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+    run = RunBundleWriter(compiled).run(
+        tmp_path,
+        run_id="alias-audit-tamper",
+        samples_override=4,
+        warmup_override=0,
+        windows_per_sample=1,
+        target_window_ns=1,
+    )
+    evidence_path = run / "observation/alias-materialization.json"
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence["operations"][0]["duration"]["value_ns"] = 1
+    evidence_path.write_text(
+        json.dumps(evidence, ensure_ascii=False, sort_keys=True), encoding="utf-8"
+    )
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = next(
+        item
+        for item in manifest["artifacts"]
+        if item["role"] == "alias-materialization-evidence"
+    )
+    entry["sha256"] = sha256(evidence_path.read_bytes()).hexdigest()
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, sort_keys=True), encoding="utf-8"
+    )
+
+    verification = verify_run_bundle(run)
+
+    assert verification["passed"] is False
+    assert "evidence version digest mismatch" in verification["failures"]
+    assert "unverified alias zero" in verification["failures"]
 
 
 def test_required_environment_gate_rejects_before_publishing_a_run(
