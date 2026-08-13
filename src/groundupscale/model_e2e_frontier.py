@@ -175,19 +175,52 @@ def _candidate(
     }
 
 
+def _source_bundles(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
+    value = evidence.get("source_bundles")
+    if value is None:
+        return []
+    if not isinstance(value, list) or not value:
+        raise ModelE2EFrontierError("invalid-model-source-bundles")
+    sources: list[dict[str, Any]] = []
+    seen_issues: set[int] = set()
+    for item in value:
+        source = _mapping(item, "invalid-model-source-bundles")
+        issue = source.get("issue")
+        digest = source.get("manifest_sha256")
+        if (
+            not isinstance(issue, int)
+            or issue in seen_issues
+            or not isinstance(digest, str)
+            or len(digest) != 64
+            or any(char not in "0123456789abcdef" for char in digest)
+            or source.get("verification_passed") is not True
+        ):
+            raise ModelE2EFrontierError("invalid-model-source-bundles")
+        seen_issues.add(issue)
+        sources.append(dict(source))
+    return sources
+
+
 def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]:
     """Derive four non-overwriting axes from one locked model input."""
 
     if document.get("schema") != INPUT_SCHEMA:
         raise ModelE2EFrontierError("unsupported-model-e2e-frontier-input")
     evidence = _mapping(document.get("evidence"), "invalid-model-evidence")
-    if evidence.get("classification") != "deterministic-synthetic":
+    classification = evidence.get("classification")
+    if classification not in {
+        "deterministic-synthetic",
+        "evidence-qualified-composition",
+    }:
         raise ModelE2EFrontierError("invalid-model-evidence-classification")
     if evidence.get("promotion_eligible") is not False:
         raise ModelE2EFrontierError(
             "synthetic-evidence-cannot-be-promotion-eligible"
         )
     evidence_refs = _refs(evidence.get("evidence_refs"), "invalid-model-evidence")
+    source_bundles = _source_bundles(evidence)
+    if classification == "evidence-qualified-composition" and not source_bundles:
+        raise ModelE2EFrontierError("missing-model-source-bundles")
     model = _mapping(document.get("model"), "invalid-model-coverage")
     expected_count = model.get("expected_semantic_leaf_count")
     repeated_indices = model.get("repeated_layer_indices")
@@ -400,6 +433,32 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             }
         )
 
+    rejected_value = schedule.get("rejected_optimizations", [])
+    if not isinstance(rejected_value, list):
+        raise ModelE2EFrontierError("invalid-rejected-schedule-optimizations")
+    rejected_optimizations: list[dict[str, str]] = []
+    for value in rejected_value:
+        rejection = _mapping(
+            value, "invalid-rejected-schedule-optimizations"
+        )
+        if rejection.get("status") != "rejected":
+            raise ModelE2EFrontierError(
+                "invalid-rejected-schedule-optimizations"
+            )
+        rejected_optimizations.append(
+            {
+                "kind": _nonempty(
+                    rejection.get("kind"),
+                    "invalid-rejected-schedule-optimizations",
+                ),
+                "status": "rejected",
+                "reason_code": _nonempty(
+                    rejection.get("reason_code"),
+                    "invalid-rejected-schedule-optimizations",
+                ),
+            }
+        )
+
     axes_value = _mapping(document.get("axes"), "invalid-model-axes")
     resource_axis = _axis(
         axes_value.get("resource_physical_floor"), "resource_physical_floor"
@@ -431,7 +490,38 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
         }
     )
     selected_duration_ns = operator_duration_ns + effect_duration_ns
-    physical_events: list[dict[str, Any]] = []
+    predecessor_by_id = {
+        candidate["candidate_id"]: [] for candidate in resolved_candidates
+    }
+    successor_by_id = {
+        candidate["candidate_id"]: [] for candidate in resolved_candidates
+    }
+    for dependency in explicit_dependencies:
+        source = dependency["source"]
+        target = dependency["target"]
+        if target in predecessor_by_id:
+            predecessor_by_id[target].append(source)
+        if source in successor_by_id:
+            successor_by_id[source].append(target)
+    physical_events: list[dict[str, Any]] = [
+        {
+            "event_id": candidate["candidate_id"],
+            "candidate_id": candidate["candidate_id"],
+            "stable_path": candidate["stable_path"],
+            "operation_class": candidate["operation_class"],
+            "duration_ns": candidate["duration_ns"],
+            "standard_uncertainty_ns": candidate[
+                "standard_uncertainty_ns"
+            ],
+            "resource_claims": candidate["resource_claims"],
+            "dependency_ids": sorted(
+                set(predecessor_by_id[candidate["candidate_id"]])
+                | set(successor_by_id[candidate["candidate_id"]])
+            ),
+            "evidence_refs": candidate["evidence_refs"],
+        }
+        for candidate in resolved_candidates
+    ]
     schedule_composition: dict[str, Any] | None = None
     if model_evidence_complete:
         candidate_ids = [candidate["candidate_id"] for candidate in resolved_candidates]
@@ -442,9 +532,6 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
         ]
         if actual_dependencies != expected_dependencies:
             raise ModelE2EFrontierError("explicit-schedule-dependency-mismatch")
-        predecessor_by_id = {candidate_id: [] for candidate_id in candidate_ids}
-        for source, target in actual_dependencies:
-            predecessor_by_id[target].append(source)
         bound_events: list[BoundEvent] = []
         for candidate in resolved_candidates:
             resource_times = tuple(
@@ -460,16 +547,6 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
                     local_duration_ns=candidate["duration_ns"],
                     resource_times_ns=resource_times,
                 )
-            )
-            physical_events.append(
-                {
-                    "event_id": candidate["candidate_id"],
-                    "stable_path": candidate["stable_path"],
-                    "operation_class": candidate["operation_class"],
-                    "duration_ns": candidate["duration_ns"],
-                    "resource_claims": candidate["resource_claims"],
-                    "evidence_refs": candidate["evidence_refs"],
-                }
             )
         bound = compose_schedule_bound(
             tuple(bound_events), schedule=ScheduleKind.SERIALIZED
@@ -554,11 +631,16 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             evidence.get("hardware_cohort"), "invalid-model-evidence"
         ),
         "evidence": {
-            "classification": evidence["classification"],
-            "authority": "synthetic-contract-only",
+            "classification": classification,
+            "authority": (
+                "synthetic-contract-only"
+                if classification == "deterministic-synthetic"
+                else "evidence-qualified-composition"
+            ),
             "source_issue": evidence.get("source_issue"),
             "promotion_eligible": evidence.get("promotion_eligible"),
             "evidence_refs": evidence_refs,
+            "source_bundles": source_bundles,
         },
         "coverage": {
             "semantic_leaf_count": expected_count,
@@ -583,6 +665,33 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             "mandatory_effects": schedule_effects,
             "physical_events": physical_events,
             "explicit_dependencies": explicit_dependencies,
+            "rejected_optimizations": rejected_optimizations,
+            "references": {
+                "serialized_unfused": {
+                    "status": "known" if schedule_composition else "unknown",
+                    "duration_ns": (
+                        schedule_composition["serialized_unfused_duration_ns"]
+                        if schedule_composition
+                        else None
+                    ),
+                },
+                "ideal_dag": {
+                    "status": "known" if schedule_composition else "unknown",
+                    "duration_ns": (
+                        schedule_composition["ideal_dag_duration_ns"]
+                        if schedule_composition
+                        else None
+                    ),
+                },
+                "selected_feasible": {
+                    "status": "known" if schedule_composition else "unknown",
+                    "duration_ns": (
+                        schedule_composition["selected_feasible_duration_ns"]
+                        if schedule_composition
+                        else None
+                    ),
+                },
+            },
             "serialized_unfused_duration_ns": (
                 schedule_composition["serialized_unfused_duration_ns"]
                 if schedule_composition is not None

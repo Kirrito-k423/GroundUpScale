@@ -18,6 +18,7 @@ from groundupscale.model_e2e_frontier import (
     load_model_e2e_frontier_report,
     write_model_e2e_frontier_bundle,
 )
+from groundupscale.issue48_composition import compose_issue48_input
 from groundupscale.run_bundle import verify_run_bundle
 
 
@@ -457,3 +458,166 @@ def test_verifier_rejects_missing_mandatory_section_after_local_rehash(
 
     assert verification["passed"] is False
     assert "model E2E comparison derivation mismatch" in verification["failures"]
+
+
+def test_incomplete_real_composition_retains_replayable_schedule_references(
+    tmp_path: Path,
+) -> None:
+    document = _document()
+    document["evidence"] = {
+        "classification": "evidence-qualified-composition",
+        "source_issue": "#48",
+        "promotion_eligible": False,
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "evidence_refs": ["run://issue42/frontier-v4"],
+        "source_bundles": [
+            {
+                "issue": 42,
+                "run_id": "issue42-frontier-v4",
+                "bundle_kind": "transformer-matmul-frontier",
+                "status": "unknown",
+                "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+                "path": "fixture/issue42-frontier-v4",
+                "manifest_sha256": "a" * 64,
+                "verification_passed": True,
+                "verification_failures": [],
+            }
+        ],
+    }
+    document["schedule"]["policy_id"] = "issue48-explicit-single-stream-v1"
+    document["schedule"]["rejected_optimizations"] = [
+        {
+            "kind": kind,
+            "status": "rejected",
+            "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        }
+        for kind in (
+            "fusion",
+            "overlap",
+            "chunk-pipeline",
+            "dispatch-hiding",
+            "queue-hiding",
+            "synchronization-hiding",
+        )
+    ]
+    document["schedule"]["mandatory_effect_ids"] = [
+        "device-dispatch",
+        "device-queueing",
+        "device-transformations",
+        "device-copies",
+        "device-idle",
+        "device-synchronization",
+    ]
+    document["schedule"]["mandatory_effects"] = [
+        {
+            "effect_id": effect_id,
+            "operation_class": f"schedule.{effect_id}",
+            "required_evidence": f"same-boundary {effect_id} evidence",
+        }
+        for effect_id in document["schedule"]["mandatory_effect_ids"]
+    ]
+    first = document["model"]["semantic_leaves"][0]
+    del first["requirements"][0]["candidate"]
+
+    run = write_model_e2e_frontier_bundle(
+        document, tmp_path, run_id="issue48-real-composition-unknown-test"
+    )
+    result = load_model_e2e_frontier_report(run)["machine_result"]
+
+    assert verify_run_bundle(run)["passed"] is True
+    assert result["status"] == "unknown"
+    assert result["evidence"]["authority"] == "evidence-qualified-composition"
+    assert result["coverage"]["semantic_leaf_count"] == 52
+    assert len({leaf["stable_path"] for leaf in result["coverage"]["predicted_leaves"]}) == 52
+    assert result["schedule"]["references"] == {
+        "serialized_unfused": {"status": "unknown", "duration_ns": None},
+        "ideal_dag": {"status": "unknown", "duration_ns": None},
+        "selected_feasible": {"status": "unknown", "duration_ns": None},
+    }
+    assert {item["kind"] for item in result["schedule"]["rejected_optimizations"]} == {
+        "fusion",
+        "overlap",
+        "chunk-pipeline",
+        "dispatch-hiding",
+        "queue-hiding",
+        "synchronization-hiding",
+    }
+    assert all(item["status"] == "unknown" for item in result["schedule"]["mandatory_effects"])
+    assert result["comparison"]["relative_prediction_error"] is None
+
+
+def test_partial_composition_keeps_resolved_physical_event_provenance() -> None:
+    document = _document()
+    missing_leaf = document["model"]["semantic_leaves"][1]
+    del missing_leaf["requirements"][0]["candidate"]
+
+    result = __import__(
+        "groundupscale.model_e2e_frontier", fromlist=["compose_model_e2e_frontier"]
+    ).compose_model_e2e_frontier(document)
+
+    assert result["status"] == "unknown"
+    assert result["schedule"]["physical_events"]
+    for event in result["schedule"]["physical_events"]:
+        assert event["candidate_id"]
+        assert event["duration_ns"] >= 0
+        assert event["standard_uncertainty_ns"] >= 0
+        assert event["resource_claims"]
+        assert event["evidence_refs"]
+        assert "dependency_ids" in event
+
+
+def test_issue48_composes_real_upstream_boundaries_without_inventing_numbers(
+    tmp_path: Path,
+) -> None:
+    repository = Path(__file__).resolve().parents[1]
+
+    document = compose_issue48_input(repository)
+    run = write_model_e2e_frontier_bundle(
+        document, tmp_path, run_id="issue48-20260814T0001Z-schedule-frontier"
+    )
+    result = load_model_e2e_frontier_report(run)["machine_result"]
+
+    assert verify_run_bundle(run)["passed"] is True
+    assert result["status"] == "unknown"
+    assert result["hardware_cohort"] == "ascend-npu-23b93a89d5fecc79"
+    assert result["axes"]["observation"]["value_ns"] == 1_921_530.0
+    assert result["comparison"]["relative_prediction_error"] is None
+    leaves = result["coverage"]["predicted_leaves"]
+    assert len(leaves) == 52
+    assert len({leaf["stable_path"] for leaf in leaves}) == 52
+    assert sum("/layer_0/" in leaf["stable_path"] for leaf in leaves) == 26
+    assert sum("/layer_1/" in leaf["stable_path"] for leaf in leaves) == 26
+    assert all(leaf["status"] == "unknown" for leaf in leaves)
+    missing_classes = {
+        item["operation_class"] for item in result["missing_evidence"]
+    }
+    assert {
+        "operator.matmul.exact-domain",
+        "operator.rmsnorm.phase-graph",
+        "operator.softmax.phase-graph",
+        "operator.add.exact-domain",
+        "operator.mul.exact-domain",
+        "operator.silu.exact-domain",
+        "layout.alias-or-materialization-audit",
+        "schedule.device-dispatch",
+        "schedule.device-queueing",
+        "schedule.device-transformations",
+        "schedule.device-copies",
+        "schedule.device-idle",
+        "schedule.device-synchronization",
+    } <= missing_classes
+    source_bundles = document["evidence"]["source_bundles"]
+    assert {source["issue"] for source in source_bundles} == {30, 42, 43, 44}
+    assert all(source["verification_passed"] is True for source in source_bundles)
+    assert all(len(source["manifest_sha256"]) == 64 for source in source_bundles)
+
+
+def test_real_composition_fails_closed_on_unverified_source_metadata() -> None:
+    document = compose_issue48_input(Path(__file__).resolve().parents[1])
+    document["evidence"]["source_bundles"][0]["verification_passed"] = False
+
+    with pytest.raises(ValueError, match="invalid-model-source-bundles"):
+        __import__(
+            "groundupscale.model_e2e_frontier",
+            fromlist=["compose_model_e2e_frontier"],
+        ).compose_model_e2e_frontier(document)

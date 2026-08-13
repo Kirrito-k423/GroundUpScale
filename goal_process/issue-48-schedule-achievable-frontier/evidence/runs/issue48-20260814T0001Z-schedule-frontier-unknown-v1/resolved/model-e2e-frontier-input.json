@@ -1,0 +1,862 @@
+{
+  "axes": {
+    "observation": {
+      "evidence_refs": [
+        "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1#comparison/predicted-vs-observed.json/two-layer-prefill"
+      ],
+      "status": "known",
+      "value_ns": 1921530.0
+    },
+    "resource_physical_floor": {
+      "reason_code": "same-boundary-complete-resource-floor-missing",
+      "status": "unknown"
+    }
+  },
+  "evidence": {
+    "classification": "evidence-qualified-composition",
+    "evidence_refs": [
+      "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "run://issue42-issue42-20260813-v1-transformer-matmul-frontier-v4@sha256:6da36ef134dc011c6d7daedeb9c875b273241e2cca2498951d6d1f3c1f836ec7",
+      "run://issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v3@sha256:bf8355f3db6012aff3599b063958ba916422d24ae56262def885d2d783badeb2",
+      "run://issue44-20260813T1945Z-softmax-frontier-unknown-v2@sha256:c1c045f104b5daaf1959d1f45ae48ebdf4b17615b53febb632e951b41915140e"
+    ],
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "promotion_eligible": false,
+    "source_bundles": [
+      {
+        "bundle_kind": "transformer-demo",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "issue": 30,
+        "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+        "path": "goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+        "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+        "status": "completed",
+        "verification_failures": [],
+        "verification_passed": true
+      },
+      {
+        "bundle_kind": "transformer-matmul-frontier",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "issue": 42,
+        "manifest_sha256": "6da36ef134dc011c6d7daedeb9c875b273241e2cca2498951d6d1f3c1f836ec7",
+        "path": "goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-transformer-matmul-frontier-v4",
+        "run_id": "issue42-issue42-20260813-v1-transformer-matmul-frontier-v4",
+        "status": "unknown",
+        "verification_failures": [],
+        "verification_passed": true
+      },
+      {
+        "bundle_kind": "compound-operator-frontier",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "issue": 43,
+        "manifest_sha256": "bf8355f3db6012aff3599b063958ba916422d24ae56262def885d2d783badeb2",
+        "path": "goal_process/issue-43-ascend-rmsnorm-frontier/evidence/runs/issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v3",
+        "run_id": "issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v3",
+        "status": "completed",
+        "verification_failures": [],
+        "verification_passed": true
+      },
+      {
+        "bundle_kind": "operator-frontier",
+        "hardware_cohort": "ascend-npu-89022e60525d608f",
+        "issue": 44,
+        "manifest_sha256": "c1c045f104b5daaf1959d1f45ae48ebdf4b17615b53febb632e951b41915140e",
+        "path": "goal_process/issue-44-ascend-softmax-phase-frontier/evidence/runs/issue44-20260813T1945Z-softmax-frontier-unknown-v2",
+        "run_id": "issue44-20260813T1945Z-softmax-frontier-unknown-v2",
+        "status": "completed",
+        "verification_failures": [],
+        "verification_passed": true
+      }
+    ],
+    "source_issue": "#48",
+    "unpublished_source_boundaries": [
+      {
+        "issue": 45,
+        "reason_code": "no-repository-contained-immutable-run-bundle"
+      },
+      {
+        "issue": 46,
+        "reason_code": "no-indexed-layout-audit-run-bundle"
+      }
+    ]
+  },
+  "model": {
+    "expected_semantic_leaf_count": 52,
+    "model_id": "two-layer-transformer-prefill",
+    "repeated_layer_indices": [
+      0,
+      1
+    ],
+    "semantic_leaves": [
+      {
+        "mandatory_operation_classes": [
+          "operator.rmsnorm.phase-graph"
+        ],
+        "operation_class": "RMSNorm",
+        "requirements": [
+          {
+            "operation_class": "operator.rmsnorm.phase-graph",
+            "required_evidence": "issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.mul.exact-domain"
+        ],
+        "operation_class": "Mul",
+        "requirements": [
+          {
+            "operation_class": "operator.mul.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.softmax.phase-graph"
+        ],
+        "operation_class": "Softmax",
+        "requirements": [
+          {
+            "operation_class": "operator.softmax.phase-graph",
+            "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.rmsnorm.phase-graph"
+        ],
+        "operation_class": "RMSNorm",
+        "requirements": [
+          {
+            "operation_class": "operator.rmsnorm.phase-graph",
+            "required_evidence": "issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.silu.exact-domain"
+        ],
+        "operation_class": "SiLU",
+        "requirements": [
+          {
+            "operation_class": "operator.silu.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.mul.exact-domain"
+        ],
+        "operation_class": "Mul",
+        "requirements": [
+          {
+            "operation_class": "operator.mul.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.rmsnorm.phase-graph"
+        ],
+        "operation_class": "RMSNorm",
+        "requirements": [
+          {
+            "operation_class": "operator.rmsnorm.phase-graph",
+            "required_evidence": "issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.mul.exact-domain"
+        ],
+        "operation_class": "Mul",
+        "requirements": [
+          {
+            "operation_class": "operator.mul.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.softmax.phase-graph"
+        ],
+        "operation_class": "Softmax",
+        "requirements": [
+          {
+            "operation_class": "operator.softmax.phase-graph",
+            "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "Transpose",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "layout.alias-or-materialization-audit"
+        ],
+        "operation_class": "View",
+        "requirements": [
+          {
+            "operation_class": "layout.alias-or-materialization-audit",
+            "required_evidence": "issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.rmsnorm.phase-graph"
+        ],
+        "operation_class": "RMSNorm",
+        "requirements": [
+          {
+            "operation_class": "operator.rmsnorm.phase-graph",
+            "required_evidence": "issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.silu.exact-domain"
+        ],
+        "operation_class": "SiLU",
+        "requirements": [
+          {
+            "operation_class": "operator.silu.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.mul.exact-domain"
+        ],
+        "operation_class": "Mul",
+        "requirements": [
+          {
+            "operation_class": "operator.mul.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.matmul.exact-domain"
+        ],
+        "operation_class": "MatMul",
+        "requirements": [
+          {
+            "operation_class": "operator.matmul.exact-domain",
+            "required_evidence": "issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "mandatory_operation_classes": [
+          "operator.add.exact-domain"
+        ],
+        "operation_class": "Add",
+        "requirements": [
+          {
+            "operation_class": "operator.add.exact-domain",
+            "required_evidence": "issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain"
+          }
+        ],
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+      }
+    ]
+  },
+  "schedule": {
+    "dependencies": [],
+    "evidence_refs": [
+      "issue://github/Kirrito-k423/GroundUpScale/48",
+      "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1"
+    ],
+    "kind": "serialized-unfused",
+    "mandatory_effect_ids": [
+      "device-dispatch",
+      "device-queueing",
+      "device-transformations",
+      "device-copies",
+      "device-idle",
+      "device-synchronization"
+    ],
+    "mandatory_effects": [
+      {
+        "effect_id": "device-dispatch",
+        "operation_class": "schedule.device-dispatch",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      },
+      {
+        "effect_id": "device-queueing",
+        "operation_class": "schedule.device-queueing",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      },
+      {
+        "effect_id": "device-transformations",
+        "operation_class": "schedule.device-transformations",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      },
+      {
+        "effect_id": "device-copies",
+        "operation_class": "schedule.device-copies",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      },
+      {
+        "effect_id": "device-idle",
+        "operation_class": "schedule.device-idle",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      },
+      {
+        "effect_id": "device-synchronization",
+        "operation_class": "schedule.device-synchronization",
+        "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+      }
+    ],
+    "policy_id": "issue48-explicit-single-stream-v1",
+    "rejected_optimizations": [
+      {
+        "kind": "fusion",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      },
+      {
+        "kind": "overlap",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      },
+      {
+        "kind": "chunk-pipeline",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      },
+      {
+        "kind": "dispatch-hiding",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      },
+      {
+        "kind": "queue-hiding",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      },
+      {
+        "kind": "synchronization-hiding",
+        "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+        "status": "rejected"
+      }
+    ],
+    "version": "1"
+  },
+  "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
+  "uncertainty": {
+    "combination": "root-sum-square",
+    "evidence_refs": [
+      "issue://github/Kirrito-k423/GroundUpScale/48#unknown-no-numeric-combination"
+    ],
+    "observation_component_ns": 0,
+    "policy_id": "issue48-root-sum-square-v1",
+    "schedule_component_ns": 0,
+    "version": "1"
+  }
+}

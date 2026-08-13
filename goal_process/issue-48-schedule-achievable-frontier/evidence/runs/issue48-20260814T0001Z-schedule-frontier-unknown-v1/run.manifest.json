@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/model-e2e-frontier-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-e2e-frontier-input",
+      "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
+      "sha256": "11a660b5cbfbc73924a2f80db39bd6411c727815b44dcbd7374a672dcf51698d"
+    },
+    {
+      "inputs": [
+        "model-e2e-frontier-input"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/model-e2e-frontier.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
+      "sha256": "c778c426615a66ee12ac7230c5f3c35ef9f38b69297ddfb90aaa9e0dfb3751e7"
+    },
+    {
+      "inputs": [
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/model-e2e-frontier-report/v1alpha1",
+      "sha256": "e714272bd94bf59ca51899649c96120277fe3f1ee15d14782394b4415077c570"
+    }
+  ],
+  "bundle_kind": "model-e2e-frontier",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; artifact digests and semantic replay are authoritative",
+  "producer_lineage": {
+    "producer": "groundupscale@0.1.0",
+    "source": "python://groundupscale.model_e2e_frontier"
+  },
+  "run_id": "issue48-20260814T0001Z-schedule-frontier-unknown-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "unknown"
+}
