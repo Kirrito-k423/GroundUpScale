@@ -121,6 +121,13 @@ TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES = frozenset(
 TRANSFORMER_MATMUL_SURFACE_REQUIRED_ROLES = frozenset(
     {"transformer-matmul-surface"}
 )
+COMPOUND_OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
+        "operator-phase-graph",
+        "compound-operator-frontier-qualification",
+        "compound-operator-diagnostic",
+    }
+)
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
@@ -1530,6 +1537,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     model_e2e_frontier = (
         manifest.get("bundle_kind") == "model-e2e-frontier"
     )
+    compound_operator_frontier = (
+        manifest.get("bundle_kind") == "compound-operator-frontier"
+    )
     transformer_matmul_frontier = (
         manifest.get("bundle_kind") == "transformer-matmul-frontier"
     )
@@ -1548,6 +1558,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or transformer_matmul_frontier
         or transformer_matmul_exact_anchor
         or transformer_matmul_surface
+        or compound_operator_frontier
     )
     supersedes = manifest.get("supersedes")
     enforce_supersession = (
@@ -1622,6 +1633,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 }
                 else TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
             )
+        elif compound_operator_frontier:
+            required_roles = COMPOUND_OPERATOR_FRONTIER_REQUIRED_ROLES
         elif operator_frontier:
             required_roles = OPERATOR_FRONTIER_REQUIRED_ROLES
         elif transformer_demo:
@@ -2155,6 +2168,267 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             derivation_matches = False
         if not derivation_matches:
             failures.append("Transformer MatMul Surface derivation mismatch")
+
+    if compound_operator_frontier:
+        graph = documents_by_role.get("operator-phase-graph")
+        qualification = documents_by_role.get(
+            "compound-operator-frontier-qualification"
+        )
+        diagnostic = documents_by_role.get("compound-operator-diagnostic")
+        if (
+            manifest.get("status") != "completed"
+            or manifest.get("device") != "ascend-npu"
+            or manifest.get("operation") != "RMSNorm"
+            or not isinstance(graph, dict)
+            or not isinstance(qualification, dict)
+            or not isinstance(diagnostic, dict)
+            or qualification.get("operation") != "RMSNorm"
+            or qualification.get("hardware_cohort")
+            != manifest.get("hardware_cohort")
+            or qualification.get("stable_path") != manifest.get("stable_path")
+            or diagnostic.get("operation") != "RMSNorm"
+            or diagnostic.get("hardware_cohort")
+            != manifest.get("hardware_cohort")
+            or diagnostic.get("stable_path") != manifest.get("stable_path")
+        ):
+            failures.append("invalid compound operator Frontier bundle identity")
+        else:
+            for label, document in (
+                ("phase graph", graph),
+                ("qualification", qualification),
+                ("diagnostic", diagnostic),
+            ):
+                expected_digest = document.get("input_digest")
+                body = {
+                    key: value
+                    for key, value in document.items()
+                    if key != "input_digest"
+                }
+                if expected_digest != _canonical_digest(body):
+                    failures.append(
+                        f"compound operator Frontier {label} digest mismatch"
+                    )
+            phase_evidence = qualification.get("phase_evidence")
+            if (
+                not isinstance(phase_evidence, list)
+                or qualification.get("source_evidence_digest")
+                != _canonical_digest(phase_evidence)
+            ):
+                failures.append(
+                    "compound operator Frontier source evidence digest mismatch"
+                )
+            if (
+                qualification.get("phase_graph_ref")
+                != f"artifact://{paths_by_role.get('operator-phase-graph')}"
+                or qualification.get("phase_graph_digest")
+                != graph.get("input_digest")
+            ):
+                failures.append(
+                    "compound operator Frontier phase graph identity mismatch"
+                )
+            if (
+                diagnostic.get("qualification_ref")
+                != (
+                    "artifact://"
+                    + str(
+                        paths_by_role.get(
+                            "compound-operator-frontier-qualification"
+                        )
+                    )
+                )
+                or diagnostic.get("qualification_digest")
+                != qualification.get("input_digest")
+                or diagnostic.get("operator_frontier")
+                != qualification.get("operator_frontier")
+                or diagnostic.get("missing_evidence")
+                != qualification.get("missing_evidence")
+            ):
+                failures.append(
+                    "compound operator Frontier diagnostic identity mismatch"
+                )
+            phases = graph.get("phases")
+            candidate = qualification.get("selected_candidate")
+            schedule = (
+                candidate.get("phase_schedule")
+                if isinstance(candidate, dict)
+                else None
+            )
+            scheduled_phases = (
+                schedule.get("phases") if isinstance(schedule, dict) else None
+            )
+            frontier = qualification.get("operator_frontier")
+            missing = qualification.get("missing_evidence")
+            graph_phase_ids = (
+                [phase.get("phase_id") for phase in phases]
+                if isinstance(phases, list)
+                and all(isinstance(phase, dict) for phase in phases)
+                else []
+            )
+            schedule_phase_ids = (
+                [phase.get("phase_id") for phase in scheduled_phases]
+                if isinstance(scheduled_phases, list)
+                and all(isinstance(phase, dict) for phase in scheduled_phases)
+                else []
+            )
+            evidence_by_phase = (
+                {
+                    evidence.get("phase_id"): evidence
+                    for evidence in phase_evidence
+                    if isinstance(evidence, dict)
+                    and isinstance(evidence.get("phase_id"), str)
+                }
+                if isinstance(phase_evidence, list)
+                else {}
+            )
+            scheduled_by_phase = (
+                {
+                    phase.get("phase_id"): phase
+                    for phase in scheduled_phases
+                    if isinstance(phase, dict)
+                    and isinstance(phase.get("phase_id"), str)
+                }
+                if isinstance(scheduled_phases, list)
+                else {}
+            )
+            phase_evidence_mismatch = False
+            if len(evidence_by_phase) != len(phase_evidence or []):
+                phase_evidence_mismatch = True
+            else:
+                for phase_id, evidence in evidence_by_phase.items():
+                    phase = scheduled_by_phase.get(phase_id)
+                    evidence_body = {
+                        key: value
+                        for key, value in evidence.items()
+                        if key != "input_digest"
+                    }
+                    source = evidence.get("source")
+                    expected_ref = (
+                        f"run-bundle://{source.get('run_id')}#"
+                        f"{source.get('artifact_ref')}"
+                        if isinstance(source, dict)
+                        else None
+                    )
+                    if (
+                        evidence.get("input_digest")
+                        != content_fingerprint(evidence_body)
+                        or not isinstance(phase, dict)
+                        or phase.get("phase_name") != evidence.get("phase_name")
+                        or phase.get("operation_class")
+                        != evidence.get("operation_class")
+                        or phase.get("candidate") != evidence.get("candidate")
+                        or phase.get("local_duration_ns")
+                        != evidence.get("duration_ns")
+                        or phase.get("standard_uncertainty_ns")
+                        != evidence.get("standard_uncertainty_ns")
+                        or phase.get("evidence_ref") != expected_ref
+                    ):
+                        phase_evidence_mismatch = True
+                        break
+            if phase_evidence_mismatch:
+                failures.append(
+                    "compound operator Frontier phase evidence mismatch"
+                )
+            graph_by_phase = (
+                {
+                    phase.get("phase_id"): phase
+                    for phase in phases
+                    if isinstance(phase, dict)
+                    and isinstance(phase.get("phase_id"), str)
+                }
+                if isinstance(phases, list)
+                else {}
+            )
+            graph_schedule_mismatch = any(
+                not isinstance(scheduled_by_phase.get(phase_id), dict)
+                or any(
+                    scheduled_by_phase[phase_id].get(field)
+                    != graph_phase.get(field)
+                    for field in (
+                        "phase_name",
+                        "operation_class",
+                        "compute_capability_resource",
+                        "memory_capability_resource",
+                        "predecessor_phase_ids",
+                        "input_roles",
+                        "output_roles",
+                        "minimum_flops",
+                        "logical_read_bytes",
+                        "logical_write_bytes",
+                    )
+                )
+                for phase_id, graph_phase in graph_by_phase.items()
+            )
+            known_durations = (
+                [phase.get("local_duration_ns") for phase in scheduled_phases]
+                if isinstance(scheduled_phases, list)
+                and all(isinstance(phase, dict) for phase in scheduled_phases)
+                else []
+            )
+            known_uncertainties = (
+                [
+                    phase.get("standard_uncertainty_ns")
+                    for phase in scheduled_phases
+                ]
+                if isinstance(scheduled_phases, list)
+                and all(isinstance(phase, dict) for phase in scheduled_phases)
+                else []
+            )
+            complete = bool(
+                isinstance(missing, list)
+                and not missing
+                and known_durations
+                and all(
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and math.isfinite(float(value))
+                    and value > 0
+                    for value in known_durations
+                )
+                and all(
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and math.isfinite(float(value))
+                    and value >= 0
+                    for value in known_uncertainties
+                )
+            )
+            expected_duration = (
+                sum(float(value) for value in known_durations)
+                if complete
+                else None
+            )
+            expected_uncertainty = (
+                math.sqrt(
+                    sum(float(value) ** 2 for value in known_uncertainties)
+                )
+                if complete
+                else None
+            )
+            expected_status = "known" if complete else "unknown"
+            if (
+                graph_phase_ids != schedule_phase_ids
+                or graph_schedule_mismatch
+                or len(graph_phase_ids) != 7
+                or not isinstance(schedule, dict)
+                or schedule.get("policy") != "serialized-no-chunk"
+                or schedule.get("chunk_pipeline_contract_id") is not None
+                or schedule.get("overlap_evidence_refs") != []
+                or schedule.get("selected_duration_ns") != expected_duration
+                or not isinstance(frontier, dict)
+                or frontier.get("status") != expected_status
+                or frontier.get("duration_ns") != expected_duration
+                or frontier.get("standard_uncertainty_ns")
+                != expected_uncertainty
+                or frontier.get("composition_policy")
+                != "serialized-no-chunk"
+                or frontier.get("formula")
+                != "sum(phase.local_duration_ns)"
+                or qualification.get("status")
+                != ("qualified" if complete else "unknown")
+            ):
+                failures.append(
+                    "compound operator Frontier phase schedule mismatch"
+                )
 
     if floor_comparison:
         comparison = documents_by_role.get(
