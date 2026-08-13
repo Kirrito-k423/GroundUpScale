@@ -75,5 +75,5 @@ Standards：3 MUST-FIX、1 SHOULD-FIX；最严重为派生 verifier 可绕过 so
 ## Final reviewer verdict
 
 - **Spec: PASS** — candidate coverage hole 精确命名 1 个缺失候选、3 search 与条件性 3 holdout；四域保留真实 repeatability boundary。
-- **Standards: PASS pending final missing/empty lineage recheck** — v4 对 `supersedes` 缺失或空列表也 fail closed；伪造 run/digest/path 测试通过。
+- **Standards: PASS** — 原 reviewer 实测 v4 合法 lineage 通过；缺失/空列表和伪造 run/digest/path 均 fail closed，无剩余 MUST-FIX。
 - Final tests: focused `17 passed`; full `565 passed in 96.03s`; evidence closure `55/55` verifier PASS; compileall/diff-check PASS；v3 diff 为空。
