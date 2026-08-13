@@ -61,4 +61,6 @@ records the minimal rejected-session reason codes for 1850Z and 1900Z. The old
 - Superseding Frontier public verification: passed with zero failures.
 - No NPU command was run during review remediation.
 
-Final original-reviewer re-review: pending after structured-unknown remediation.
+Final original-reviewer re-review: Standards PASS and Spec PASS; no remaining
+must-fix findings. The final missing-phase replay attack test and verifier fix
+are committed in `d4e88c9c26510227e2e9ca9b2f521846c0eff1f4`.
