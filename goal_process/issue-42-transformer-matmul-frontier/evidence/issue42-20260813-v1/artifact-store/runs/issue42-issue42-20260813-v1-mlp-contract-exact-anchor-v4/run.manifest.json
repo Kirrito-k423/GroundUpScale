@@ -1,0 +1,86 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/exact-anchor.json",
+      "produced_by": "groundupscale-transformer-matmul-exact-anchor-v1",
+      "role": "transformer-matmul-exact-anchor",
+      "schema": "groundupscale.dev/transformer-matmul-exact-anchor/v1alpha1",
+      "sha256": "a01e7c016b45854eace733c8ebad2eb7fe483fed545a1a77d27706385661c19d"
+    }
+  ],
+  "bundle_kind": "transformer-matmul-exact-anchor",
+  "created_at": "2026-08-13T13:04:35.311221+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue42-issue42-20260813-v1-mlp-contract-exact-anchor-v4",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": {
+    "candidates": [
+      {
+        "manifest_sha256": "321a1e7150d82f8c905f500485343659ffe1ee008292ee6627a797a0b26b97eb",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-01",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-01"
+      },
+      {
+        "manifest_sha256": "69b90a7248e708eadb084c60e86997c7100b2cb4f1ddb91de59203069205277e",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-02",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-02"
+      },
+      {
+        "manifest_sha256": "ec5b713a5a58ebb30ac7d86efbc14e87c996b2c9686a99ab74ea94117eb51932",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-03",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-03"
+      }
+    ],
+    "holdout": [
+      {
+        "manifest_sha256": "8c6535e5ec8905bf222eb3e329fba1d179d5526d3ab352f5ea3d531ddc261270",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-holdout-01",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-01"
+      },
+      {
+        "manifest_sha256": "600d26f348b037b3191a016328787a05632a827f2a7d821c7ca881e9ca1739f6",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-holdout-02",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-02"
+      },
+      {
+        "manifest_sha256": "df668e9e8a8f5ca125dafe94e75f67fa7f7c580cb74d1c66eb58fe5a9aa05bba",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-holdout-03",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-03"
+      }
+    ],
+    "search": [
+      {
+        "manifest_sha256": "321a1e7150d82f8c905f500485343659ffe1ee008292ee6627a797a0b26b97eb",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-01",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-01"
+      },
+      {
+        "manifest_sha256": "69b90a7248e708eadb084c60e86997c7100b2cb4f1ddb91de59203069205277e",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-02",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-02"
+      },
+      {
+        "manifest_sha256": "ec5b713a5a58ebb30ac7d86efbc14e87c996b2c9686a99ab74ea94117eb51932",
+        "path": "../issue42-issue42-20260813-v1-mlp-contract-search-03",
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-03"
+      }
+    ]
+  },
+  "status": "unknown",
+  "supersedes": [
+    {
+      "manifest_sha256": "f400e0ac0a52a72426030161ccc71c56f6cad2cc6c08d4ccbbd3dc0c1d91d90f",
+      "path": "../issue42-issue42-20260813-v1-mlp-contract-exact-anchor-v2",
+      "run_id": "issue42-issue42-20260813-v1-mlp-contract-exact-anchor-v2"
+    },
+    {
+      "manifest_sha256": "f9898b55c76cc364656c3be1e438ac6fb70d9a7b8d97f0f4336bc6952e031d21",
+      "path": "../issue42-issue42-20260813-v1-mlp-contract-exact-anchor-v3",
+      "run_id": "issue42-issue42-20260813-v1-mlp-contract-exact-anchor-v3"
+    }
+  ]
+}

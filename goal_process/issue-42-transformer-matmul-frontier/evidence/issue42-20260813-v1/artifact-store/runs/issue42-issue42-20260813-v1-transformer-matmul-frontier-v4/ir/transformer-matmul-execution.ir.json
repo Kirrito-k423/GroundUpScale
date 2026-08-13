@@ -1,0 +1,484 @@
+{
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "records": [
+    {
+      "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": "bhqk,bhkd->bqhd",
+        "materialize_result_contiguous": true
+      },
+      "semantic_node_id": "semantic-op:727a7fff5f03375f1fb9c333c04a26f6036cffac667b8bf602cff74b6b673147",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:fcdfe9d75eac1af056a5c8ca06c619de9ffe56a370dd5d37ede2ad4431ddd28d",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:4ea603747cc10412d1c97532a75d49cfc6ab74eb55896baaa5c5819ce5b196a9",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:e1a6c52a5779f67ead54aab9c78f113ef33cfb37e3fa54839a265c31092c4804",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:c74353f11155e490806fc082cc826c3b41de9d7687f3b060893a2c6a3ff1d722",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:3cf3af47a10b3a7def39f792a063242245f43d0859bbb3b4812e286c1e47d995",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:2e06d01fc313dd8cb7f64ad410fe8b290a4230e617b3300ed901710a5bf04b92",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:48e878561825cd93f219f3d6b2d6dae1a7b4ebbf0977a36bb5a16e810c0e9428",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:a4d8c7df89c0461b960cff97db73c7a083d75b7b5b6c8ab7b6eeb31922386c7f",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": "bhqk,bhkd->bqhd",
+        "materialize_result_contiguous": true
+      },
+      "semantic_node_id": "semantic-op:a39399cacbba488f548dd4e9506a9be48c5cc21c628febccfcf9c24389b88628",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:bbfd3d450dbbd7b8453158d84d48ddaaa33b4b5fafc94ef0942e9a24175e19ed",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:17ad0366f372e5dfd910887bce2710ba2dab840fcc65c6880790c828f9fd4268",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:fad155f789f12af72c2aa2d908953c62609e1ef13f460a936471bbab456439bf",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:ed6afeeb6c9d923c528df2a6c246b27fabd3983161cbd46ae0d78ebcbd3003c5",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:8eda054118c44c3ec02027522139f86c3d2c35e0dcf4ceafc63272fa1036877d",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "stride": [
+          262144,
+          512,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:dc7e128dbe9518b14635ed71388df6e60df1e2983fa90d7e385233d2f6a66286",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:f2ebc30d4a3c6928061cd5f3860f6101b2aee423b524d12104425c05bf45373d",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+    },
+    {
+      "candidate_family": "pytorch-ascend-matmul",
+      "device": "npu:0",
+      "execution_mode": "pytorch-eager",
+      "observed_result_contract": {
+        "dtype": "float32",
+        "is_contiguous": true,
+        "shape": [
+          1,
+          512,
+          2048
+        ],
+        "stride": [
+          1048576,
+          2048,
+          1
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_lowering": {
+        "equation": null,
+        "materialize_result_contiguous": false
+      },
+      "semantic_node_id": "semantic-op:31dadbbaa57327bae8b89a23efa735513bd58beeca2403fe8876b3767650c7ae",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+    }
+  ],
+  "runtime": "torch-npu",
+  "schema": "groundupscale.dev/transformer-matmul-execution-ir/v1alpha1",
+  "source_execution_contract_schema": "groundupscale.dev/transformer-execution-contract/v1alpha1"
+}

@@ -1,0 +1,86 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/exact-anchor.json",
+      "produced_by": "groundupscale-transformer-matmul-exact-anchor-v1",
+      "role": "transformer-matmul-exact-anchor",
+      "schema": "groundupscale.dev/transformer-matmul-exact-anchor/v1alpha1",
+      "sha256": "f22ef77fcea22ad9d721722bd4b21841da04dd3dba14c0ef26173b91c06a1e89"
+    }
+  ],
+  "bundle_kind": "transformer-matmul-exact-anchor",
+  "created_at": "2026-08-13T13:04:35.229083+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue42-issue42-20260813-v1-attention-context-exact-anchor-v4",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": {
+    "candidates": [
+      {
+        "manifest_sha256": "8d58d45f1f556b5783a2da02ca9b84bfc348c9b6491e0c54d3ab8167936523b0",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-01",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-01"
+      },
+      {
+        "manifest_sha256": "5843016db87a7937430760f9e1ec9c6165dfc32f03af80e0e0a445da82a6b96c",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-02",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-02"
+      },
+      {
+        "manifest_sha256": "b9a9c665a8f284ffeb3bfa479263d33c28c931a46cfdb49d65a3bfabdf421231",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-03",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-03"
+      }
+    ],
+    "holdout": [
+      {
+        "manifest_sha256": "131ca77320a92560e162f17fcf687b8af4254e4afae196fd7583a67e36acaac7",
+        "path": "../issue42-issue42-20260813-v1-attention-context-holdout-01",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-holdout-01"
+      },
+      {
+        "manifest_sha256": "cd3309f3b61d64d95ec7913fd2267ee1ffd4a15a10ec92ade66753884884a52d",
+        "path": "../issue42-issue42-20260813-v1-attention-context-holdout-02",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-holdout-02"
+      },
+      {
+        "manifest_sha256": "18aa0ea8a26ab99b19bf0d1c89f2857b41e5afd98a01ac3ccf568f8d89a12f41",
+        "path": "../issue42-issue42-20260813-v1-attention-context-holdout-03",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-holdout-03"
+      }
+    ],
+    "search": [
+      {
+        "manifest_sha256": "8d58d45f1f556b5783a2da02ca9b84bfc348c9b6491e0c54d3ab8167936523b0",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-01",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-01"
+      },
+      {
+        "manifest_sha256": "5843016db87a7937430760f9e1ec9c6165dfc32f03af80e0e0a445da82a6b96c",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-02",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-02"
+      },
+      {
+        "manifest_sha256": "b9a9c665a8f284ffeb3bfa479263d33c28c931a46cfdb49d65a3bfabdf421231",
+        "path": "../issue42-issue42-20260813-v1-attention-context-search-03",
+        "run_id": "issue42-issue42-20260813-v1-attention-context-search-03"
+      }
+    ]
+  },
+  "status": "unknown",
+  "supersedes": [
+    {
+      "manifest_sha256": "764672dff20085683dc155e1661a1d0efd9cee57561fd178b6487f0c3560073b",
+      "path": "../issue42-issue42-20260813-v1-attention-context-exact-anchor-v2",
+      "run_id": "issue42-issue42-20260813-v1-attention-context-exact-anchor-v2"
+    },
+    {
+      "manifest_sha256": "e14da39a3ea68530e2f3249feb4f5c8a5d6c78931814e31573924865684847d0",
+      "path": "../issue42-issue42-20260813-v1-attention-context-exact-anchor-v3",
+      "run_id": "issue42-issue42-20260813-v1-attention-context-exact-anchor-v3"
+    }
+  ]
+}

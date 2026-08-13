@@ -424,6 +424,45 @@ def test_bare_exact_anchor_document_cannot_promote_a_domain(tmp_path: Path) -> N
         )
 
 
+def test_verifier_rejects_forged_supersession_lineage(tmp_path: Path) -> None:
+    historical = _qualified_anchor_run(
+        tmp_path, domain_class="attention-qk", prefix="superseded"
+    )
+    replacement = _qualified_anchor_run(
+        tmp_path, domain_class="attention-qk", prefix="replacement"
+    )
+    manifest_path = replacement / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    historical_manifest = historical / "run.manifest.json"
+    manifest["supersedes"] = [
+        {
+            "run_id": json.loads(historical_manifest.read_text())["run_id"],
+            "manifest_sha256": sha256(historical_manifest.read_bytes()).hexdigest(),
+            "path": str(
+                Path("../../..")
+                / "superseded-anchor/runs"
+                / historical.name
+            ),
+        }
+    ]
+    replacement_v4 = replacement.parent / "issue42-replacement-anchor-v4"
+    replacement.rename(replacement_v4)
+    replacement = replacement_v4
+    manifest_path = replacement / "run.manifest.json"
+    original_run_id = manifest["run_id"]
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    assert verify_run_bundle(replacement)["passed"] is True, verify_run_bundle(
+        replacement
+    )["failures"]
+
+    manifest["supersedes"][0]["run_id"] = "forged-history"
+    manifest["supersedes"][0]["manifest_sha256"] = "0" * 64
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    verification = verify_run_bundle(replacement)
+    assert verification["passed"] is False
+    assert "supersession lineage mismatch" in verification["failures"]
+
+
 def test_exact_anchor_yields_known_latency_and_rate_is_only_derived(
     tmp_path: Path,
 ) -> None:
@@ -819,6 +858,51 @@ def test_exact_anchor_bundle_rederives_disjoint_search_holdout_sessions(
     )
     assert projection_query["status"] == "unknown"
     assert projection_query["reason_codes"] == ["exact-anchor-not-qualified"]
+
+
+def test_candidate_coverage_hole_names_minimum_next_measurement(tmp_path: Path) -> None:
+    anchor = _qualified_anchor_run(
+        tmp_path, domain_class="attention-qk", prefix="candidate-hole"
+    )
+    manifest_path = anchor / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    # Re-derive an honest one-candidate INACTIVE anchor from the selected lane.
+    source_runs = manifest["source_runs"]
+    source_runs["candidates"] = source_runs["search"]
+    anchor_document = _artifact(anchor, "transformer-matmul-exact-anchor")
+    # The helper used two candidates; publish a one-candidate bundle through
+    # the public writer rather than mutating the qualification artifact.
+    one_candidate = TransformerMatmulExactAnchorBundleWriter().run(
+        tmp_path / "one-candidate-anchor",
+        run_id="issue42-one-candidate-anchor-v1",
+        search_runs=[(anchor / item["path"]).resolve() for item in source_runs["search"]],
+        holdout_runs=[(anchor / item["path"]).resolve() for item in source_runs["holdout"]],
+        candidate_runs=[(anchor / item["path"]).resolve() for item in source_runs["search"]],
+    )
+    assert anchor_document["status"] == "qualified"
+    assert verify_run_bundle(one_candidate)["passed"] is True, verify_run_bundle(
+        one_candidate
+    )["failures"]
+    frontier = TransformerMatmulFrontierBundleWriter().run(
+        tmp_path / "candidate-hole-frontier",
+        run_id="issue42-candidate-hole-frontier-v1",
+        transformer_run=FROZEN_DEMO,
+        frontier_runs=(one_candidate,),
+    )
+    query = next(
+        item
+        for item in _artifact(
+            frontier, "transformer-matmul-frontier-qualification"
+        )["domain_queries"]
+        if item["domain_class"] == "attention-qk"
+    )
+    assert query["minimum_next_measurement"]["stage"] == "candidate-search"
+    assert query["minimum_next_measurement"]["missing_eligible_candidates"] == 1
+    assert query["minimum_next_measurement"]["independent_search_sessions"] == 3
+    assert query["minimum_next_measurement"]["conditional_holdout"] == {
+        "condition": "candidate-wins-best-of-correct-search",
+        "independent_holdout_sessions": 3,
+    }
 
 
 def test_qualified_surface_cell_yields_known_latency(tmp_path: Path) -> None:

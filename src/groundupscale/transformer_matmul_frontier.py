@@ -890,11 +890,62 @@ def _qualification(
         if compatible_unqualified:
             compatible_anchor = compatible_unqualified[0][0].get("anchor")
             if isinstance(compatible_anchor, dict):
+                boundary_reasons = compatible_anchor.get("reason_codes", [])
+                candidate_coverage = compatible_anchor.get("candidate_coverage")
                 query["evidence_boundary"] = {
-                    "reason_codes": compatible_anchor.get("reason_codes", []),
+                    "reason_codes": boundary_reasons,
                     "repeatability": compatible_anchor.get("repeatability"),
+                    "candidate_coverage": candidate_coverage,
                     "additional_rounds_allowed": False,
                 }
+                if "candidate-coverage-incomplete" in boundary_reasons:
+                    eligible_count = (
+                        candidate_coverage.get("eligible_candidate_count", 0)
+                        if isinstance(candidate_coverage, dict)
+                        else 0
+                    )
+                    required_count = int(
+                        EXACT_ANCHOR_QUALIFICATION_POLICY[
+                            "minimum_eligible_candidate_count"
+                        ]
+                    )
+                    query["minimum_next_measurement"] = {
+                        "operation": "MatMul",
+                        "domain_id": domain["domain_id"],
+                        "domain_identity": identity,
+                        "stage": "candidate-search",
+                        "candidate_id": "new-correct-candidate-not-yet-measured",
+                        "missing_eligible_candidates": max(
+                            required_count - int(eligible_count), 0
+                        ),
+                        "independent_search_sessions": 3,
+                        "conditional_holdout": {
+                            "condition": "candidate-wins-best-of-correct-search",
+                            "independent_holdout_sessions": 3,
+                        },
+                        "response_target": "latency",
+                        "hardware_cohort": identity["hardware_cohort"],
+                    }
+                if any(
+                    reason.endswith("repeatability-failed")
+                    or reason == "search-holdout-relative-gap-failed"
+                    for reason in boundary_reasons
+                ):
+                    query["minimum_next_measurement"][
+                        "repeatability_boundary"
+                    ] = {
+                        "stage": "independent-qualification-session",
+                        "bounded_policy": (
+                            "new session requires explicit future authorization; "
+                            "current preregistration forbids supplemental rounds"
+                        ),
+                        "failed_reason_codes": [
+                            reason
+                            for reason in boundary_reasons
+                            if reason.endswith("repeatability-failed")
+                            or reason == "search-holdout-relative-gap-failed"
+                        ],
+                    }
         if len(matches) == 1:
             match = matches[0]
             anchor = match.get("anchor")
@@ -1123,6 +1174,7 @@ def verify_transformer_matmul_frontier_derivation(
         "issue42-issue42-20260813-v1-transformer-matmul-frontier",
         "issue42-issue42-20260813-v1-transformer-matmul-frontier-final",
         "issue42-issue42-20260813-v1-transformer-matmul-frontier-v2",
+        "issue42-issue42-20260813-v1-transformer-matmul-frontier-v3",
     }:
         # Historical derived decisions are replayable at immutable paths but
         # cannot be consumed by current qualification because their anchors
@@ -1213,12 +1265,13 @@ def verify_transformer_matmul_frontier_derivation(
     return False
 
 
-def _supersession_record(path: Path) -> dict[str, str]:
+def _supersession_record(path: Path, destination: Path) -> dict[str, str]:
     manifest_path = path / "run.manifest.json"
     manifest = _load_json(manifest_path)
     return {
         "run_id": str(manifest["run_id"]),
         "manifest_sha256": _sha256(manifest_path),
+        "path": os.path.relpath(path, destination),
     }
 
 
@@ -1382,7 +1435,8 @@ class TransformerMatmulExactAnchorBundleWriter:
                 "candidates": records(candidates),
             },
             "supersedes": [
-                _supersession_record(Path(path).resolve()) for path in supersedes
+                _supersession_record(Path(path).resolve(), destination)
+                for path in supersedes
             ],
             "artifacts": [
                 {
@@ -1609,7 +1663,8 @@ class TransformerMatmulFrontierBundleWriter:
                 for item in evidence
             ],
             "supersedes": [
-                _supersession_record(Path(path).resolve()) for path in supersedes
+                _supersession_record(Path(path).resolve(), destination)
+                for path in supersedes
             ],
             "artifacts": [
                 {

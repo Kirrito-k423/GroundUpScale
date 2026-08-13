@@ -1549,6 +1549,57 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or transformer_matmul_exact_anchor
         or transformer_matmul_surface
     )
+    supersedes = manifest.get("supersedes")
+    enforce_supersession = (
+        transformer_matmul_frontier or transformer_matmul_exact_anchor
+    ) and root.name.endswith("-v4")
+    if supersedes and enforce_supersession:
+        seen_superseded_ids: set[str] = set()
+        seen_superseded_paths: set[Path] = set()
+        if not isinstance(supersedes, list):
+            failures.append("invalid supersession lineage")
+        else:
+            for record in supersedes:
+                if not isinstance(record, dict):
+                    failures.append("invalid supersession lineage")
+                    continue
+                run_id = record.get("run_id")
+                relative_path = record.get("path")
+                digest = record.get("manifest_sha256")
+                if (
+                    not isinstance(run_id, str)
+                    or not run_id
+                    or run_id in seen_superseded_ids
+                    or not isinstance(relative_path, str)
+                    or not relative_path
+                    or Path(relative_path).is_absolute()
+                    or not isinstance(digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                ):
+                    failures.append("invalid supersession lineage")
+                    continue
+                superseded_root = (root / relative_path).resolve()
+                superseded_manifest_path = superseded_root / "run.manifest.json"
+                if superseded_root in seen_superseded_paths:
+                    failures.append("invalid supersession lineage")
+                    continue
+                seen_superseded_ids.add(run_id)
+                seen_superseded_paths.add(superseded_root)
+                if not superseded_manifest_path.is_file():
+                    failures.append("supersession lineage mismatch")
+                    continue
+                try:
+                    superseded_manifest = json.loads(
+                        superseded_manifest_path.read_text(encoding="utf-8")
+                    )
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                    failures.append("supersession lineage mismatch")
+                    continue
+                if (
+                    _sha256(superseded_manifest_path) != digest
+                    or superseded_manifest.get("run_id") != run_id
+                ):
+                    failures.append("supersession lineage mismatch")
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
     if structured_bundle:

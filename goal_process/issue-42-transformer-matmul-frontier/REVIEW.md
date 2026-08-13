@@ -65,3 +65,9 @@ Standards：3 MUST-FIX、1 SHOULD-FIX；最严重为派生 verifier 可绕过 so
 - `compileall`、`git diff --check`：PASS
 
 待原 Standards/Spec reviewer 最终定向复审。
+
+## Third review and final resolution
+
+- v4 `supersedes` lineage 记录 bundle-relative path、run_id 与 manifest SHA-256；公共 verifier 校验结构、唯一性、目标 identity/digest，伪造 run/digest/path 均拒绝。
+- v4 每个 candidate coverage hole 的 `minimum_next_measurement` 明确：缺 1 个 eligible candidate；先采 3 个独立 search sessions，若其成为 best-of-correct winner，再采 3 个独立 holdout sessions。四个 repeatability hole 同时保留其独立 qualification session 边界和当前禁止追加轮次的约束。
+- v1/v2/v3 路径和内容保持不变；v4 为新的 active authority，仍为诚实的 `0/5 structured unknown`。

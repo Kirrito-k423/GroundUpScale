@@ -1,0 +1,16 @@
+{
+  "additional_npu_measurements": 0,
+  "active_frontier_run": "issue42-issue42-20260813-v1-transformer-matmul-frontier-v4",
+  "active_store_contract": "30 immutable locked-session measurements plus 5 v4 exact-anchor decisions and 1 v4 Transformer MatMul Frontier",
+  "candidate_evidence_boundary": "The preregistered session collected one candidate per exact domain. No second candidate was collected; best-of-correct coverage is incomplete and every v4 Anchor remains INACTIVE.",
+  "derived_at": "2026-08-13T13:30:00+00:00",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "issue": 42,
+  "minimum_next_measurement": "One missing eligible candidate: collect 3 independent search sessions, then 3 independent holdout sessions only if it wins best-of-correct search.",
+  "policy_id": "transformer-matmul-exact-anchor-qualification",
+  "policy_version": "v1",
+  "schema": "groundupscale.dev/issue42-local-rederivation/v1alpha1",
+  "session_id": "issue42-20260813-v1",
+  "supersession_contract": "Historical bundles remain immutable at original paths. v4 supersession path, run_id, and manifest digest are public-verifier enforced.",
+  "v4_coverage": "0/5 structured unknown"
+}
