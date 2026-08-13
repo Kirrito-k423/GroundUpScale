@@ -40,6 +40,12 @@ def _rmsnorm_operation():
     )
 
 
+def _cost_compilation_fingerprint() -> str:
+    return compile_analysis_plan(
+        REPOSITORY_ROOT, PLAN
+    ).cost.compilation_fingerprint
+
+
 def _execution_domain(operation) -> dict[str, object]:
     return {
         "hardware_cohort": COHORT,
@@ -84,14 +90,26 @@ def _phase_sources(
                     candidate=candidate,
                     compute_or_exact_duration_ns=float(index * 1_000 * ratio),
                     memory_pattern_floor_ns=float(index * 400),
+                    compute_or_exact_capability_profile_ref=(
+                        f"capability-profile://issue43/{phase.phase_name}/compute"
+                    ),
+                    memory_pattern_capability_profile_ref=(
+                        f"capability-profile://issue43/{phase.phase_name}/memory"
+                    ),
                     standard_uncertainty_ns=float(index * 10),
                     raw_samples_ns=(index * 990, index * 1_000, index * 1_010),
+                    memory_pattern_raw_samples_ns=(
+                        index * 390,
+                        index * 400,
+                        index * 410,
+                    ),
                     run_metadata={
                         "lock_owner": "issue=43 pid=123",
                         "started_at": "2026-08-13T00:00:00+00:00",
                         "hardware_cohort": COHORT,
                         "device_visibility": "0",
                     },
+                    compilation_fingerprint=_cost_compilation_fingerprint(),
                 )
             )
     return sources
@@ -131,6 +149,7 @@ def _rehash_connected_qualification(run: Path) -> None:
     qualification["source_evidence_digest"] = _canonical_digest(
         qualification["source_runs"]
     )
+    manifest["source_runs"] = qualification["source_runs"]
     qualification["input_digest"] = _canonical_digest(
         {
             key: value
@@ -174,6 +193,7 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=_phase_sources(tmp_path / "sources", operation),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     source = next(run / item["path"] for item in _artifact(run, "compound-operator-frontier-qualification")["source_runs"])
@@ -224,11 +244,28 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         == "max(compute-or-exact,memory-pattern-floor)"
         for phase in schedule["phases"]
     )
+    assert all(
+        set(evidence["raw_samples_by_constraint"])
+        == {"compute_or_exact", "memory_pattern"}
+        for evidence in qualification["phase_evidence"]
+    )
     assert schedule["chunk_pipeline_contract_id"] is None
     assert schedule["overlap_evidence_refs"] == []
     assert qualification["execution_domain"] == _execution_domain(operation)
     assert qualification["source_evidence_digest"] == _canonical_digest(
         qualification["source_runs"]
+    )
+    assert all(
+        len(evidence["capability_profile_refs"]) == 2
+        and evidence["capability_profile_refs"]["compute_or_exact"]
+        != evidence["capability_profile_refs"]["memory_pattern"]
+        for evidence in qualification["phase_evidence"]
+    )
+    assert (
+        json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))[
+            "compilation_fingerprint"
+        ]
+        == _cost_compilation_fingerprint()
     )
 
 
@@ -242,6 +279,7 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=_phase_sources(tmp_path / "sources", operation, missing="rsqrt"),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -271,6 +309,52 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
     ]
 
 
+def test_structured_unknown_supersedes_immutable_prior_bundle_by_digest(
+    tmp_path: Path,
+) -> None:
+    operation = _rmsnorm_operation()
+    prior = RmsNormOperatorFrontierBundleWriter().run(
+        tmp_path,
+        run_id="issue43-rmsnorm-unknown-prior-v1",
+        operation=operation,
+        execution_domain=_execution_domain(operation),
+        source_runs=[],
+        compilation_fingerprint=_cost_compilation_fingerprint(),
+    )
+    replacement = RmsNormOperatorFrontierBundleWriter().run(
+        tmp_path,
+        run_id="issue43-rmsnorm-unknown-replacement-v2",
+        operation=operation,
+        execution_domain=_execution_domain(operation),
+        source_runs=[],
+        compilation_fingerprint=_cost_compilation_fingerprint(),
+        supersedes_run=prior,
+    )
+
+    assert verify_run_bundle(replacement)["passed"] is True
+    manifest = json.loads(
+        (replacement / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["supersedes"] == {
+        "run_id": "issue43-rmsnorm-unknown-prior-v1",
+        "path": "../issue43-rmsnorm-unknown-prior-v1",
+        "manifest_sha256": sha256(
+            (prior / "run.manifest.json").read_bytes()
+        ).hexdigest(),
+    }
+
+    manifest["supersedes"]["manifest_sha256"] = "0" * 64
+    (replacement / "run.manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    verification = verify_run_bundle(replacement)
+    assert verification["passed"] is False
+    assert "compound operator Frontier superseded Run mismatch" in verification[
+        "failures"
+    ]
+
+
 def test_matmul_probe_cannot_qualify_rmsnorm_reduction_phase(tmp_path: Path) -> None:
     operation = _rmsnorm_operation()
     sources = _phase_sources(tmp_path / "sources", operation)
@@ -289,6 +373,7 @@ def test_matmul_probe_cannot_qualify_rmsnorm_reduction_phase(tmp_path: Path) -> 
             operation=operation,
             execution_domain=_execution_domain(operation),
             source_runs=sources,
+            compilation_fingerprint=_cost_compilation_fingerprint(),
         )
 
 
@@ -324,6 +409,7 @@ def test_phase_evidence_domain_mismatch_fails_closed(
             operation=operation,
             execution_domain=_execution_domain(operation),
             source_runs=sources,
+            compilation_fingerprint=_cost_compilation_fingerprint(),
         )
 
 
@@ -340,6 +426,7 @@ def test_incomplete_bundle_names_every_missing_mandatory_phase(tmp_path: Path) -
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=sources,
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     qualification = _artifact(run, "compound-operator-frontier-qualification")
@@ -358,6 +445,7 @@ def test_verifier_rejects_rehashed_phase_duration_tamper(tmp_path: Path) -> None
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=_phase_sources(tmp_path / "sources", operation),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     def mutate(document: dict[str, object]) -> None:
@@ -384,6 +472,7 @@ def test_verifier_replays_phase_evidence_instead_of_trusting_rehashed_digests(
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=_phase_sources(tmp_path / "sources", operation),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     def mutate(document: dict[str, object]) -> None:
@@ -405,6 +494,75 @@ def test_verifier_replays_phase_evidence_instead_of_trusting_rehashed_digests(
     ]
 
 
+def test_verifier_binds_fully_rehashed_derived_evidence_to_source_observation(
+    tmp_path: Path,
+) -> None:
+    operation = _rmsnorm_operation()
+    run = RmsNormOperatorFrontierBundleWriter().run(
+        tmp_path,
+        run_id="issue43-rmsnorm-source-bound-rehash-v1",
+        operation=operation,
+        execution_domain=_execution_domain(operation),
+        source_runs=_phase_sources(tmp_path / "sources", operation),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
+    )
+
+    def mutate(document: dict[str, object]) -> None:
+        evidence = document["phase_evidence"][0]
+        schedule_phase = document["selected_candidate"]["phase_schedule"]["phases"][0]
+        source_records = [
+            source
+            for source in document["source_runs"]
+            if source["phase_id"] == evidence["phase_id"]
+        ]
+        forged = {**evidence["candidate"], "candidate_id": "forged-candidate"}
+        evidence["candidate"] = forged
+        evidence["input_digest"] = content_fingerprint(
+            {key: value for key, value in evidence.items() if key != "input_digest"}
+        )
+        schedule_phase["candidate"] = forged
+        for source in source_records:
+            source["candidate"] = forged
+
+    _rewrite_artifact(run, "compound-operator-frontier-qualification", mutate)
+    _rehash_connected_qualification(run)
+
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert any(
+        "source observation mismatch" in item for item in verification["failures"]
+    ), verification["failures"]
+
+
+def test_phase_measurement_requires_independent_capability_profile_references(
+    tmp_path: Path,
+) -> None:
+    operation = _rmsnorm_operation()
+    phase = operation.phase_graph.phases[0]
+    with pytest.raises(ValueError, match="independent capability-profile references"):
+        RmsNormPhaseMeasurementBundleWriter().run(
+            tmp_path,
+            run_id="issue43-invalid-shared-capability-ref-v1",
+            phase=phase,
+            execution_domain=_execution_domain(operation),
+            lane="search",
+            evidence_kind="exact-operation-probe",
+            candidate={
+                "candidate_id": "candidate",
+                "candidate_family": "torch-npu.square",
+                "candidate_version": "v1",
+            },
+            compute_or_exact_duration_ns=100.0,
+            memory_pattern_floor_ns=90.0,
+            compute_or_exact_capability_profile_ref="capability-profile://same",
+            memory_pattern_capability_profile_ref="capability-profile://same",
+            standard_uncertainty_ns=1.0,
+            raw_samples_ns=(99.0, 100.0, 101.0),
+            memory_pattern_raw_samples_ns=(89.0, 90.0, 91.0),
+            compilation_fingerprint=_cost_compilation_fingerprint(),
+        )
+
+
 @pytest.mark.parametrize(
     ("tamper", "expected_failure"),
     [
@@ -423,6 +581,7 @@ def test_verifier_rejects_rehashed_qualification_tampering(
         operation=operation,
         execution_domain=_execution_domain(operation),
         source_runs=_phase_sources(tmp_path / "sources", operation),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
     )
 
     if tamper == "dependency":

@@ -1,7 +1,8 @@
 # Issue 43 Code Review
 
 - Fixed point: `5a0958e75c2c9323d2494136b3b26e1d4ded2b67`
-- Reviewed commit: `9a2330c9bb33a8d78ee8ab68320e71c588458326`
+- Reviewed commits: `9a2330c9bb33a8d78ee8ab68320e71c588458326`,
+  `e5641465a512e596f9634f8267b43ccdf0d53400`, plus the pending review-fix commit
 - Spec: GitHub issue #43, including all comments (none at review time)
 - Diff: `git diff 5a0958e75c2c9323d2494136b3b26e1d4ded2b67...HEAD`
 
@@ -36,20 +37,32 @@ No scope creep was found. The seven phase identities matched ADR 0037.
 - Added immutable `operator-phase-measurement` Run Bundles and required separate
   `search` and `independent-holdout` source identities for each mandatory phase.
 - Both exact-operation and matching-capability evidence now retain compute/exact
-  and memory-pattern constraints and recompute the phase-local maximum.
+  and separately sampled memory-pattern constraints, two distinct
+  capability-profile references, and recompute the phase-local maximum.
 - The public verifier recursively verifies each source Run Manifest, cohort,
-  phase, lane, candidate and digest. It replays the dependency DAG, rejects
-  cycles or output mismatch, and recomputes topological order, serialized
-  reference, critical path and RSS uncertainty.
-- Added Compilation Fingerprints and persisted lock owner, start, finish,
+  phase, lane, candidate, observation and digest. It binds the holdout
+  observation byte-for-byte to qualification evidence, both source records to
+  the selected candidate, and both evidence references to their source Runs.
+  A fully connected, rehashed derived-evidence attack now fails while the
+  immutable source observation remains unchanged. The verifier replays the
+  dependency DAG, rejects cycles or output mismatch, and recomputes topological
+  order, serialized reference, critical path and RSS uncertainty.
+- Added one explicit Cost Compilation Fingerprint across source manifests,
+  observations, phase graph, qualification and Frontier manifest, and persisted
+  lock owner, start, finish,
   Hardware Cohort and visibility metadata.
 - Ran one approved, whole-host-locked bounded NPU session. Remote focused tests
   passed, but `mean_scale/search` exceeded the pre-registered 10% IQR/median
   limit. Per protocol, collection stopped without a retry. Two search Runs were
-  retained (`square`, `reduce_sum`); the verified Frontier is structured
-  `unknown` and names all seven missing search/holdout qualification boundaries.
+  retained (`square`, `reduce_sum`) as original session records. Because those
+  pre-fix observations did not contain independently sampled memory floors,
+  they are deliberately excluded from the hardened qualification. The v2
+  verified Frontier has zero qualified source Runs, is structured `unknown`,
+  and names all seven missing search/holdout qualification boundaries.
 - The Divergent Change extraction remains a non-blocking follow-up: the public
   verifier is still the required acceptance seam and existing bundle kinds stay
   regression-covered.
 
-Original-reviewer re-review: pending.
+First original-reviewer re-review found the source-observation binding,
+capability-reference and Compilation Fingerprint gaps above. Second
+original-reviewer re-review: pending.

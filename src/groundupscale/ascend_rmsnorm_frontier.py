@@ -113,38 +113,57 @@ class RmsNormPhaseMeasurementBundleWriter:
         candidate: dict[str, str],
         compute_or_exact_duration_ns: float,
         memory_pattern_floor_ns: float,
+        compute_or_exact_capability_profile_ref: str,
+        memory_pattern_capability_profile_ref: str,
         standard_uncertainty_ns: float,
         raw_samples_ns: Iterable[float],
+        memory_pattern_raw_samples_ns: Iterable[float],
         correctness: str = "passed",
         timing_quality: str = "passed",
         run_metadata: dict[str, object] | None = None,
-        compilation_fingerprint: str | None = None,
+        compilation_fingerprint: str,
     ) -> Path:
         if not RUN_ID_PATTERN.fullmatch(run_id):
             raise ValueError(f"unsafe run_id: {run_id!r}")
         if lane not in {"search", "independent-holdout"}:
             raise ValueError("phase measurement lane must be search or independent-holdout")
         samples = [float(value) for value in raw_samples_ns]
+        memory_samples = [float(value) for value in memory_pattern_raw_samples_ns]
         numeric = (
             compute_or_exact_duration_ns,
             memory_pattern_floor_ns,
             standard_uncertainty_ns,
             *samples,
+            *memory_samples,
         )
         if (
             correctness != "passed"
             or timing_quality != "passed"
             or len(samples) < 3
+            or len(memory_samples) < 3
             or any(not isfinite(value) or value <= 0 for value in numeric[:2])
             or not isfinite(standard_uncertainty_ns)
             or standard_uncertainty_ns < 0
-            or any(not isfinite(value) or value <= 0 for value in samples)
+            or any(not isfinite(value) or value <= 0 for value in (*samples, *memory_samples))
             or not all(
                 isinstance(candidate.get(field), str) and candidate[field]
                 for field in ("candidate_id", "candidate_family", "candidate_version")
             )
+            or not compilation_fingerprint
         ):
             raise ValueError("phase measurement qualification gate failed")
+        capability_profile_refs = {
+            "compute_or_exact": compute_or_exact_capability_profile_ref,
+            "memory_pattern": memory_pattern_capability_profile_ref,
+        }
+        if (
+            not all(
+                isinstance(reference, str) and reference
+                for reference in capability_profile_refs.values()
+            )
+            or len(set(capability_profile_refs.values())) != 2
+        ):
+            raise ValueError("phase measurement requires independent capability-profile references")
         constraints, local_duration = _local_constraints(
             evidence_kind=evidence_kind,
             compute_or_exact_duration_ns=compute_or_exact_duration_ns,
@@ -152,9 +171,6 @@ class RmsNormPhaseMeasurementBundleWriter:
         )
         metadata = dict(run_metadata or {})
         metadata.setdefault("finished_at", datetime.now(UTC).isoformat())
-        selected_compilation_fingerprint = compilation_fingerprint or content_fingerprint(
-            phase, execution_domain
-        )
         observation: dict[str, object] = {
             "schema": PHASE_OBSERVATION_SCHEMA,
             "phase_id": phase.phase_id,
@@ -166,15 +182,20 @@ class RmsNormPhaseMeasurementBundleWriter:
             "execution_domain": execution_domain,
             "candidate": candidate,
             "constraints": constraints,
+            "capability_profile_refs": capability_profile_refs,
             "local_duration_ns": local_duration,
             "resource_composition": "max(compute-or-exact,memory-pattern-floor)",
             "standard_uncertainty_ns": standard_uncertainty_ns,
             "raw_samples_ns": samples,
+            "raw_samples_by_constraint": {
+                "compute_or_exact": samples,
+                "memory_pattern": memory_samples,
+            },
             "correctness": correctness,
             "timing_quality": timing_quality,
             "lane": lane,
             "run_metadata": metadata,
-            "compilation_fingerprint": selected_compilation_fingerprint,
+            "compilation_fingerprint": compilation_fingerprint,
         }
         observation["input_digest"] = content_fingerprint(observation)
         runs_root = Path(artifact_store).resolve() / "runs"
@@ -198,7 +219,7 @@ class RmsNormPhaseMeasurementBundleWriter:
             "phase_id": phase.phase_id,
             "phase_name": phase.phase_name,
             "lane": lane,
-            "compilation_fingerprint": selected_compilation_fingerprint,
+            "compilation_fingerprint": compilation_fingerprint,
             "producer_lineage": {"producer": MEASUREMENT_PRODUCER},
             "artifacts": [
                 {
@@ -292,11 +313,15 @@ class RmsNormOperatorFrontierBundleWriter:
         operation: CostOperation,
         execution_domain: dict[str, object],
         source_runs: Iterable[str | Path],
+        compilation_fingerprint: str,
+        supersedes_run: str | Path | None = None,
     ) -> Path:
         if not RUN_ID_PATTERN.fullmatch(run_id):
             raise ValueError(f"unsafe run_id: {run_id!r}")
         if operation.operation != "RMSNorm" or operation.phase_graph is None:
             raise ValueError("an explicit RMSNorm Operator Phase Graph is required")
+        if not isinstance(compilation_fingerprint, str) or not compilation_fingerprint:
+            raise ValueError("cost compilation fingerprint is required")
         _validate_domain(operation, execution_domain)
         graph = operation.phase_graph
         phases = [canonical_data(phase) for phase in graph.phases]
@@ -317,6 +342,7 @@ class RmsNormOperatorFrontierBundleWriter:
                 "manifest_sha256": _sha256(source / "run.manifest.json"),
                 "phase_id": observation["phase_id"],
                 "candidate": observation["candidate"],
+                "compilation_fingerprint": observation["compilation_fingerprint"],
             }
             for source, manifest, observation in observations.values()
         ]
@@ -344,6 +370,7 @@ class RmsNormOperatorFrontierBundleWriter:
                         "status": "unknown",
                         "candidate": None,
                         "constraints": None,
+                        "capability_profile_refs": None,
                         "local_duration_ns": None,
                         "standard_uncertainty_ns": None,
                         "resource_composition": "unknown",
@@ -370,6 +397,7 @@ class RmsNormOperatorFrontierBundleWriter:
                     if isinstance(constraints, dict)
                     else None
                 )
+                capability_refs = observation.get("capability_profile_refs")
                 if (
                     observation.get("input_digest")
                     != content_fingerprint(observation_body)
@@ -387,6 +415,17 @@ class RmsNormOperatorFrontierBundleWriter:
                     or not isinstance(memory_floor, (int, float))
                     or observation.get("local_duration_ns")
                     != max(float(compute_or_exact), float(memory_floor))
+                    or not isinstance(capability_refs, dict)
+                    or set(capability_refs) != {"compute_or_exact", "memory_pattern"}
+                    or not all(
+                        isinstance(reference, str) and reference
+                        for reference in capability_refs.values()
+                    )
+                    or len(set(capability_refs.values())) != 2
+                    or observation.get("compilation_fingerprint")
+                    != compilation_fingerprint
+                    or manifest.get("compilation_fingerprint")
+                    != compilation_fingerprint
                     or manifest.get("hardware_cohort")
                     != execution_domain["hardware_cohort"]
                 ):
@@ -407,6 +446,9 @@ class RmsNormOperatorFrontierBundleWriter:
                     "status": "known",
                     "candidate": qualified["candidate"],
                     "constraints": qualified["constraints"],
+                    "capability_profile_refs": qualified[
+                        "capability_profile_refs"
+                    ],
                     "local_duration_ns": qualified["local_duration_ns"],
                     "standard_uncertainty_ns": qualified["standard_uncertainty_ns"],
                     "resource_composition": qualified["resource_composition"],
@@ -457,6 +499,7 @@ class RmsNormOperatorFrontierBundleWriter:
             "cost_node_id": operation.node_id,
             "stable_path": operation.stable_path,
             "execution_domain": execution_domain,
+            "compilation_fingerprint": compilation_fingerprint,
             "phases": phases,
             "output_phase_ids": list(graph.output_phase_ids),
         }
@@ -468,6 +511,7 @@ class RmsNormOperatorFrontierBundleWriter:
             "stable_path": operation.stable_path,
             "hardware_cohort": execution_domain["hardware_cohort"],
             "execution_domain": execution_domain,
+            "compilation_fingerprint": compilation_fingerprint,
             "phase_graph_ref": "artifact://frontier/phase-graph.json",
             "phase_graph_digest": graph_document["input_digest"],
             "phase_evidence": evidence,
@@ -514,6 +558,23 @@ class RmsNormOperatorFrontierBundleWriter:
             record["path"] = os.path.relpath(
                 sources_by_run_id[str(record["run_id"])], destination
             )
+        supersession: dict[str, object] | None = None
+        if supersedes_run is not None:
+            superseded = Path(supersedes_run).resolve()
+            superseded_manifest = superseded / "run.manifest.json"
+            if not superseded_manifest.is_file():
+                raise ValueError("superseded Run Bundle manifest is required")
+            superseded_identity = json.loads(
+                superseded_manifest.read_text(encoding="utf-8")
+            )
+            if superseded_identity.get("bundle_kind") != "compound-operator-frontier":
+                raise ValueError("superseded Run Bundle kind mismatch")
+            supersession = {
+                "run_id": superseded_identity["run_id"],
+                "path": os.path.relpath(superseded, destination),
+                "manifest_sha256": _sha256(superseded_manifest),
+            }
+            qualification["supersedes"] = supersession
         # Source paths changed from placeholders, therefore digests above must bind final records.
         qualification["source_evidence_digest"] = _canonical_digest(source_records)
         qualification["input_digest"] = _canonical_digest(
@@ -565,8 +626,9 @@ class RmsNormOperatorFrontierBundleWriter:
             "operation": "RMSNorm",
             "stable_path": operation.stable_path,
             "qualification_status": qualification["status"],
-            "compilation_fingerprint": content_fingerprint(operation),
+            "compilation_fingerprint": compilation_fingerprint,
             "source_runs": source_records,
+            "supersedes": supersession,
             "producer_lineage": {"producer": FRONTIER_PRODUCER},
             "artifacts": artifacts,
             "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",

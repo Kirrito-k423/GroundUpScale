@@ -2196,6 +2196,13 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             or qualification.get("hardware_cohort")
             != manifest.get("hardware_cohort")
             or qualification.get("stable_path") != manifest.get("stable_path")
+            or qualification.get("compilation_fingerprint")
+            != manifest.get("compilation_fingerprint")
+            or not isinstance(manifest.get("compilation_fingerprint"), str)
+            or not manifest.get("compilation_fingerprint")
+            or graph.get("compilation_fingerprint")
+            != manifest.get("compilation_fingerprint")
+            or manifest.get("source_runs") != qualification.get("source_runs")
             or diagnostic.get("operation") != "RMSNorm"
             or diagnostic.get("hardware_cohort")
             != manifest.get("hardware_cohort")
@@ -2220,6 +2227,46 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     )
             phase_evidence = qualification.get("phase_evidence")
             source_runs = qualification.get("source_runs")
+            supersedes = manifest.get("supersedes")
+            if supersedes is not None:
+                superseded_path = (
+                    supersedes.get("path")
+                    if isinstance(supersedes, dict)
+                    else None
+                )
+                superseded_root = (
+                    (root / superseded_path).resolve()
+                    if isinstance(superseded_path, str)
+                    and not Path(superseded_path).is_absolute()
+                    else None
+                )
+                superseded_manifest_path = (
+                    superseded_root / "run.manifest.json"
+                    if superseded_root is not None
+                    else None
+                )
+                superseded_manifest = (
+                    json.loads(
+                        superseded_manifest_path.read_text(encoding="utf-8")
+                    )
+                    if superseded_manifest_path is not None
+                    and superseded_manifest_path.is_file()
+                    else None
+                )
+                if (
+                    not isinstance(supersedes, dict)
+                    or qualification.get("supersedes") != supersedes
+                    or not isinstance(superseded_manifest, dict)
+                    or superseded_manifest.get("run_id")
+                    != supersedes.get("run_id")
+                    or superseded_manifest.get("bundle_kind")
+                    != "compound-operator-frontier"
+                    or _sha256(superseded_manifest_path)
+                    != supersedes.get("manifest_sha256")
+                ):
+                    failures.append(
+                        "compound operator Frontier superseded Run mismatch"
+                    )
             if (
                 not isinstance(source_runs, list)
                 or qualification.get("source_evidence_digest")
@@ -2326,6 +2373,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         != evidence.get("operation_class")
                         or phase.get("candidate") != evidence.get("candidate")
                         or phase.get("constraints") != constraints
+                        or phase.get("capability_profile_refs")
+                        != evidence.get("capability_profile_refs")
                         or phase.get("local_duration_ns")
                         != evidence.get("local_duration_ns")
                         or phase.get("standard_uncertainty_ns")
@@ -2487,6 +2536,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
 
             if isinstance(source_runs, list):
                 seen_lanes: set[tuple[object, object]] = set()
+                source_observations: dict[tuple[object, object], dict[str, object]] = {}
                 for source in source_runs:
                     if not isinstance(source, dict):
                         failures.append("invalid compound operator Frontier source Run")
@@ -2527,9 +2577,104 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         != manifest.get("hardware_cohort")
                         or source_manifest.get("phase_id") != source.get("phase_id")
                         or source_manifest.get("lane") != source.get("lane")
+                        or source_manifest.get("compilation_fingerprint")
+                        != manifest.get("compilation_fingerprint")
+                        or source.get("compilation_fingerprint")
+                        != manifest.get("compilation_fingerprint")
                     ):
                         failures.append(
                             f"compound operator Frontier source Run identity mismatch: {source_id}"
+                        )
+                        continue
+                    source_artifacts = source_manifest.get("artifacts")
+                    observation_artifact = next(
+                        (
+                            item
+                            for item in source_artifacts
+                            if isinstance(item, dict)
+                            and item.get("role")
+                            == "operator-phase-capability-observation"
+                        ),
+                        None,
+                    ) if isinstance(source_artifacts, list) else None
+                    observation_path = (
+                        source_root / str(observation_artifact.get("path"))
+                    ).resolve() if isinstance(observation_artifact, dict) else None
+                    if (
+                        observation_path is None
+                        or source_root not in observation_path.parents
+                        or not observation_path.is_file()
+                    ):
+                        failures.append(
+                            f"compound operator Frontier source observation mismatch: {source_id}"
+                        )
+                        continue
+                    source_observation = json.loads(
+                        observation_path.read_text(encoding="utf-8")
+                    )
+                    if (
+                        source.get("candidate")
+                        != source_observation.get("candidate")
+                        or source.get("phase_id")
+                        != source_observation.get("phase_id")
+                        or source.get("lane") != source_observation.get("lane")
+                        or source.get("compilation_fingerprint")
+                        != source_observation.get("compilation_fingerprint")
+                    ):
+                        failures.append(
+                            f"compound operator Frontier source observation mismatch: {source_id}"
+                        )
+                        continue
+                    source_observations[key] = source_observation
+
+                for phase_id, evidence in evidence_by_phase.items():
+                    holdout = source_observations.get(
+                        (phase_id, "independent-holdout")
+                    )
+                    search = source_observations.get((phase_id, "search"))
+                    scheduled_phase = scheduled_by_phase.get(phase_id)
+                    matching_sources = [
+                        source
+                        for source in source_runs
+                        if isinstance(source, dict)
+                        and source.get("phase_id") == phase_id
+                    ]
+                    refs_by_lane = {
+                        source.get("lane"): (
+                            f"run-bundle://{source.get('run_id')}"
+                            "#artifact://observation/phase-capability.json"
+                        )
+                        for source in matching_sources
+                    }
+                    evidence_body = (
+                        {
+                            key: value
+                            for key, value in holdout.items()
+                            if key != "input_digest"
+                        }
+                        if isinstance(holdout, dict)
+                        else None
+                    )
+                    source_evidence = (
+                        {**evidence_body, "input_digest": holdout.get("input_digest")}
+                        if isinstance(evidence_body, dict)
+                        and isinstance(holdout, dict)
+                        else None
+                    )
+                    if (
+                        not isinstance(search, dict)
+                        or not isinstance(holdout, dict)
+                        or evidence != source_evidence
+                        or search.get("candidate") != holdout.get("candidate")
+                        or not isinstance(scheduled_phase, dict)
+                        or scheduled_phase.get("evidence_refs")
+                        != [
+                            refs_by_lane.get("search"),
+                            refs_by_lane.get("independent-holdout"),
+                        ]
+                    ):
+                        failures.append(
+                            f"compound operator Frontier source observation mismatch: {phase_id}"
                         )
 
     if operator_phase_measurement:
@@ -2549,6 +2694,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             != manifest.get("hardware_cohort")
             or observation.get("correctness") != "passed"
             or observation.get("timing_quality") != "passed"
+            or observation.get("compilation_fingerprint")
+            != manifest.get("compilation_fingerprint")
+            or not isinstance(manifest.get("compilation_fingerprint"), str)
+            or not manifest.get("compilation_fingerprint")
         ):
             failures.append("invalid operator phase measurement identity")
         else:
@@ -2558,6 +2707,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 if key != "input_digest"
             }
             constraints = observation.get("constraints")
+            capability_refs = observation.get("capability_profile_refs")
+            raw_by_constraint = observation.get("raw_samples_by_constraint")
             exact = constraints.get("exact_operation_duration_ns") if isinstance(constraints, dict) else None
             matching = constraints.get("matching_compute_capability_duration_ns") if isinstance(constraints, dict) else None
             memory = constraints.get("memory_pattern_floor_ns") if isinstance(constraints, dict) else None
@@ -2570,6 +2721,26 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 != max(float(compute_or_exact), float(memory))
                 or observation.get("resource_composition")
                 != "max(compute-or-exact,memory-pattern-floor)"
+                or not isinstance(capability_refs, dict)
+                or set(capability_refs) != {"compute_or_exact", "memory_pattern"}
+                or not all(
+                    isinstance(reference, str) and reference
+                    for reference in capability_refs.values()
+                )
+                or len(set(capability_refs.values())) != 2
+                or not isinstance(raw_by_constraint, dict)
+                or set(raw_by_constraint) != {"compute_or_exact", "memory_pattern"}
+                or not all(
+                    isinstance(samples, list)
+                    and len(samples) >= 3
+                    and all(
+                        isinstance(value, (int, float))
+                        and math.isfinite(float(value))
+                        and value > 0
+                        for value in samples
+                    )
+                    for samples in raw_by_constraint.values()
+                )
             ):
                 failures.append("invalid operator phase measurement composition")
 

@@ -156,13 +156,21 @@ def main() -> int:
             q1, _, q3 = statistics.quantiles(samples, n=4, method="inclusive")
             if (q3 - q1) / median > 0.10:
                 raise RuntimeError(f"{phase.phase_name}/{lane}: timing dispersion")
-            # Exact operation timing includes its data movement.  The same invocation's
-            # memory constraint is conservatively recorded equal to the exact timing;
-            # it cannot lower or double-count the observed invocation.
+            memory_pattern_call = lambda target=target: target.clone()
+            memory_samples = _measure(memory_pattern_call)
+            memory_median = float(statistics.median(memory_samples))
+            memory_q1, _, memory_q3 = statistics.quantiles(
+                memory_samples, n=4, method="inclusive"
+            )
+            if (memory_q3 - memory_q1) / memory_median > 0.10:
+                raise RuntimeError(
+                    f"{phase.phase_name}/{lane}: memory-pattern timing dispersion"
+                )
+            phase_run_id = f"issue43-{args.run_tag}-{phase.phase_name}-{lane}"
             sources.append(
                 RmsNormPhaseMeasurementBundleWriter().run(
                     args.artifact_store,
-                    run_id=f"issue43-{args.run_tag}-{phase.phase_name}-{lane}",
+                    run_id=phase_run_id,
                     phase=phase,
                     execution_domain=domain,
                     lane=lane,
@@ -173,9 +181,16 @@ def main() -> int:
                         "candidate_version": "v1",
                     },
                     compute_or_exact_duration_ns=median,
-                    memory_pattern_floor_ns=median,
+                    memory_pattern_floor_ns=memory_median,
+                    compute_or_exact_capability_profile_ref=(
+                        f"capability-profile://{phase_run_id}/exact-operation"
+                    ),
+                    memory_pattern_capability_profile_ref=(
+                        f"capability-profile://{phase_run_id}/memory-pattern"
+                    ),
                     standard_uncertainty_ns=float(statistics.stdev(samples)),
                     raw_samples_ns=samples,
+                    memory_pattern_raw_samples_ns=memory_samples,
                     run_metadata=metadata,
                     compilation_fingerprint=compiled.cost.compilation_fingerprint,
                 )
@@ -186,6 +201,7 @@ def main() -> int:
         operation=operation,
         execution_domain=domain,
         source_runs=sources,
+        compilation_fingerprint=compiled.cost.compilation_fingerprint,
     )
     verification = verify_run_bundle(frontier)
     if verification["passed"] is not True:

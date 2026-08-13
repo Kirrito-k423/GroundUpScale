@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/phase-graph.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "operator-phase-graph",
+      "schema": "groundupscale.dev/operator-phase-graph/v1alpha1",
+      "sha256": "e6265829e303fa2df7d08df611ea4be74617cab1fd975754a4cd4728667f38d8"
+    },
+    {
+      "inputs": [
+        "operator-phase-graph"
+      ],
+      "media_type": "application/json",
+      "path": "frontier/qualification.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "compound-operator-frontier-qualification",
+      "schema": "groundupscale.dev/compound-operator-frontier-qualification/v1alpha1",
+      "sha256": "9c4591aadcbec18b374c3815b6b0c2f63f074e71ddc44a7b561babded53f0aa8"
+    },
+    {
+      "inputs": [
+        "compound-operator-frontier-qualification"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/evidence.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "compound-operator-diagnostic",
+      "schema": "groundupscale.dev/compound-operator-diagnostic/v1alpha1",
+      "sha256": "1490da2dff35083185ea4392ac29eb5fbee37e5f37e6db3d415afb1ca0df37cc"
+    }
+  ],
+  "bundle_kind": "compound-operator-frontier",
+  "compilation_fingerprint": "56fe9305e7b33c595d8edb707b5fdb963bacfe96acda524a5fec3cfcb77aed12",
+  "created_at": "2026-08-13T14:04:10.789679+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "operation": "RMSNorm",
+  "producer_lineage": {
+    "producer": "groundupscale-rmsnorm-frontier-v1"
+  },
+  "qualification_status": "unknown",
+  "run_id": "issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v2",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": [],
+  "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+  "status": "completed",
+  "supersedes": {
+    "manifest_sha256": "1ef8fc42fbf99437fc88c426b35873597150f4dfafc90bb9367720391fb02f7d",
+    "path": "../issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown",
+    "run_id": "issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown"
+  }
+}
