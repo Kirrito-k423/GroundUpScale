@@ -180,10 +180,13 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
     source_identities = document.get("source_identities")
     if not isinstance(source_identities, list) or len(source_identities) != len(sources):
         raise FinalAcceptanceError("source-identity-lineage-missing")
+    source_identity_boundaries: list[str] = []
     for source_identity in source_identities:
         locked = _mapping(source_identity, "source-identity-lineage-missing")
-        if locked.get("run_id") not in locked_ids or locked.get("identity") != identity:
-            raise FinalAcceptanceError("source-identity-mismatch")
+        if locked.get("run_id") not in locked_ids or not isinstance(locked.get("identity"), Mapping):
+            raise FinalAcceptanceError("source-identity-lineage-missing")
+        if locked.get("identity") != identity:
+            source_identity_boundaries.append(f"source-identity-mismatch:{locked['run_id']}")
 
     holdout_boundaries = _validate_holdout(holdout, identity)
     leaves_value = schedule.get("leaves")
@@ -271,7 +274,10 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
         if any(
             not isinstance(item, Mapping)
             or item.get("event_id") not in event_ids
-            or not isinstance(item.get("kind"), str)
+            or item.get("kind") not in {
+                "layout-materialization", "dtype-conversion", "device-copy",
+                "fusion", "chunking", "synchronization",
+            }
             for item in transformations
         ):
             raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
@@ -319,7 +325,7 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
         raise FinalAcceptanceError("decomposition-reconciliation-mismatch")
 
     evidence_boundary = {
-        "schedule": list(missing_schedule) if not schedule_known else [],
+        "schedule": (list(missing_schedule) if not schedule_known else []) + source_identity_boundaries,
         "holdout": holdout_boundaries,
         "decomposition": decomposition_boundaries,
     }

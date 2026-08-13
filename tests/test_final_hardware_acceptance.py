@@ -218,6 +218,41 @@ def test_final_acceptance_rejects_coordinated_rehashed_stable_path_attack() -> N
     assert "final hardware acceptance source semantic contract mismatch" in verification["failures"]
 
 
+@pytest.mark.parametrize("attack", ["schedule", "decomposition", "identity"])
+def test_final_acceptance_rejects_coordinated_source_contract_attacks(
+    attack: str,
+) -> None:
+    repository = Path(__file__).parents[1]
+    namespace = runpy.run_path(
+        str(repository / "goal_process/issue-50-final-hardware-acceptance/build_final_acceptance.py")
+    )
+    document = namespace["build"]()
+    if attack == "schedule":
+        paths = document["schedule"]["stable_paths"]
+        forged = [[paths[0], paths[1]]]
+        document["schedule"]["edges"] = forged
+        document["source_bundles"][0]["semantic_contract"]["edges"] = forged
+    elif attack == "decomposition":
+        forged = {"observed_e2e_ns": 1.0, "accounted_e2e_ns": 1.0, "residual_ns": 0.0}
+        document["decomposition"]["reconciliation"] = forged
+        document["source_bundles"][1]["semantic_contract"]["final_decomposition"]["reconciliation"] = forged
+    else:
+        forged = {**document["identity"], "model_spec_sha256": "0" * 64}
+        document["identity"] = forged
+        document["holdout"]["identity"] = forged
+        for source in document["source_bundles"]:
+            source["identity"] = forged
+        for source in document["source_identities"]:
+            source["identity"] = forged
+    with tempfile.TemporaryDirectory(dir=repository) as temporary:
+        run = write_final_acceptance_bundle(
+            temporary, run_id=f"issue50-coordinated-{attack}-attack", document=document
+        )
+        verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "final hardware acceptance source semantic contract mismatch" in verification["failures"]
+
+
 def test_final_acceptance_rejects_known_schedule_with_missing_evidence() -> None:
     document = _document()
     document["schedule"]["missing_evidence"] = ["operator.matmul.exact-domain"]
@@ -233,8 +268,11 @@ def test_final_acceptance_requires_locked_sources_and_same_identity() -> None:
 
     document = _document()
     document["source_identities"][0]["identity"] = {**IDENTITY, "dtype": "float16"}
-    with pytest.raises(FinalAcceptanceError, match="source-identity-mismatch"):
-        compose_final_acceptance(document)
+    result = compose_final_acceptance(document)
+    assert result["status"] == "structured-unknown"
+    assert result["evidence_boundary"]["schedule"] == [
+        "source-identity-mismatch:construction-a"
+    ]
 
 
 def test_final_acceptance_preserves_failed_holdout_gates_as_boundary() -> None:
@@ -242,6 +280,11 @@ def test_final_acceptance_preserves_failed_holdout_gates_as_boundary() -> None:
     document["holdout"]["gates"]["timing"] = "failed"
     result = compose_final_acceptance(document)
     assert "holdout-gate:timing" in result["evidence_boundary"]["holdout"]
+
+    document = _document(schedule_status="unknown")
+    document["holdout"]["gates"]["environment"] = "failed"
+    result = compose_final_acceptance(document)
+    assert "holdout-gate:environment" in result["evidence_boundary"]["holdout"]
 
 
 def test_final_acceptance_requires_validated_schedule_execution_ir() -> None:
@@ -262,5 +305,12 @@ def test_final_acceptance_requires_validated_schedule_execution_ir() -> None:
 
     document = _document()
     document["schedule"]["execution_ir"]["transformations"] = ["arbitrary"]
+    with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
+        compose_final_acceptance(document)
+
+    document = _document()
+    document["schedule"]["execution_ir"]["transformations"] = [
+        {"event_id": "event-a", "kind": "arbitrary"}
+    ]
     with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
         compose_final_acceptance(document)

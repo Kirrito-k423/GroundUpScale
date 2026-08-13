@@ -74,16 +74,37 @@ def build() -> dict[str, object]:
     )):
         item["identity"] = identity
         item["source_role"] = role
+    observed_identity = observed["identity"]
+    for item in locked_sources[1:3]:
+        item["identity"] = {
+            **identity,
+            "completion_boundary": observed_identity["completion_boundary"],
+        }
     locked_sources[0]["semantic_contract"] = {
         "path": "comparison/model-e2e-frontier.json",
+        "input_path": "resolved/model-e2e-frontier-input.json",
         "stable_paths": [item["stable_path"] for item in schedule_result["coverage"]["predicted_leaves"]],
         "edges": schedule_input["schedule"]["dependencies"],
         "missing_evidence": missing,
-        "schedule_uncertainty": schedule_result["uncertainty"],
+        "standard_uncertainty_ns": None,
+        "source_status": schedule_result["status"],
+        "leaves": [
+            {"stable_path": item["stable_path"], "duration_ns": item["duration_ns"], "selected_candidate_id": None, "evidence_refs": item["evidence_refs"]}
+            for item in schedule_result["coverage"]["predicted_leaves"]
+        ],
     }
     locked_sources[1]["semantic_contract"] = {
         "path": "observation/observed-decomposition.json",
-        "reconciliation": observed["observed_decomposition"]["reconciliation"],
+        "source_reconciliation": observed["observed_decomposition"]["reconciliation"],
+        "final_decomposition": {
+            "status": observed["observed_decomposition"]["status"],
+            "stable_paths": [
+                item["stable_path"]
+                for item in observed["observed_decomposition"]["leaves"]
+            ],
+            "reconciliation": observed["observed_decomposition"]["reconciliation"],
+            "evidence_boundaries": observed["observed_decomposition"]["evidence_boundaries"],
+        },
         "evidence_boundaries": observed["observed_decomposition"]["evidence_boundaries"],
     }
     locked_sources[2]["semantic_contract"] = {
@@ -103,7 +124,7 @@ def build() -> dict[str, object]:
         "identity": identity,
         "source_bundles": locked_sources,
         "source_identities": [
-            {"run_id": item["run_id"], "identity": identity}
+            {"run_id": item["run_id"], "identity": item["identity"]}
             for item in locked_sources
         ],
         "construction_run_ids": [
@@ -138,7 +159,7 @@ def build() -> dict[str, object]:
             "correctness": {"passed": correctness["passed"], "no_cpu_fallback": correctness["target_audit"]["fallback_enabled"] is False, "semantic_leaf_count": correctness["target_audit"]["semantic_leaf_count"]},
             "environment": {"device": environment["device"], "visibility": lock_session["ascend_rt_visible_devices"], "lock_session": lock_session},
             "gates": {
-                "environment": "passed" if environment["device"] == "npu:0" else "failed",
+                "environment": "passed" if environment.get("measurement_preflight", {}).get("eligible") is True else "failed",
                 "correctness": "passed" if correctness["passed"] is True else "failed",
                 "no_cpu_fallback": "passed" if correctness["target_audit"]["fallback_enabled"] is False else "failed",
                 "timing": "passed" if case["warmup_convergence"]["converged"] is True else "failed",
@@ -148,8 +169,11 @@ def build() -> dict[str, object]:
         },
         "decomposition": {
             "status": observed["observed_decomposition"]["status"],
-            "stable_paths": [],
-            "reconciliation": {"observed_e2e_ns": float(median(samples)), "accounted_e2e_ns": float(median(samples)), "residual_ns": 0.0},
+            "stable_paths": [
+                item["stable_path"]
+                for item in observed["observed_decomposition"]["leaves"]
+            ],
+            "reconciliation": observed["observed_decomposition"]["reconciliation"],
             "evidence_boundaries": observed["observed_decomposition"]["evidence_boundaries"],
         },
     }
@@ -161,6 +185,6 @@ if __name__ == "__main__":
     resolved.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     print(write_final_acceptance_bundle(
         Path(__file__).with_name("evidence") / "acceptance",
-        run_id="issue50-20260814T0345Z-final-hardware-acceptance-v3",
+        run_id="issue50-20260814T0415Z-final-hardware-acceptance-v4",
         document=document,
     ))

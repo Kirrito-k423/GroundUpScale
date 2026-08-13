@@ -1876,6 +1876,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         label: str,
         require_nonempty: bool,
         require_identity: bool = False,
+        final_document: object = None,
     ) -> None:
         if (
             not isinstance(locked_sources, list)
@@ -1961,19 +1962,109 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         failures.append(f"{label} source semantic contract mismatch")
                 if locked.get("source_role") == "schedule-frontier":
                     replay = json.loads((source_root / str(semantic_contract["path"])).read_text())
-                    actual_paths = [item.get("stable_path") for item in replay.get("coverage", {}).get("predicted_leaves", [])]
-                    if actual_paths != semantic_contract.get("stable_paths"):
+                    replay_input = json.loads(
+                        (source_root / str(semantic_contract["input_path"])).read_text()
+                    )
+                    replay_leaves = replay.get("coverage", {}).get(
+                        "predicted_leaves", []
+                    )
+                    actual_paths = [item.get("stable_path") for item in replay_leaves]
+                    actual_leaves = [
+                        {
+                            "stable_path": item.get("stable_path"),
+                            "duration_ns": item.get("duration_ns"),
+                            "selected_candidate_id": None,
+                            "evidence_refs": item.get("evidence_refs"),
+                        }
+                        for item in replay_leaves
+                    ]
+                    actual_missing = [
+                        f"{item.get('operation_class')} @ {item.get('stable_path')}: {item.get('required_evidence')}"
+                        for item in replay.get("missing_evidence", [])
+                    ]
+                    actual_edges = replay_input.get("schedule", {}).get(
+                        "dependencies"
+                    )
+                    actual_uncertainty = replay.get("uncertainty", {}).get(
+                        "combined_ns"
+                    )
+                    final_schedule = final_document.get("schedule") if isinstance(final_document, dict) else None
+                    if (
+                        actual_paths != semantic_contract.get("stable_paths")
+                        or replay.get("status") != semantic_contract.get("source_status")
+                        or actual_leaves != semantic_contract.get("leaves")
+                        or actual_edges != semantic_contract.get("edges")
+                        or actual_missing != semantic_contract.get("missing_evidence")
+                        or actual_uncertainty != semantic_contract.get("standard_uncertainty_ns")
+                        or not isinstance(final_schedule, dict)
+                        or final_schedule.get("stable_paths") != actual_paths
+                        or final_schedule.get("leaves") != actual_leaves
+                        or final_schedule.get("edges") != actual_edges
+                        or final_schedule.get("missing_evidence") != actual_missing
+                        or final_schedule.get("standard_uncertainty_ns") != actual_uncertainty
+                    ):
                         failures.append(f"{label} source semantic contract mismatch")
                 elif locked.get("source_role") == "observed-decomposition":
                     replay = json.loads((source_root / str(semantic_contract["path"])).read_text())
                     decomposition = replay.get("observed_decomposition", {})
-                    if decomposition.get("reconciliation") != semantic_contract.get("reconciliation") or decomposition.get("evidence_boundaries") != semantic_contract.get("evidence_boundaries"):
+                    replay_projection = {
+                        "status": decomposition.get("status"),
+                        "stable_paths": [
+                            item.get("stable_path")
+                            for item in decomposition.get("leaves", [])
+                            if isinstance(item, dict)
+                        ],
+                        "reconciliation": decomposition.get("reconciliation"),
+                        "evidence_boundaries": decomposition.get(
+                            "evidence_boundaries"
+                        ),
+                    }
+                    if (
+                        decomposition.get("reconciliation") != semantic_contract.get("source_reconciliation")
+                        or decomposition.get("evidence_boundaries") != semantic_contract.get("evidence_boundaries")
+                        or replay_projection != semantic_contract.get("final_decomposition")
+                        or not isinstance(final_document, dict)
+                        or final_document.get("decomposition") != replay_projection
+                    ):
+                        failures.append(f"{label} source semantic contract mismatch")
+                    replay_identity = replay.get("identity", {})
+                    claimed = locked.get("identity", {})
+                    if (
+                        replay_identity.get("hardware_cohort") != claimed.get("hardware_cohort")
+                        or replay_identity.get("shape") != claimed.get("shape")
+                        or replay_identity.get("completion_boundary") != claimed.get("completion_boundary")
+                        or replay_identity.get("benchmark_case") != claimed.get("case")
+                    ):
                         failures.append(f"{label} source semantic contract mismatch")
                 elif locked.get("source_role") == "independent-holdout":
                     replay = json.loads((source_root / str(semantic_contract["benchmark_path"])).read_text())
                     case = next((item for item in replay.get("cases", []) if item.get("case_id") == "two-layer-prefill"), None)
                     if not isinstance(case, dict) or case.get("latency", {}).get("samples_ns") != semantic_contract.get("samples") or case.get("latency", {}).get("median_ns") != semantic_contract.get("median_ns"):
                         failures.append(f"{label} source semantic contract mismatch")
+                    lock = json.loads((source_root / str(semantic_contract["inputs_lock_path"])).read_text())
+                    actual_identity = {
+                        "model_spec_sha256": lock["sources"]["specs/models/two-layer-transformer.yaml"]["sha256"],
+                        "workload_spec_sha256": lock["sources"]["specs/workloads/prefill.yaml"]["sha256"],
+                        "analysis_case_sha256": lock["sources"]["specs/analysis-cases/fixed-prefill.yaml"]["sha256"],
+                        "deployment_intent_sha256": lock["sources"]["specs/deployment-intents/ascend-npu.yaml"]["sha256"],
+                        "case": "two-layer-prefill", "shape": [1, 512, 512], "dtype": "float32",
+                        "hardware_cohort": source_manifest.get("hardware_cohort"),
+                        "completion_boundary": case.get("timing_boundaries", {}).get("completion_protocol"),
+                    }
+                    if locked.get("identity") != actual_identity:
+                        failures.append(f"{label} source semantic contract mismatch")
+                if locked.get("source_role") == "gap-report":
+                    replay = json.loads((source_root / str(semantic_contract["path"])).read_text())
+                    replay_identity = replay.get("identity")
+                    if isinstance(replay_identity, dict):
+                        claimed = locked.get("identity", {})
+                        if (
+                            replay_identity.get("hardware_cohort") != claimed.get("hardware_cohort")
+                            or replay_identity.get("shape") != claimed.get("shape")
+                            or replay_identity.get("completion_boundary") != claimed.get("completion_boundary")
+                            or replay_identity.get("case", replay_identity.get("benchmark_case")) != claimed.get("case")
+                        ):
+                            failures.append(f"{label} source semantic contract mismatch")
     artifacts = manifest.get("artifacts", [])
     if not isinstance(artifacts, list):
         artifacts = []
@@ -2393,6 +2484,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     label="final hardware acceptance",
                     require_nonempty=True,
                     require_identity=True,
+                    final_document=source,
                 )
 
     if model_e2e_frontier:
