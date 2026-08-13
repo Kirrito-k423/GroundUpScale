@@ -682,3 +682,26 @@ def test_historical_v1_and_v2_supersession_lineage_replay() -> None:
         "path": f"../{v1.name}",
         "manifest_sha256": sha256((v1 / "run.manifest.json").read_bytes()).hexdigest(),
     }
+
+
+def test_v2_rejects_forged_frozen_leaf_and_execution_ir(tmp_path: Path) -> None:
+    repository = Path(__file__).resolve().parents[1]
+    frozen = compose_issue48_input(repository)
+    frozen["model"]["semantic_leaves"][0]["stable_path"] += "-forged"
+    frozen["model"]["semantic_leaves"][0]["frozen_model_path"] += "-forged"
+    run = write_model_e2e_frontier_bundle(
+        frozen, tmp_path, run_id="issue48-forged-frozen-leaf"
+    )
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "model E2E frozen leaf identity mismatch" in verification["failures"]
+
+    execution = compose_issue48_input(repository)
+    execution["schedule"]["execution_ir"].update(
+        {"status": "known", "physical_events": [{"forged": True}]}
+    )
+    with pytest.raises(ValueError, match="invalid-model-schedule-execution-ir"):
+        __import__(
+            "groundupscale.model_e2e_frontier",
+            fromlist=["compose_model_e2e_frontier"],
+        ).compose_model_e2e_frontier(execution)

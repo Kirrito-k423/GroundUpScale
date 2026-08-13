@@ -463,6 +463,19 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
         or execution_ir_value.get("dependency_edges") != dependencies_value
     ):
         raise ModelE2EFrontierError("invalid-model-schedule-execution-ir")
+    execution_ir_status = execution_ir_value.get("status")
+    execution_ir_events = execution_ir_value.get("physical_events")
+    execution_ir_edges = execution_ir_value.get("dependency_edges")
+    if has_execution_ir and execution_ir_status == "unknown":
+        if (
+            execution_ir_events
+            or execution_ir_edges
+            or not isinstance(execution_ir_value.get("unknown_reason"), str)
+            or not execution_ir_value.get("unknown_reason")
+        ):
+            raise ModelE2EFrontierError("invalid-model-schedule-execution-ir")
+    elif has_execution_ir and (missing or execution_ir_events != resolved_candidates):
+        raise ModelE2EFrontierError("invalid-model-schedule-execution-ir")
     execution_ir = dict(execution_ir_value)
 
     rejected_value = schedule.get("rejected_optimizations", [])

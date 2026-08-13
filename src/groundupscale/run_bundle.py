@@ -2239,6 +2239,90 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 failures.append(
                                     "model E2E source bundle verification failed"
                                 )
+                            if source_bundle.get("issue") == 30:
+                                frozen = source.get("model", {}).get(
+                                    "frozen_model_ir"
+                                )
+                                if not isinstance(frozen, dict):
+                                    failures.append(
+                                        "model E2E frozen Model IR binding missing"
+                                    )
+                                else:
+                                    model_ir_path = (
+                                        source_root / str(frozen.get("path"))
+                                    ).resolve()
+                                    try:
+                                        model_ir_path.relative_to(source_root)
+                                        model_ir_document = json.loads(
+                                            model_ir_path.read_text(encoding="utf-8")
+                                        )
+                                    except (
+                                        ValueError,
+                                        OSError,
+                                        UnicodeDecodeError,
+                                        json.JSONDecodeError,
+                                    ):
+                                        failures.append(
+                                            "model E2E frozen Model IR is not resolvable"
+                                        )
+                                    else:
+                                        frozen_pairs: list[tuple[str, str]] = []
+
+                                        def collect(value: object) -> None:
+                                            if isinstance(value, dict):
+                                                path = value.get("stable_path")
+                                                operation = value.get("operation")
+                                                if isinstance(path, str) and isinstance(operation, str):
+                                                    frozen_pairs.append((path, operation))
+                                                for child in value.values():
+                                                    collect(child)
+                                            elif isinstance(value, list):
+                                                for child in value:
+                                                    collect(child)
+
+                                        collect(model_ir_document)
+                                        locked_pairs = [
+                                            (
+                                                leaf.get("frozen_model_path"),
+                                                leaf.get("operation_class"),
+                                            )
+                                            for leaf in source.get("model", {}).get(
+                                                "semantic_leaves", []
+                                            )
+                                        ]
+                                        projected_pairs = [
+                                            (
+                                                "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/"
+                                                + path.split("/transformer/", 1)[1],
+                                                operation,
+                                            )
+                                            for path, operation in frozen_pairs
+                                        ]
+                                        stable_pairs = [
+                                            (
+                                                leaf.get("stable_path"),
+                                                leaf.get("operation_class"),
+                                            )
+                                            for leaf in source.get("model", {}).get(
+                                                "semantic_leaves", []
+                                            )
+                                        ]
+                                        if (
+                                            _sha256(model_ir_path) != frozen.get("sha256")
+                                            or frozen.get("source_run_id") != source_manifest.get("run_id")
+                                            or locked_pairs != frozen_pairs
+                                            or stable_pairs != projected_pairs
+                                            or any(
+                                                leaf.get("frozen_model_ir_sha256")
+                                                != frozen.get("sha256")
+                                                for leaf in source.get("model", {}).get(
+                                                    "semantic_leaves", []
+                                                )
+                                            )
+                                        ):
+                                            failures.append(
+                                                "model E2E frozen leaf identity mismatch"
+                                            )
                     supersedes = expected.get("evidence", {}).get("supersedes")
                     if supersedes is not None:
                         if manifest.get("supersedes") != supersedes:
