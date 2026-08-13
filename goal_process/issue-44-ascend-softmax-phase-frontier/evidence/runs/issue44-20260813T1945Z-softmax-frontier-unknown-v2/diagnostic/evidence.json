@@ -1,0 +1,170 @@
+{
+  "capability_surfaces": [
+    {
+      "anchors": [],
+      "cells": [],
+      "cohort_id": "ascend-npu-89022e60525d608f",
+      "coordinate": {
+        "axis": "exact-shape",
+        "transform": "identity",
+        "transform_version": "v1"
+      },
+      "domain": {
+        "axis": -1,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "contiguous",
+        "logical_device": "npu:0",
+        "semantic_operation": "Softmax",
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ]
+      },
+      "input_digest": "ab5b3ab4efdbff45c1c5d25043ab94ae02ae6bbd364883fc0ec947d830a67552",
+      "measurement_session": {
+        "device_visibility": "0",
+        "ended_at": "2026-08-13T19:03:24+08:00",
+        "hardware_cohort": "ascend-npu-89022e60525d608f",
+        "issue": 44,
+        "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+        "owner_end": "issue=44 pid=2226102 host=localhost.localdomain started=2026-08-13T18:59:55+08:00",
+        "owner_start": "issue=44 pid=2226102 host=localhost.localdomain started=2026-08-13T18:59:55+08:00",
+        "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+        "started_at": "2026-08-13T18:59:55+08:00",
+        "wrapper_sha256": "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+      },
+      "operator_phase_graph": {
+        "chunk_pipeline_contract": null,
+        "composition": {
+          "missing_evidence": [
+            {
+              "phase_name": "exp",
+              "reason_code": "missing-real-chain-operand-evidence",
+              "required_capability_class": "compute.transcendental.exp.fp32"
+            },
+            {
+              "phase_name": "sum_reduce",
+              "reason_code": "missing-real-chain-operand-evidence",
+              "required_capability_class": "compute.reduction.sum.fp32"
+            },
+            {
+              "phase_name": "normalize",
+              "reason_code": "missing-real-chain-operand-evidence",
+              "required_capability_class": "compute.elementwise.divide.fp32"
+            }
+          ],
+          "operator_frontier_ns": null,
+          "rule": "serialized-critical-path-sum",
+          "standard_uncertainty_ns": null,
+          "status": "unknown"
+        },
+        "fusion_contract": null,
+        "graph_id": "softmax-max-subtract-exp-sum-normalize-v1",
+        "phases": [],
+        "stable_paths": [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+        ]
+      },
+      "qualification_reason_code": "legacy-synthetic-operand-domain",
+      "qualification_status": "unknown",
+      "source_demo": {
+        "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+        "path": "../../../../issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+        "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+        "semantic_ir_path": "ir/semantic.ir.json",
+        "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75"
+      },
+      "surface_id": "ascend-910b2-softmax-exact-phase-frontier",
+      "version": "v1"
+    }
+  ],
+  "cohort_id": "ascend-npu-89022e60525d608f",
+  "digests": {
+    "evidence_sha256": "b3c4fc2218e33a388edc8bfaeef775121f14e5f85531bd09df856b87f8caa850",
+    "input_sha256": "a3a81708ffc48ae6a46ba63496aa4abe0baffefbcbfad383fd870ecf35a855bb"
+  },
+  "execution_domain": {
+    "axis": -1,
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "layout": "contiguous",
+    "logical_device": "npu:0",
+    "semantic_operation": "Softmax",
+    "shape": [
+      1,
+      8,
+      512,
+      512
+    ]
+  },
+  "hardware": {
+    "cohort_id": "ascend-npu-89022e60525d608f",
+    "device": "Ascend910B2",
+    "partition": "npu:0"
+  },
+  "operator_frontier_qualification_ref": "artifact://frontier/qualification.json",
+  "resolved_configuration": {
+    "analysis_plan": "ascend-npu-transformer-demo",
+    "qualification_policy": {
+      "change_reason": "Qualify the exact Softmax domain used by the two-layer Transformer demo.",
+      "composition_rule": "serialized-critical-path-sum",
+      "input_digest": "1fd0c090da77b2140e2dce9f03c9968f5111715ad6c3ea8917b9afaef0f156c8",
+      "minimum_holdout_sessions_per_phase": 1,
+      "minimum_search_sessions_per_phase": 1,
+      "policy_id": "ascend-910b2-transformer-softmax-phase-frontier",
+      "revalidation": "Re-run on graph, execution domain, candidate, Hardware Cohort, or evidence change.",
+      "schema": "groundupscale.dev/softmax-phase-qualification-policy/v1alpha1",
+      "uncertainty_combination": "root-sum-of-squares",
+      "version": "v1"
+    }
+  },
+  "resolved_ir": {
+    "semantic_operation": "Softmax",
+    "shape_coordinate": "exact-shape"
+  },
+  "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+  "surface_queries": [
+    {
+      "domain": {
+        "axis": -1,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "contiguous",
+        "logical_device": "npu:0",
+        "semantic_operation": "Softmax",
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ]
+      },
+      "query_id": "softmax-0",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+      "status": "unknown"
+    },
+    {
+      "domain": {
+        "axis": -1,
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "contiguous",
+        "logical_device": "npu:0",
+        "semantic_operation": "Softmax",
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ]
+      },
+      "query_id": "softmax-1",
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+      "status": "unknown"
+    }
+  ]
+}

@@ -157,6 +157,32 @@ def _policy() -> dict[str, object]:
     }
 
 
+def _session_metadata(
+    cohort: str = "ascend-npu-febd831c8d07e06f",
+) -> dict[str, object]:
+    owner = (
+        "issue=44 pid=2226102 host=localhost.localdomain "
+        "started=2026-08-13T18:59:55+08:00"
+    )
+    return {
+        "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+        "issue": 44,
+        "lock_path": (
+            "/home/t00906153/.groundupscale/locks/"
+            "ascend-910b2-host.lock"
+        ),
+        "owner_start": owner,
+        "owner_end": owner,
+        "started_at": "2026-08-13T18:59:55+08:00",
+        "ended_at": "2026-08-13T19:03:24+08:00",
+        "device_visibility": "0",
+        "hardware_cohort": cohort,
+        "wrapper_sha256": (
+            "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+        ),
+    }
+
+
 def test_complete_softmax_phase_graph_publishes_replayable_frontier(
     tmp_path: Path,
 ) -> None:
@@ -166,6 +192,7 @@ def test_complete_softmax_phase_graph_publishes_replayable_frontier(
         qualification_policy=_policy(),
         phase_runs=_phase_inputs(tmp_path),
         source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -260,6 +287,41 @@ def test_softmax_phase_domain_mismatch_fails_closed(tmp_path: Path) -> None:
     ] is None
 
 
+def test_legacy_softmax_operands_stay_structured_unknown(tmp_path: Path) -> None:
+    boundaries = [
+        {
+            "phase_name": phase,
+            "required_capability_class": capability,
+            "reason_code": "missing-real-chain-operand-evidence",
+        }
+        for phase, _, capability in PHASES
+        if phase in {"exp", "sum_reduce", "normalize"}
+    ]
+    run = SoftmaxOperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="issue44-softmax-legacy-operands-test",
+        qualification_policy=_policy(),
+        phase_runs=_phase_inputs(tmp_path),
+        source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
+        evidence_boundaries=boundaries,
+    )
+    assert verify_run_bundle(run)["passed"] is True
+    qualification = json.loads(
+        (run / "frontier/qualification.json").read_text(encoding="utf-8")
+    )
+    assert qualification["status"] == "unknown"
+    assert qualification["reason_code"] == "legacy-synthetic-operand-domain"
+    assert qualification["surface"]["operator_phase_graph"]["phases"] == []
+    assert qualification["surface"]["operator_phase_graph"]["composition"] == {
+        "status": "unknown",
+        "rule": "serialized-critical-path-sum",
+        "operator_frontier_ns": None,
+        "standard_uncertainty_ns": None,
+        "missing_evidence": boundaries,
+    }
+
+
 def test_verifier_recomputes_softmax_serial_composition(tmp_path: Path) -> None:
     run = SoftmaxOperatorFrontierBundleWriter().run(
         tmp_path / "frontier",
@@ -267,6 +329,7 @@ def test_verifier_recomputes_softmax_serial_composition(tmp_path: Path) -> None:
         qualification_policy=_policy(),
         phase_runs=_phase_inputs(tmp_path),
         source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
     )
     manifest_path = run / "run.manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -298,6 +361,79 @@ def test_verifier_recomputes_softmax_serial_composition(tmp_path: Path) -> None:
     assert "Softmax Operator Frontier composition mismatch" in verification[
         "failures"
     ]
+
+
+def test_verifier_replays_softmax_source_digest_and_uncertainty(
+    tmp_path: Path,
+) -> None:
+    run = SoftmaxOperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="issue44-softmax-source-replay-tamper-test",
+        qualification_policy=_policy(),
+        phase_runs=_phase_inputs(tmp_path),
+        source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
+    )
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = next(
+        artifact for artifact in manifest["artifacts"]
+        if artifact["role"] == "operator-frontier-qualification"
+    )
+    path = run / entry["path"]
+    qualification = json.loads(path.read_text(encoding="utf-8"))
+    phase = qualification["surface"]["operator_phase_graph"]["phases"][0]
+    phase["source_digests"][0] = "0" * 64
+    phase["standard_uncertainty_ns"] += 1
+    composition = qualification["surface"]["operator_phase_graph"]["composition"]
+    composition["standard_uncertainty_ns"] = sum(
+        item["standard_uncertainty_ns"] ** 2
+        for item in qualification["surface"]["operator_phase_graph"]["phases"]
+    ) ** 0.5
+    qualification["surface"].pop("input_digest")
+    qualification["surface"]["input_digest"] = content_fingerprint(
+        qualification["surface"]
+    )
+    path.write_text(json.dumps(qualification, indent=2, sort_keys=True) + "\n")
+    entry["sha256"] = sha256(path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "Softmax Operator Frontier composition mismatch" in verification["failures"]
+
+
+def test_verifier_rejects_rehashed_softmax_demo_and_lock_metadata(
+    tmp_path: Path,
+) -> None:
+    run = SoftmaxOperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="issue44-softmax-lineage-tamper-test",
+        qualification_policy=_policy(),
+        phase_runs=_phase_inputs(tmp_path),
+        source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
+    )
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = next(
+        artifact for artifact in manifest["artifacts"]
+        if artifact["role"] == "operator-frontier-qualification"
+    )
+    path = run / entry["path"]
+    qualification = json.loads(path.read_text(encoding="utf-8"))
+    surface = qualification["surface"]
+    surface["source_demo"]["semantic_ir_sha256"] = "0" * 64
+    surface["measurement_session"]["device_visibility"] = "1"
+    surface.pop("input_digest")
+    surface["input_digest"] = content_fingerprint(surface)
+    path.write_text(json.dumps(qualification, indent=2, sort_keys=True) + "\n")
+    entry["sha256"] = sha256(path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "Softmax Operator Frontier composition mismatch" in verification["failures"]
 
 
 def test_public_measure_cli_accepts_exact_softmax_phase_contract(

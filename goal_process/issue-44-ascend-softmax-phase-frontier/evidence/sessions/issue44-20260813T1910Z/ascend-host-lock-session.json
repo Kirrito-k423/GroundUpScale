@@ -1,0 +1,12 @@
+{
+  "device_visibility": "0",
+  "ended_at": "2026-08-13T19:03:24+08:00",
+  "hardware_cohort": "ascend-npu-89022e60525d608f",
+  "issue": 44,
+  "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+  "owner_end": "issue=44 pid=2226102 host=localhost.localdomain started=2026-08-13T18:59:55+08:00",
+  "owner_start": "issue=44 pid=2226102 host=localhost.localdomain started=2026-08-13T18:59:55+08:00",
+  "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+  "started_at": "2026-08-13T18:59:55+08:00",
+  "wrapper_sha256": "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+}

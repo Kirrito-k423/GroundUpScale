@@ -989,8 +989,9 @@ def _collect_exact_shape_softmax_phase(
     input_cpu = runtime.randn(tuple(shape), dtype=runtime.float32, generator=generator)
     input_tensor = input_cpu.to(logical_device)
     reduction_cpu = input_cpu.amax(dim=axis, keepdim=True)
-    positive_cpu = input_cpu.abs().add(1.0)
-    denominator_cpu = positive_cpu.sum(dim=axis, keepdim=True)
+    centered_cpu = input_cpu - reduction_cpu
+    exponentiated_cpu = centered_cpu.exp()
+    denominator_cpu = exponentiated_cpu.sum(dim=axis, keepdim=True)
     runtime.npu.synchronize()
 
     if phase == "max_reduce":
@@ -1003,20 +1004,20 @@ def _collect_exact_shape_softmax_phase(
         oracle = input_cpu - reduction_cpu
         invoke_candidate = lambda: runtime.sub(candidate_input, reduction)
     elif phase == "exp":
-        candidate_input = input_tensor.clamp(min=-10.0, max=10.0)
-        oracle = input_cpu.clamp(min=-10.0, max=10.0).exp()
+        candidate_input = centered_cpu.to(logical_device)
+        oracle = exponentiated_cpu
         invoke_candidate = lambda: runtime.exp(candidate_input)
     elif phase == "sum_reduce":
-        candidate_input = positive_cpu.to(logical_device)
+        candidate_input = exponentiated_cpu.to(logical_device)
         oracle = denominator_cpu
         invoke_candidate = lambda: runtime.sum(candidate_input, dim=axis, keepdim=True)
     else:
-        candidate_input = positive_cpu.to(logical_device)
+        candidate_input = exponentiated_cpu.to(logical_device)
         denominator = denominator_cpu.to(logical_device)
-        oracle = positive_cpu / denominator_cpu
+        oracle = exponentiated_cpu / denominator_cpu
         invoke_candidate = lambda: runtime.div(candidate_input, denominator)
 
-    def measure() -> tuple[object, int]:
+    def measure() -> tuple[object, int, int]:
         start = runtime.npu.Event(enable_timing=True)
         end = runtime.npu.Event(enable_timing=True)
         runtime.npu.synchronize()
@@ -1028,10 +1029,11 @@ def _collect_exact_shape_softmax_phase(
         end.synchronize()
         runtime.npu.synchronize()
         assert result is not None
-        return result, round(float(start.elapsed_time(end)) * 1_000_000 / inner_iterations)
+        aggregate_ns = round(float(start.elapsed_time(end)) * 1_000_000)
+        return result, round(aggregate_ns / inner_iterations), aggregate_ns
 
     for _ in range(warmup_iterations):
-        warmup, _ = measure()
+        warmup, _, _ = measure()
         if warmup.device.type != "npu":
             raise RuntimeError("cpu-fallback-detected")
     actual = invoke_candidate()
@@ -1045,11 +1047,13 @@ def _collect_exact_shape_softmax_phase(
         and runtime.allclose(actual_cpu, oracle, atol=1e-5, rtol=1e-5)
     )
     samples = []
+    aggregate_samples = []
     for _ in range(repetitions):
-        result, elapsed_ns = measure()
+        result, elapsed_ns, aggregate_ns = measure()
         if result.device.type != "npu" or elapsed_ns <= 0:
             raise RuntimeError("invalid-primary-timer-sample")
         samples.append(elapsed_ns)
+        aggregate_samples.append(aggregate_ns)
 
     return {
         "runtime_device_name": str(runtime.npu.get_device_name(logical_device_index)),
@@ -1069,6 +1073,7 @@ def _collect_exact_shape_softmax_phase(
             "shape_exact": tuple(actual_cpu.shape) == tuple(oracle.shape),
         },
         "raw_samples_ns": samples,
+        "aggregate_samples_ns": aggregate_samples,
         "memory": {
             "allocated_bytes_before": 0,
             "allocated_bytes_after": int(runtime.npu.memory_allocated()),
@@ -1930,6 +1935,18 @@ class AscendNpuMeasurementAdapter:
                 "unit": "nanoseconds",
                 "sample_derivation": (
                     "device-event-elapsed-ns / inner_iterations"
+                ),
+                **(
+                    {
+                        "aggregate_samples_ns": raw["aggregate_samples_ns"],
+                        "normalization": {
+                            "divisor": inner_iterations,
+                            "rounding": "round-half-to-even-nanoseconds",
+                            "aggregate_unit": "nanoseconds",
+                        },
+                    }
+                    if "aggregate_samples_ns" in raw
+                    else {}
                 ),
                 "samples": samples,
                 "summary": timing_summary,

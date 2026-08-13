@@ -228,6 +228,127 @@ def _canonical_digest(value: object) -> str:
     return sha256(payload).hexdigest()
 
 
+_SOFTMAX_PHASE_SPECS = (
+    ("max_reduce", "torch.amax", "compute.reduction.max.fp32"),
+    ("subtract", "torch.sub", "compute.elementwise.subtract.fp32"),
+    ("exp", "torch.exp", "compute.transcendental.exp.fp32"),
+    ("sum_reduce", "torch.sum", "compute.reduction.sum.fp32"),
+    ("normalize", "torch.div", "compute.elementwise.divide.fp32"),
+)
+_SOFTMAX_INPUT_ROLES = {
+    "max_reduce": ["softmax_input"],
+    "subtract": ["softmax_input", "row_max"],
+    "exp": ["centered_logits"],
+    "sum_reduce": ["exponentials"],
+    "normalize": ["exponentials", "row_sum"],
+}
+_SOFTMAX_OUTPUT_ROLES = {
+    "max_reduce": ["row_max"],
+    "subtract": ["centered_logits"],
+    "exp": ["exponentials"],
+    "sum_reduce": ["row_sum"],
+    "normalize": ["softmax_output"],
+}
+_SOFTMAX_LEGACY_NORMALIZATION_MANIFESTS = frozenset({
+    "196748d01d508ae414d414f492eedd0b54e45b260f0cfa4102ffa789b2e36a3d",
+    "42dd7a1004309672f42ce8e7ef5d8d7747f4f90537fe720b11be98bf8d4df36f",
+    "4f98dc94c76e5fb6b71b8950e3152203fe6c1fe729b5b3119ea37e9791a14304",
+    "65f7db7d0b8d762bd66f9e01f6f85fd12b288f76924be1c1ac297bb7aa9828cd",
+    "67163f7b599fa89300cf71a9bbaa3ac692861521b78af6bb82f141e3b19ef24d",
+    "7d533c056c4a5bfbb59cd7de5489cac83097ace8dfae1bb966f96795003233ea",
+    "87d19ebf8058adf70248d2315b2e3895e99cc75e6dba8764b527e8726b2af38c",
+    "b14bad53362f009001ddbe4579d3ce6b3a51ef7d968fd9a617a1c69429040e39",
+    "c7dc79d99aeb5f87e084068c1352b5cdb1678ba9f3e8adb9597db15bd5b65f6e",
+    "f2a2cdb1e4408b1e687c5d2297fa2221b0465220742504107ca64ba1203676e5",
+})
+
+
+def _softmax_source_replay(
+    root: Path, source_runs: list[object]
+) -> tuple[dict[str, dict[str, dict[str, object]]], list[str]]:
+    replay: dict[str, dict[str, dict[str, object]]] = {}
+    failures: list[str] = []
+    for source in source_runs:
+        if not isinstance(source, dict):
+            continue
+        relative_path = source.get("path")
+        if not isinstance(relative_path, str) or Path(relative_path).is_absolute():
+            continue
+        source_root = (root / relative_path).resolve()
+        try:
+            manifest = json.loads((source_root / "run.manifest.json").read_text())
+            documents: dict[str, dict[str, object]] = {}
+            for artifact in manifest.get("artifacts", []):
+                if isinstance(artifact, dict) and isinstance(artifact.get("role"), str):
+                    document = json.loads((source_root / str(artifact["path"])).read_text())
+                    if isinstance(document, dict):
+                        documents[str(artifact["role"])] = document
+            case = documents["benchmark-case"]
+            candidate = documents["candidate-identity"]
+            timing = documents["raw-timing-observation"]
+            environment = documents["environment"]
+            phase = str(case["phase"])
+            lane = str(source.get("lane"))
+            samples = timing["samples"]
+            session = environment["measurement_session"]
+            expected_spec = next(item for item in _SOFTMAX_PHASE_SPECS if item[0] == phase)
+            candidate_body = dict(candidate)
+            candidate_digest = candidate_body.pop("candidate_digest")
+            record = {
+                "run_id": manifest["run_id"],
+                "manifest_sha256": _sha256(source_root / "run.manifest.json"),
+                "lane": lane,
+                "phase": phase,
+                "shape": case["shape"],
+                "axis": case["axis"],
+                "dtype": case["dtype"],
+                "layout": case["layout"],
+                "logical_device": documents["execution-contract"]["logical_device"],
+                "execution_mode": documents["execution-contract"]["execution_mode"],
+                "cohort": manifest["hardware_cohort"],
+                "candidate_id": candidate["candidate_id"],
+                "candidate_family": candidate["candidate_family"],
+                "candidate_digest": candidate_digest,
+                "capability_class": candidate["capability_class"],
+                "median_ns": float(statistics.median(samples)),
+                "standard_uncertainty_ns": float(statistics.stdev(samples)),
+                "process_identity": (
+                    session["process_id"], session["process_started_at"]
+                ),
+            }
+            if (
+                source.get("run_id") != record["run_id"]
+                or source.get("manifest_sha256") != record["manifest_sha256"]
+                or source.get("phase") != phase
+                or lane not in {"search", "holdout"}
+                or candidate_digest != content_fingerprint(candidate_body)
+                or (candidate["candidate_id"], candidate["capability_class"])
+                != expected_spec[1:]
+            ):
+                failures.append(f"Softmax source lineage mismatch: {source.get('run_id')}")
+                continue
+            if lane in replay.setdefault(phase, {}):
+                failures.append(f"duplicate Softmax {phase} {lane} source")
+                continue
+            replay[phase][lane] = record
+        except (KeyError, StopIteration, OSError, ValueError, TypeError, json.JSONDecodeError):
+            failures.append(f"invalid Softmax source replay: {source.get('run_id')}")
+    return replay, failures
+
+
+def _semantic_softmax_paths(value: object) -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, dict):
+        if value.get("operation") == "Softmax" and isinstance(value.get("stable_path"), str):
+            paths.append(str(value["stable_path"]))
+        for child in value.values():
+            paths.extend(_semantic_softmax_paths(child))
+    elif isinstance(value, list):
+        for child in value:
+            paths.extend(_semantic_softmax_paths(child))
+    return sorted(paths)
+
+
 def _candidate_path_matches_scope(candidate_path: object, scope: object) -> bool:
     if not isinstance(candidate_path, str) or not isinstance(scope, str):
         return False
@@ -1882,22 +2003,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     )
                 phase_graph = surface.get("operator_phase_graph")
                 if isinstance(phase_graph, dict):
+                    replay, replay_failures = _softmax_source_replay(root, source_runs)
+                    failures.extend(replay_failures)
                     phases = phase_graph.get("phases")
                     composition = phase_graph.get("composition")
-                    expected_names = [
-                        "max_reduce",
-                        "subtract",
-                        "exp",
-                        "sum_reduce",
-                        "normalize",
-                    ]
-                    expected_capabilities = [
-                        "compute.reduction.max.fp32",
-                        "compute.elementwise.subtract.fp32",
-                        "compute.transcendental.exp.fp32",
-                        "compute.reduction.sum.fp32",
-                        "compute.elementwise.divide.fp32",
-                    ]
+                    expected_names = [item[0] for item in _SOFTMAX_PHASE_SPECS]
+                    expected_capabilities = [item[2] for item in _SOFTMAX_PHASE_SPECS]
                     source_ids = {
                         item.get("run_id")
                         for item in source_runs
@@ -1936,6 +2047,114 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             for phase in phases
                         )
                     )
+                    if valid_phases and qualification.get("status") == "qualified":
+                        process_identities: set[tuple[object, object]] = set()
+                        replay_domains: set[str] = set()
+                        for phase_document, spec in zip(phases, _SOFTMAX_PHASE_SPECS):
+                            phase_name = spec[0]
+                            lanes = replay.get(phase_name, {})
+                            search = lanes.get("search")
+                            holdout = lanes.get("holdout")
+                            if search is None or holdout is None:
+                                valid_phases = False
+                                continue
+                            process_identities.update(
+                                (tuple(search["process_identity"]), tuple(holdout["process_identity"]))
+                            )
+                            for item in (search, holdout):
+                                replay_domains.add(
+                                    _canonical_digest(
+                                        {key: item[key] for key in (
+                                            "shape", "axis", "dtype", "layout",
+                                            "logical_device", "execution_mode", "cohort",
+                                        )}
+                                    )
+                                )
+                            expected_source_ids = [search["run_id"], holdout["run_id"]]
+                            expected_source_digests = [
+                                search["manifest_sha256"], holdout["manifest_sha256"]
+                            ]
+                            expected_uncertainty = math.hypot(
+                                float(search["standard_uncertainty_ns"]),
+                                float(holdout["standard_uncertainty_ns"]),
+                            )
+                            if not (
+                                phase_document.get("source_run_ids") == expected_source_ids
+                                and phase_document.get("source_digests") == expected_source_digests
+                                and phase_document.get("selected_duration_ns") == holdout["median_ns"]
+                                and phase_document.get("standard_uncertainty_ns") == expected_uncertainty
+                                and phase_document["candidate"].get("candidate_id") == holdout["candidate_id"]
+                                and phase_document["candidate"].get("candidate_family") == holdout["candidate_family"]
+                                and phase_document["candidate"].get("candidate_digest") == holdout["candidate_digest"]
+                                and phase_document.get("resource_demands") == {
+                                    "exact_operation_invocations": 1,
+                                    "declared_elements": math.prod(holdout["shape"]),
+                                    "capability_class": spec[2],
+                                }
+                                and phase_document.get("input_roles") == _SOFTMAX_INPUT_ROLES[phase_name]
+                                and phase_document.get("output_roles") == _SOFTMAX_OUTPUT_ROLES[phase_name]
+                                and phase_document.get("assumptions") == [
+                                    "fixed-shape-float32-contiguous",
+                                    "candidate-invocation-includes-operand-data-movement",
+                                    "no-fusion-no-chunk-pipeline-no-cross-phase-overlap",
+                                ]
+                                and phase_document.get("provenance") == {
+                                    "semantic_ir_sha256": surface.get("source_demo", {}).get("semantic_ir_sha256"),
+                                    "source_run_ids": expected_source_ids,
+                                }
+                            ):
+                                valid_phases = False
+                        if len(process_identities) != 10 or len(replay_domains) != 1:
+                            valid_phases = False
+
+                        source_demo = surface.get("source_demo")
+                        stable_paths = phase_graph.get("stable_paths")
+                        if isinstance(source_demo, dict):
+                            demo_relative_path = source_demo.get("path")
+                            demo_root = (
+                                (root / demo_relative_path).resolve()
+                                if isinstance(demo_relative_path, str)
+                                and not Path(demo_relative_path).is_absolute()
+                                else root
+                            )
+                            try:
+                                demo_manifest_path = demo_root / "run.manifest.json"
+                                demo_manifest = json.loads(demo_manifest_path.read_text())
+                                semantic_entry = next(
+                                    item for item in demo_manifest["artifacts"]
+                                    if item.get("role") == "semantic-ir"
+                                )
+                                semantic_path = demo_root / semantic_entry["path"]
+                                semantic = json.loads(semantic_path.read_text())
+                                demo_valid = (
+                                    verify_run_bundle(demo_root).get("passed") is True
+                                    and source_demo.get("manifest_sha256") == _sha256(demo_manifest_path)
+                                    and source_demo.get("semantic_ir_sha256") == _sha256(semantic_path)
+                                    and source_demo.get("semantic_ir_path") == semantic_entry["path"]
+                                    and stable_paths == _semantic_softmax_paths(semantic.get("root"))
+                                )
+                            except (OSError, KeyError, StopIteration, TypeError, json.JSONDecodeError):
+                                demo_valid = False
+                        else:
+                            demo_valid = False
+                        if not demo_valid:
+                            valid_phases = False
+
+                        session = surface.get("measurement_session")
+                        session_valid = (
+                            isinstance(session, dict)
+                            and session.get("schema") == "groundupscale.dev/ascend-host-lock-session/v1alpha1"
+                            and session.get("issue") == 44
+                            and session.get("owner_start") == session.get("owner_end")
+                            and "issue=44 " in str(session.get("owner_start"))
+                            and session.get("device_visibility") == "0"
+                            and session.get("hardware_cohort") == manifest.get("hardware_cohort")
+                            and session.get("wrapper_sha256")
+                            == "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+                            and str(session.get("started_at")) < str(session.get("ended_at"))
+                        )
+                        if not session_valid:
+                            valid_phases = False
                     if not isinstance(composition, dict) or composition.get(
                         "rule"
                     ) != "serialized-critical-path-sum":
@@ -1971,20 +2190,55 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             if isinstance(composition, dict)
                             else None
                         )
+                        actual_missing = [
+                            {
+                                "phase_name": phase,
+                                "required_capability_class": capability,
+                                "reason_code": "missing-mandatory-phase-evidence",
+                            }
+                            for phase, _, capability in _SOFTMAX_PHASE_SPECS
+                            if set(replay.get(phase, {})) != {"search", "holdout"}
+                        ]
+                        replay_records = [
+                            record for lanes in replay.values() for record in lanes.values()
+                        ]
+                        replay_domains = {
+                            _canonical_digest({key: record[key] for key in (
+                                "shape", "axis", "dtype", "layout", "logical_device",
+                                "execution_mode", "cohort",
+                            )})
+                            for record in replay_records
+                        }
+                        expected_reason = (
+                            "mandatory-phase-domain-mismatch"
+                            if len(replay_domains) > 1
+                            else (
+                                "missing-mandatory-phase-evidence"
+                                if actual_missing
+                                else "legacy-synthetic-operand-domain"
+                            )
+                        )
+                        if expected_reason == "legacy-synthetic-operand-domain":
+                            actual_missing = [
+                                {
+                                    "phase_name": phase,
+                                    "required_capability_class": capability,
+                                    "reason_code": "missing-real-chain-operand-evidence",
+                                }
+                                for phase, _, capability in _SOFTMAX_PHASE_SPECS
+                                if phase in {"exp", "sum_reduce", "normalize"}
+                            ]
                         composition_matches = bool(
                             isinstance(composition, dict)
                             and composition.get("status") == "unknown"
                             and composition.get("operator_frontier_ns") is None
                             and composition.get("standard_uncertainty_ns") is None
                             and isinstance(missing, list)
-                            and (
-                                missing
-                                or qualification.get("reason_code")
-                                == "mandatory-phase-domain-mismatch"
-                            )
+                            and missing == actual_missing
+                            and qualification.get("reason_code") == expected_reason
                         )
-                    if not valid_phases and qualification.get("status") == "unknown":
-                        valid_phases = phases == [] or isinstance(phases, list)
+                    if qualification.get("status") == "unknown":
+                        valid_phases = phases == []
                     if not valid_phases or not composition_matches:
                         failures.append(
                             "Softmax Operator Frontier composition mismatch"
@@ -3571,6 +3825,16 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 if raw_timing is not None
                 else []
             )
+            aggregate_samples = (
+                raw_timing.get("aggregate_samples_ns")
+                if raw_timing is not None
+                else None
+            )
+            normalization = (
+                raw_timing.get("normalization")
+                if raw_timing is not None
+                else None
+            )
             repetitions = (
                 timing_plan.get("repetitions")
                 if timing_plan is not None
@@ -3625,6 +3889,41 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 and collection.get("timing_quality")
                 == recomputed_timing_quality
             )
+            if aggregate_samples is not None or normalization is not None:
+                divisor = (
+                    normalization.get("divisor")
+                    if isinstance(normalization, dict)
+                    else None
+                )
+                raw_timing_valid = bool(
+                    raw_timing_valid
+                    and isinstance(aggregate_samples, list)
+                    and len(aggregate_samples) == len(samples)
+                    and all(
+                        isinstance(sample, int)
+                        and not isinstance(sample, bool)
+                        and sample > 0
+                        for sample in aggregate_samples
+                    )
+                    and isinstance(divisor, int)
+                    and not isinstance(divisor, bool)
+                    and timing_plan is not None
+                    and divisor == timing_plan.get("inner_iterations")
+                    and normalization.get("rounding")
+                    == "round-half-to-even-nanoseconds"
+                    and normalization.get("aggregate_unit") == "nanoseconds"
+                    and samples
+                    == [round(sample / divisor) for sample in aggregate_samples]
+                )
+            elif (
+                contract is not None
+                and contract.get("operation") == "SoftmaxPhase"
+                and isinstance(contract.get("inner_iterations"), int)
+                and contract["inner_iterations"] > 1
+                and _sha256(manifest_path)
+                not in _SOFTMAX_LEGACY_NORMALIZATION_MANIFESTS
+            ):
+                raw_timing_valid = False
             timing_quality_status = (
                 recomputed_timing_quality.get("status")
                 if recomputed_timing_quality is not None

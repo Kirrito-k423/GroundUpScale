@@ -9,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
-from math import hypot, isfinite
+from math import hypot, isfinite, prod
 from pathlib import Path
 from statistics import median, stdev
 from typing import Any, cast
@@ -53,6 +53,62 @@ SOFTMAX_PHASE_CAPABILITIES = {
     "sum_reduce": "compute.reduction.sum.fp32",
     "normalize": "compute.elementwise.divide.fp32",
 }
+SOFTMAX_PHASE_INPUT_ROLES = {
+    "max_reduce": ("softmax_input",),
+    "subtract": ("softmax_input", "row_max"),
+    "exp": ("centered_logits",),
+    "sum_reduce": ("exponentials",),
+    "normalize": ("exponentials", "row_sum"),
+}
+SOFTMAX_PHASE_OUTPUT_ROLES = {
+    "max_reduce": "row_max",
+    "subtract": "centered_logits",
+    "exp": "exponentials",
+    "sum_reduce": "row_sum",
+    "normalize": "softmax_output",
+}
+
+
+def _softmax_phase_input_roles(phase: str) -> list[str]:
+    return list(SOFTMAX_PHASE_INPUT_ROLES[phase])
+
+
+def _softmax_phase_output_role(phase: str) -> str:
+    return SOFTMAX_PHASE_OUTPUT_ROLES[phase]
+
+
+def _validate_softmax_session_metadata(
+    value: dict[str, object], *, cohort_id: str, logical_device: str
+) -> None:
+    required_strings = (
+        "lock_path",
+        "owner_start",
+        "owner_end",
+        "started_at",
+        "ended_at",
+        "device_visibility",
+        "hardware_cohort",
+        "wrapper_sha256",
+    )
+    if (
+        value.get("schema")
+        != "groundupscale.dev/ascend-host-lock-session/v1alpha1"
+        or value.get("issue") != 44
+        or any(not isinstance(value.get(key), str) or not value[key] for key in required_strings)
+        or value["lock_path"]
+        != "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock"
+        or value["owner_start"] != value["owner_end"]
+        or "issue=44 " not in str(value["owner_start"])
+        or value["device_visibility"] != logical_device.removeprefix("npu:")
+        or value["hardware_cohort"] != cohort_id
+        or value["wrapper_sha256"]
+        != "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+        or str(value["started_at"]) >= str(value["ended_at"])
+    ):
+        raise OperatorFrontierQualificationError(
+            "invalid or mismatched Ascend host-lock session metadata",
+            reason_code="invalid-host-lock-session-metadata",
+        )
 
 
 class OperatorFrontierQualificationError(ValueError):
@@ -85,6 +141,7 @@ class _SoftmaxPhaseObservation:
     correctness: str
     timing_quality: str
     process_identity: tuple[int, str]
+    input_identity: str
 
     @property
     def domain(self) -> dict[str, object]:
@@ -110,6 +167,8 @@ class SoftmaxOperatorFrontierBundleWriter:
         qualification_policy: dict[str, object],
         phase_runs: dict[str, dict[str, Sequence[str | Path]]],
         source_demo_bundle: str | Path,
+        session_metadata: dict[str, object] | None = None,
+        evidence_boundaries: Sequence[dict[str, str]] = (),
     ) -> Path:
         if not RUN_ID_PATTERN.fullmatch(run_id):
             raise ValueError(f"unsafe run_id: {run_id!r}")
@@ -261,9 +320,16 @@ class SoftmaxOperatorFrontierBundleWriter:
                 != len(all_observations)
             )
         )
+        if session_metadata is not None:
+            _validate_softmax_session_metadata(
+                session_metadata,
+                cohort_id=next(iter(cohorts)) if len(cohorts) == 1 else "unknown",
+                logical_device=str(domain["logical_device"]),
+            )
         phase_documents: list[dict[str, object]] = []
         predecessor: str | None = None
-        if not missing_evidence and not domain_mismatch:
+        boundary_evidence = [dict(item) for item in evidence_boundaries]
+        if not missing_evidence and not domain_mismatch and not boundary_evidence:
             for phase in SOFTMAX_PHASE_ORDER:
                 searches, holdouts = records_by_phase[phase]
                 selected_duration = float(median([item.median_ns for item in holdouts]))
@@ -288,6 +354,24 @@ class SoftmaxOperatorFrontierBundleWriter:
                             "candidate_digest": selected.candidate_digest,
                         },
                         "required_capability_class": selected.capability_class,
+                        "resource_demands": {
+                            "exact_operation_invocations": 1,
+                            "declared_elements": prod(selected.shape),
+                            "capability_class": selected.capability_class,
+                        },
+                        "input_roles": _softmax_phase_input_roles(phase),
+                        "output_roles": [_softmax_phase_output_role(phase)],
+                        "assumptions": [
+                            "fixed-shape-float32-contiguous",
+                            "candidate-invocation-includes-operand-data-movement",
+                            "no-fusion-no-chunk-pipeline-no-cross-phase-overlap",
+                        ],
+                        "provenance": {
+                            "semantic_ir_sha256": semantic_ir_entry["sha256"],
+                            "source_run_ids": [
+                                item.run_id for item in (*searches, *holdouts)
+                            ],
+                        },
                         "local_composition": "exact-operation-probe",
                         "selected_duration_ns": selected_duration,
                         "standard_uncertainty_ns": uncertainty,
@@ -318,6 +402,7 @@ class SoftmaxOperatorFrontierBundleWriter:
             status = "qualified"
             reason_code = None
         else:
+            missing_evidence.extend(boundary_evidence)
             composition = {
                 "status": "unknown",
                 "rule": "serialized-critical-path-sum",
@@ -329,7 +414,11 @@ class SoftmaxOperatorFrontierBundleWriter:
             reason_code = (
                 "mandatory-phase-domain-mismatch"
                 if domain_mismatch
-                else "missing-mandatory-phase-evidence"
+                else (
+                    "legacy-synthetic-operand-domain"
+                    if boundary_evidence
+                    else "missing-mandatory-phase-evidence"
+                )
             )
 
         cohort_id = next(iter(cohorts)) if len(cohorts) == 1 else "unknown"
@@ -355,10 +444,19 @@ class SoftmaxOperatorFrontierBundleWriter:
             "operator_phase_graph": graph,
             "source_demo": {
                 "run_id": demo_manifest["run_id"],
+                "path": os.path.relpath(
+                    source_demo_root,
+                    Path(artifact_store).resolve() / "runs" / run_id,
+                ),
                 "manifest_sha256": _sha256(demo_manifest_path),
                 "semantic_ir_sha256": semantic_ir_entry["sha256"],
                 "semantic_ir_path": semantic_ir_entry["path"],
             },
+            **(
+                {"measurement_session": session_metadata}
+                if session_metadata is not None
+                else {}
+            ),
             "anchors": (
                 [
                     {
@@ -469,6 +567,7 @@ def _softmax_phase_observation(path: str | Path) -> _SoftmaxPhaseObservation:
     raw_timing, _ = _artifact(root, manifest, "raw-timing-observation")
     execution, _ = _artifact(root, manifest, "execution-contract")
     environment, _ = _artifact(root, manifest, "environment")
+    input_corpus, _ = _artifact(root, manifest, "input-corpus")
     phase = case.get("phase")
     shape = case.get("shape")
     summary = raw_timing.get("summary")
@@ -531,6 +630,7 @@ def _softmax_phase_observation(path: str | Path) -> _SoftmaxPhaseObservation:
             int(session["process_id"]),
             str(session["process_started_at"]),
         ),
+        input_identity=str(input_corpus.get("input_sha256")),
     )
 
 

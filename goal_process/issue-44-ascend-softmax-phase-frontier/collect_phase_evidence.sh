@@ -45,3 +45,29 @@ cp "$owner_file" "$metadata_root/lock-owner-end.txt"
 date -Iseconds > "$metadata_root/ended-at.txt"
 cp "$artifact_store/runs/issue44-${session_id}-max_reduce-search/adapter/cohort.json" \
   "$metadata_root/hardware-cohort.json"
+
+"$python_bin" - "$metadata_root" "$artifact_store" "$session_id" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+metadata_root, artifact_store, session_id = map(Path, sys.argv[1:])
+owner_start = (metadata_root / "lock-owner-start.txt").read_text().strip()
+owner_end = (metadata_root / "lock-owner-end.txt").read_text().strip()
+cohort = json.loads((metadata_root / "hardware-cohort.json").read_text())
+document = {
+    "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+    "issue": 44,
+    "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+    "owner_start": owner_start,
+    "owner_end": owner_end,
+    "started_at": (metadata_root / "started-at.txt").read_text().strip(),
+    "ended_at": (metadata_root / "ended-at.txt").read_text().strip(),
+    "device_visibility": (metadata_root / "device-visibility.txt").read_text().strip(),
+    "hardware_cohort": cohort["cohort_id"],
+    "wrapper_sha256": "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787",
+}
+(metadata_root / "ascend-host-lock-session.json").write_text(
+    json.dumps(document, indent=2, sort_keys=True) + "\n"
+)
+PY

@@ -1,0 +1,33 @@
+{
+  "issue": 44,
+  "schema": "groundupscale.dev/measurement-authority-selection/v1alpha1",
+  "sessions": [
+    {
+      "authority": "rejected",
+      "inner_iterations": 1,
+      "reason_codes": [
+        "max_reduce-holdout:session-dispersion-exceeds-policy",
+        "exp-search:session-dispersion-exceeds-policy",
+        "normalize-holdout:session-dispersion-exceeds-policy"
+      ],
+      "session_id": "issue44-20260813T1850Z"
+    },
+    {
+      "authority": "rejected",
+      "inner_iterations": 10,
+      "reason_codes": [
+        "exp-search:session-dispersion-exceeds-policy",
+        "normalize-holdout:session-dispersion-exceeds-policy",
+        "subtract-holdout:session-dispersion-exceeds-policy"
+      ],
+      "session_id": "issue44-20260813T1900Z"
+    },
+    {
+      "authority": "authoritative-source",
+      "inner_iterations": 100,
+      "reason_codes": [],
+      "session_id": "issue44-20260813T1910Z"
+    }
+  ],
+  "selection_rule": "all mandatory correctness and timing-quality lanes pass; no selective sample exclusion"
+}
