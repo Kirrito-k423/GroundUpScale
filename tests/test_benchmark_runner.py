@@ -24,6 +24,11 @@ def test_cpu_benchmark_runs_all_authored_cases_with_raw_windows() -> None:
     assert observation["instrumentation_profile"] == "benchmark"
     assert observation["synchronization"] == "measurement-boundaries-only"
     assert [case["case_id"] for case in observation["cases"]] == [
+        "matmul-layer1-qk",
+        "matmul-layer0-gate-proj",
+        "matmul-layer0-qk",
+        "matmul-layer1-gate-proj",
+        "matmul-layer0-context",
         "matmul-q-proj",
         "rmsnorm-input",
         "softmax-attention",
@@ -38,6 +43,16 @@ def test_cpu_benchmark_runs_all_authored_cases_with_raw_windows() -> None:
         assert latency["median_ns"] > 0
         assert latency["throughput_per_second"] > 0
         assert latency["inner_iterations"] == 1
+    q_proj = next(case for case in observation["cases"] if case["case_id"] == "matmul-q-proj")
+    provider = q_proj["candidate_identity"]["dispatch_provider_binaries"]
+    assert provider[0]["role"] == "cpu-dispatch-provider"
+    assert provider[0]["name"] == "libtorch_cpu.dylib"
+    assert len(provider[0]["sha256"]) == 64
+    exact_matmuls = [
+        case for case in observation["cases"] if case["case_id"].startswith("matmul-")
+    ]
+    assert len(exact_matmuls) == 6
+    assert all(case["operator_correctness"]["status"] == "passed" for case in exact_matmuls)
 
 
 def test_live_set_uses_alias_roots_and_separates_state_from_activation() -> None:

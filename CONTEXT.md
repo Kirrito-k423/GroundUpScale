@@ -237,6 +237,54 @@ _Avoid_: Hardware Backend, local cost rule
 An explainable hardware-specific prediction of an Implementation Candidate's duration and uncertainty under stated shape, layout, resource, and software conditions.
 _Avoid_: Hardware-independent Cost Formula, raw observation
 
+**Resource Physical Floor**:
+An algorithm-independent lower bound on duration derived from minimum Resource Demands and evidence-backed physical resource capacities; it may be unattainable by any current implementation.
+_Avoid_: Operator prediction, theoretical peak, runtime observation
+
+**Operator Achievable Frontier**:
+An evidence-qualified partial mapping from a complete execution domain and Shape to the best correct Implementation Candidate duration and derived rate within one Hardware Cohort.
+_Avoid_: Resource Physical Floor, global calibration average, single observation
+
+**Schedule Achievable Frontier**:
+An evidence-qualified duration obtained by composing Operator Achievable Frontiers through explicit dependencies, Resource Claims, transformations, and validated schedule choices.
+_Avoid_: Sum of operator minima, runtime observation
+
+**Capability Surface**:
+A local representation of an Operator Achievable Frontier over validated Shape coordinates, partitioned into Shape Regimes and supported by exact-Shape Frontier Anchors.
+_Avoid_: Global interpolation, bounding box, nearest-neighbor estimate
+
+**Frontier Anchor**:
+A correct, stable, independently held-out exact-Shape observation whose validity and Frontier role are qualified for one complete execution domain and Hardware Cohort.
+_Avoid_: Arbitrary benchmark point, unqualified observation
+
+**Shape Regime**:
+A connected Shape domain within which one Implementation Candidate family, execution behavior, and Duration Model remain evidence-qualified.
+_Avoid_: Whole Shape sweep, assumed global range
+
+**Shape Regime Boundary**:
+An explicit separation between Shape Regimes across which candidate selection or duration behavior may change and prediction remains unknown until independently validated.
+_Avoid_: Smoothed discontinuity, implicit extrapolation
+
+**Setup Latency**:
+The portion of an Implementation Candidate's duration that does not scale with declared work within one Shape Regime.
+_Avoid_: Whole small-Shape duration, scheduling delay
+
+**Ramp Regime**:
+A Shape Regime in which Setup Latency remains material, so Effective Rate rises substantially as declared work increases.
+_Avoid_: Slow hardware, unqualified small-Shape range
+
+**Steady Regime**:
+A Shape Regime in which Setup Latency is no longer material and Effective Rate remains near a qualified asymptotic level as declared work increases.
+_Avoid_: Theoretical peak, universal large-Shape range
+
+**Effective Rate**:
+Declared work divided by modeled or measured duration under one complete execution domain.
+_Avoid_: Model FLOPs Utilization, theoretical peak, hardware capacity
+
+**Model FLOPs Utilization**:
+Effective Rate divided by a comparable, evidence-backed theoretical FLOP peak; it is unknown when that peak is unknown or semantically incomparable.
+_Avoid_: Effective Rate, empirical-envelope utilization, generic utilization
+
 **Fabric Graph**:
 The concrete compute, memory, storage, switch, and interconnect instances available to one analysis together with their topology, capacity, pools, and Hardware Spec references.
 _Avoid_: Flat hardware profile, Hardware Spec, Calibration Profile

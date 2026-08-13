@@ -317,3 +317,184 @@ def test_hardware_benchmark_cli_writes_raw_observation_and_yaml_profile(
     summary = __import__("json").loads(capsys.readouterr().out)
     assert summary["resource_count"] == 1
     assert summary["environment_eligible"] is True
+
+
+def test_hardware_benchmark_cli_collects_row_reduction_phase_capability(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    document = _suite_document()
+    probe = document["spec"]["probes"][0]  # type: ignore[index]
+    probe.update(  # type: ignore[union-attr]
+        {
+            "id": "row-reduction-max-fp32",
+            "kind": "reduction_max",
+            "resource": "compute.reduction.max.fp32",
+            "shapes": [[2, width] for width in range(4, 16)],
+            "alignment_boundaries": [5],
+            "thread_counts": [1],
+        }
+    )
+    document["spec"]["target_window_ms"] = 0.1  # type: ignore[index]
+    document["spec"]["samples"] = 4  # type: ignore[index]
+    suite_path = tmp_path / "phase-suite.yaml"
+    suite_path.write_text(yaml.safe_dump(document, sort_keys=False), encoding="utf-8")
+    observation_path = tmp_path / "phase-observation.json"
+    profile_path = tmp_path / "phase-profile.yaml"
+
+    exit_code = main(
+        [
+            "benchmark-hardware",
+            str(suite_path),
+            "--repository-root",
+            str(tmp_path),
+            "--observation-output",
+            str(observation_path),
+            "--profile-output",
+            str(profile_path),
+            "--profile-name",
+            "phase-profile",
+            "--json",
+        ],
+        environment_collector=lambda **_: {
+            "eligible": True,
+            "captured_at": "2026-08-09T00:00:00Z",
+            "policy": {"policy_id": "test"},
+            "reason_codes": [],
+        },
+    )
+
+    assert exit_code == 0
+    summary = yaml.safe_load(capsys.readouterr().out)
+    assert summary["resource_count"] == 1
+    observation = yaml.safe_load(observation_path.read_text(encoding="utf-8"))
+    cases = observation["probes"][0]["cases"]
+    assert observation["probes"][0]["resource"] == (
+        "compute.reduction.max.fp32"
+    )
+    assert all(case["unit"] == "FLOP/s" for case in cases)
+    assert [case["work"] for case in cases] == [
+        2 * (width - 1) for width in range(4, 16)
+    ]
+
+
+def test_hardware_benchmark_cli_collects_complete_compound_phase_resources(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    document = _suite_document()
+    # Keep every probe above the timer-noise floor while retaining the
+    # boundary-1/boundary/boundary+1 coverage required by the public schema.
+    row_shapes = [[512, width] for width in range(255, 267)]
+    vector_shapes = [[elements] for elements in range(65535, 65547)]
+    contracts = (
+        ("reduction_sum", "compute.reduction.sum.fp32", row_shapes, 256),
+        (
+            "elementwise_subtract",
+            "compute.elementwise.subtract.fp32",
+            row_shapes,
+            256,
+        ),
+        (
+            "elementwise_divide",
+            "compute.elementwise.divide.fp32",
+            row_shapes,
+            256,
+        ),
+        (
+            "elementwise_exp",
+            "compute.transcendental.exp.fp32",
+            vector_shapes,
+            65536,
+        ),
+        (
+            "elementwise_square",
+            "compute.elementwise.square.fp32",
+            vector_shapes,
+            65536,
+        ),
+        ("scalar_divide", "compute.scalar.divide.fp32", vector_shapes, 65536),
+        ("scalar_add", "compute.scalar.add.fp32", vector_shapes, 65536),
+        ("scalar_rsqrt", "compute.transcendental.rsqrt.fp32", vector_shapes, 65536),
+        (
+            "elementwise_multiply",
+            "compute.elementwise.multiply.fp32",
+            vector_shapes,
+            65536,
+        ),
+        (
+            "memory_row_reduction",
+            "memory.row-reduction.fp32",
+            row_shapes,
+            256,
+        ),
+        (
+            "memory_broadcast",
+            "memory.broadcast-read-write.fp32",
+            row_shapes,
+            256,
+        ),
+        (
+            "memory_elementwise",
+            "memory.elementwise-read-write.fp32",
+            vector_shapes,
+            65536,
+        ),
+        (
+            "memory_row_scalar",
+            "memory.row-scalar-read-write.fp32",
+            vector_shapes,
+            65536,
+        ),
+    )
+    document["spec"]["probes"] = [  # type: ignore[index]
+        {
+            "id": f"phase-{kind}",
+            "kind": kind,
+            "resource": resource,
+            "dtype": "float32",
+            "shapes": shapes,
+            "alignment_boundaries": [boundary],
+            "thread_counts": [1],
+        }
+        for kind, resource, shapes, boundary in contracts
+    ]
+    document["spec"]["target_window_ms"] = 0.25  # type: ignore[index]
+    document["spec"]["samples"] = 5  # type: ignore[index]
+    suite_path = tmp_path / "all-phase-suite.yaml"
+    suite_path.write_text(yaml.safe_dump(document, sort_keys=False), encoding="utf-8")
+    observation_path = tmp_path / "all-phase-observation.json"
+    profile_path = tmp_path / "all-phase-profile.yaml"
+
+    exit_code = main(
+        [
+            "benchmark-hardware",
+            str(suite_path),
+            "--repository-root",
+            str(tmp_path),
+            "--observation-output",
+            str(observation_path),
+            "--profile-output",
+            str(profile_path),
+            "--profile-name",
+            "all-phase-profile",
+            "--json",
+        ],
+        environment_collector=lambda **_: {
+            "eligible": True,
+            "captured_at": "2026-08-09T00:00:00Z",
+            "policy": {"policy_id": "test"},
+            "reason_codes": [],
+        },
+    )
+
+    assert exit_code == 0
+    summary = yaml.safe_load(capsys.readouterr().out)
+    assert summary["resource_count"] == len(contracts)
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    resources = {item["resource"]: item for item in profile["spec"]["resources"]}
+    assert set(resources) == {resource for _, resource, _, _ in contracts}
+    assert all(
+        item["unit"] == ("FLOP/s" if resource.startswith("compute.") else "B/s")
+        for resource, item in resources.items()
+    )

@@ -25,6 +25,10 @@ from groundupscale.calibration import (
     validate_calibration,
     write_calibration_yaml,
 )
+from groundupscale.frontier_qualification import (
+    FrontierQualificationError,
+    qualify_exact_shape_frontier,
+)
 from groundupscale.diagnostics import (
     diagnose_run_bundle,
     render_diagnostic_report,
@@ -115,6 +119,11 @@ def _parser() -> argparse.ArgumentParser:
     run_command.add_argument("--repository-root", default=".")
     run_command.add_argument("--artifact-store", default=".groundupscale")
     run_command.add_argument("--run-id")
+    run_command.add_argument(
+        "--case-id",
+        action="append",
+        help="collect only the named Benchmark Case; repeat to select more than one",
+    )
     run_command.add_argument("--samples", type=int)
     run_command.add_argument("--warmup", type=int)
     run_command.add_argument("--windows-per-sample", type=int, default=5)
@@ -640,6 +649,7 @@ def _run_analysis(
         warmup_override=args.warmup,
         windows_per_sample=args.windows_per_sample,
         target_window_ns=int(args.target_window_ms * 1_000_000),
+        selected_case_ids=tuple(args.case_id) if args.case_id else None,
         environment_validity=environment_validity,
         require_valid_environment=args.require_valid_environment,
     )
@@ -672,6 +682,57 @@ def _run_analysis(
     if not verification["passed"]:
         return 1
     return 0 if manifest["status"] == "completed" else 2
+
+
+def _run_qualify_frontier(args: argparse.Namespace) -> int:
+    try:
+        document = qualify_exact_shape_frontier(
+            search_runs=args.search_run,
+            holdout_runs=args.holdout_run,
+            case_id=args.case_id,
+            stable_path_pattern=args.stable_path_pattern,
+            candidate_family=args.candidate_family,
+            profile_name=args.profile_name,
+            profile_version=args.profile_version,
+            observation_output=args.observation_output,
+            profile_output=args.profile_output,
+            repository_root=args.repository_root,
+        )
+    except FrontierQualificationError as error:
+        rejection = {
+            "schema": "groundupscale.dev/frontier-qualification-rejection/v1alpha1",
+            "status": "insufficient_evidence",
+            "reason_code": error.reason_code,
+            "detail": str(error),
+        }
+        if args.as_json:
+            print(json.dumps(rejection, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print(
+                f"frontier qualification rejected: {rejection['reason_code']} "
+                f"({rejection['detail']})"
+            )
+        return 2
+    anchor = document.spec.anchors[0]
+    summary = {
+        "schema": "groundupscale.dev/frontier-qualification-summary/v1alpha1",
+        "status": anchor.observation_validity,
+        "frontier_role": anchor.frontier_role,
+        "anchor_id": anchor.anchor_id,
+        "latency_ns": anchor.latency_ns,
+        "standard_uncertainty_ns": anchor.standard_uncertainty_ns,
+        "observation": str(Path(args.observation_output).resolve()),
+        "profile": str(Path(args.profile_output).resolve()),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"qualified {summary['anchor_id']}: {summary['latency_ns']:.3f} ns "
+            f"± {summary['standard_uncertainty_ns']:.3f} ns"
+        )
+        print(f"  profile: {summary['profile']}")
+    return 0
 
 
 def _run_verify(args: argparse.Namespace) -> int:
@@ -855,8 +916,20 @@ def _run_explain(args: argparse.Namespace) -> int:
         if comparison_path.is_file()
         else None
     )
+    prediction_schema = prediction.get("schema")
+    if prediction_schema not in {
+        "groundupscale.dev/prediction/v1alpha1",
+        "groundupscale.dev/prediction/v1alpha2",
+    }:
+        raise ValueError(f"unsupported prediction schema: {prediction_schema}")
+    comparison_schema = comparison.get("schema") if comparison is not None else None
+    if comparison is not None and comparison_schema not in {
+        "groundupscale.dev/prediction-observation-comparison/v1alpha1",
+        "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+    }:
+        raise ValueError(f"unsupported comparison schema: {comparison_schema}")
     summary = {
-        "schema": "groundupscale.dev/explain-summary/v1alpha1",
+        "schema": "groundupscale.dev/explain-summary/v1alpha2",
         "run_id": manifest["run_id"],
         "device": manifest["device"],
         "cases": [
@@ -877,6 +950,26 @@ def _run_explain(args: argparse.Namespace) -> int:
             prediction.get("duration", {}).get(
                 "empirical_hardware_floor_ns"
             )
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "hardware_resource_physical_floor_ns": (
+            prediction.get("duration", {}).get("resource_physical_floor_ns")
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "hardware_floor_schedule": (
+            prediction.get("duration", {}).get("schedule")
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "hardware_serialized_floor_ns": (
+            prediction.get("duration", {}).get("serialized_hardware_floor_ns")
+            if isinstance(prediction.get("duration"), dict)
+            else None
+        ),
+        "hardware_ideal_dag_floor_ns": (
+            prediction.get("duration", {}).get("ideal_dag_hardware_floor_ns")
             if isinstance(prediction.get("duration"), dict)
             else None
         ),
@@ -902,21 +995,87 @@ def _run_explain(args: argparse.Namespace) -> int:
                 {
                     "case_id": item["case_id"],
                     "scope": item["scope"],
-                    "empirical_hardware_floor_ns": item["predicted"][
+                    "empirical_hardware_floor_ns": item["predicted"].get(
                         "empirical_hardware_floor_ns"
-                    ],
-                    "empirical_compute_time_ns": item["predicted"][
+                    ),
+                    "resource_physical_floor_ns": item["predicted"].get(
+                        "resource_physical_floor_ns"
+                    ),
+                    "schedule": item["predicted"].get("schedule"),
+                    "serialized_hardware_floor_ns": item["predicted"].get(
+                        "serialized_hardware_floor_ns"
+                    ),
+                    "critical_path_hardware_floor_ns": item["predicted"].get(
+                        "critical_path_hardware_floor_ns"
+                    ),
+                    "resource_hardware_floor_ns": item["predicted"].get(
+                        "resource_hardware_floor_ns"
+                    ),
+                    "ideal_dag_hardware_floor_ns": item["predicted"].get(
+                        "ideal_dag_hardware_floor_ns"
+                    ),
+                    "empirical_compute_time_ns": item["predicted"].get(
                         "empirical_compute_time_ns"
-                    ],
-                    "empirical_memory_time_ns": item["predicted"][
+                    ),
+                    "empirical_memory_time_ns": item["predicted"].get(
                         "empirical_memory_time_ns"
-                    ],
-                    "limiting_resource": item["predicted"]["limiting_resource"],
+                    ),
+                    "limiting_resource": item["predicted"].get(
+                        "limiting_resource"
+                    ),
+                    "resource_limiting_resource": item["predicted"].get(
+                        "resource_limiting_resource"
+                    ),
+                    "operator_achievable_frontier_ns": item["predicted"].get(
+                        "operator_achievable_frontier_ns"
+                    ),
+                    "operator_frontier_standard_uncertainty_ns": item[
+                        "predicted"
+                    ].get("operator_frontier_standard_uncertainty_ns"),
+                    "operator_frontier_match_status": item["predicted"].get(
+                        "operator_frontier_match_status"
+                    ),
+                    "operator_frontier_anchor_ids": item["predicted"].get(
+                        "operator_frontier_anchor_ids", []
+                    ),
+                    "operator_frontier_hardware_cohort": item["predicted"].get(
+                        "operator_frontier_hardware_cohort"
+                    ),
+                    "operator_frontier_candidate_digest": item["predicted"].get(
+                        "operator_frontier_candidate_digest"
+                    ),
+                    "operator_frontier_input_corpus_digest": item["predicted"].get(
+                        "operator_frontier_input_corpus_digest"
+                    ),
+                    "operator_frontier_execution_contract_digest": item[
+                        "predicted"
+                    ].get("operator_frontier_execution_contract_digest"),
                     "observed_median_ns": item["observed"]["median_ns"],
                     "observed_to_hardware_floor_ratio": item["comparison"][
                         "observed_to_hardware_floor_ratio"
                     ],
                     "error_status": item["comparison"]["error_status"],
+                    "operator_frontier_efficiency": item["comparison"].get(
+                        "operator_frontier_efficiency"
+                    ),
+                    "frontier_efficiency_status": item["comparison"].get(
+                        "frontier_efficiency_status"
+                    ),
+                    "operator_frontier_gap_status": item["comparison"].get(
+                        "operator_frontier_gap_status"
+                    ),
+                    "operator_frontier_combined_uncertainty_ns": item[
+                        "comparison"
+                    ].get("operator_frontier_combined_uncertainty_ns"),
+                    "operator_frontier_uncertainty_components_ns": item[
+                        "comparison"
+                    ].get("operator_frontier_uncertainty_components_ns"),
+                    "operator_frontier_uncertainty_policy": item[
+                        "comparison"
+                    ].get("operator_frontier_uncertainty_policy"),
+                    "operator_frontier_comparison_reason_codes": item[
+                        "comparison"
+                    ].get("operator_frontier_comparison_reason_codes", []),
                 }
                 for item in comparison["latency_cases"]
             ]
@@ -952,8 +1111,14 @@ def _run_explain(args: argparse.Namespace) -> int:
             print(
                 "  algorithm-independent empirical hardware floor: "
                 f"{summary['hardware_empirical_floor_ns'] / 1_000_000:.3f} ms "
-                "(not the current implementation duration)"
+                f"({summary['hardware_floor_schedule']}; not the current "
+                "implementation duration)"
             )
+            if summary["hardware_ideal_dag_floor_ns"] is not None:
+                print(
+                    "  ideal DAG reference floor: "
+                    f"{summary['hardware_ideal_dag_floor_ns'] / 1_000_000:.3f} ms"
+                )
             print(
                 "  capability evidence: "
                 + (
@@ -961,6 +1126,15 @@ def _run_explain(args: argparse.Namespace) -> int:
                     if summary["hardware_capability_environment_eligible"]
                     else "exploratory (measurement preflight did not pass)"
                 )
+            )
+        elif summary["hardware_resource_physical_floor_ns"] is not None:
+            print(
+                "  selected compound duration: unknown "
+                f"({summary['duration_status']})"
+            )
+            print(
+                "  resource physical floor (not adoptable as a point prediction): "
+                f"{summary['hardware_resource_physical_floor_ns'] / 1_000_000:.3f} ms"
             )
         for item in summary["latency_comparisons"]:
             floor = item["empirical_hardware_floor_ns"]
@@ -1168,6 +1342,8 @@ def main(
         return _run_explain(args)
     if args.command == "diagnose":
         return _run_diagnose(args)
+    if args.command == "qualify-frontier":
+        return _run_qualify_frontier(args)
     if args.command == "fit-calibration":
         return _run_fit_calibration(args)
     if args.command == "validate-calibration":

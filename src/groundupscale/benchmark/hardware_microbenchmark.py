@@ -29,6 +29,23 @@ OBSERVATION_SCHEMA = (
 )
 CAPABILITY_PROFILE_API_VERSION = "groundupscale.dev/v1alpha1"
 
+_PHASE_PROBE_RESOURCES = {
+    "reduction_max": "compute.reduction.max.fp32",
+    "reduction_sum": "compute.reduction.sum.fp32",
+    "elementwise_subtract": "compute.elementwise.subtract.fp32",
+    "elementwise_divide": "compute.elementwise.divide.fp32",
+    "elementwise_exp": "compute.transcendental.exp.fp32",
+    "elementwise_square": "compute.elementwise.square.fp32",
+    "scalar_divide": "compute.scalar.divide.fp32",
+    "scalar_add": "compute.scalar.add.fp32",
+    "scalar_rsqrt": "compute.transcendental.rsqrt.fp32",
+    "elementwise_multiply": "compute.elementwise.multiply.fp32",
+    "memory_row_reduction": "memory.row-reduction.fp32",
+    "memory_broadcast": "memory.broadcast-read-write.fp32",
+    "memory_elementwise": "memory.elementwise-read-write.fp32",
+    "memory_row_scalar": "memory.row-scalar-read-write.fp32",
+}
+
 
 class CapabilityAggregationError(ValueError):
     """Raw probe evidence cannot support a hardware capability envelope."""
@@ -93,6 +110,11 @@ class HardwareMicrobenchmarkRunner:
         probe: HardwareProbeSpec, shape: tuple[int, ...], seed: int
     ) -> tuple[Any, int, str, str, tuple[str, ...]]:
         generator = torch.Generator(device="cpu").manual_seed(seed)
+        expected_resource = _PHASE_PROBE_RESOURCES.get(probe.kind)
+        if expected_resource is not None and probe.resource != expected_resource:
+            raise ValueError(
+                f"{probe.kind} requires {expected_resource}, got {probe.resource}"
+            )
         if probe.kind == "matrix_multiply":
             m, k, n = shape
             left = torch.randn((m, k), dtype=torch.float32, generator=generator)
@@ -134,8 +156,162 @@ class HardwareMicrobenchmarkRunner:
                     "one scalar multiply and add count as two FLOPs",
                 ),
             )
+        if probe.kind == "reduction_max":
+            rows, width = shape
+            source = torch.randn(
+                (rows, width), dtype=torch.float32, generator=generator
+            )
+            output = torch.empty(rows, dtype=torch.float32)
+            return (
+                lambda: torch.amax(source, dim=-1, out=output),
+                rows * (width - 1),
+                "FLOP/s",
+                "pytorch-row-maximum-reduction",
+                (
+                    "one comparison counts as one equivalent FLOP",
+                    "rows are independent; each row reduction is internally ordered",
+                ),
+            )
+        if probe.kind in {
+            "reduction_sum",
+            "elementwise_subtract",
+            "elementwise_divide",
+            "memory_row_reduction",
+            "memory_broadcast",
+        }:
+            rows, width = shape
+            source = torch.randn(
+                (rows, width), dtype=torch.float32, generator=generator
+            )
+            row_values = torch.rand(
+                rows, dtype=torch.float32, generator=generator
+            ) + 1.0
+            row_output = torch.empty(rows, dtype=torch.float32)
+            tensor_output = torch.empty_like(source)
+            if probe.kind == "reduction_sum":
+                return (
+                    lambda: torch.sum(source, dim=-1, out=row_output),
+                    rows * (width - 1),
+                    "FLOP/s",
+                    "pytorch-row-sum-reduction",
+                    (
+                        "one addition counts as one FLOP",
+                        "rows are independent; each row reduction is internally ordered",
+                    ),
+                )
+            if probe.kind == "elementwise_subtract":
+                return (
+                    lambda: torch.sub(
+                        source, row_values[:, None], out=tensor_output
+                    ),
+                    rows * width,
+                    "FLOP/s",
+                    "pytorch-row-broadcast-subtract",
+                    ("one subtraction counts as one FLOP",),
+                )
+            if probe.kind == "elementwise_divide":
+                return (
+                    lambda: torch.div(
+                        source, row_values[:, None], out=tensor_output
+                    ),
+                    rows * width,
+                    "FLOP/s",
+                    "pytorch-row-broadcast-divide",
+                    ("one division counts as one equivalent FLOP",),
+                )
+            if probe.kind == "memory_row_reduction":
+                return (
+                    lambda: torch.sum(source, dim=-1, out=row_output),
+                    (rows * width + rows) * 4,
+                    "B/s",
+                    "pytorch-row-reduction-memory-pattern",
+                    (
+                        "counts one logical tensor read and one row-scalar write",
+                        "the rate includes the access pattern's minimal reduction work",
+                    ),
+                )
+            return (
+                lambda: torch.add(
+                    source, row_values[:, None], out=tensor_output
+                ),
+                (2 * rows * width + rows) * 4,
+                "B/s",
+                "pytorch-row-broadcast-memory-pattern",
+                (
+                    "counts tensor and row-scalar reads plus one tensor write",
+                    "the rate includes one minimal broadcast arithmetic operation",
+                ),
+            )
         source = torch.randn(elements, dtype=torch.float32, generator=generator)
         output = torch.empty(elements, dtype=torch.float32)
+        if probe.kind == "elementwise_exp":
+            return (
+                lambda: torch.exp(source, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-elementwise-exp",
+                ("exp counts as one equivalent FLOP",),
+            )
+        if probe.kind == "elementwise_square":
+            return (
+                lambda: torch.mul(source, source, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-elementwise-square",
+                ("one multiply counts as one FLOP",),
+            )
+        if probe.kind == "scalar_divide":
+            return (
+                lambda: torch.div(source, 512.0, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-scalar-divide",
+                ("one division counts as one equivalent FLOP",),
+            )
+        if probe.kind == "scalar_add":
+            return (
+                lambda: torch.add(source, 1e-5, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-scalar-add",
+                ("one addition counts as one FLOP",),
+            )
+        if probe.kind == "scalar_rsqrt":
+            positive = source.abs() + 1.0
+            return (
+                lambda: torch.rsqrt(positive, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-scalar-rsqrt",
+                ("rsqrt counts as one equivalent FLOP",),
+            )
+        if probe.kind == "elementwise_multiply":
+            right = torch.randn(
+                elements, dtype=torch.float32, generator=generator
+            )
+            return (
+                lambda: torch.mul(source, right, out=output),
+                elements,
+                "FLOP/s",
+                "pytorch-elementwise-multiply",
+                ("one multiplication counts as one FLOP",),
+            )
+        if probe.kind == "memory_elementwise":
+            return (
+                lambda: output.copy_(source),
+                2 * elements * 4,
+                "B/s",
+                "pytorch-elementwise-read-write-memory-pattern",
+                ("counts one tensor read and one tensor write",),
+            )
+        if probe.kind == "memory_row_scalar":
+            return (
+                lambda: output.copy_(source),
+                2 * elements * 4,
+                "B/s",
+                "pytorch-row-scalar-read-write-memory-pattern",
+                ("counts one row-scalar read and one row-scalar write",),
+            )
         if probe.kind == "memory_copy":
             return (
                 lambda: output.copy_(source),

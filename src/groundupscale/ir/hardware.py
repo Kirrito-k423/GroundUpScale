@@ -3,6 +3,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
+
+
+class PhaseScheduleStatus(StrEnum):
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
+class PhaseSchedulePolicy(StrEnum):
+    SERIALIZED_NO_CHUNK = "serialized-no-chunk"
+
+
+class PhaseResourceComposition(StrEnum):
+    SERIAL = "serial"
+    MAX = "max"
 
 
 @dataclass(frozen=True)
@@ -102,11 +117,65 @@ class CandidateDurationEstimate:
     memory_optimistic_lower_bound_ns: float | None
     empirical_compute_time_ns: float | None
     empirical_memory_time_ns: float | None
+    resource_physical_floor_ns: float | None
     empirical_hardware_floor_ns: float | None
+    provisional_estimate_ns: float | None
+    provisional_evidence_tier: str | None
+    provisional_reason_codes: tuple[str, ...]
     limiting_resource: str | None
     full_duration_ns: float | None
     formula: str
     missing_capabilities: tuple[str, ...]
+    assumptions: tuple[str, ...]
+    operator_achievable_frontier_ns: float | None = None
+    operator_frontier_standard_uncertainty_ns: float | None = None
+    operator_frontier_match_status: str = "not-configured"
+    operator_frontier_anchor_id: str | None = None
+    operator_frontier_candidate_family: str | None = None
+    operator_frontier_candidate_digest: str | None = None
+    operator_frontier_input_corpus_digest: str | None = None
+    operator_frontier_execution_contract_digest: str | None = None
+    operator_frontier_profile: str | None = None
+    operator_frontier_profile_version: str | None = None
+    operator_frontier_source_path: str | None = None
+    operator_frontier_source_sha256: str | None = None
+    operator_frontier_hardware_cohort: str | None = None
+    operator_frontier_reason_codes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class CandidatePhaseDuration:
+    phase_id: str
+    phase_name: str
+    operation_class: str
+    status: PhaseScheduleStatus
+    predecessor_phase_ids: tuple[str, ...]
+    minimum_flops: int
+    logical_read_bytes: int
+    logical_write_bytes: int
+    required_compute_capability: str
+    required_memory_capability: str
+    compute_time_ns: float | None
+    memory_time_ns: float | None
+    resource_composition: PhaseResourceComposition
+    overlap_evidence_refs: tuple[str, ...]
+    capability_evidence_refs: tuple[str, ...]
+    local_hardware_floor_ns: float | None
+    limiting_resource: str | None
+    missing_capabilities: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class CandidatePhaseSchedule:
+    status: PhaseScheduleStatus
+    policy: PhaseSchedulePolicy
+    chunk_pipeline_contract_id: str | None
+    phases: tuple[CandidatePhaseDuration, ...]
+    serialized_duration_ns: float | None
+    critical_path_duration_ns: float | None
+    selected_duration_ns: float | None
+    missing_capabilities: tuple[str, ...]
+    formula: str
     assumptions: tuple[str, ...]
 
 
@@ -121,6 +190,8 @@ class ImplementationCandidate:
     compulsory_bytes: int
     materialized_bytes: int
     duration: CandidateDurationEstimate
+    phase_schedule: CandidatePhaseSchedule | None
+    provisional_phase_schedule: CandidatePhaseSchedule | None
 
 
 @dataclass(frozen=True)
@@ -133,8 +204,18 @@ class ProgramDurationBounds:
     vendor_memory_time_floor_ns: float | None
     empirical_compute_time_ns: float | None
     empirical_memory_time_ns: float | None
+    schedule: str
+    serialized_hardware_floor_ns: float | None
+    critical_path_hardware_floor_ns: float | None
+    resource_hardware_floor_ns: float | None
+    resource_physical_floor_ns: float | None
+    ideal_dag_hardware_floor_ns: float | None
     empirical_hardware_floor_ns: float | None
+    provisional_estimate_ns: float | None
+    provisional_evidence_tier: str | None
+    provisional_reason_codes: tuple[str, ...]
     limiting_resource: str | None
+    resource_limiting_resource: str | None
     full_duration_ns: float | None
     formula: str
     assumptions: tuple[str, ...]
@@ -147,12 +228,32 @@ class ScopeDurationBounds:
     operation_count: int
     flops: int
     compulsory_bytes: int
+    materialized_bytes: int
     empirical_compute_time_ns: float | None
     empirical_memory_time_ns: float | None
+    schedule: str
+    serialized_hardware_floor_ns: float | None
+    critical_path_hardware_floor_ns: float | None
+    resource_hardware_floor_ns: float | None
+    resource_physical_floor_ns: float | None
+    ideal_dag_hardware_floor_ns: float | None
     empirical_hardware_floor_ns: float | None
+    provisional_estimate_ns: float | None
+    provisional_evidence_tier: str | None
+    provisional_reason_codes: tuple[str, ...]
     limiting_resource: str | None
+    resource_limiting_resource: str | None
     formula: str
     assumptions: tuple[str, ...]
+    operator_achievable_frontier_ns: float | None = None
+    operator_frontier_standard_uncertainty_ns: float | None = None
+    operator_frontier_match_status: str = "not-configured"
+    operator_frontier_anchor_ids: tuple[str, ...] = ()
+    operator_frontier_candidate_digest: str | None = None
+    operator_frontier_input_corpus_digest: str | None = None
+    operator_frontier_execution_contract_digest: str | None = None
+    operator_frontier_hardware_cohort: str | None = None
+    operator_frontier_reason_codes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

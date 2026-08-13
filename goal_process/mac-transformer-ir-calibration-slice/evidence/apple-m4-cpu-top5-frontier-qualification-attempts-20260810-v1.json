@@ -1,0 +1,49 @@
+{
+  "schema": "groundupscale.dev/operator-frontier-qualification-attempts/v1alpha1",
+  "policy": {
+    "policy_id": "exact-shape-operator-frontier-qualification",
+    "version": "2.0.0",
+    "maximum_session_iqr_over_median": 0.03,
+    "maximum_session_median_relative_range": 0.05
+  },
+  "attempts": [
+    {
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+      "status": "insufficient_evidence",
+      "reason_codes": [
+        "frontier-timing-statistics-invalid",
+        "frontier-session-repeatability-exceeds-policy"
+      ],
+      "sessions": [
+        {"run_id": "m4-cpu-top5-l0gate-search-20260810-01", "median_ns": 665591.125, "iqr_over_median": 0.005614651938154975},
+        {"run_id": "m4-cpu-top5-l0gate-search-20260810-02", "median_ns": 831625.0714285714, "iqr_over_median": 0.02857473289603123},
+        {"run_id": "m4-cpu-top5-l0gate-search-20260810-03", "median_ns": 814657.7142857143, "iqr_over_median": 0.05473008471217706}
+      ]
+    },
+    {
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+      "status": "insufficient_evidence",
+      "reason_codes": [
+        "frontier-session-repeatability-exceeds-policy"
+      ],
+      "sessions": [
+        {"run_id": "m4-cpu-top5-l0qk-holdout-20260810-01", "median_ns": 577254.6111111111, "iqr_over_median": 0.024926416544673168},
+        {"run_id": "m4-cpu-top5-l0qk-holdout-20260810-02", "median_ns": 543260.45, "iqr_over_median": 0.016643398207986954},
+        {"run_id": "m4-cpu-top5-l0qk-holdout-20260810-03", "median_ns": 542977.1000000001, "iqr_over_median": 0.02559021365726109}
+      ]
+    },
+    {
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+      "status": "insufficient_evidence",
+      "reason_codes": [
+        "frontier-timing-statistics-invalid",
+        "frontier-session-repeatability-exceeds-policy"
+      ],
+      "sessions": [
+        {"run_id": "m4-cpu-top5-matmul-search-20260810-03", "median_ns": 663984.25, "iqr_over_median": 0.024794921716893133},
+        {"run_id": "m4-cpu-top5-matmul-search-20260810-04", "median_ns": 829520.875, "iqr_over_median": 0.023316170313375177},
+        {"run_id": "m4-cpu-top5-exact-frontier-prediction-observation-20260810-v2", "median_ns": 805494.8125, "iqr_over_median": 0.1687836754380091}
+      ]
+    }
+  ]
+}

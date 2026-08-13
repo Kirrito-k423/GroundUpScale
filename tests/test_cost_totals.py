@@ -40,8 +40,9 @@ def test_two_layer_summary_matches_hand_calculated_literals() -> None:
     metrics = summary.metrics
 
     assert result.compilation_fingerprint == (
-        "0e7e1de24ff0b472ffa9c66407830f21f5ab1551817e4cb002a3b9b540690a02"
+        "56fe9305e7b33c595d8edb707b5fdb963bacfe96acda524a5fec3cfcb77aed12"
     )
+    assert result.cost_ir.schema == "groundupscale.dev/cost-ir/v1alpha2"
     assert metrics.flops == 9_710_850_048
     assert metrics.logical_read_bytes == 184_557_568
     assert metrics.logical_write_bytes == 138_412_032

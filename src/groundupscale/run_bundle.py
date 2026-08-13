@@ -8,7 +8,9 @@ import os
 import platform
 import re
 import statistics
+import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -30,7 +32,7 @@ from groundupscale.benchmark.explanation import (
 )
 from groundupscale.benchmark.prediction import predict_live_set
 from groundupscale.execution_runtime import ExecutionRuntime
-from groundupscale.ir import canonical_data
+from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
 from groundupscale.physical_floor_report import render_physical_floor_report
 from groundupscale.pipeline import CompiledAnalysis
@@ -276,6 +278,111 @@ def _default_run_id(device: str, fingerprint: str) -> str:
     return f"{timestamp}-{device}-{fingerprint[:8]}"
 
 
+def _sysctl_value(name: str) -> str | None:
+    if platform.system() != "Darwin":
+        return None
+    completed = subprocess.run(
+        ["/usr/sbin/sysctl", "-n", name],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    value = completed.stdout.strip()
+    return value if completed.returncode == 0 and value else None
+
+
+def _observed_hardware_identity() -> dict[str, Any]:
+    values = {
+        "model": _sysctl_value("hw.model"),
+        "cpu_brand": _sysctl_value("machdep.cpu.brand_string"),
+        "physical_cpu": _sysctl_value("hw.physicalcpu"),
+        "logical_cpu": _sysctl_value("hw.logicalcpu"),
+        "performance_cores": _sysctl_value("hw.perflevel0.physicalcpu"),
+        "efficiency_cores": _sysctl_value("hw.perflevel1.physicalcpu"),
+    }
+    if any(value is None for value in values.values()):
+        return {
+            "status": "unresolved",
+            "source": "sysctl",
+            "reason_codes": ["required-apple-silicon-identity-unavailable"],
+        }
+    return {
+        "status": "resolved",
+        "source": "sysctl",
+        "model": values["model"],
+        "cpu_brand": values["cpu_brand"],
+        "physical_cpu": int(str(values["physical_cpu"])),
+        "logical_cpu": int(str(values["logical_cpu"])),
+        "performance_levels": {
+            "performance_cores": int(str(values["performance_cores"])),
+            "efficiency_cores": int(str(values["efficiency_cores"])),
+        },
+    }
+
+
+def _hardware_validity_cohort(
+    *,
+    bundle: Any,
+    benchmark: dict[str, Any],
+    device: str,
+    preflight: dict[str, Any],
+) -> dict[str, Any]:
+    policy = preflight.get("policy")
+    observations = preflight.get("observations")
+    power = observations.get("power") if isinstance(observations, dict) else None
+    thermal = observations.get("thermal") if isinstance(observations, dict) else None
+    hardware_names = [document.metadata.name for document in bundle.hardware]
+    observed_hardware = _observed_hardware_identity()
+    identity = {
+        "schema": "groundupscale.dev/hardware-validity-cohort/v1alpha1",
+        "device": {
+            "hardware": hardware_names,
+            "device": device,
+            "observed_identity": observed_hardware,
+            "identity_sha256": content_fingerprint(observed_hardware),
+            "partition": "whole-device",
+            "topology": "single-socket-unified-memory",
+        },
+        "software": {
+            "os": platform.system(),
+            "kernel": platform.release(),
+            "machine": platform.machine(),
+            "python": platform.python_version(),
+            "torch": str(torch.__version__),
+            "torch_build_sha256": content_fingerprint(torch.__config__.show()),
+            "operator_library": "pytorch-aten",
+        },
+        "numeric_execution": {
+            "dtype": "float32",
+            "execution_mode": "eager",
+            "threads": benchmark.get("torch_num_threads"),
+            "interop_threads": torch.get_num_interop_threads(),
+            "affinity": "os-managed-unpinned",
+            "numa": "single-socket-unified-memory",
+            "context": "single-process-cpu",
+            "stream": "not-applicable-cpu",
+            "concurrency": "single-operator-no-overlap",
+        },
+        "power_clock": {
+            "policy_id": policy.get("policy_id") if isinstance(policy, dict) else None,
+            "power_source": power.get("source") if isinstance(power, dict) else None,
+            "thermal_status": thermal.get("status") if isinstance(thermal, dict) else None,
+            "clock_policy": "macos-default-managed",
+        },
+        "timing": {
+            "timing_scope": "host_visible_completion",
+            "completion_boundary": "synchronous-cpu-call-return",
+            "timer_source": "time.perf_counter_ns",
+            "timer_monotonic": bool(time.get_clock_info("perf_counter").monotonic),
+            "instrumentation_profile": benchmark.get("instrumentation_profile"),
+            "measurement_protocol": benchmark.get("measurement_protocol"),
+            "adapter": {"name": "groundupscale-run-bundle", "version": "1.0.0"},
+        },
+    }
+    identity["cohort_id"] = f"hvc-{content_fingerprint(identity)}"
+    return identity
+
+
 class RunBundleExistsError(FileExistsError):
     pass
 
@@ -453,6 +560,7 @@ class RunBundleWriter:
         warmup_override: int | None = None,
         windows_per_sample: int = 5,
         target_window_ns: int = 20_000_000,
+        selected_case_ids: tuple[str, ...] | None = None,
         environment_validity: dict[str, Any] | None = None,
         require_valid_environment: bool = False,
     ) -> Path:
@@ -579,7 +687,103 @@ class RunBundleWriter:
                 warmup_override=warmup_override,
                 windows_per_sample=windows_per_sample,
                 target_window_ns=target_window_ns,
+                selected_case_ids=selected_case_ids,
             )
+            cohort = (
+                self.npu_evidence.cohort
+                if self.npu_evidence is not None
+                else _hardware_validity_cohort(
+                    bundle=self.compiled.bundle,
+                    benchmark=benchmark,
+                    device=device,
+                    preflight=preflight_artifact,
+                )
+            )
+            benchmark["hardware_validity_cohort"] = cohort
+            reference_runner = ReferenceRunner.from_analysis_bundle(
+                self.compiled.bundle, seed=self.seed
+            )
+            operator_cases = [
+                {
+                    "case_id": case["case_id"],
+                    "stable_path": case["resolved_scope"],
+                    "candidate_identity": case["candidate_identity"],
+                    "input_corpus": case["input_corpus"],
+                    "execution_contract": case["execution_contract"],
+                    "correctness": case["operator_correctness"],
+                }
+                for case in benchmark["cases"]
+                if case.get("mode") == "operator"
+            ]
+            current_stage = "correctness"
+            if self.execution_runtime is not None:
+                correctness_result = reference_runner.compare_cpu_target(
+                    self.execution_runtime, atol=0.001, rtol=0.001
+                )
+                target_audit = canonical_data(correctness_result.mps.audit)
+                target_audit["leaf_output_devices"] = dict(
+                    correctness_result.mps.audit.leaf_output_devices
+                )
+                target_audit["leaf_output_contracts"] = {
+                    path: canonical_data(contract)
+                    for path, contract in (
+                        correctness_result.mps.audit.leaf_output_contracts
+                    )
+                }
+                full_model_correctness = {
+                    "status": (
+                        "passed" if correctness_result.passed else "failed"
+                    ),
+                    "max_absolute_error": correctness_result.max_absolute_error,
+                    "max_relative_error": correctness_result.max_relative_error,
+                    "atol": correctness_result.atol,
+                    "rtol": correctness_result.rtol,
+                    "oracle": "cpu-float32-same-seed-same-weights",
+                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
+                    "target_output_sha256": correctness_result.mps.output_sha256,
+                    "target_audit": target_audit,
+                }
+                if not correctness_result.passed:
+                    raise RuntimeError("cpu-correctness-oracle-failed")
+                if correctness_result.mps.audit.fallback_enabled:
+                    raise RuntimeError("cpu-fallback-detected")
+            elif device == "mps":
+                correctness_result = reference_runner.compare_cpu_mps(
+                    atol=1e-4, rtol=1e-3
+                )
+                full_model_correctness = {
+                    "status": "passed" if correctness_result.passed else "failed",
+                    "max_absolute_error": correctness_result.max_absolute_error,
+                    "max_relative_error": correctness_result.max_relative_error,
+                    "atol": correctness_result.atol,
+                    "rtol": correctness_result.rtol,
+                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
+                    "target_output_sha256": correctness_result.mps.output_sha256,
+                    "target_audit": canonical_data(correctness_result.mps.audit),
+                }
+            else:
+                target_run = reference_runner.run_device("cpu")
+                full_model_correctness = {
+                    "status": "not_evaluated_single_provider",
+                    "reason_codes": ["independent-full-model-oracle-not-configured"],
+                    "target_output_sha256": target_run.output_sha256,
+                    "target_audit": canonical_data(target_run.audit),
+                }
+            operator_correctness_passed = all(
+                case.get("correctness", {}).get("status") == "passed"
+                for case in operator_cases
+                if case.get("candidate_identity", {}).get("status")
+                == "resolved"
+            )
+            correctness = {
+                "schema": "groundupscale.dev/correctness-observation/v1alpha2",
+                "passed": operator_correctness_passed
+                and full_model_correctness.get("status") != "failed",
+                "scope": "operator-specific-records-are-authoritative",
+                "hardware_cohort": cohort["cohort_id"],
+                "operator_cases": operator_cases,
+                "full_model": full_model_correctness,
+            }
             current_stage = "trace"
             trace = TraceRunner(
                 self.compiled.bundle,
@@ -652,8 +856,22 @@ class RunBundleWriter:
             comparison = build_prediction_observation_comparison(
                 hardware_prediction=self.compiled.hardware_prediction,
                 benchmark=benchmark,
+                trace=trace,
                 live_set=live_set,
                 tensor_storage_observation=tensor_storage_memory,
+                observation_evidence_tier=(
+                    "qualified"
+                    if preflight_status == "passed"
+                    else "exploratory"
+                    if environment_validity is not None
+                    else "unverified"
+                ),
+                observation_reason_codes=tuple(
+                    str(reason)
+                    for reason in preflight_artifact.get("reason_codes", [])
+                ),
+                observation_hardware_cohort=str(cohort["cohort_id"]),
+                observation_operator_cases=tuple(operator_cases),
             )
             explanation = build_explanation_graph(
                 self.compiled.cost.cost_ir,
@@ -663,64 +881,6 @@ class RunBundleWriter:
                 self.compiled.hardware_prediction,
                 comparison,
             )
-            current_stage = "correctness"
-            reference_runner = ReferenceRunner.from_analysis_bundle(
-                self.compiled.bundle, seed=self.seed
-            )
-            if self.execution_runtime is not None:
-                correctness_result = reference_runner.compare_cpu_target(
-                    self.execution_runtime, atol=0.001, rtol=0.001
-                )
-                target_audit = canonical_data(correctness_result.mps.audit)
-                target_audit["leaf_output_devices"] = dict(
-                    correctness_result.mps.audit.leaf_output_devices
-                )
-                target_audit["leaf_output_contracts"] = {
-                    path: canonical_data(contract)
-                    for path, contract in (
-                        correctness_result.mps.audit.leaf_output_contracts
-                    )
-                }
-                correctness = {
-                    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
-                    "passed": correctness_result.passed,
-                    "max_absolute_error": correctness_result.max_absolute_error,
-                    "max_relative_error": correctness_result.max_relative_error,
-                    "atol": correctness_result.atol,
-                    "rtol": correctness_result.rtol,
-                    "oracle": "cpu-float32-same-seed-same-weights",
-                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
-                    "target_output_sha256": correctness_result.mps.output_sha256,
-                    "target_audit": target_audit,
-                }
-                if not correctness_result.passed:
-                    raise RuntimeError("cpu-correctness-oracle-failed")
-                if correctness_result.mps.audit.fallback_enabled:
-                    raise RuntimeError("cpu-fallback-detected")
-            elif device == "mps":
-                correctness_result = reference_runner.compare_cpu_mps(
-                    atol=1e-4, rtol=1e-3
-                )
-                correctness = {
-                    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
-                    "passed": correctness_result.passed,
-                    "max_absolute_error": correctness_result.max_absolute_error,
-                    "max_relative_error": correctness_result.max_relative_error,
-                    "atol": correctness_result.atol,
-                    "rtol": correctness_result.rtol,
-                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
-                    "target_output_sha256": correctness_result.mps.output_sha256,
-                    "target_audit": canonical_data(correctness_result.mps.audit),
-                }
-            else:
-                target_run = reference_runner.run_device("cpu")
-                correctness = {
-                    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
-                    "passed": True,
-                    "target_output_sha256": target_run.output_sha256,
-                    "target_audit": canonical_data(target_run.audit),
-                }
-
             assert benchmark is not None
             assert trace is not None
             assert memory_observation is not None
@@ -738,6 +898,7 @@ class RunBundleWriter:
                 "hardware_capability_profiles": (
                     bundle.hardware_capability_profiles
                 ),
+                "operator_frontier_profiles": bundle.operator_frontier_profiles,
                 "fabric_graph": bundle.fabric_graph,
                 "benchmark_cases": bundle.benchmark_cases,
                 "models": bundle.models,
@@ -764,7 +925,12 @@ class RunBundleWriter:
                     "mps_built": bool(torch.backends.mps.is_built()),
                     "mps_available": bool(torch.backends.mps.is_available()),
                 },
+                "process": {
+                    "pid": os.getpid(),
+                    "session_id": selected_run_id,
+                },
                 "measurement_preflight": preflight_artifact,
+                "hardware_validity_cohort": cohort,
                 "policy": "allowlisted fields only; no unrestricted environment dump",
             }
             if self.execution_runtime is not None:
@@ -821,7 +987,7 @@ class RunBundleWriter:
                 else "uncalibrated"
             )
             prediction = {
-                "schema": "groundupscale.dev/prediction/v1alpha1",
+                "schema": "groundupscale.dev/prediction/v1alpha2",
                 "cost_summary": self.compiled.cost.cost_ir.summary,
                 "live_set": live_set,
                 "duration_status": duration_status,
@@ -865,6 +1031,7 @@ class RunBundleWriter:
                         else ()
                     ),
                     "benchmark-observation",
+                    "observation-trace",
                     "memory-observation",
                 ),
             )
@@ -930,11 +1097,8 @@ class RunBundleWriter:
                 comparison=comparison,
                 memory_observation=memory_observation,
             )
-            write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha1", inputs=("explanation-graph", "prediction-observation-comparison"))
+            write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha2", inputs=("explanation-graph", "prediction-observation-comparison"))
 
-            hardware_names = "-".join(
-                document.metadata.name for document in bundle.hardware
-            )
             manifest = {
                 "schema": "groundupscale.dev/run-manifest/v1alpha1",
                 **(
@@ -960,10 +1124,7 @@ class RunBundleWriter:
                 "hardware_cohort": (
                     self.npu_evidence.cohort.get("cohort_id")
                     if self.npu_evidence is not None
-                    else (
-                        f"{hardware_names}-{platform.release()}-torch{torch.__version__}-"
-                        f"{device}-env-{environment_policy_id}"
-                    )
+                    else cohort["cohort_id"]
                 ),
                 "device": device,
                 "environment_validity": preflight_status,

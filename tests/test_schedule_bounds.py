@@ -83,6 +83,27 @@ def test_schedule_dependencies_must_be_acyclic() -> None:
         compose_schedule_bound(events, schedule="serialized")
 
 
+def test_deep_serial_phase_chain_does_not_depend_on_python_recursion() -> None:
+    events = tuple(
+        BoundEvent(
+            event_id=f"phase-{index}",
+            predecessor_ids=((f"phase-{index - 1}",) if index else ()),
+            local_duration_ns=1.0,
+        )
+        for index in range(1_500)
+    )
+
+    bound = compose_schedule_bound(
+        tuple(reversed(events)),
+        schedule="serialized",
+    )
+
+    assert bound.critical_path_duration_ns == pytest.approx(1_500.0)
+    assert bound.critical_path_event_ids == tuple(
+        f"phase-{index}" for index in range(1_500)
+    )
+
+
 def test_dependency_only_schedule_rejects_implicit_concurrency() -> None:
     events = (
         BoundEvent("root", (), 2.0),

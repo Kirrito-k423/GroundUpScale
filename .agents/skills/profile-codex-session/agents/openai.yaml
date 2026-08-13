@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex 会话耗时分析"
+  short_description: "对 Codex 会话做可复现的 Top-down 耗时归因"
+  default_prompt: "使用 $profile-codex-session 分析这个 Codex 会话 ID 的耗时构成并指出主要瓶颈。"

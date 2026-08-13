@@ -52,16 +52,28 @@ def test_compile_cli_writes_inspectable_structural_and_semantic_artifacts(
     assert summary["parameter_bytes"] == 33_562_624
     assert summary["explicit_activation_bytes"] == 121_634_816
     assert summary["hardware_prediction_status"] == (
-        "empirical-hardware-lower-bound"
+        "phase-capabilities-incomplete"
     )
     hardware_prediction = json.loads(
         (tmp_path / "hardware-prediction.json").read_text(encoding="utf-8")
+    )
+    assert hardware_prediction["schema"] == (
+        "groundupscale.dev/hardware-backend-prediction/v1alpha2"
     )
     assert hardware_prediction["prediction_complete"] is False
     assert hardware_prediction["program_bounds"]["full_duration_ns"] is None
     assert hardware_prediction["program_bounds"][
         "empirical_hardware_floor_ns"
-    ] == pytest.approx(5_553_975.963160658)
+    ] is None
+    assert hardware_prediction["program_bounds"][
+        "resource_physical_floor_ns"
+    ] == pytest.approx(6_833_309.828880091)
+    assert hardware_prediction["program_bounds"]["schedule"] == (
+        "serialized-unfused"
+    )
+    assert hardware_prediction["program_bounds"][
+        "ideal_dag_hardware_floor_ns"
+    ] == pytest.approx(5_553_975.963160659)
     assert len(hardware_prediction["measured_capabilities"]) == 2
     assert hardware_prediction["capabilities"]["fp32_flops_per_second"][
         "status"

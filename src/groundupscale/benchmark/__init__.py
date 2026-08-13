@@ -3,6 +3,7 @@
 from groundupscale.benchmark.comparison import (
     build_prediction_observation_comparison,
 )
+from groundupscale.benchmark.decomposition import build_latency_decomposition
 from groundupscale.benchmark.measurement import BenchmarkRunner
 from groundupscale.benchmark.hardware_microbenchmark import (
     CapabilityAggregationError,
@@ -36,6 +37,7 @@ __all__ = [
     "HardwareMicrobenchmarkRunner",
     "aggregate_capability_envelope",
     "build_prediction_observation_comparison",
+    "build_latency_decomposition",
     "observe_tensor_storage_peak",
     "predict_live_set",
 ]

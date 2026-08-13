@@ -100,9 +100,7 @@ class TensorMatMul(SemanticLeaf):
         if self.equation is None:
             return torch.matmul(left, right)
         if self.equation == "bhqk,bhkd->bqhd":
-            query_major_left = left.transpose(1, 2).unsqueeze(-2)
-            broadcast_right = right.unsqueeze(1)
-            return torch.matmul(query_major_left, broadcast_right).squeeze(-2)
+            return torch.matmul(left, right).transpose(1, 2).contiguous()
         return torch.einsum(self.equation, left, right)
 
 

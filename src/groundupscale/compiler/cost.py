@@ -21,6 +21,8 @@ from groundupscale.ir.cost import (
     CostProgram,
     CostRegion,
     CostSummary,
+    OperatorPhase,
+    OperatorPhaseGraph,
 )
 from groundupscale.ir.semantic import (
     ProvenanceGraph,
@@ -34,7 +36,7 @@ from groundupscale.ir.semantic import (
 )
 
 
-COST_LOWERER_VERSION = "core.cost-lowerer/v1alpha1"
+COST_LOWERER_VERSION = "core.cost-lowerer/v1alpha2"
 DTYPE_BYTES = {
     "float32": 4,
     "bfloat16": 2,
@@ -66,6 +68,22 @@ class RuleEstimate:
     flops: int
     expression: str
     assumptions: tuple[str, ...]
+    phases: tuple[RulePhaseEstimate, ...] = ()
+
+
+@dataclass(frozen=True)
+class RulePhaseEstimate:
+    phase_name: str
+    operation_class: str
+    compute_capability_resource: str
+    memory_capability_resource: str
+    predecessor_phase_names: tuple[str, ...]
+    input_roles: tuple[str, ...]
+    output_roles: tuple[str, ...]
+    minimum_flops: int
+    logical_read_bytes: int
+    logical_write_bytes: int
+    assumptions: tuple[str, ...] = ()
 
 
 class CostRule(Protocol):
@@ -163,7 +181,7 @@ class _ElementwiseRule:
 @dataclass(frozen=True)
 class _RMSNormRule:
     operation: str = "RMSNorm"
-    rule_id: str = "core.cost-rule.rmsnorm/v1alpha1"
+    rule_id: str = "core.cost-rule.rmsnorm/v1alpha2"
 
     def estimate(self, context: CostRuleContext) -> RuleEstimate:
         if not context.operands or len(context.results) != 1:
@@ -171,6 +189,16 @@ class _RMSNormRule:
         shape = context.operands[0].tensor.shape
         width = shape[-1]
         outer = prod(shape[:-1]) if len(shape) > 1 else 1
+        elements = outer * width
+        element_bytes = _bytes(context.operands[0].tensor) // elements
+        tensor_bytes = elements * element_bytes
+        row_scalar_bytes = outer * element_bytes
+        weight_bytes = (
+            _bytes(context.operands[1].tensor)
+            if len(context.operands) > 1
+            else width * element_bytes
+        )
+        reduction_flops = outer * (width - 1)
         flops = outer * (4 * width + 2)
         return RuleEstimate(
             flops=flops,
@@ -179,13 +207,100 @@ class _RMSNormRule:
                 "per row: square H, reduce H-1, divide 1, epsilon add 1, rsqrt 1, two multiplies H",
                 "rsqrt and divide each count as one equivalent FLOP",
             ),
+            phases=(
+                RulePhaseEstimate(
+                    phase_name="square",
+                    operation_class="elementwise.square.fp32",
+                    compute_capability_resource="compute.elementwise.square.fp32",
+                    memory_capability_resource="memory.elementwise-read-write.fp32",
+                    predecessor_phase_names=(),
+                    input_roles=("input",),
+                    output_roles=("squared",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes,
+                    logical_write_bytes=tensor_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="reduce_sum",
+                    operation_class="reduction.sum.fp32",
+                    compute_capability_resource="compute.reduction.sum.fp32",
+                    memory_capability_resource="memory.row-reduction.fp32",
+                    predecessor_phase_names=("square",),
+                    input_roles=("squared",),
+                    output_roles=("row_sum",),
+                    minimum_flops=reduction_flops,
+                    logical_read_bytes=tensor_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="mean_scale",
+                    operation_class="elementwise.divide.fp32",
+                    compute_capability_resource="compute.scalar.divide.fp32",
+                    memory_capability_resource="memory.row-scalar-read-write.fp32",
+                    predecessor_phase_names=("reduce_sum",),
+                    input_roles=("row_sum",),
+                    output_roles=("row_mean",),
+                    minimum_flops=outer,
+                    logical_read_bytes=row_scalar_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="epsilon_add",
+                    operation_class="elementwise.add.fp32",
+                    compute_capability_resource="compute.scalar.add.fp32",
+                    memory_capability_resource="memory.row-scalar-read-write.fp32",
+                    predecessor_phase_names=("mean_scale",),
+                    input_roles=("row_mean",),
+                    output_roles=("stabilized_mean",),
+                    minimum_flops=outer,
+                    logical_read_bytes=row_scalar_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="rsqrt",
+                    operation_class="transcendental.rsqrt.fp32",
+                    compute_capability_resource="compute.transcendental.rsqrt.fp32",
+                    memory_capability_resource="memory.row-scalar-read-write.fp32",
+                    predecessor_phase_names=("epsilon_add",),
+                    input_roles=("stabilized_mean",),
+                    output_roles=("reciprocal_rms",),
+                    minimum_flops=outer,
+                    logical_read_bytes=row_scalar_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                    assumptions=("rsqrt counts as one equivalent FLOP",),
+                ),
+                RulePhaseEstimate(
+                    phase_name="input_scale",
+                    operation_class="elementwise.multiply.fp32",
+                    compute_capability_resource="compute.elementwise.multiply.fp32",
+                    memory_capability_resource="memory.broadcast-read-write.fp32",
+                    predecessor_phase_names=("rsqrt",),
+                    input_roles=("input", "reciprocal_rms"),
+                    output_roles=("normalized",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes + row_scalar_bytes,
+                    logical_write_bytes=tensor_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="weight_scale",
+                    operation_class="elementwise.multiply.fp32",
+                    compute_capability_resource="compute.elementwise.multiply.fp32",
+                    memory_capability_resource="memory.broadcast-read-write.fp32",
+                    predecessor_phase_names=("input_scale",),
+                    input_roles=("normalized", "weight"),
+                    output_roles=("output",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes + weight_bytes,
+                    logical_write_bytes=tensor_bytes,
+                ),
+            ),
         )
 
 
 @dataclass(frozen=True)
 class _SoftmaxRule:
     operation: str = "Softmax"
-    rule_id: str = "core.cost-rule.softmax/v1alpha1"
+    rule_id: str = "core.cost-rule.softmax/v1alpha2"
 
     def estimate(self, context: CostRuleContext) -> RuleEstimate:
         if len(context.results) != 1:
@@ -193,6 +308,11 @@ class _SoftmaxRule:
         shape = context.results[0].tensor.shape
         width = shape[-1]
         outer = prod(shape[:-1]) if len(shape) > 1 else 1
+        elements = outer * width
+        element_bytes = _bytes(context.results[0].tensor) // elements
+        tensor_bytes = elements * element_bytes
+        row_scalar_bytes = outer * element_bytes
+        reduction_flops = outer * (width - 1)
         flops = outer * (5 * width - 2)
         return RuleEstimate(
             flops=flops,
@@ -200,6 +320,69 @@ class _SoftmaxRule:
             assumptions=(
                 "per row: max N-1, subtract N, exp N, sum N-1, divide N",
                 "comparison and exp each count as one equivalent FLOP",
+            ),
+            phases=(
+                RulePhaseEstimate(
+                    phase_name="max_reduce",
+                    operation_class="reduction.max.fp32",
+                    compute_capability_resource="compute.reduction.max.fp32",
+                    memory_capability_resource="memory.row-reduction.fp32",
+                    predecessor_phase_names=(),
+                    input_roles=("input",),
+                    output_roles=("row_max",),
+                    minimum_flops=reduction_flops,
+                    logical_read_bytes=tensor_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="subtract",
+                    operation_class="elementwise.subtract.fp32",
+                    compute_capability_resource="compute.elementwise.subtract.fp32",
+                    memory_capability_resource="memory.broadcast-read-write.fp32",
+                    predecessor_phase_names=("max_reduce",),
+                    input_roles=("input", "row_max"),
+                    output_roles=("shifted",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes + row_scalar_bytes,
+                    logical_write_bytes=tensor_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="exp",
+                    operation_class="transcendental.exp.fp32",
+                    compute_capability_resource="compute.transcendental.exp.fp32",
+                    memory_capability_resource="memory.elementwise-read-write.fp32",
+                    predecessor_phase_names=("subtract",),
+                    input_roles=("shifted",),
+                    output_roles=("exponentials",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes,
+                    logical_write_bytes=tensor_bytes,
+                    assumptions=("exp counts as one equivalent FLOP",),
+                ),
+                RulePhaseEstimate(
+                    phase_name="sum_reduce",
+                    operation_class="reduction.sum.fp32",
+                    compute_capability_resource="compute.reduction.sum.fp32",
+                    memory_capability_resource="memory.row-reduction.fp32",
+                    predecessor_phase_names=("exp",),
+                    input_roles=("exponentials",),
+                    output_roles=("row_sum",),
+                    minimum_flops=reduction_flops,
+                    logical_read_bytes=tensor_bytes,
+                    logical_write_bytes=row_scalar_bytes,
+                ),
+                RulePhaseEstimate(
+                    phase_name="normalize",
+                    operation_class="elementwise.divide.fp32",
+                    compute_capability_resource="compute.elementwise.divide.fp32",
+                    memory_capability_resource="memory.broadcast-read-write.fp32",
+                    predecessor_phase_names=("sum_reduce",),
+                    input_roles=("exponentials", "row_sum"),
+                    output_roles=("output",),
+                    minimum_flops=elements,
+                    logical_read_bytes=tensor_bytes + row_scalar_bytes,
+                    logical_write_bytes=tensor_bytes,
+                ),
             ),
         )
 
@@ -327,7 +510,7 @@ class CostLowerer:
         )
         critical_path_flops = self._critical_path_flops(tuple(root.walk_items()))
         program = CostProgram(
-            schema="groundupscale.dev/cost-ir/v1alpha1",
+            schema="groundupscale.dev/cost-ir/v1alpha2",
             name=semantic.name,
             compilation_fingerprint=self._fingerprint,
             semantic_compilation_fingerprint=semantic.compilation_fingerprint,
@@ -487,6 +670,12 @@ class CostLowerer:
         stable_path = f"cost/{operation.stable_path}"
         node_id = self._cost_node_ids[operation.node_id]
         derivations = self._record(rule=rule.rule_id, source=operation, target_id=node_id)
+        phase_graph = self._lower_phase_graph(
+            operation=operation,
+            operation_stable_path=stable_path,
+            rule_id=rule.rule_id,
+            phases=estimate.phases,
+        )
         return CostOperation(
             local_id=operation.local_id,
             operation=operation.operation,
@@ -512,7 +701,93 @@ class CostLowerer:
                     "materialized bytes are zero for alias-only View/Transpose",
                 ),
             ),
+            phase_graph=phase_graph,
             derivation_ids=derivations,
+        )
+
+    def _lower_phase_graph(
+        self,
+        *,
+        operation: SemanticOperation,
+        operation_stable_path: str,
+        rule_id: str,
+        phases: tuple[RulePhaseEstimate, ...],
+    ) -> OperatorPhaseGraph | None:
+        if not phases:
+            return None
+        phase_names = tuple(phase.phase_name for phase in phases)
+        if len(set(phase_names)) != len(phase_names):
+            raise CostLoweringError(
+                f"duplicate phase name for {operation.stable_path}"
+            )
+        known_names = set(phase_names)
+        missing = {
+            predecessor
+            for phase in phases
+            for predecessor in phase.predecessor_phase_names
+            if predecessor not in known_names
+        }
+        if missing:
+            raise CostLoweringError(
+                f"phase dependency does not resolve for {operation.stable_path}: "
+                f"{sorted(missing)}"
+            )
+        phase_ids = {
+            name: node_identity(
+                "cost-phase",
+                self._fingerprint,
+                f"{operation_stable_path}/phase/{name}",
+            )
+            for name in phase_names
+        }
+        lowered: list[OperatorPhase] = []
+        for phase in phases:
+            phase_id = phase_ids[phase.phase_name]
+            derivations = self._record(
+                rule=f"{rule_id}:phase/{phase.phase_name}",
+                source=operation,
+                target_id=phase_id,
+            )
+            lowered.append(
+                OperatorPhase(
+                    phase_id=phase_id,
+                    phase_name=phase.phase_name,
+                    operation_class=phase.operation_class,
+                    compute_capability_resource=(
+                        phase.compute_capability_resource
+                    ),
+                    memory_capability_resource=(
+                        phase.memory_capability_resource
+                    ),
+                    predecessor_phase_ids=tuple(
+                        phase_ids[name]
+                        for name in phase.predecessor_phase_names
+                    ),
+                    input_roles=phase.input_roles,
+                    output_roles=phase.output_roles,
+                    minimum_flops=phase.minimum_flops,
+                    logical_read_bytes=phase.logical_read_bytes,
+                    logical_write_bytes=phase.logical_write_bytes,
+                    assumptions=phase.assumptions,
+                    derivation_ids=derivations,
+                )
+            )
+        predecessor_ids = {
+            predecessor
+            for phase in lowered
+            for predecessor in phase.predecessor_phase_ids
+        }
+        output_phase_ids = tuple(
+            phase.phase_id
+            for phase in lowered
+            if phase.phase_id not in predecessor_ids
+        )
+        return OperatorPhaseGraph(
+            graph_id=node_identity(
+                "cost-phase-graph", self._fingerprint, operation_stable_path
+            ),
+            phases=tuple(lowered),
+            output_phase_ids=output_phase_ids,
         )
 
     def _verify(
@@ -531,6 +806,9 @@ class CostLowerer:
             if operation.metrics.alias_result_bytes > 0
         )
         provenance = all(operation.derivation_ids for operation in operations)
+        phase_graphs_valid = all(
+            self._phase_graph_valid(operation) for operation in operations
+        )
         serialized = canonical_json(program)
         hardware_independent = all(
             marker not in serialized
@@ -541,5 +819,60 @@ class CostLowerer:
             ValidationResult("metrics-nonnegative", nonnegative, "all metrics are non-negative"),
             ValidationResult("alias-zero-materialization", alias_zero, "alias ops materialize zero bytes"),
             ValidationResult("provenance-complete", provenance, "all Cost ops have derivation"),
+            ValidationResult(
+                "phase-graphs-valid",
+                phase_graphs_valid,
+                "phase dependencies resolve, are acyclic, and conserve minimum work",
+            ),
             ValidationResult("hardware-independent", hardware_independent, "no device or duration fact present"),
+        )
+
+    @staticmethod
+    def _phase_graph_valid(operation: CostOperation) -> bool:
+        graph = operation.phase_graph
+        if graph is None:
+            return True
+        phases = {phase.phase_id: phase for phase in graph.phases}
+        if len(phases) != len(graph.phases) or not graph.output_phase_ids:
+            return False
+        if any(
+            not phase.phase_name
+            or not phase.operation_class
+            or not phase.compute_capability_resource.startswith("compute.")
+            or not phase.memory_capability_resource.startswith("memory.")
+            or phase.minimum_flops < 0
+            or phase.logical_read_bytes < 0
+            or phase.logical_write_bytes < 0
+            for phase in graph.phases
+        ):
+            return False
+        if any(
+            predecessor not in phases
+            for phase in graph.phases
+            for predecessor in phase.predecessor_phase_ids
+        ):
+            return False
+        completed: set[str] = set()
+        remaining = set(phases)
+        while remaining:
+            ready = {
+                phase_id
+                for phase_id in remaining
+                if set(phases[phase_id].predecessor_phase_ids) <= completed
+            }
+            if not ready:
+                return False
+            completed.update(ready)
+            remaining.difference_update(ready)
+        predecessor_ids = {
+            predecessor
+            for phase in graph.phases
+            for predecessor in phase.predecessor_phase_ids
+        }
+        sink_ids = set(phases) - predecessor_ids
+        return (
+            sum(phase.minimum_flops for phase in graph.phases)
+            == operation.metrics.flops
+            and set(graph.output_phase_ids) == sink_ids
+            and all(phase.derivation_ids for phase in graph.phases)
         )

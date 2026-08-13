@@ -57,6 +57,11 @@ alignment, working-set, dispatch, or candidate-support regime, or without
 calibrated uncertainty returns structured `unknown`; it never falls back to a
 global P80, a bounding box, nearest neighbor, or silent extrapolation.
 
+The response-space choice in the preceding paragraph is superseded by
+[ADR 0036](0036-model-operator-shape-response-in-latency-space.md): latency is
+the primary modeled response, while effective rate is derived. The partial
+function, local-cell, qualification, and no-extrapolation rules remain in force.
+
 Anchor, interpolation/model, and instrumentation uncertainty remain separate.
 Their combination policy, target coverage, calibration evidence, and version
 are explicit. The propagation term `u_anchor² = lambda^T Sigma lambda` is only

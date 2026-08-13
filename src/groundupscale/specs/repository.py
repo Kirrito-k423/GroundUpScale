@@ -10,7 +10,6 @@ from typing import Any
 
 from pydantic import ValidationError
 import yaml
-
 from groundupscale.schemas.v1alpha1 import (
     AnalysisCaseDocument,
     AnalysisPlanDocument,
@@ -20,6 +19,8 @@ from groundupscale.schemas.v1alpha1 import (
     FabricGraphDocument,
     HardwareSpecDocument,
     HardwareCapabilityProfileDocument,
+    OperatorFrontierProfileBody,
+    OperatorFrontierProfileDocument,
     ModelCallNodeSpec,
     ModelSpecDocument,
     SequenceNodeSpec,
@@ -73,6 +74,7 @@ class AnalysisBundle:
     deployment_intent: DeploymentIntentDocument
     hardware: tuple[HardwareSpecDocument, ...]
     hardware_capability_profiles: tuple[HardwareCapabilityProfileDocument, ...]
+    operator_frontier_profiles: tuple[OperatorFrontierProfileDocument, ...]
     fabric_graph: FabricGraphDocument
     benchmark_cases: tuple[BenchmarkCaseDocument, ...]
     models: dict[str, ModelSpecDocument]
@@ -189,6 +191,11 @@ class SpecRepository:
         )
         for profile in hardware_capability_profiles:
             assert isinstance(profile, HardwareCapabilityProfileDocument)
+            from groundupscale.benchmark.hardware_microbenchmark import (
+                CapabilityAggregationError,
+                aggregate_capability_envelope,
+            )
+
             evidence_path = self._bounded_path(profile.spec.source.path)
             try:
                 evidence_bytes = evidence_path.read_bytes()
@@ -231,6 +238,115 @@ class SpecRepository:
                     raise SpecValidationError(
                         f"{cohort_path}: capability cohort evidence identity mismatch"
                     )
+            try:
+                observation = json.loads(evidence_bytes)
+                rederived = aggregate_capability_envelope(
+                    observation,
+                    profile_name=profile.metadata.name,
+                    profile_version=profile.metadata.version,
+                    source_path=profile.spec.source.path,
+                    source_sha256=profile.spec.source.sha256,
+                )
+                expected_profile = HardwareCapabilityProfileDocument.model_validate(
+                    rederived
+                )
+            except (json.JSONDecodeError, CapabilityAggregationError, ValidationError) as error:
+                raise SpecValidationError(
+                    f"{evidence_path}: cannot rederive capability profile: {error}"
+                ) from error
+            if profile != expected_profile:
+                raise SpecValidationError(
+                    f"{evidence_path}: derived capability profile does not match "
+                    "raw observation"
+                )
+        operator_frontier_profiles = tuple(
+            self._load_reference(reference, "OperatorFrontierProfile")
+            for reference in plan.spec.operator_frontier_profiles
+        )
+        for profile in operator_frontier_profiles:
+            assert isinstance(profile, OperatorFrontierProfileDocument)
+            evidence_path = self._bounded_path(profile.spec.source.path)
+            try:
+                evidence_bytes = evidence_path.read_bytes()
+                evidence_digest = sha256(evidence_bytes).hexdigest()
+            except OSError as error:
+                raise SpecValidationError(
+                    f"cannot read operator frontier evidence {evidence_path}: {error}"
+                ) from error
+            if evidence_digest != profile.spec.source.sha256:
+                raise SpecValidationError(
+                    f"{evidence_path}: expected operator frontier evidence sha256 "
+                    f"{profile.spec.source.sha256}, found {evidence_digest}"
+                )
+            try:
+                observation = json.loads(evidence_bytes)
+                if observation.get("schema") != profile.spec.source.observation_schema:
+                    raise ValueError("operator frontier observation schema mismatch")
+                expected_spec = OperatorFrontierProfileBody.model_validate(
+                    {
+                        "target": observation.get("target"),
+                        "hardware_cohort": observation.get("hardware_cohort"),
+                        "source": profile.spec.source.model_dump(by_alias=True),
+                        "anchors": observation.get("anchors"),
+                    }
+                )
+            except (json.JSONDecodeError, ValidationError, ValueError) as error:
+                raise SpecValidationError(
+                    f"{evidence_path}: cannot rederive operator frontier profile: "
+                    f"{error}"
+                ) from error
+            if profile.spec != expected_spec:
+                raise SpecValidationError(
+                    f"{evidence_path}: derived operator frontier profile does not "
+                    "match raw observation"
+                )
+        execution_domain = plan.spec.operator_frontier_execution_domain
+        if execution_domain is not None:
+            for stable_path, failure in execution_domain.qualification_failures.items():
+                source = failure.source
+                evidence_path = self._bounded_path(source.path)
+                try:
+                    evidence_bytes = evidence_path.read_bytes()
+                    evidence_digest = sha256(evidence_bytes).hexdigest()
+                    evidence = json.loads(evidence_bytes)
+                except (OSError, json.JSONDecodeError) as error:
+                    raise SpecValidationError(
+                        f"cannot read Frontier qualification failure evidence "
+                        f"{evidence_path}: {error}"
+                    ) from error
+                if evidence_digest != source.sha256:
+                    raise SpecValidationError(
+                        f"{evidence_path}: Frontier qualification failure digest mismatch"
+                    )
+                if evidence.get("schema") != source.evidence_schema:
+                    raise SpecValidationError(
+                        f"{evidence_path}: Frontier qualification failure schema mismatch"
+                    )
+                attempts = evidence.get("attempts")
+                matches = [
+                    item
+                    for item in attempts
+                    if isinstance(item, dict)
+                    and item.get("stable_path") == stable_path
+                ] if isinstance(attempts, list) else []
+                if (
+                    len(matches) != 1
+                    or matches[0].get("status") != failure.status
+                    or tuple(matches[0].get("reason_codes", ()))
+                    != failure.reason_codes
+                ):
+                    raise SpecValidationError(
+                        f"{evidence_path}: Frontier qualification failure does not "
+                        f"bind {stable_path}"
+                    )
+                relative_path = evidence_path.relative_to(self.root).as_posix()
+                self._sources[relative_path] = SpecSource(
+                    path=relative_path,
+                    sha256=evidence_digest,
+                    kind="OperatorFrontierQualificationEvidence",
+                    name=stable_path,
+                    version="v1alpha1",
+                )
         fabric = self._load_reference(plan.spec.fabric_graph, "FabricGraph")
         benchmarks = tuple(
             self._load_reference(reference, "BenchmarkCase")
@@ -261,6 +377,10 @@ class SpecRepository:
             isinstance(document, HardwareCapabilityProfileDocument)
             for document in hardware_capability_profiles
         )
+        assert all(
+            isinstance(document, OperatorFrontierProfileDocument)
+            for document in operator_frontier_profiles
+        )
         assert isinstance(fabric, FabricGraphDocument)
         assert all(isinstance(document, BenchmarkCaseDocument) for document in benchmarks)
         return AnalysisBundle(
@@ -270,6 +390,7 @@ class SpecRepository:
             deployment_intent=deployment,
             hardware=hardware,  # type: ignore[arg-type]
             hardware_capability_profiles=hardware_capability_profiles,  # type: ignore[arg-type]
+            operator_frontier_profiles=operator_frontier_profiles,  # type: ignore[arg-type]
             fabric_graph=fabric,
             benchmark_cases=benchmarks,  # type: ignore[arg-type]
             models=models,

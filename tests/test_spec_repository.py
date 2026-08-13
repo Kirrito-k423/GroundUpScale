@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -244,6 +245,47 @@ def test_m4_plan_loads_measured_capabilities_without_overwriting_vendor_facts() 
         cpu.capabilities.unified_memory.peak_bandwidth_bytes_per_second
         == 120_000_000_000
     )
+
+
+def test_capability_profile_must_be_exactly_rederived_from_its_raw_observation(
+    tmp_path: Path,
+) -> None:
+    plan_path, plan = _minimal_bundle(tmp_path)
+    profile = yaml.safe_load(
+        (REPOSITORY_ROOT / "specs/hardware-capabilities/apple-m4-cpu-local.yaml")
+        .read_text(encoding="utf-8")
+    )
+    source = profile["spec"]["source"]
+    raw_bytes = (REPOSITORY_ROOT / source["path"]).read_bytes()
+    raw_path = tmp_path / "evidence/raw-observation.json"
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.write_bytes(raw_bytes)
+    source["path"] = "evidence/raw-observation.json"
+    source["sha256"] = sha256(raw_bytes).hexdigest()
+    profile_path = _write_yaml(tmp_path, "capabilities/profile.yaml", profile)
+    plan["spec"]["hardware_capability_profiles"] = [
+        {
+            "path": "capabilities/profile.yaml",
+            "version": profile["metadata"]["version"],
+        }
+    ]
+    _write_yaml(tmp_path, "plans/plan.yaml", plan)
+
+    assert SpecRepository(tmp_path).load_analysis_plan(plan_path)
+
+    tampered = deepcopy(profile)
+    tampered["spec"]["environment"]["eligible"] = not profile["spec"][
+        "environment"
+    ]["eligible"]
+    profile_path.write_text(
+        yaml.safe_dump(tampered, sort_keys=False), encoding="utf-8"
+    )
+
+    with pytest.raises(
+        SpecValidationError,
+        match="derived capability profile does not match raw observation",
+    ):
+        SpecRepository(tmp_path).load_analysis_plan(plan_path)
 
 
 def test_m4_measured_memory_p80_is_within_ten_percent_of_comparable_vendor_peak() -> None:

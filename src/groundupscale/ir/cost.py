@@ -56,6 +56,30 @@ class CostFormula:
 
 
 @dataclass(frozen=True)
+class OperatorPhase:
+    phase_id: str
+    phase_name: str
+    operation_class: str
+    compute_capability_resource: str
+    memory_capability_resource: str
+    predecessor_phase_ids: tuple[str, ...]
+    input_roles: tuple[str, ...]
+    output_roles: tuple[str, ...]
+    minimum_flops: int
+    logical_read_bytes: int
+    logical_write_bytes: int
+    assumptions: tuple[str, ...]
+    derivation_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class OperatorPhaseGraph:
+    graph_id: str
+    phases: tuple[OperatorPhase, ...]
+    output_phase_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class CostOperation:
     local_id: str
     operation: str
@@ -71,6 +95,7 @@ class CostOperation:
     dependency_cost_node_ids: tuple[str, ...]
     metrics: CostMetrics
     formula: CostFormula
+    phase_graph: OperatorPhaseGraph | None
     derivation_ids: tuple[str, ...]
 
 

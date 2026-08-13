@@ -1,0 +1,98 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: AnalysisPlan
+metadata:
+  name: mac-cpu-prefill-phase-exploratory
+  version: 0.1.0
+spec:
+  workload: {path: specs/workloads/prefill.yaml, version: 0.1.0}
+  analysis_case: {path: specs/analysis-cases/fixed-prefill.yaml, version: 0.1.0}
+  deployment_intent: {path: specs/deployment-intents/mac-cpu.yaml, version: 0.1.0}
+  hardware:
+    - {path: specs/hardware/apple-m4.yaml, version: 0.1.0}
+  hardware_capability_profiles:
+    - path: goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-phase-capability-profile-exploratory-20260809-v1.yaml
+      version: 0.2.0
+  operator_frontier_profiles:
+    - {path: specs/operator-frontiers/apple-m4-cpu-matmul-512-v3.yaml, version: 3.0.0}
+    - {path: specs/operator-frontiers/apple-m4-cpu-layer1-qk-matmul-v1.yaml, version: 1.0.0}
+    - {path: specs/operator-frontiers/apple-m4-cpu-layer0-context-matmul-v1.yaml, version: 1.0.0}
+  operator_frontier_execution_domain:
+    hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+    threads: 4
+    interop_threads: 10
+    execution_mode: eager
+    timing_scope: host_visible_completion
+    completion_boundary: synchronous-cpu-call-return
+    instrumentation_profile: benchmark
+    candidate_families:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: torch.matmul.cpu.fp32
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: torch.matmul.cpu.fp32
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: torch.matmul.transpose-contiguous.cpu.fp32
+    candidate_digests:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: 076599bf426979338f6ef74e83fe0dbd8d7d91cd263160105d06fca9671f75e4
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: f0116fc2bbf581536f105d2b57c676285131932451ab2e5446c7c3edc755ff69
+    execution_contract_digests:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: 27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: 7f098d91839a712286d72bd8d74f8a7351dabd0484b8825ae72972bcec04fe27
+    execution_contracts:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj:
+        schema: groundupscale.dev/operator-execution-contract/v1alpha1
+        status: resolved
+        operand_contracts:
+          - {shape: [1, 512, 512], stride: [262144, 512, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+          - {shape: [512, 512], stride: [512, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+        result_contract: {shape: [1, 512, 512], stride: [262144, 512, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+        execution_mode: eager
+        cache_state: warm-reused-inputs-and-weights
+        working_set_bytes: 3145728
+        concurrency: single-operator-no-overlap
+        execution_contract_digest: 27e02472ab8e3d583d77cbf59ab893ba1b2a353361d8fa0e64424ef917734f38
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul:
+        schema: groundupscale.dev/operator-execution-contract/v1alpha1
+        status: resolved
+        operand_contracts:
+          - {shape: [1, 8, 512, 64], stride: [262144, 64, 512, 1], dtype: float32, layout: strided, minimum_alignment_bytes: 64}
+          - {shape: [1, 8, 64, 512], stride: [262144, 64, 1, 512], dtype: float32, layout: strided, minimum_alignment_bytes: 64}
+        result_contract: {shape: [1, 8, 512, 512], stride: [2097152, 262144, 512, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+        execution_mode: eager
+        cache_state: warm-reused-inputs-and-weights
+        working_set_bytes: 10485760
+        concurrency: single-operator-no-overlap
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul:
+        schema: groundupscale.dev/operator-execution-contract/v1alpha1
+        status: resolved
+        operand_contracts:
+          - {shape: [1, 8, 512, 512], stride: [2097152, 262144, 512, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+          - {shape: [1, 8, 512, 64], stride: [262144, 64, 512, 1], dtype: float32, layout: strided, minimum_alignment_bytes: 64}
+        result_contract: {shape: [1, 512, 8, 64], stride: [262144, 512, 64, 1], dtype: float32, layout: row-major-contiguous, minimum_alignment_bytes: 64}
+        execution_mode: eager
+        cache_state: warm-reused-inputs-and-weights
+        working_set_bytes: 10485760
+        concurrency: single-operator-no-overlap
+        execution_contract_digest: 7f098d91839a712286d72bd8d74f8a7351dabd0484b8825ae72972bcec04fe27
+    input_corpus_digests:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: d550d2ef9863aecb52c0a64ed24aec3e4a19c894a362b1306e08dbee34b5d6e6
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: 1b976f5aad8cd6d5aab82927da15b6775533ad6a49e903e7831d5d55bf5764e3
+    qualification_failures:
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj:
+        status: insufficient_evidence
+        reason_codes: [frontier-timing-statistics-invalid, frontier-session-repeatability-exceeds-policy]
+        source: &top5_failure_source
+          path: goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-top5-frontier-qualification-attempts-20260810-v1.json
+          sha256: e0dddb210196e9b4c5665d76a3ce734f786987b62be2a1fbd39d2e188c3ac552
+          schema: groundupscale.dev/operator-frontier-qualification-attempts/v1alpha1
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul:
+        status: insufficient_evidence
+        reason_codes: [frontier-session-repeatability-exceeds-policy]
+        source: *top5_failure_source
+      semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj:
+        status: insufficient_evidence
+        reason_codes: [frontier-timing-statistics-invalid, frontier-session-repeatability-exceeds-policy]
+        source: *top5_failure_source
+  fabric_graph: {path: specs/fabrics/local-m4.yaml, version: 0.1.0}
+  benchmark_cases:
+    - {path: specs/benchmarks/core-prefill.yaml, version: 0.1.0}

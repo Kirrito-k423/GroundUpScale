@@ -1,0 +1,6 @@
+interface:
+  display_name: "预测与实测对比报告"
+  short_description: "生成层次化、互斥归因且可下钻的预测与实测时间对比报告"
+  default_prompt: "使用 $report-prediction-observation 生成预测与实测对比报告，并按 E2E 阈值或 Top 10 下钻时间组成。"
+policy:
+  allow_implicit_invocation: true

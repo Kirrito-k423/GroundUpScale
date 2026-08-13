@@ -5,6 +5,13 @@ metadata:
   version: 0.1.0
 spec:
   cases:
+    # Put the repeatedly unstable layer_1 QK exact probe first so its timing
+    # contract does not inherit sustained-load state from earlier MatMuls.
+    - {id: matmul-layer1-qk, scope: model/two-layer-transformer/transformer/layer_1/attention/qk_matmul, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: matmul-layer0-gate-proj, scope: model/two-layer-transformer/transformer/layer_0/mlp/gate_proj, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: matmul-layer0-qk, scope: model/two-layer-transformer/transformer/layer_0/attention/qk_matmul, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: matmul-layer1-gate-proj, scope: model/two-layer-transformer/transformer/layer_1/mlp/gate_proj, mode: operator, warmup_iterations: 500, samples: 20}
+    - {id: matmul-layer0-context, scope: model/two-layer-transformer/transformer/layer_0/attention/context_matmul, mode: operator, warmup_iterations: 500, samples: 20}
     - {id: matmul-q-proj, scope: model/two-layer-transformer/transformer/layer_0/attention/q_proj, mode: operator, warmup_iterations: 500, samples: 20}
     - {id: rmsnorm-input, scope: model/two-layer-transformer/transformer/layer_0/input_norm, mode: operator, warmup_iterations: 500, samples: 20}
     - {id: softmax-attention, scope: model/two-layer-transformer/transformer/layer_0/attention/softmax, mode: operator, warmup_iterations: 500, samples: 20}

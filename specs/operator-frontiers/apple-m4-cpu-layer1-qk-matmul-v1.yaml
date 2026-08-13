@@ -1,0 +1,414 @@
+apiVersion: groundupscale.dev/v1alpha1
+kind: OperatorFrontierProfile
+metadata:
+  name: apple-m4-cpu-layer1-qk-matmul
+  version: 1.0.0
+  description: null
+  labels: {}
+spec:
+  target:
+    hardware: apple-m4
+    device: cpu
+  hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+  source:
+    path: goal_process/mac-transformer-ir-calibration-slice/evidence/apple-m4-cpu-layer1-qk-matmul-frontier-observation-20260810-v1.json
+    sha256: 4fb4cc49a5329583d6ddda6f005599590e38538424af9c507d00375489c8ca1e
+    schema: groundupscale.dev/operator-frontier-observation/v1alpha1
+  anchors:
+  - anchor_id: apple-m4-cpu-layer1-qk-matmul-matmul-layer1-qk-1.0.0
+    case_id: matmul-layer1-qk
+    stable_path_pattern: semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul
+    semantic_operation: MatMul
+    operand_shapes:
+    - - 1
+      - 8
+      - 512
+      - 64
+    - - 1
+      - 8
+      - 64
+      - 512
+    result_shape:
+    - 1
+    - 8
+    - 512
+    - 512
+    dtype: float32
+    layout: mixed-explicit
+    operand_layouts:
+    - strided
+    - strided
+    result_layout: row-major-contiguous
+    operand_strides:
+    - - 262144
+      - 64
+      - 512
+      - 1
+    - - 262144
+      - 64
+      - 1
+      - 512
+    result_stride:
+    - 2097152
+    - 262144
+    - 512
+    - 1
+    minimum_alignment_bytes: 64
+    working_set_bytes: 10485760
+    threads: 4
+    interop_threads: 10
+    execution_mode: eager
+    candidate_family: torch.matmul.cpu.fp32
+    candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+    input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+    execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+    timing_scope: host_visible_completion
+    completion_boundary: synchronous-cpu-call-return
+    instrumentation_profile: benchmark
+    observation_validity: QUALIFIED
+    frontier_role: ACTIVE
+    latency_ns: 580157.4444444445
+    standard_uncertainty_ns: 2006.7953331766143
+    search_run_ids:
+    - m4-cpu-top5-l1qk-search-20260810-03
+    - m4-cpu-top5-l1qk-search-20260810-04
+    - m4-cpu-top5-l1qk-search-20260810-06
+    holdout_run_ids:
+    - m4-cpu-top5-l1qk-holdout-20260810-03
+    - m4-cpu-top5-l1qk-holdout-20260810-04
+    - m4-cpu-top5-l1qk-holdout-20260810-05
+    measurement_hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+    qualification_policy:
+      policy_id: exact-shape-operator-frontier-qualification
+      version: 2.0.0
+      minimum_search_sessions: 3
+      minimum_holdout_sessions: 3
+      maximum_session_iqr_over_median: 0.03
+      maximum_session_median_relative_range: 0.05
+      maximum_search_holdout_relative_gap: 0.05
+      minimum_warmup_iterations: 500
+      maximum_warmup_median_drift: 0.05
+      minimum_samples: 20
+      minimum_windows_per_sample: 5
+      minimum_timed_duration_ns: 100000000
+      estimator: median(independent_holdout_session_medians)
+      uncertainty: sample-standard-deviation(independent_holdout_session_medians)
+    candidate_coverage:
+      level: C0_SINGLE
+      scope: declared-runtime-candidate-family
+      evaluated_candidate_families:
+      - torch.matmul.cpu.fp32
+      selected_candidate_family: torch.matmul.cpu.fp32
+      evaluated_candidate_digests:
+      - 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+      selected_candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+      limitation: does-not-establish-global-optimum-or-support-frontier-shift
+    session_evidence:
+      search:
+      - run_id: m4-cpu-top5-l1qk-search-20260810-03
+        process_id: 76985
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-search-20260810-03
+        run_manifest_sha256: 43a448848796940b204a5f98f9cde240c0ee5781137d94b7334c000283ebf784
+        benchmark_sha256: 01656883e097d0d0eded8cddada055e46a6e31bee5382f568da395f5f0208f98
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 5000
+        warmup_window_samples_ns:
+        - 619822.95
+        - 604650.0
+        - 582987.5
+        - 579693.75
+        - 608037.5
+        - 591050.0
+        - 584002.05
+        warmup_median_drift: 0.023009897639793588
+        timed_duration_ns: 530703838.0
+        median_ns: 582150.5
+        iqr_over_median: 0.022525961929088584
+        sample_count: 20
+        samples_ns:
+        - 584713.0
+        - 606888.8888888889
+        - 601981.5555555555
+        - 578324.1111111111
+        - 576115.6666666666
+        - 590518.5555555555
+        - 584143.5555555555
+        - 598277.7777777778
+        - 581268.5555555555
+        - 576504.5555555555
+        - 608592.6666666666
+        - 584680.5555555555
+        - 582356.5555555555
+        - 580134.2222222222
+        - 574259.3333333334
+        - 581944.4444444445
+        - 576569.4444444445
+        - 611583.3333333334
+        - 580875.0
+        - 579685.1111111111
+      - run_id: m4-cpu-top5-l1qk-search-20260810-04
+        process_id: 77114
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-search-20260810-04
+        run_manifest_sha256: 3d3a42f06eee51635563b7443bd17e7d0321ea79e3c44e41e42585b021f4f8eb
+        benchmark_sha256: a05e652a2437810fc4734c602fe863afc67fbce6713871b4ba8bcc814e18fc76
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 5000
+        warmup_window_samples_ns:
+        - 659697.95
+        - 634897.95
+        - 632647.9
+        - 650170.85
+        - 679845.85
+        - 663929.2
+        - 599012.5
+        warmup_median_drift: 0.04372642444405217
+        timed_duration_ns: 537772170.0
+        median_ns: 592895.8333333333
+        iqr_over_median: 0.017760427281352187
+        sample_count: 20
+        samples_ns:
+        - 587000.0
+        - 587939.7777777778
+        - 588879.6666666666
+        - 593162.0
+        - 598782.4444444445
+        - 593282.4444444445
+        - 602171.2222222222
+        - 592629.6666666666
+        - 588611.1111111111
+        - 591648.1111111111
+        - 590125.0
+        - 595050.8888888889
+        - 602537.1111111111
+        - 605023.1111111111
+        - 593305.5555555555
+        - 601023.1111111111
+        - 588143.5555555555
+        - 591722.2222222222
+        - 586601.8888888889
+        - 604629.6666666666
+      - run_id: m4-cpu-top5-l1qk-search-20260810-06
+        process_id: 77227
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-search-20260810-06
+        run_manifest_sha256: 731053fd75f481f805eac034cab2765b97cade35f99df65a905c8a750404627f
+        benchmark_sha256: de72de08946c5860c02b970aa7734e0fa875a21ea618d3176053cfe0f3e0dd18
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 8000
+        warmup_window_samples_ns:
+        - 604366.7
+        - 600964.6
+        - 598479.15
+        - 583210.4
+        - 590272.9
+        - 584881.25
+        - 586372.9
+        warmup_median_drift: 0.02488467662813195
+        timed_duration_ns: 858392286.0
+        median_ns: 588833.3125
+        iqr_over_median: 0.019392956389504543
+        sample_count: 20
+        samples_ns:
+        - 591145.875
+        - 596213.5
+        - 581270.875
+        - 576828.125
+        - 580145.875
+        - 577083.25
+        - 607661.5
+        - 588791.625
+        - 574052.0
+        - 592463.5
+        - 586599.0
+        - 586786.375
+        - 595713.5
+        - 605963.625
+        - 592328.125
+        - 588875.0
+        - 585468.75
+        - 596291.625
+        - 617786.375
+        - 587796.875
+      holdout:
+      - run_id: m4-cpu-top5-l1qk-holdout-20260810-03
+        process_id: 77263
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-holdout-20260810-03
+        run_manifest_sha256: da9c5a6faf8b70c0d064ba172753c2ff0f67ebb30bc549b50d5a219ffc620eca
+        benchmark_sha256: 5a46e66be037bf6c59adb36042da86d85be2a1bc2bee98ea421ac4415275971f
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 8000
+        warmup_window_samples_ns:
+        - 585716.65
+        - 566164.6
+        - 563897.9
+        - 568410.4
+        - 580081.25
+        - 568706.25
+        - 571166.65
+        warmup_median_drift: 0.008757601656189216
+        timed_duration_ns: 952354884.0
+        median_ns: 580157.4444444445
+        iqr_over_median: 0.012410615738984285
+        sample_count: 20
+        samples_ns:
+        - 572939.7777777778
+        - 576157.4444444445
+        - 574875.0
+        - 579694.4444444445
+        - 577703.7777777778
+        - 585736.1111111111
+        - 577338.0
+        - 578518.4444444445
+        - 586305.5555555555
+        - 584287.1111111111
+        - 578513.8888888889
+        - 579273.2222222222
+        - 615189.8888888889
+        - 582231.4444444445
+        - 584504.5555555555
+        - 583648.1111111111
+        - 590662.0
+        - 580620.4444444445
+        - 591833.3333333334
+        - 577129.6666666666
+      - run_id: m4-cpu-top5-l1qk-holdout-20260810-04
+        process_id: 77344
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-holdout-20260810-04
+        run_manifest_sha256: 3ef15d4347a50acd2131baf4e68543b2f4c4f44c192316f610375578d318776b
+        benchmark_sha256: 438bd13fe381374b8a1d0c1937ae6efb3e502547a70f3a4a1ccaaa4a3fe57738
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 8000
+        warmup_window_samples_ns:
+        - 592433.35
+        - 593760.4
+        - 595420.8
+        - 588502.05
+        - 586427.1
+        - 589983.3
+        - 589427.1
+        warmup_median_drift: 0.00735171491097041
+        timed_duration_ns: 1575655670.0
+        median_ns: 576884.2777777778
+        iqr_over_median: 0.012890511355204467
+        sample_count: 20
+        samples_ns:
+        - 574324.1111111111
+        - 573902.7777777778
+        - 565930.5555555555
+        - 581083.3333333334
+        - 574097.2222222222
+        - 580351.8888888889
+        - 569282.4444444445
+        - 574833.3333333334
+        - 583731.5555555555
+        - 571416.6666666666
+        - 576912.0
+        - 573143.4444444445
+        - 589740.7777777778
+        - 575500.0
+        - 578726.8888888889
+        - 576856.5555555555
+        - 578268.5555555555
+        - 587750.0
+        - 582689.7777777778
+        - 587625.0
+      - run_id: m4-cpu-top5-l1qk-holdout-20260810-05
+        process_id: 77364
+        run_bundle: .groundupscale/runs/m4-cpu-top5-l1qk-holdout-20260810-05
+        run_manifest_sha256: 1e926f84ab74e0c0f1a9b588c6e1a49ab619b4842ef69571e94e909f6af20c95
+        benchmark_sha256: 9000f976fa416536e28294bb0f72f03aa44d6e56417a3478d5ef01db4fef7808
+        correctness_sha256: 819e9e969ecc8fa1628ddd67650eec66eaab137101fcf7dcb43b50c335fe036d
+        hardware_cohort: hvc-46ac04a4db5c57adaff46f8b4eb99bd0251a5dbfd15492dc5ba766aff21aa327
+        candidate_digest: 2422210020ddf7fb58e4f4fcd113524cbf9eec0dfc9f3a39403e851d1992b438
+        input_corpus_digest: 858b10892a47b1f220feea6c3a59381792fae5a5296a000e68103e40d698eaf1
+        execution_contract_digest: 84607ab5d49b1878f37fd75c08bb2ff917d6f6c590a8c524b67aad791d9ff938
+        correctness_oracle_policy_id: matmul-fp32-float64-oracle-v1
+        timing_scope: host_visible_completion
+        completion_boundary: synchronous-cpu-call-return
+        timer_source: time.perf_counter_ns
+        timer_resolution_ns: 41.66666666666667
+        instrumentation_profile: benchmark
+        warmup_iterations: 8000
+        warmup_window_samples_ns:
+        - 590089.55
+        - 605450.0
+        - 593477.1
+        - 577331.25
+        - 594195.85
+        - 618735.45
+        - 610081.25
+        warmup_median_drift: 0.02721629291180482
+        timed_duration_ns: 1595942495.0
+        median_ns: 580532.4444444445
+        iqr_over_median: 0.020204153581616195
+        sample_count: 20
+        samples_ns:
+        - 585782.4444444445
+        - 582569.4444444445
+        - 583074.1111111111
+        - 577981.4444444445
+        - 574893.4444444445
+        - 592986.1111111111
+        - 581236.1111111111
+        - 586666.6666666666
+        - 603671.3333333334
+        - 573365.7777777778
+        - 589157.4444444445
+        - 579828.7777777778
+        - 573689.7777777778
+        - 602588.0
+        - 614305.5555555555
+        - 578222.2222222222
+        - 575532.4444444445
+        - 572504.6666666666
+        - 575569.4444444445
+        - 578078.6666666666

@@ -2,7 +2,7 @@ apiVersion: groundupscale.dev/v1alpha1
 kind: HardwareBenchmarkSuite
 metadata:
   name: apple-m4-cpu-resource-envelope
-  version: 0.1.0
+  version: 0.2.0
   description: 多 Shape 探针，用于构造与具体算子实现解耦的 M4 CPU 资源能力包络。
 spec:
   target:
@@ -30,7 +30,10 @@ spec:
         - [511]
         - [512]
         - [513]
-      alignment_boundaries: [64, 128, 256, 512]
+        - [1023]
+        - [1024]
+        - [1025]
+      alignment_boundaries: [64, 128, 256, 512, 1024]
       thread_counts: [1]
     - id: vector-fp32-fma
       kind: vector_fma
@@ -107,4 +110,144 @@ spec:
         - [33554432]
         - [33554433]
       alignment_boundaries: [4194304, 8388608, 16777216, 33554432]
+      thread_counts: [1, 4, 10]
+    - id: phase-reduction-max-fp32
+      kind: reduction_max
+      resource: compute.reduction.max.fp32
+      dtype: float32
+      shapes: &row_phase_shapes
+        - [512, 511]
+        - [512, 512]
+        - [512, 513]
+        - [1024, 255]
+        - [1024, 256]
+        - [1024, 257]
+        - [2048, 511]
+        - [2048, 512]
+        - [2048, 513]
+        - [4096, 511]
+        - [4096, 512]
+        - [4096, 513]
+        - [4096, 767]
+        - [4096, 768]
+        - [4096, 769]
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-reduction-sum-fp32
+      kind: reduction_sum
+      resource: compute.reduction.sum.fp32
+      dtype: float32
+      shapes: *row_phase_shapes
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-row-subtract-fp32
+      kind: elementwise_subtract
+      resource: compute.elementwise.subtract.fp32
+      dtype: float32
+      shapes: *row_phase_shapes
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-row-divide-fp32
+      kind: elementwise_divide
+      resource: compute.elementwise.divide.fp32
+      dtype: float32
+      shapes: *row_phase_shapes
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-elementwise-exp-fp32
+      kind: elementwise_exp
+      resource: compute.transcendental.exp.fp32
+      dtype: float32
+      shapes: &tensor_phase_shapes
+        - [65535]
+        - [65536]
+        - [65537]
+        - [262143]
+        - [262144]
+        - [262145]
+        - [1048575]
+        - [1048576]
+        - [1048577]
+        - [2097151]
+        - [2097152]
+        - [2097153]
+        - [4194303]
+        - [4194304]
+        - [4194305]
+      alignment_boundaries: [65536, 262144, 1048576, 2097152, 4194304]
+      thread_counts: [1, 4, 10]
+    - id: phase-elementwise-square-fp32
+      kind: elementwise_square
+      resource: compute.elementwise.square.fp32
+      dtype: float32
+      shapes: *tensor_phase_shapes
+      alignment_boundaries: [65536, 262144, 1048576, 2097152, 4194304]
+      thread_counts: [1, 4, 10]
+    - id: phase-scalar-divide-fp32
+      kind: scalar_divide
+      resource: compute.scalar.divide.fp32
+      dtype: float32
+      shapes: &row_scalar_shapes
+        - [511]
+        - [512]
+        - [513]
+        - [1023]
+        - [1024]
+        - [1025]
+        - [2047]
+        - [2048]
+        - [2049]
+        - [4095]
+        - [4096]
+        - [4097]
+      alignment_boundaries: [512, 1024, 2048, 4096]
+      thread_counts: [1, 4, 10]
+    - id: phase-scalar-add-fp32
+      kind: scalar_add
+      resource: compute.scalar.add.fp32
+      dtype: float32
+      shapes: *row_scalar_shapes
+      alignment_boundaries: [512, 1024, 2048, 4096]
+      thread_counts: [1, 4, 10]
+    - id: phase-scalar-rsqrt-fp32
+      kind: scalar_rsqrt
+      resource: compute.transcendental.rsqrt.fp32
+      dtype: float32
+      shapes: *row_scalar_shapes
+      alignment_boundaries: [512, 1024, 2048, 4096]
+      thread_counts: [1, 4, 10]
+    - id: phase-elementwise-multiply-fp32
+      kind: elementwise_multiply
+      resource: compute.elementwise.multiply.fp32
+      dtype: float32
+      shapes: *tensor_phase_shapes
+      alignment_boundaries: [65536, 262144, 1048576, 2097152, 4194304]
+      thread_counts: [1, 4, 10]
+    - id: phase-row-reduction-memory-fp32
+      kind: memory_row_reduction
+      resource: memory.row-reduction.fp32
+      dtype: float32
+      shapes: *row_phase_shapes
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-broadcast-memory-fp32
+      kind: memory_broadcast
+      resource: memory.broadcast-read-write.fp32
+      dtype: float32
+      shapes: *row_phase_shapes
+      alignment_boundaries: [256, 512, 768]
+      thread_counts: [1, 4, 10]
+    - id: phase-elementwise-memory-fp32
+      kind: memory_elementwise
+      resource: memory.elementwise-read-write.fp32
+      dtype: float32
+      shapes: *tensor_phase_shapes
+      alignment_boundaries: [65536, 262144, 1048576, 2097152, 4194304]
+      thread_counts: [1, 4, 10]
+    - id: phase-row-scalar-memory-fp32
+      kind: memory_row_scalar
+      resource: memory.row-scalar-read-write.fp32
+      dtype: float32
+      shapes: *row_scalar_shapes
+      alignment_boundaries: [512, 1024, 2048, 4096]
       thread_counts: [1, 4, 10]

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+import time
 
 import pytest
 import torch
 
 from groundupscale.benchmark import ReferenceRunner
+from groundupscale.benchmark.reference import TensorMatMul
 from groundupscale.compiler import SemanticCompiler
 from groundupscale.specs import SpecRepository
 
@@ -13,6 +16,15 @@ from test_semantic_compiler import _request
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
+
+
+def _best_runtime_ns(invoke: Callable[[], object], samples: int = 5) -> int:
+    durations: list[int] = []
+    for _ in range(samples):
+        started = time.perf_counter_ns()
+        invoke()
+        durations.append(time.perf_counter_ns() - started)
+    return min(durations)
 
 
 def _runner() -> ReferenceRunner:
@@ -50,6 +62,43 @@ def test_cpu_reference_is_deterministic() -> None:
 
     assert first.output_sha256 == second.output_sha256
     torch.testing.assert_close(first.output, second.output, rtol=0, atol=0)
+
+
+def test_context_matmul_avoids_pathological_query_broadcast_decomposition() -> None:
+    old_threads = torch.get_num_threads()
+    try:
+        torch.set_num_threads(4)
+        generator = torch.Generator(device="cpu").manual_seed(20260807)
+        probabilities = torch.randn(
+            (1, 8, 512, 512), dtype=torch.float32, generator=generator
+        ).softmax(dim=-1)
+        values = torch.randn(
+            (1, 512, 8, 64), dtype=torch.float32, generator=generator
+        ).transpose(1, 2)
+        operation = TensorMatMul("test/context", "bhqk,bhkd->bqhd")
+
+        with torch.inference_mode():
+            expected = torch.einsum("bhqk,bhkd->bqhd", probabilities, values)
+            actual = operation(probabilities, values)
+            torch.testing.assert_close(actual, expected, rtol=1e-4, atol=1e-4)
+            for _ in range(3):
+                operation(probabilities, values)
+                torch.einsum("bhqk,bhkd->bqhd", probabilities, values)
+            operation_ns = _best_runtime_ns(
+                lambda: operation(probabilities, values)
+            )
+            reference_ns = _best_runtime_ns(
+                lambda: torch.einsum(
+                    "bhqk,bhkd->bqhd", probabilities, values
+                )
+            )
+
+        assert operation_ns <= reference_ns * 8, (
+            "context MatMul must retain batched-GEMM granularity; "
+            f"implementation={operation_ns} ns, einsum reference={reference_ns} ns"
+        )
+    finally:
+        torch.set_num_threads(old_threads)
 
 
 @pytest.mark.skipif(

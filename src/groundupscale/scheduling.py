@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass
 
 from groundupscale.schedule_evidence import finite_nonnegative
@@ -289,33 +289,45 @@ def _validate_duration(duration_ns: float, label: str) -> None:
 def _critical_path(
     event_by_id: dict[str, BoundEvent],
 ) -> tuple[float, tuple[str, ...]]:
-    longest_to: dict[str, tuple[float, tuple[str, ...]]] = {}
-    visiting: set[str] = set()
-
-    def visit(event_id: str) -> tuple[float, tuple[str, ...]]:
-        if event_id in longest_to:
-            return longest_to[event_id]
-        if event_id in visiting:
-            raise ValueError("schedule dependencies contain a cycle")
-        visiting.add(event_id)
-        event = event_by_id[event_id]
-        predecessor_duration, predecessor_path = max(
-            (
-                visit(predecessor_id)
-                for predecessor_id in event.predecessor_ids
-            ),
-            default=(0.0, ()),
-            key=lambda item: item[0],
-        )
-        visiting.remove(event_id)
-        longest_to[event_id] = (
-            predecessor_duration + event.local_duration_ns,
-            (*predecessor_path, event_id),
-        )
-        return longest_to[event_id]
-
-    return max(
-        (visit(event_id) for event_id in event_by_id),
-        default=(0.0, ()),
-        key=lambda item: item[0],
+    indegree = {
+        event_id: len(event.predecessor_ids)
+        for event_id, event in event_by_id.items()
+    }
+    successors: dict[str, list[str]] = defaultdict(list)
+    for event_id, event in event_by_id.items():
+        for predecessor_id in event.predecessor_ids:
+            successors[predecessor_id].append(event_id)
+    ready = deque(
+        event_id for event_id in event_by_id if indegree[event_id] == 0
     )
+    longest_duration: dict[str, float] = {}
+    longest_predecessor: dict[str, str | None] = {}
+    processed = 0
+    while ready:
+        event_id = ready.popleft()
+        event = event_by_id[event_id]
+        predecessor_id = max(
+            event.predecessor_ids,
+            default=None,
+            key=lambda item: longest_duration[item],
+        )
+        longest_predecessor[event_id] = predecessor_id
+        longest_duration[event_id] = (
+            longest_duration[predecessor_id] if predecessor_id is not None else 0.0
+        ) + event.local_duration_ns
+        processed += 1
+        for successor_id in successors[event_id]:
+            indegree[successor_id] -= 1
+            if indegree[successor_id] == 0:
+                ready.append(successor_id)
+    if processed != len(event_by_id):
+        raise ValueError("schedule dependencies contain a cycle")
+    if not event_by_id:
+        return 0.0, ()
+    terminal_id = max(event_by_id, key=lambda item: longest_duration[item])
+    reverse_path: list[str] = []
+    current_id: str | None = terminal_id
+    while current_id is not None:
+        reverse_path.append(current_id)
+        current_id = longest_predecessor[current_id]
+    return longest_duration[terminal_id], tuple(reversed(reverse_path))
