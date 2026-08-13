@@ -2345,6 +2345,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     else None
                 )
                 try:
+                    baseline_identity = schedule_input.get("identity")
                     baseline_case = next(
                         case
                         for case in baseline_document["cases"]
@@ -2355,8 +2356,15 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     )
                     latency = baseline_case["latency"]
                     baseline_derived = (
-                        baseline_derivation.get("kind")
+                        isinstance(baseline_identity, dict)
+                        and isinstance(baseline_derivation, dict)
+                        and isinstance(baseline_source, dict)
+                        and baseline_derivation.get("kind")
                         == "benchmark-case-latency"
+                        and baseline_source.get("expected_role")
+                        == "benchmark-observation"
+                        and baseline_derivation.get("case_id")
+                        == baseline_identity.get("benchmark_case")
                         and baseline_lane.get("raw_samples_ns")
                         == latency["samples_ns"]
                         and baseline_lane.get("normalized_window_samples_ns")
@@ -2366,7 +2374,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     )
                     diagnostic_derived = (
                         isinstance(diagnostic_derivation, dict)
+                        and isinstance(diagnostic_source, dict)
                         and diagnostic_derivation.get("kind") == "json-field"
+                        and diagnostic_source.get("expected_role")
+                        == "error-attribution"
+                        and diagnostic_derivation.get("field")
+                        == "e2e_trace_host_ns"
                         and diagnostic_lane.get("instrumentation_timing", {}).get(
                             "elapsed_ns"
                         )

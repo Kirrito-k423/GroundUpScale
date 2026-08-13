@@ -59,7 +59,7 @@ def _qualified_input() -> dict[str, object]:
             "correctness": {"passed": True, "semantic_leaf_count": 52},
             "source": {
                 "run_id": "ascend-910b2-transformer-demo-20260811-v1",
-                "expected_role": "baseline-observation",
+                "expected_role": "benchmark-observation",
                 "derivation": {
                     "kind": "benchmark-case-latency",
                     "case_id": "two-layer-prefill",
@@ -117,7 +117,7 @@ def _qualified_input() -> dict[str, object]:
                 ],
                 "source": {
                     "run_id": "issue47-synthetic-diagnostic-source-v1",
-                    "expected_role": "diagnostic-observation",
+                    "expected_role": "error-attribution",
                     "derivation": {
                         "kind": "json-field",
                         "field": "e2e_trace_host_ns",
@@ -170,22 +170,21 @@ def _source_runs(
     sources = [
         (
             document["baseline_timing_lane"]["source"],
-            "baseline-observation",
         ),
         (
             document["diagnostic_profiling_lane"]["device_timeline"]["source"],
-            "diagnostic-observation",
         ),
     ]
     result = []
-    for source, role in sources:
+    for (source,) in sources:
+        role = source["expected_role"]
         source_root = tmp_path / "sources" / source["run_id"]
         source_root.mkdir(parents=True, exist_ok=True)
         relative_artifact = source["evidence_ref"].split(
             f"run-bundle://{source['run_id']}/", 1
         )[1]
         artifact_path = source_root / relative_artifact
-        if role == "baseline-observation":
+        if role == "benchmark-observation":
             baseline = document["baseline_timing_lane"]
             source_document = {
                 "cases": [
@@ -649,3 +648,64 @@ def test_fully_resigned_lane_tamper_with_real_source_digest_fails_verifier(
     verification = verify_run_bundle(tampered)
     assert verification["passed"] is False
     assert "schedule effect source derivation mismatch" in verification["failures"]
+
+
+def test_fully_resigned_derivation_selector_tamper_fails_verifier(
+    tmp_path: Path,
+) -> None:
+    for selector in ("case", "field"):
+        document = _qualified_input()
+        source = _write_bundle(
+            tmp_path / selector,
+            run_id=f"issue47-{selector}-selector-source-v1",
+            document=document,
+        )
+        tampered = source.parent / f"{selector}-selector-tampered"
+        shutil.copytree(source, tampered)
+        input_path = tampered / "schedule/effects.input.json"
+        schedule_input = json.loads(input_path.read_text(encoding="utf-8"))
+        if selector == "case":
+            schedule_input["baseline_timing_lane"]["source"]["derivation"][
+                "case_id"
+            ] = "different-case"
+        else:
+            schedule_input["diagnostic_profiling_lane"]["device_timeline"][
+                "source"
+            ]["derivation"]["field"] = "different_numeric_field"
+        baseline_path = tampered / "observation/baseline-timing.json"
+        baseline = {
+            "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+            **schedule_input["baseline_timing_lane"],
+        }
+        diagnostic_path = tampered / "observation/diagnostic-profiling.json"
+        diagnostic = {
+            "schema": (
+                "groundupscale.dev/diagnostic-profiling-observation/v1alpha1"
+            ),
+            **schedule_input["diagnostic_profiling_lane"],
+        }
+        from groundupscale.observed_decomposition import (
+            compose_observed_decomposition,
+        )
+
+        result = compose_observed_decomposition(schedule_input)
+        result_path = tampered / "observation/observed-decomposition.json"
+        manifest_path = tampered / "run.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        updates = {
+            "schedule-effect-input": _write_json(input_path, schedule_input),
+            "baseline-timing-observation": _write_json(baseline_path, baseline),
+            "diagnostic-profiling-observation": _write_json(
+                diagnostic_path, diagnostic
+            ),
+            "observed-decomposition": _write_json(result_path, result),
+        }
+        for artifact in manifest["artifacts"]:
+            if artifact["role"] in updates:
+                artifact["sha256"] = updates[artifact["role"]]
+        _write_json(manifest_path, manifest)
+        verification = verify_run_bundle(tampered)
+        assert verification["passed"] is False
+        assert "schedule effect source derivation mismatch" in verification[
+            "failures"
+        ]
