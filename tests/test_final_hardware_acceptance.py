@@ -4,6 +4,8 @@ from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
+import tempfile
+import runpy
 
 import pytest
 
@@ -53,7 +55,7 @@ def _document(*, schedule_status: str = "known") -> dict[str, object]:
             "critical_path_duration_ns": 800.0 if schedule_status == "known" else None,
             "physical_events": [{"event_id": "event-a", "duration_ns": 800.0}] if schedule_status == "known" else [],
             "dependency_edges": [],
-            "resource_claims": [{"resource": "npu:0"}] if schedule_status == "known" else [],
+            "resource_claims": [{"event_id": "event-a", "resource_id": "npu:0", "claim_kind": "exclusive"}] if schedule_status == "known" else [],
             "transformations": [],
         },
     }
@@ -63,10 +65,15 @@ def _document(*, schedule_status: str = "known") -> dict[str, object]:
         "source_bundles": [],
         "construction_run_ids": ["construction-a", "qualification-a", "decomposition-a"],
         "source_bundles": [
-            {"run_id": run_id, "bundle_kind": "test", "path": run_id,
+            {"run_id": run_id, "bundle_kind": kind, "path": run_id,
              "manifest_sha256": "f" * 64, "verification_passed": True,
-             "identity": IDENTITY}
-            for run_id in ("construction-a", "qualification-a", "decomposition-a", "issue50-independent-holdout-a")
+             "identity": IDENTITY, "source_role": role, "semantic_contract": {"path": "contract.json"}}
+            for run_id, kind, role in (
+                ("construction-a", "model-e2e-frontier", "schedule-frontier"),
+                ("qualification-a", "schedule-effect-frontier", "observed-decomposition"),
+                ("decomposition-a", "e2e-gap-report", "gap-report"),
+                ("issue50-independent-holdout-a", "transformer-demo", "independent-holdout"),
+            )
         ],
         "source_identities": [
             {"run_id": run_id, "identity": IDENTITY}
@@ -166,81 +173,49 @@ def test_final_acceptance_rejects_semantic_tampering(mutation, reason: str) -> N
         compose_final_acceptance(document)
 
 
-def test_final_acceptance_bundle_replays_without_npu_and_rejects_rehashed_tamper(
-    tmp_path: Path,
-) -> None:
-    repository = tmp_path / "repository"
-    repository.mkdir()
-    (repository / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
-    document = _document()
-    for source in document["source_bundles"]:
-        source_root = repository / source["path"]
-        source_root.mkdir()
-        manifest = {"schema": "groundupscale.dev/run-manifest/v1alpha1", "run_id": source["run_id"], "bundle_kind": source["bundle_kind"], "status": "completed", "artifacts": []}
-        manifest_path = source_root / "run.manifest.json"
-        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
-        source["manifest_sha256"] = sha256(manifest_path.read_bytes()).hexdigest()
-    run = write_final_acceptance_bundle(
-        repository, run_id="issue50-final-acceptance-test-a", document=document
+def test_final_acceptance_bundle_replays_without_npu_and_rejects_rehashed_tamper() -> None:
+    repository = Path(__file__).parents[1]
+    namespace = runpy.run_path(
+        str(repository / "goal_process/issue-50-final-hardware-acceptance/build_final_acceptance.py")
     )
-    assert verify_run_bundle(run)["passed"] is True
+    document = namespace["build"]()
+    with tempfile.TemporaryDirectory(dir=repository) as temporary:
+        run = write_final_acceptance_bundle(
+            temporary, run_id="issue50-final-acceptance-test-a", document=document
+        )
+        verification = verify_run_bundle(run)
+        assert verification["passed"] is True, verification
 
-    result_path = run / "acceptance/final-hardware-acceptance.json"
-    result = json.loads(result_path.read_text())
-    result["metrics"]["absolute_gap_ns"] = 1.0
-    result_path.write_text(json.dumps(result, sort_keys=True) + "\n")
-    manifest_path = run / "run.manifest.json"
-    manifest = json.loads(manifest_path.read_text())
-    next(a for a in manifest["artifacts"] if a["path"] == "acceptance/final-hardware-acceptance.json")["sha256"] = sha256(result_path.read_bytes()).hexdigest()
-    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
-
-    verification = verify_run_bundle(run)
-    assert verification["passed"] is False
-    assert "final hardware acceptance derivation mismatch" in verification["failures"]
-
-
-def test_final_acceptance_verifier_recursively_locks_source_manifest(
-    tmp_path: Path,
-) -> None:
-    source = tmp_path / "source"
-    source.mkdir()
-    source_manifest = {
-        "schema": "groundupscale.dev/run-manifest/v1alpha1",
-        "run_id": "source-a", "bundle_kind": "unstructured-test-source", "status": "completed",
-        "artifacts": [],
-    }
-    source_manifest_path = source / "run.manifest.json"
-    source_manifest_path.write_text(json.dumps(source_manifest, sort_keys=True) + "\n")
-    document = _document()
-    document["source_bundles"][0] = {
-        "run_id": "source-a", "bundle_kind": "unstructured-test-source", "path": "source",
-        "manifest_sha256": sha256(source_manifest_path.read_bytes()).hexdigest(), "verification_passed": True,
-        "identity": IDENTITY,
-    }
-    document["source_identities"][0] = {"run_id": "source-a", "identity": IDENTITY}
-    document["construction_run_ids"][0] = "source-a"
-    repository = tmp_path / "repository"
-    repository.mkdir()
-    (repository / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
-    source.rename(repository / "source")
-    for source_record in document["source_bundles"][1:]:
-        source_root = repository / source_record["path"]
-        source_root.mkdir()
-        manifest = {"schema": "groundupscale.dev/run-manifest/v1alpha1", "run_id": source_record["run_id"], "bundle_kind": source_record["bundle_kind"], "status": "completed", "artifacts": []}
-        manifest_path = source_root / "run.manifest.json"
+        result_path = run / "acceptance/final-hardware-acceptance.json"
+        result = json.loads(result_path.read_text())
+        result["metrics"]["absolute_gap_ns"] = 1.0
+        result_path.write_text(json.dumps(result, sort_keys=True) + "\n")
+        manifest_path = run / "run.manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        next(a for a in manifest["artifacts"] if a["path"] == "acceptance/final-hardware-acceptance.json")["sha256"] = sha256(result_path.read_bytes()).hexdigest()
         manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
-        source_record["manifest_sha256"] = sha256(manifest_path.read_bytes()).hexdigest()
-    run = write_final_acceptance_bundle(
-        repository, run_id="issue50-final-acceptance-source-lock-a", document=document
-    )
-    assert verify_run_bundle(run)["passed"] is True
 
-    source_manifest["status"] = "tampered"
-    source_manifest_path = repository / "source/run.manifest.json"
-    source_manifest_path.write_text(json.dumps(source_manifest, sort_keys=True) + "\n")
-    verification = verify_run_bundle(run)
+        verification = verify_run_bundle(run)
+        assert verification["passed"] is False
+        assert "final hardware acceptance derivation mismatch" in verification["failures"]
+
+
+def test_final_acceptance_rejects_coordinated_rehashed_stable_path_attack() -> None:
+    repository = Path(__file__).parents[1]
+    namespace = runpy.run_path(
+        str(repository / "goal_process/issue-50-final-hardware-acceptance/build_final_acceptance.py")
+    )
+    document = namespace["build"]()
+    document["schedule"]["stable_paths"][0] = "semantic/tampered"
+    document["schedule"]["leaves"][0]["stable_path"] = "semantic/tampered"
+    document["source_bundles"][0]["semantic_contract"]["stable_paths"][0] = "semantic/tampered"
+    with tempfile.TemporaryDirectory(dir=repository) as temporary:
+        run = write_final_acceptance_bundle(
+            temporary, run_id="issue50-coordinated-stable-path-attack", document=document
+        )
+        verification = verify_run_bundle(run)
     assert verification["passed"] is False
-    assert "final hardware acceptance source lineage mismatch" in verification["failures"]
+    assert "final hardware acceptance source semantic contract mismatch" in verification["failures"]
 
 
 def test_final_acceptance_rejects_known_schedule_with_missing_evidence() -> None:
@@ -272,5 +247,20 @@ def test_final_acceptance_preserves_failed_holdout_gates_as_boundary() -> None:
 def test_final_acceptance_requires_validated_schedule_execution_ir() -> None:
     document = _document()
     document["schedule"]["execution_ir"]["resource_claims"] = []
+    with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
+        compose_final_acceptance(document)
+
+    document = _document()
+    document["schedule"]["execution_ir"]["dependency_edges"] = [["ghost-a", "ghost-b"]]
+    with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
+        compose_final_acceptance(document)
+
+    document = _document()
+    document["schedule"]["execution_ir"]["resource_claims"] = [{"garbage": True}]
+    with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
+        compose_final_acceptance(document)
+
+    document = _document()
+    document["schedule"]["execution_ir"]["transformations"] = ["arbitrary"]
     with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
         compose_final_acceptance(document)

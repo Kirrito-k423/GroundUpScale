@@ -1,0 +1,11 @@
+{
+  "artifact_count": 24,
+  "device": "npu:0",
+  "digests_verified": true,
+  "reason_codes": [],
+  "report": "/home/t00906153/GroundUpScale-issue-50/goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260814T0315Z-independent-e2e-holdout-v2/reports/report.html",
+  "run_bundle": "/home/t00906153/GroundUpScale-issue-50/goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260814T0315Z-independent-e2e-holdout-v2",
+  "run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+  "schema": "groundupscale.dev/run-summary/v1alpha1",
+  "status": "completed"
+}

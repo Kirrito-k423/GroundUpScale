@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RUN48 = Path("goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2")
 RUN47 = Path("goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1")
 RUN49 = Path("goal_process/issue-49-e2e-gap-report/evidence/runs/issue49-20260814T0345Z-e2e-gap-report-v6")
-HOLDOUT = Path("goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260813T175228Z-independent-e2e-holdout-v1")
+HOLDOUT = Path("goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260814T0315Z-independent-e2e-holdout-v2")
 
 
 def load(path: Path) -> dict[str, object]:
@@ -64,14 +64,40 @@ def build() -> dict[str, object]:
         "hardware_cohort": lock_session["hardware_cohort"],
         "completion_boundary": case["timing_boundaries"]["completion_protocol"],
     }
-    locked_sources = [source(path) for path in (RUN48, RUN47, RUN49, HOLDOUT)]
-    for item in locked_sources:
-        item["identity"] = identity
-    samples = [float(value) for value in case["latency"]["samples_ns"]]
     missing = [
         f"{item['operation_class']} @ {item['stable_path']}: {item['required_evidence']}"
         for item in schedule_result["missing_evidence"]
     ]
+    locked_sources = [source(path) for path in (RUN48, RUN47, RUN49, HOLDOUT)]
+    for item, role in zip(locked_sources, (
+        "schedule-frontier", "observed-decomposition", "gap-report", "independent-holdout"
+    )):
+        item["identity"] = identity
+        item["source_role"] = role
+    locked_sources[0]["semantic_contract"] = {
+        "path": "comparison/model-e2e-frontier.json",
+        "stable_paths": [item["stable_path"] for item in schedule_result["coverage"]["predicted_leaves"]],
+        "edges": schedule_input["schedule"]["dependencies"],
+        "missing_evidence": missing,
+        "schedule_uncertainty": schedule_result["uncertainty"],
+    }
+    locked_sources[1]["semantic_contract"] = {
+        "path": "observation/observed-decomposition.json",
+        "reconciliation": observed["observed_decomposition"]["reconciliation"],
+        "evidence_boundaries": observed["observed_decomposition"]["evidence_boundaries"],
+    }
+    locked_sources[2]["semantic_contract"] = {
+        "path": "comparison/e2e-gap-report.json",
+    }
+    locked_sources[3]["semantic_contract"] = {
+        "benchmark_path": "observation/raw/benchmark.json",
+        "correctness_path": "observation/correctness.json",
+        "inputs_lock_path": "resolved/inputs.lock.json",
+        "lock_session_path": "observation/ascend-host-lock-session.json",
+        "samples": case["latency"]["samples_ns"],
+        "median_ns": case["latency"]["median_ns"],
+    }
+    samples = [float(value) for value in case["latency"]["samples_ns"]]
     return {
         "schema": "groundupscale.dev/final-hardware-acceptance-input/v1alpha1",
         "identity": identity,
@@ -135,6 +161,6 @@ if __name__ == "__main__":
     resolved.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     print(write_final_acceptance_bundle(
         Path(__file__).with_name("evidence") / "acceptance",
-        run_id="issue50-20260814T0245Z-final-hardware-acceptance-v2",
+        run_id="issue50-20260814T0345Z-final-hardware-acceptance-v3",
         document=document,
     ))

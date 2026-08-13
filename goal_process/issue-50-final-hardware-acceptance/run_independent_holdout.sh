@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo=/home/t00906153/GroundUpScale-issue-50
-run_id=issue50-20260813T175228Z-independent-e2e-holdout-v1
+run_id=issue50-20260814T0315Z-independent-e2e-holdout-v2
 artifact_store="$repo/goal_process/issue-50-final-hardware-acceptance/evidence/holdout"
 session_dir="$repo/goal_process/issue-50-final-hardware-acceptance/evidence/sessions/$run_id"
 run_dir="$artifact_store/runs/$run_id"

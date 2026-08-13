@@ -1,0 +1,2484 @@
+{
+  "documents": {
+    "analysis_case": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "AnalysisCase",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "fixed-prefill",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "driver": {
+          "kind": "fixed_iterations",
+          "measured_iterations": 20,
+          "warmup_iterations": 10
+        },
+        "observation_window": {
+          "kind": "iterations",
+          "value": 20
+        },
+        "shape": {
+          "bindings": {
+            "B": 1,
+            "D": 64,
+            "H": 512,
+            "I": 2048,
+            "NH": 8,
+            "S": 512
+          },
+          "dtype": "float32",
+          "kind": "fixed"
+        }
+      }
+    },
+    "analysis_plan": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "AnalysisPlan",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "ascend-npu-transformer-demo",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "analysis_case": {
+          "path": "specs/analysis-cases/fixed-prefill.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "benchmark_cases": [
+          {
+            "path": "specs/benchmarks/core-prefill.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "deployment_intent": {
+          "path": "specs/deployment-intents/ascend-npu.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "fabric_graph": {
+          "path": "specs/fabrics/local-ascend-910b2.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        },
+        "hardware": [
+          {
+            "path": "specs/hardware/ascend-910b2.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "hardware_capability_profiles": [
+          {
+            "path": "specs/hardware-capabilities/ascend-910b2-npu-local.yaml",
+            "sha256": null,
+            "version": "0.1.0"
+          }
+        ],
+        "operator_frontier_execution_domain": null,
+        "operator_frontier_profiles": [],
+        "workload": {
+          "path": "specs/workloads/prefill.yaml",
+          "sha256": null,
+          "version": "0.1.0"
+        }
+      }
+    },
+    "benchmark_cases": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "BenchmarkCase",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "core-prefill",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "cases": [
+            {
+              "id": "matmul-layer1-qk",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_1/attention/qk_matmul",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "matmul-layer0-gate-proj",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/mlp/gate_proj",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "matmul-layer0-qk",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/qk_matmul",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "matmul-layer1-gate-proj",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_1/mlp/gate_proj",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "matmul-layer0-context",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/context_matmul",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "matmul-q-proj",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "rmsnorm-input",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/input_norm",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "softmax-attention",
+              "mode": "operator",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0/attention/softmax",
+              "warmup_iterations": 500
+            },
+            {
+              "id": "transformer-layer",
+              "mode": "module",
+              "samples": 20,
+              "scope": "model/two-layer-transformer/transformer/layer_0",
+              "warmup_iterations": 50
+            },
+            {
+              "id": "two-layer-prefill",
+              "mode": "e2e",
+              "samples": 20,
+              "scope": "workload/transformer-prefill/request/model-prefill",
+              "warmup_iterations": 20
+            }
+          ]
+        }
+      }
+    ],
+    "deployment_intent": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "DeploymentIntent",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "ascend-npu",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "bindings": [
+          {
+            "placement": "local-ascend-910b2/npu-0",
+            "scope": "workload/transformer-prefill/request/model-prefill",
+            "strategies": []
+          }
+        ]
+      }
+    },
+    "fabric_graph": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "FabricGraph",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "local-ascend-910b2",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "links": [],
+        "nodes": [
+          {
+            "device": "npu-0",
+            "hardware": "ascend-910b2",
+            "id": "local-ascend-910b2/npu-0"
+          }
+        ]
+      }
+    },
+    "hardware": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "HardwareSpec",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "ascend-910b2",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "devices": [
+            {
+              "capabilities": {
+                "architecture": "ascend",
+                "dedicated_memory": {
+                  "capacity_basis": "vendor_cluster_total_4096GB_divided_by_64_npus",
+                  "capacity_bytes": 68719476736,
+                  "capacity_evidence": [
+                    {
+                      "accessed_on": "2026-08-10",
+                      "source_kind": "vendor_official",
+                      "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+                      "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+                    }
+                  ],
+                  "peak_bandwidth_bytes_per_second": {
+                    "evidence": [
+                      {
+                        "accessed_on": "2026-08-10",
+                        "source_kind": "vendor_official",
+                        "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+                        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+                      }
+                    ],
+                    "reason": "public_material_does_not_bind_a_per_card_910b2_hbm_rate",
+                    "status": "unknown",
+                    "value": null
+                  },
+                  "scope": "device_dedicated"
+                },
+                "supported_dtypes": [
+                  "float32"
+                ],
+                "supported_operations": [
+                  "MatMul",
+                  "Add",
+                  "RMSNorm",
+                  "Softmax",
+                  "SiLU",
+                  "Mul",
+                  "View",
+                  "Transpose"
+                ],
+                "theoretical_compute": {
+                  "fp32_flops_per_second": {
+                    "evidence": [
+                      {
+                        "accessed_on": "2026-08-10",
+                        "source_kind": "vendor_official",
+                        "title": "Atlas 900 A2 PoD cluster basic unit product sheet",
+                        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1b3691fa5db3437ca2f383520bf44a2e/M2T1A669N980480442941006113/AICC%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88R24_0-%E5%BD%A9%E9%A1%B5_24H1_.pdf"
+                      }
+                    ],
+                    "reason": "public_material_does_not_bind_a_per_card_910b2_fp32_rate",
+                    "status": "unknown",
+                    "value": null
+                  }
+                }
+              },
+              "compute_units": null,
+              "id": "npu-0",
+              "kind": "npu",
+              "memory_bytes": 68719476736,
+              "model": "Ascend 910B2",
+              "vendor": "Huawei"
+            }
+          ]
+        }
+      }
+    ],
+    "hardware_capability_profiles": [
+      {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "HardwareCapabilityProfile",
+        "metadata": {
+          "description": null,
+          "labels": {},
+          "name": "ascend-910b2-npu-local",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "cohort_evidence": {
+            "path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-hardware-cohort-20260810-v2.json",
+            "schema_name": "groundupscale.dev/hardware-cohort/v1alpha1",
+            "sha256": "160f06dd340e419e92ad0161f9b013a5e2b325767c847e80afba3ebff467a66a"
+          },
+          "environment": {
+            "checks": {
+              "competing_process": false,
+              "health": "OK",
+              "physical_logical_mapping": "resolved",
+              "runtime_contract": "compatible",
+              "system_probe": "completed"
+            },
+            "cohort_id": "ascend-npu-23b93a89d5fecc79",
+            "device": "ascend-npu",
+            "device_count": 1,
+            "device_name": "Ascend910B2",
+            "eligible": true,
+            "evidence_ref": "artifact://adapter/preflight.json",
+            "logical_device": "npu:0",
+            "operation": "preflight",
+            "reason_codes": [],
+            "runtime_compatibility": {
+              "contract_id": "ascend-npu-runtime-v1",
+              "environment_kind": "trusted-hardware-calibration",
+              "observed": {
+                "cann": "8.5.0",
+                "python": "3.11.14",
+                "torch": "2.7.1+cpu",
+                "torch_npu": "2.7.1"
+              },
+              "requirements": {
+                "cann_major_minor": "8.5",
+                "python_major_minor": "3.11",
+                "torch_major_minor": "2.7",
+                "torch_npu_major_minor": "2.7"
+              },
+              "rule": "all observed major.minor versions equal the declared trusted NPU contract",
+              "separation_policy": "pyproject torch pin governs portable compiler CI; this contract governs trusted Ascend measurement",
+              "status": "compatible"
+            },
+            "runtime_current_device": 0,
+            "schema": "groundupscale.dev/measurement-preflight/v1alpha1",
+            "status": "passed",
+            "system_probe_ref": "artifact://adapter/cohort.json#system_probe",
+            "torch_npu_version": "2.7.1",
+            "torch_version": "2.7.1+cpu"
+          },
+          "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+          "quality": {
+            "eligible_shape_count_by_resource": {
+              "compute.fp32": 11,
+              "memory.hbm": 12
+            },
+            "reason_codes": [
+              "power-policy-unobserved"
+            ],
+            "status": "exploratory"
+          },
+          "resources": [
+            {
+              "aggregation": "max(probe_shape_p80)",
+              "optimistic_rate": 36874878078646.97,
+              "probe_envelopes": [
+                {
+                  "distinct_shape_count": 11,
+                  "probe_id": "matrix-fp32-cube",
+                  "shape_best_rates": [
+                    {
+                      "rate": 1954066895861.4114,
+                      "shape": [
+                        255,
+                        255,
+                        255
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 2002687729965.1416,
+                      "shape": [
+                        256,
+                        256,
+                        256
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 6962649361868.546,
+                      "shape": [
+                        383,
+                        383,
+                        383
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 6214124643726.655,
+                      "shape": [
+                        384,
+                        384,
+                        384
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 7191489409447.328,
+                      "shape": [
+                        385,
+                        385,
+                        385
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 13450273518517.902,
+                      "shape": [
+                        511,
+                        511,
+                        511
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 12456112438496.615,
+                      "shape": [
+                        512,
+                        512,
+                        512
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 13734253981021.404,
+                      "shape": [
+                        513,
+                        513,
+                        513
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 25274141303887.203,
+                      "shape": [
+                        767,
+                        767,
+                        767
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 48475614853406.734,
+                      "shape": [
+                        768,
+                        768,
+                        768
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 19175995339398.254,
+                      "shape": [
+                        769,
+                        769,
+                        769
+                      ],
+                      "threads": 1
+                    }
+                  ],
+                  "shape_p80_rate": 19175995339398.254,
+                  "shape_p95_rate": 36874878078646.97
+                }
+              ],
+              "resource": "compute.fp32",
+              "robust_achievable_rate": 19175995339398.254,
+              "selected_optimistic_probe": "matrix-fp32-cube",
+              "selected_robust_probe": "matrix-fp32-cube",
+              "unit": "FLOP/s"
+            },
+            {
+              "aggregation": "max(probe_shape_p80)",
+              "optimistic_rate": 1446064058559.804,
+              "probe_envelopes": [
+                {
+                  "distinct_shape_count": 12,
+                  "probe_id": "hbm-fp32-copy",
+                  "shape_best_rates": [
+                    {
+                      "rate": 1445504025573.7063,
+                      "shape": [
+                        33554431
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1446606173246.649,
+                      "shape": [
+                        33554432
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1445620510179.6582,
+                      "shape": [
+                        33554433
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1253673196457.199,
+                      "shape": [
+                        41943039
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1253018090963.65,
+                      "shape": [
+                        41943040
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1249767548697.2114,
+                      "shape": [
+                        41943041
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1255221133820.0347,
+                      "shape": [
+                        50331647
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1258219923568.962,
+                      "shape": [
+                        50331648
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1255238967944.9365,
+                      "shape": [
+                        50331649
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1256376997802.3513,
+                      "shape": [
+                        58720255
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1256235407102.7393,
+                      "shape": [
+                        58720256
+                      ],
+                      "threads": 1
+                    },
+                    {
+                      "rate": 1256389057635.6724,
+                      "shape": [
+                        58720257
+                      ],
+                      "threads": 1
+                    }
+                  ],
+                  "shape_p80_rate": 1408047205172.7576,
+                  "shape_p95_rate": 1446064058559.804
+                }
+              ],
+              "resource": "memory.hbm",
+              "robust_achievable_rate": 1408047205172.7576,
+              "selected_optimistic_probe": "hbm-fp32-copy",
+              "selected_robust_probe": "hbm-fp32-copy",
+              "unit": "B/s"
+            }
+          ],
+          "source": {
+            "observation_schema": "groundupscale.dev/hardware-microbenchmark-observation/v1alpha1",
+            "path": "goal_process/issue-29-ascend-physical-floor/evidence/ascend-910b2-resource-observation-20260810-v2.json",
+            "sha256": "bb8abc446faecd959e21817b6271b942799e8a8f840cf2d054305c4d0a1b39a9",
+            "suite": {
+              "name": "ascend-910b2-resource-envelope",
+              "version": "0.1.0"
+            }
+          },
+          "target": {
+            "device": "npu-0",
+            "hardware": "ascend-910b2"
+          },
+          "uncertainty": {
+            "maximum_iqr_over_median": 0.1,
+            "method": "per-shape-median-cross-shape-quantiles",
+            "optimistic_quantile": 0.95,
+            "robust_quantile": 0.8
+          },
+          "validity_domain": {
+            "dtype": "float32",
+            "execution_mode": "pytorch-eager",
+            "layout": "row-major-contiguous",
+            "logical_device": "npu:0",
+            "operation_classes": [
+              "MatMul",
+              "memory_copy"
+            ],
+            "shape_support": "observed-stratified-shapes-only"
+          }
+        }
+      }
+    ],
+    "models": {
+      "two-layer-transformer": {
+        "apiVersion": "groundupscale.dev/v1alpha1",
+        "kind": "ModelSpec",
+        "metadata": {
+          "description": "Two-layer pre-norm Transformer with self-attention and gated MLP.",
+          "labels": {},
+          "name": "two-layer-transformer",
+          "version": "0.1.0"
+        },
+        "spec": {
+          "constraints": [
+            "H == NH * D"
+          ],
+          "root": {
+            "children": [
+              {
+                "count": 2,
+                "id": "layers",
+                "id_template": "layer_{index}",
+                "kind": "repeat",
+                "template": {
+                  "children": [
+                    {
+                      "attributes": {
+                        "epsilon": 1e-06
+                      },
+                      "id": "input_norm",
+                      "inputs": [
+                        {
+                          "name": "x",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "RMSNorm",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": [
+                        {
+                          "name": "weight",
+                          "role": "parameter",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "H"
+                            ]
+                          },
+                          "trainable": true
+                        }
+                      ]
+                    },
+                    {
+                      "children": [
+                        {
+                          "attributes": {},
+                          "id": "q_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "k_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "v_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "q_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "q_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "k_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "k_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,1,3,2"
+                          },
+                          "id": "k_key_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "D",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "qk_matmul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "D",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "scalar": 0.125
+                          },
+                          "id": "scale",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Mul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "causal_mask",
+                          "inputs": [
+                            {
+                              "name": "scores",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Add",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "mask",
+                              "role": "buffer",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "broadcast",
+                                "shape": [
+                                  "B",
+                                  1,
+                                  "S",
+                                  "S"
+                                ]
+                              },
+                              "trainable": false
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {
+                            "dimension": -1
+                          },
+                          "id": "softmax",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Softmax",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,NH,D"
+                          },
+                          "id": "v_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "permutation": "0,2,1,3"
+                          },
+                          "id": "v_transpose",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "view",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Transpose",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "equation": "bhqk,bhkd->bqhd",
+                            "output_layout": "sequence_major_contiguous"
+                          },
+                          "id": "context_matmul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "S"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "transposed",
+                                "shape": [
+                                  "B",
+                                  "NH",
+                                  "S",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {
+                            "target_shape": "B,S,H"
+                          },
+                          "id": "context_view",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "NH",
+                                  "D"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "View",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "out_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        }
+                      ],
+                      "entrypoints": [
+                        {
+                          "inputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "name": "forward",
+                          "outputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "steps": [
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q"
+                              },
+                              "target": "q_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k"
+                              },
+                              "target": "k_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v"
+                              },
+                              "target": "v_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_view",
+                              "inputs": {
+                                "x": "q"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q_view"
+                              },
+                              "target": "q_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "q_transpose",
+                              "inputs": {
+                                "x": "q_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "q_heads"
+                              },
+                              "target": "q_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_view",
+                              "inputs": {
+                                "x": "k"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_view"
+                              },
+                              "target": "k_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_transpose",
+                              "inputs": {
+                                "x": "k_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_heads"
+                              },
+                              "target": "k_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "k_key_transpose",
+                              "inputs": {
+                                "x": "k_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "k_keys"
+                              },
+                              "target": "k_key_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "qk_matmul",
+                              "inputs": {
+                                "left": "q_heads",
+                                "right": "k_keys"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "scores"
+                              },
+                              "target": "qk_matmul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "scale",
+                              "inputs": {
+                                "x": "scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "scaled_scores"
+                              },
+                              "target": "scale"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "causal_mask",
+                              "inputs": {
+                                "scores": "scaled_scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "masked_scores"
+                              },
+                              "target": "causal_mask"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "softmax",
+                              "inputs": {
+                                "x": "masked_scores"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "probabilities"
+                              },
+                              "target": "softmax"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_view",
+                              "inputs": {
+                                "x": "v"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v_view"
+                              },
+                              "target": "v_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "v_transpose",
+                              "inputs": {
+                                "x": "v_view"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "v_heads"
+                              },
+                              "target": "v_transpose"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "context_matmul",
+                              "inputs": {
+                                "left": "probabilities",
+                                "right": "v_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "context_heads"
+                              },
+                              "target": "context_matmul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "context_view",
+                              "inputs": {
+                                "x": "context_heads"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "context"
+                              },
+                              "target": "context_view"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "out_proj",
+                              "inputs": {
+                                "x": "context"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "hidden"
+                              },
+                              "target": "out_proj"
+                            }
+                          ]
+                        }
+                      ],
+                      "id": "attention",
+                      "kind": "composite"
+                    },
+                    {
+                      "attributes": {},
+                      "id": "residual_1",
+                      "inputs": [
+                        {
+                          "name": "left",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        },
+                        {
+                          "name": "right",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "Add",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "attributes": {
+                        "epsilon": 1e-06
+                      },
+                      "id": "post_norm",
+                      "inputs": [
+                        {
+                          "name": "x",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "RMSNorm",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": [
+                        {
+                          "name": "weight",
+                          "role": "parameter",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "H"
+                            ]
+                          },
+                          "trainable": true
+                        }
+                      ]
+                    },
+                    {
+                      "children": [
+                        {
+                          "attributes": {},
+                          "id": "gate_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "I"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "up_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "H",
+                                  "I"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        },
+                        {
+                          "attributes": {},
+                          "id": "silu",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "SiLU",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "gate_mul",
+                          "inputs": [
+                            {
+                              "name": "left",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            },
+                            {
+                              "name": "right",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "Mul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": []
+                        },
+                        {
+                          "attributes": {},
+                          "id": "down_proj",
+                          "inputs": [
+                            {
+                              "name": "x",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "I"
+                                ]
+                              }
+                            }
+                          ],
+                          "kind": "primitive",
+                          "operation": "MatMul",
+                          "outputs": [
+                            {
+                              "name": "output",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "state": [
+                            {
+                              "name": "weight",
+                              "role": "parameter",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "I",
+                                  "H"
+                                ]
+                              },
+                              "trainable": true
+                            }
+                          ]
+                        }
+                      ],
+                      "entrypoints": [
+                        {
+                          "inputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "name": "forward",
+                          "outputs": [
+                            {
+                              "name": "hidden",
+                              "tensor": {
+                                "dtype": "float32",
+                                "layout": "contiguous",
+                                "shape": [
+                                  "B",
+                                  "S",
+                                  "H"
+                                ]
+                              }
+                            }
+                          ],
+                          "steps": [
+                            {
+                              "entrypoint": "forward",
+                              "id": "gate_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "gate"
+                              },
+                              "target": "gate_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "up_proj",
+                              "inputs": {
+                                "x": "hidden"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "up"
+                              },
+                              "target": "up_proj"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "silu",
+                              "inputs": {
+                                "x": "gate"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "activated_gate"
+                              },
+                              "target": "silu"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "gate_mul",
+                              "inputs": {
+                                "left": "activated_gate",
+                                "right": "up"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "gated"
+                              },
+                              "target": "gate_mul"
+                            },
+                            {
+                              "entrypoint": "forward",
+                              "id": "down_proj",
+                              "inputs": {
+                                "x": "gated"
+                              },
+                              "kind": "call",
+                              "outputs": {
+                                "output": "hidden"
+                              },
+                              "target": "down_proj"
+                            }
+                          ]
+                        }
+                      ],
+                      "id": "mlp",
+                      "kind": "composite"
+                    },
+                    {
+                      "attributes": {},
+                      "id": "residual_2",
+                      "inputs": [
+                        {
+                          "name": "left",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        },
+                        {
+                          "name": "right",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "kind": "primitive",
+                      "operation": "Add",
+                      "outputs": [
+                        {
+                          "name": "output",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "state": []
+                    }
+                  ],
+                  "entrypoints": [
+                    {
+                      "inputs": [
+                        {
+                          "name": "hidden",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "name": "forward",
+                      "outputs": [
+                        {
+                          "name": "hidden",
+                          "tensor": {
+                            "dtype": "float32",
+                            "layout": "contiguous",
+                            "shape": [
+                              "B",
+                              "S",
+                              "H"
+                            ]
+                          }
+                        }
+                      ],
+                      "steps": [
+                        {
+                          "entrypoint": "forward",
+                          "id": "input_norm",
+                          "inputs": {
+                            "x": "hidden"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "normed"
+                          },
+                          "target": "input_norm"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "attention",
+                          "inputs": {
+                            "hidden": "normed"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "hidden": "attention_output"
+                          },
+                          "target": "attention"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "residual_1",
+                          "inputs": {
+                            "left": "hidden",
+                            "right": "attention_output"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "post_attention"
+                          },
+                          "target": "residual_1"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "post_norm",
+                          "inputs": {
+                            "x": "post_attention"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "post_attention_normed"
+                          },
+                          "target": "post_norm"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "mlp",
+                          "inputs": {
+                            "hidden": "post_attention_normed"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "hidden": "mlp_output"
+                          },
+                          "target": "mlp"
+                        },
+                        {
+                          "entrypoint": "forward",
+                          "id": "residual_2",
+                          "inputs": {
+                            "left": "post_attention",
+                            "right": "mlp_output"
+                          },
+                          "kind": "call",
+                          "outputs": {
+                            "output": "hidden"
+                          },
+                          "target": "residual_2"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "layer",
+                  "kind": "composite"
+                }
+              }
+            ],
+            "entrypoints": [
+              {
+                "inputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "name": "prefill",
+                "outputs": [
+                  {
+                    "name": "hidden",
+                    "tensor": {
+                      "dtype": "float32",
+                      "layout": "contiguous",
+                      "shape": [
+                        "B",
+                        "S",
+                        "H"
+                      ]
+                    }
+                  }
+                ],
+                "steps": [
+                  {
+                    "entrypoint": "forward",
+                    "group": "layers",
+                    "id": "layers",
+                    "initial": "hidden",
+                    "input_port": "hidden",
+                    "kind": "repeat_call",
+                    "output_port": "hidden",
+                    "result": "hidden"
+                  }
+                ]
+              }
+            ],
+            "id": "transformer",
+            "kind": "composite"
+          },
+          "symbols": {
+            "B": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "D": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "H": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "I": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "NH": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "S": {
+              "maximum": null,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "operator_frontier_profiles": [],
+    "workload": {
+      "apiVersion": "groundupscale.dev/v1alpha1",
+      "kind": "WorkloadSpec",
+      "metadata": {
+        "description": null,
+        "labels": {},
+        "name": "transformer-prefill",
+        "version": "0.1.0"
+      },
+      "spec": {
+        "artifacts": [
+          {
+            "name": "hidden-input",
+            "role": "input",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          },
+          {
+            "name": "hidden-output",
+            "role": "output",
+            "tensor": {
+              "dtype": "float32",
+              "layout": "contiguous",
+              "shape": [
+                "B",
+                "S",
+                "H"
+              ]
+            }
+          }
+        ],
+        "root": {
+          "children": [
+            {
+              "entrypoint": "prefill",
+              "id": "model-prefill",
+              "inputs": {
+                "hidden": "hidden-input"
+              },
+              "kind": "model_call",
+              "model": {
+                "path": "specs/models/two-layer-transformer.yaml",
+                "sha256": null,
+                "version": "0.1.0"
+              },
+              "outputs": {
+                "hidden": "hidden-output"
+              }
+            }
+          ],
+          "id": "request",
+          "kind": "sequence"
+        }
+      }
+    }
+  },
+  "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+  "sources": {
+    "specs/analysis-cases/fixed-prefill.yaml": {
+      "kind": "AnalysisCase",
+      "name": "fixed-prefill",
+      "path": "specs/analysis-cases/fixed-prefill.yaml",
+      "sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+      "version": "0.1.0"
+    },
+    "specs/benchmarks/core-prefill.yaml": {
+      "kind": "BenchmarkCase",
+      "name": "core-prefill",
+      "path": "specs/benchmarks/core-prefill.yaml",
+      "sha256": "8860876783bd9c5d265c77d1afc24b0b3c74b95990578b0105055033b4555686",
+      "version": "0.1.0"
+    },
+    "specs/deployment-intents/ascend-npu.yaml": {
+      "kind": "DeploymentIntent",
+      "name": "ascend-npu",
+      "path": "specs/deployment-intents/ascend-npu.yaml",
+      "sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+      "version": "0.1.0"
+    },
+    "specs/fabrics/local-ascend-910b2.yaml": {
+      "kind": "FabricGraph",
+      "name": "local-ascend-910b2",
+      "path": "specs/fabrics/local-ascend-910b2.yaml",
+      "sha256": "24fb7b0d64e91e76998b7e05ead9ec4af63f269192b1894a7361c8fb2e53deda",
+      "version": "0.1.0"
+    },
+    "specs/hardware-capabilities/ascend-910b2-npu-local.yaml": {
+      "kind": "HardwareCapabilityProfile",
+      "name": "ascend-910b2-npu-local",
+      "path": "specs/hardware-capabilities/ascend-910b2-npu-local.yaml",
+      "sha256": "441456b3d08d1ac724a3ffc6bee5e7ecae73e309549ba20b610d4dd8422fed26",
+      "version": "0.1.0"
+    },
+    "specs/hardware/ascend-910b2.yaml": {
+      "kind": "HardwareSpec",
+      "name": "ascend-910b2",
+      "path": "specs/hardware/ascend-910b2.yaml",
+      "sha256": "69aa6a1dda7d4bc2fab46a86ce8ce7f38b69513db5ecb7e3a2fc870fa49d2c9d",
+      "version": "0.1.0"
+    },
+    "specs/models/two-layer-transformer.yaml": {
+      "kind": "ModelSpec",
+      "name": "two-layer-transformer",
+      "path": "specs/models/two-layer-transformer.yaml",
+      "sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+      "version": "0.1.0"
+    },
+    "specs/plans/ascend-npu-transformer-demo.yaml": {
+      "kind": "AnalysisPlan",
+      "name": "ascend-npu-transformer-demo",
+      "path": "specs/plans/ascend-npu-transformer-demo.yaml",
+      "sha256": "a755addfda68993183b631328b83364882b2acc72a3020b19a604949ccae6f5e",
+      "version": "0.1.0"
+    },
+    "specs/workloads/prefill.yaml": {
+      "kind": "WorkloadSpec",
+      "name": "transformer-prefill",
+      "path": "specs/workloads/prefill.yaml",
+      "sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf",
+      "version": "0.1.0"
+    }
+  }
+}

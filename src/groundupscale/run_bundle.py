@@ -1921,6 +1921,59 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or verify_run_bundle(source_root).get("passed") is not True
             ):
                 failures.append(f"{label} source lineage mismatch")
+                continue
+            semantic_contract = locked.get("semantic_contract")
+            if require_identity:
+                expected_kinds = {
+                    "schedule-frontier": "model-e2e-frontier",
+                    "observed-decomposition": "schedule-effect-frontier",
+                    "gap-report": "e2e-gap-report",
+                    "independent-holdout": "transformer-demo",
+                }
+                if expected_kinds.get(locked.get("source_role")) != source_manifest.get("bundle_kind"):
+                    failures.append(f"{label} source semantic contract mismatch")
+                    continue
+                if not isinstance(semantic_contract, dict):
+                    failures.append(f"{label} source semantic contract mismatch")
+                    continue
+                paths = [
+                    value
+                    for key, value in semantic_contract.items()
+                    if key == "path" or key.endswith("_path")
+                ]
+                for relative_artifact in paths:
+                    if not isinstance(relative_artifact, str):
+                        failures.append(f"{label} source semantic contract mismatch")
+                        continue
+                    artifact_path = source_root / relative_artifact
+                    if not artifact_path.is_file():
+                        failures.append(f"{label} source semantic contract mismatch")
+                        continue
+                    indexed = next(
+                        (
+                            item for item in source_manifest.get("artifacts", [])
+                            if isinstance(item, dict)
+                            and source_root / str(item.get("path")) == artifact_path
+                        ),
+                        None,
+                    )
+                    if not isinstance(indexed, dict) or _sha256(artifact_path) != indexed.get("sha256"):
+                        failures.append(f"{label} source semantic contract mismatch")
+                if locked.get("source_role") == "schedule-frontier":
+                    replay = json.loads((source_root / str(semantic_contract["path"])).read_text())
+                    actual_paths = [item.get("stable_path") for item in replay.get("coverage", {}).get("predicted_leaves", [])]
+                    if actual_paths != semantic_contract.get("stable_paths"):
+                        failures.append(f"{label} source semantic contract mismatch")
+                elif locked.get("source_role") == "observed-decomposition":
+                    replay = json.loads((source_root / str(semantic_contract["path"])).read_text())
+                    decomposition = replay.get("observed_decomposition", {})
+                    if decomposition.get("reconciliation") != semantic_contract.get("reconciliation") or decomposition.get("evidence_boundaries") != semantic_contract.get("evidence_boundaries"):
+                        failures.append(f"{label} source semantic contract mismatch")
+                elif locked.get("source_role") == "independent-holdout":
+                    replay = json.loads((source_root / str(semantic_contract["benchmark_path"])).read_text())
+                    case = next((item for item in replay.get("cases", []) if item.get("case_id") == "two-layer-prefill"), None)
+                    if not isinstance(case, dict) or case.get("latency", {}).get("samples_ns") != semantic_contract.get("samples") or case.get("latency", {}).get("median_ns") != semantic_contract.get("median_ns"):
+                        failures.append(f"{label} source semantic contract mismatch")
     artifacts = manifest.get("artifacts", [])
     if not isinstance(artifacts, list):
         artifacts = []

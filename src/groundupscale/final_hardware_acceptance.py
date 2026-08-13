@@ -166,8 +166,12 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
     if holdout.get("run_id") in construction_ids:
         raise FinalAcceptanceError("holdout-run-identity-not-independent")
     sources = document.get("source_bundles")
-    if not isinstance(sources, list) or len(sources) < 4:
+    if not isinstance(sources, list) or len(sources) != 4:
         raise FinalAcceptanceError("final-acceptance-requires-locked-sources")
+    if {item.get("source_role") for item in sources if isinstance(item, Mapping)} != {
+        "schedule-frontier", "observed-decomposition", "gap-report", "independent-holdout"
+    }:
+        raise FinalAcceptanceError("final-acceptance-source-roles-mismatch")
     locked_ids = {
         item.get("run_id") for item in sources if isinstance(item, Mapping)
     }
@@ -217,15 +221,58 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
     if schedule_known:
         schedule_ns = _number(schedule_ns, "invalid-schedule-duration")
         execution_ir = _mapping(schedule.get("execution_ir"), "missing-schedule-execution-ir")
+        events = execution_ir.get("physical_events")
+        dependencies = execution_ir.get("dependency_edges")
+        claims = execution_ir.get("resource_claims")
+        transformations = execution_ir.get("transformations")
         if (
             execution_ir.get("status") != "known"
             or execution_ir.get("critical_path_duration_ns") != schedule_ns
-            or not isinstance(execution_ir.get("physical_events"), list)
-            or not execution_ir["physical_events"]
-            or not isinstance(execution_ir.get("dependency_edges"), list)
-            or not isinstance(execution_ir.get("resource_claims"), list)
-            or not execution_ir["resource_claims"]
-            or not isinstance(execution_ir.get("transformations"), list)
+            or not isinstance(events, list) or not events
+            or not isinstance(dependencies, list)
+            or not isinstance(claims, list) or not claims
+            or not isinstance(transformations, list)
+        ):
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        event_ids = {
+            event.get("event_id") for event in events if isinstance(event, Mapping)
+        }
+        if len(event_ids) != len(events) or None in event_ids:
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        if any(
+            not isinstance(edge, list) or len(edge) != 2 or not set(edge) <= event_ids
+            for edge in dependencies
+        ):
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        predecessors = {event_id: set() for event_id in event_ids}
+        for predecessor, successor in dependencies:
+            predecessors[successor].add(predecessor)
+        remaining = set(event_ids)
+        longest: dict[str, float] = {}
+        while remaining:
+            ready = sorted(event_id for event_id in remaining if predecessors[event_id] <= longest.keys())
+            if not ready:
+                raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+            for event_id in ready:
+                event = next(item for item in events if item["event_id"] == event_id)
+                duration = _number(event.get("duration_ns"), "invalid-selected-schedule-execution-ir")
+                longest[event_id] = duration + max((longest[item] for item in predecessors[event_id]), default=0.0)
+                remaining.remove(event_id)
+        if max(longest.values()) != schedule_ns:
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        if any(
+            not isinstance(claim, Mapping)
+            or claim.get("event_id") not in event_ids
+            or not isinstance(claim.get("resource_id"), str)
+            or claim.get("claim_kind") not in {"capacity", "throughput", "exclusive"}
+            for claim in claims
+        ):
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        if any(
+            not isinstance(item, Mapping)
+            or item.get("event_id") not in event_ids
+            or not isinstance(item.get("kind"), str)
+            for item in transformations
         ):
             raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
         if any(

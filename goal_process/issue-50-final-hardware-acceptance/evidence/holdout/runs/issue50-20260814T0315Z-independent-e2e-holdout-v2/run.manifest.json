@@ -1,0 +1,315 @@
+{
+  "alias_materialization_evidence": "v1alpha1",
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/inputs.lock.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "resolved-input-lock",
+      "schema": "groundupscale.dev/resolved-input-lock/v1alpha1",
+      "sha256": "92b854b706fa82a10cd321365721429ee5763ea93a02030f1363024618a4f42f"
+    },
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/environment.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "3285de63d72b6665a5ab06c1b11bea6e6fc5b1d737acb62b7aae75d110088f8a"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/capabilities.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "measurement-capability-manifest",
+      "schema": "groundupscale.dev/measurement-capability-manifest/v1alpha1",
+      "sha256": "0242295cf899d799f052f9383208c9b7d0b8c62788ade6dfa42ee19dc054e47b"
+    },
+    {
+      "inputs": [
+        "measurement-capability-manifest"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/cohort.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "hardware-cohort",
+      "schema": "groundupscale.dev/hardware-cohort/v1alpha1",
+      "sha256": "c7c5975f9e78dcd5ec32795dd73a7ddcd174d4e76fbd6b843688bf9f038bb82d"
+    },
+    {
+      "inputs": [
+        "measurement-capability-manifest",
+        "hardware-cohort"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/preflight.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "measurement-preflight",
+      "schema": "groundupscale.dev/measurement-preflight/v1alpha1",
+      "sha256": "5707e2731caddbfa4b40788483c506969052b112fabeeab2e82bf791de6ae038"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "ir/model.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-ir",
+      "schema": "groundupscale.dev/model-ir/v1alpha1",
+      "sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "ir/workload.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "workload-ir",
+      "schema": "groundupscale.dev/workload-ir/v1alpha1",
+      "sha256": "58c0bde67e3233b5de0d867adbdf8e62f117afd92fb8d6b6c1a10cf41cc3ccf8"
+    },
+    {
+      "inputs": [
+        "model-ir",
+        "workload-ir"
+      ],
+      "media_type": "application/json",
+      "path": "ir/semantic.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "semantic-ir",
+      "schema": "groundupscale.dev/semantic-ir/v1alpha1",
+      "sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75"
+    },
+    {
+      "inputs": [
+        "semantic-ir"
+      ],
+      "media_type": "application/json",
+      "path": "ir/cost.ir.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "cost-ir",
+      "schema": "groundupscale.dev/cost-ir/v1alpha2",
+      "sha256": "12e9f9b6e4cb55e3f9d8ae235342f59feac015b79c79ce616ea70a2df9e35b30"
+    },
+    {
+      "inputs": [
+        "cost-ir",
+        "resolved-input-lock"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/hardware-backend.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "hardware-backend-prediction",
+      "schema": "groundupscale.dev/hardware-backend-prediction/v1alpha1",
+      "sha256": "59430432ba01a137eda17a4ffbc22f20b88f23c215fbce5efe309cddb24f547a"
+    },
+    {
+      "inputs": [
+        "cost-ir"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/metrics.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction",
+      "schema": "groundupscale.dev/prediction/v1alpha2",
+      "sha256": "e513abca485a017ea5e7c3e61ec407139bd404f5d8e2e3f921d22dcf298210ae"
+    },
+    {
+      "inputs": [
+        "prediction",
+        "prediction-observation-comparison",
+        "benchmark-observation",
+        "alignment-map"
+      ],
+      "media_type": "application/json",
+      "path": "prediction/explanation.graph.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "explanation-graph",
+      "schema": "groundupscale.dev/explanation-graph/v1alpha2",
+      "sha256": "25ebb75118f958414f31c58864e39bfc89eca22f9532c39fc0365d38678c392c"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/json",
+      "path": "observation/raw/benchmark.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "benchmark-observation",
+      "schema": "groundupscale.dev/benchmark-observation/v1alpha1",
+      "sha256": "42a941ef6ef2da8e1e07f5ca061674525d5989adb85317fea63326d034d8c40a"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/x-ndjson",
+      "path": "observation/observation.trace.jsonl",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "observation-trace",
+      "schema": "groundupscale.dev/observation-span/v1alpha1",
+      "sha256": "9ab54fb97e6b84a12e3c9204d62f0c1fa42c106beec80a8dca7effbd1e117ff5"
+    },
+    {
+      "inputs": [
+        "semantic-ir",
+        "observation-trace"
+      ],
+      "media_type": "application/json",
+      "path": "observation/alignment.map.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "alignment-map",
+      "schema": "groundupscale.dev/alignment-map/v1alpha1",
+      "sha256": "657f063c166629e0cb4816fc9aab1315a04f8cec68365dca1ad764decada04ab"
+    },
+    {
+      "inputs": [
+        "observation-trace",
+        "semantic-ir"
+      ],
+      "media_type": "application/json",
+      "path": "observation/memory.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "memory-observation",
+      "schema": "groundupscale.dev/memory-observation/v1alpha1",
+      "sha256": "3d9cbb9247ed6ca8b94041135769d08a26f8d6c536248f133db5269d1317e66f"
+    },
+    {
+      "inputs": [
+        "prediction",
+        "hardware-backend-prediction",
+        "benchmark-observation",
+        "observation-trace",
+        "memory-observation"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/predicted-vs-observed.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+      "sha256": "f5553d2df9991823a4f630db7b9872a1138e147f907bcd3f8d8b9839a92019cc"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "environment"
+      ],
+      "media_type": "application/json",
+      "path": "observation/correctness.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "correctness-observation",
+      "schema": "groundupscale.dev/correctness-observation/v1alpha2",
+      "sha256": "fc52bf413a4e4ff702d00d4ec1d1b8493b1b1067e820c6eafe4d46a6d6062af5"
+    },
+    {
+      "inputs": [
+        "correctness-observation",
+        "cost-ir",
+        "hardware-backend-prediction"
+      ],
+      "media_type": "application/json",
+      "path": "observation/alias-materialization.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "alias-materialization-evidence",
+      "schema": "groundupscale.dev/alias-materialization-evidence/v1alpha1",
+      "sha256": "1902c0c51f18219e6e631f83eafe2299403a267771981abe0739d43b4164099e"
+    },
+    {
+      "inputs": [
+        "resolved-input-lock",
+        "measurement-preflight",
+        "benchmark-observation"
+      ],
+      "media_type": "application/json",
+      "path": "resolved/execution-contract.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "execution-contract",
+      "schema": "groundupscale.dev/transformer-execution-contract/v1alpha1",
+      "sha256": "876aa55a422cb4ff6944677abd4a20e02c2284c1ce734ee26d65a997a4e3f2dd"
+    },
+    {
+      "inputs": [
+        "execution-contract"
+      ],
+      "media_type": "application/json",
+      "path": "observation/transfers.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "transfer-observation",
+      "schema": "groundupscale.dev/transfer-observation/v1alpha1",
+      "sha256": "163e7eb3b760c37ebf094cb2e6d1b363ab52278ff815dc6fdae53e7e36f029ca"
+    },
+    {
+      "inputs": [
+        "benchmark-observation",
+        "alignment-map"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/error-attribution.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "error-attribution",
+      "schema": "groundupscale.dev/error-attribution/v1alpha1",
+      "sha256": "da2e39de727212b37ba3d553f325c19bc40bd2519b2ad32a17c92d361f130dd6"
+    },
+    {
+      "inputs": [
+        "explanation-graph",
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/html-report/v1alpha2",
+      "sha256": "5c84a481e62a38c6fb71779059e3d1c837ffda7bd29c1e3e642522bda239a189"
+    },
+    {
+      "inputs": [
+        "hardware-cohort",
+        "benchmark-observation"
+      ],
+      "media_type": "application/json",
+      "path": "observation/ascend-host-lock-session.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "ascend-host-lock-session",
+      "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+      "sha256": "363394aeb35ab3039203fd13cd8fd98acaf736b4c8c6675e7a831aea1066e3cf"
+    }
+  ],
+  "bundle_kind": "transformer-demo",
+  "compilation_fingerprint": "02d0facf395b847acc2bb850e039136b27b696a476d33bd26d58369eba1b2233",
+  "cost_compilation_fingerprint": "56fe9305e7b33c595d8edb707b5fdb963bacfe96acda524a5fec3cfcb77aed12",
+  "created_at": "2026-08-13T18:31:01.330323+00:00",
+  "device": "npu:0",
+  "environment_validity": "not-required",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "hardware_compilation_fingerprint": "1e15fc1074ce3f2c32c2e1b5a85bd046c43f23188b81a4f822a82f0a0720e901",
+  "immutability": "writer refuses an existing run_id; artifact digests are authoritative",
+  "producer_lineage": {
+    "artifact_lineage": "manifest.artifacts[].produced_by",
+    "producer": "groundupscale@0.1.0",
+    "source": "python://groundupscale.run_bundle"
+  },
+  "run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "seed": 20260806,
+  "stages": {
+    "benchmark": "completed",
+    "calibration": "skipped-not-requested",
+    "compatibility": "passed",
+    "compilation": "completed",
+    "duration_prediction": "partial-empirical-hardware-floor-exploratory",
+    "prediction_observation_comparison": "completed",
+    "structural_prediction": "completed",
+    "trace": "completed"
+  },
+  "status": "completed"
+}

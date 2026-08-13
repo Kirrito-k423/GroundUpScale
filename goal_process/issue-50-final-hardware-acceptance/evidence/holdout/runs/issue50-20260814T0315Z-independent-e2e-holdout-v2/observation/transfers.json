@@ -1,0 +1,77 @@
+{
+  "logical_device": "npu:0",
+  "records": [
+    {
+      "buffer_bytes": 2097152,
+      "bytes": 35659776,
+      "destination": "npu:0",
+      "kind": "weights-and-buffers-host-to-device",
+      "lane": "baseline-timing",
+      "parameter_bytes": 33562624,
+      "source": "cpu"
+    },
+    {
+      "bytes": 1048576,
+      "destination": "npu:0",
+      "kind": "input-host-to-device",
+      "lane": "baseline-timing",
+      "source": "cpu"
+    },
+    {
+      "buffer_bytes": 2097152,
+      "bytes": 35659776,
+      "destination": "npu:0",
+      "kind": "weights-and-buffers-host-to-device",
+      "lane": "correctness",
+      "parameter_bytes": 33562624,
+      "source": "cpu"
+    },
+    {
+      "bytes": 1048576,
+      "destination": "npu:0",
+      "kind": "input-host-to-device",
+      "lane": "correctness",
+      "source": "cpu"
+    },
+    {
+      "bytes": 1048576,
+      "destination": "cpu",
+      "kind": "output-device-to-host",
+      "lane": "correctness",
+      "source": "npu:0"
+    },
+    {
+      "buffer_bytes": 2097152,
+      "bytes": 35659776,
+      "destination": "npu:0",
+      "kind": "weights-and-buffers-host-to-device",
+      "lane": "diagnostic-profiling",
+      "parameter_bytes": 33562624,
+      "source": "cpu"
+    },
+    {
+      "bytes": 1048576,
+      "destination": "npu:0",
+      "kind": "input-host-to-device",
+      "lane": "diagnostic-profiling",
+      "source": "cpu"
+    },
+    {
+      "buffer_bytes": 2097152,
+      "bytes": 35659776,
+      "destination": "npu:0",
+      "kind": "weights-and-buffers-host-to-device",
+      "lane": "baseline-timing",
+      "parameter_bytes": 33562624,
+      "source": "cpu"
+    },
+    {
+      "bytes": 1048576,
+      "destination": "npu:0",
+      "kind": "input-host-to-device",
+      "lane": "baseline-timing",
+      "source": "cpu"
+    }
+  ],
+  "schema": "groundupscale.dev/transfer-observation/v1alpha1"
+}

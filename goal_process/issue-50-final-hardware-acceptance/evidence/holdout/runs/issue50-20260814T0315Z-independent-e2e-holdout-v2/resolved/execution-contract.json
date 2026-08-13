@@ -1,0 +1,39 @@
+{
+  "baseline_timing": {
+    "completion_protocol": "end-event-synchronize-plus-device-synchronize",
+    "per_module_synchronization": false,
+    "timer_resolution_ns": 20.0,
+    "timer_source": "torch.npu.Event.elapsed_time",
+    "warmup": "outside-timed-region"
+  },
+  "device": "npu:0",
+  "diagnostic_profiling": {
+    "lane": "separate",
+    "timing_is_frontier_eligible": false
+  },
+  "dtype": "float32",
+  "schema": "groundupscale.dev/transformer-execution-contract/v1alpha1",
+  "semantic_leaf_count": 52,
+  "semantic_operations": [
+    "Add",
+    "MatMul",
+    "Mul",
+    "RMSNorm",
+    "SiLU",
+    "Softmax",
+    "Transpose",
+    "View"
+  ],
+  "shape": {
+    "bindings": {
+      "B": 1,
+      "D": 64,
+      "H": 512,
+      "I": 2048,
+      "NH": 8,
+      "S": 512
+    },
+    "dtype": "float32",
+    "kind": "fixed"
+  }
+}
