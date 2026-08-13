@@ -1,0 +1,7 @@
+base_commit=5a0958e75c2c9323d2494136b3b26e1d4ded2b67
+bundle_path=goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1
+bundle_tree=b7ea6484bb34993e82c38354bc3cfd1913a91085
+manifest_blob=4b68b99b8d53a87025daf8760b7441042cfa5ffb
+benchmark_blob=05aecc12055cc5b4104461162b0e1c9437912e0f
+readme_blob=6cc412c18fc38634d54e030847c7c998f583476b
+two_layer_prefill_median_ns=1921530.0

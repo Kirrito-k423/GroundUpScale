@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lock_root=/home/t00906153/.groundupscale/locks
+mkdir -p "$lock_root"
+
+exec 9>"$lock_root/ascend-910b2-host.lock"
+
+timeout_seconds="${NPU_LOCK_TIMEOUT_SECONDS:-21600}"
+if ! flock -x -w "$timeout_seconds" 9; then
+  echo "Timed out waiting for Ascend host lock" >&2
+  exit 75
+fi
+
+owner_file="$lock_root/ascend-910b2-host.owner"
+printf 'issue=%s pid=%s host=%s started=%s\n' \
+  "${GROUNDUPSCALE_ISSUE:-unknown}" \
+  "$$" \
+  "$(hostname)" \
+  "$(date -Iseconds)" > "$owner_file"
+
+trap 'rm -f "$owner_file"' EXIT
+
+"$@"
