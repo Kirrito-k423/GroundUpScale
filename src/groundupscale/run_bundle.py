@@ -1908,6 +1908,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     schedule_effect_frontier = (
         manifest.get("bundle_kind") == "schedule-effect-frontier"
     )
+    e2e_gap_report = manifest.get("bundle_kind") == "e2e-gap-report"
     compound_operator_frontier = (
         manifest.get("bundle_kind") == "compound-operator-frontier"
     )
@@ -1935,6 +1936,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or compound_operator_frontier
         or operator_phase_measurement
         or schedule_effect_frontier
+        or e2e_gap_report
         or operator_phase_measurement
     )
     supersedes = manifest.get("supersedes")
@@ -1997,6 +1999,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 role_counts[role] = role_counts.get(role, 0) + 1
         if schedule_effect_frontier:
             required_roles = SCHEDULE_EFFECT_FRONTIER_REQUIRED_ROLES
+        elif e2e_gap_report:
+            required_roles = {
+                "e2e-gap-report-input",
+                "e2e-gap-report",
+                "html-report",
+            }
         elif model_e2e_frontier:
             required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
         elif transformer_matmul_exact_anchor:
@@ -2105,6 +2113,116 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ):
                     documents_by_role[role] = artifact_document
                     paths_by_role[role] = relative_path
+
+    if e2e_gap_report:
+        source = documents_by_role.get("e2e-gap-report-input")
+        comparison = documents_by_role.get("e2e-gap-report")
+        report_entry = next(
+            (
+                artifact
+                for artifact in artifacts
+                if isinstance(artifact, dict)
+                and artifact.get("role") == "html-report"
+            ),
+            None,
+        )
+        if (
+            manifest.get("status") != "completed"
+            or not isinstance(source, dict)
+            or not isinstance(comparison, dict)
+            or not isinstance(report_entry, dict)
+        ):
+            failures.append("invalid E2E gap report bundle identity")
+        else:
+            try:
+                from groundupscale.gap_report import (
+                    compose_gap_report,
+                    render_gap_report_html,
+                )
+
+                expected = compose_gap_report(source)
+                report_path = (root / str(report_entry["path"])).resolve()
+                actual_report = report_path.read_text(encoding="utf-8")
+                expected_report = render_gap_report_html(expected)
+            except (OSError, UnicodeDecodeError, ValueError) as error:
+                failures.append(f"invalid E2E gap report evidence: {error}")
+            else:
+                if comparison != expected:
+                    failures.append("E2E gap report derivation mismatch")
+                if actual_report != expected_report:
+                    failures.append("E2E gap report human projection mismatch")
+                if manifest.get("hardware_cohort") != expected.get(
+                    "identity", {}
+                ).get("hardware_cohort"):
+                    failures.append("E2E gap report cohort mismatch")
+                if report_entry.get("inputs") != [
+                    paths_by_role.get("e2e-gap-report")
+                ]:
+                    failures.append("E2E gap report lineage mismatch")
+                source_entry = next(
+                    (
+                        artifact
+                        for artifact in artifacts
+                        if isinstance(artifact, dict)
+                        and artifact.get("role") == "e2e-gap-report"
+                    ),
+                    None,
+                )
+                if not isinstance(source_entry, dict) or source_entry.get(
+                    "inputs"
+                ) != [paths_by_role.get("e2e-gap-report-input")]:
+                    failures.append("E2E gap report lineage mismatch")
+                locked_sources = source.get("source_bundles")
+                if locked_sources is not None:
+                    if (
+                        not isinstance(locked_sources, list)
+                        or not locked_sources
+                        or manifest.get("source_bundles") != locked_sources
+                    ):
+                        failures.append("E2E gap report source lineage mismatch")
+                        locked_sources = []
+                    repository_root = root
+                    while repository_root != repository_root.parent and not (
+                        repository_root / "pyproject.toml"
+                    ).is_file():
+                        repository_root = repository_root.parent
+                    for locked in locked_sources:
+                        if not isinstance(locked, dict):
+                            failures.append("E2E gap report source lineage mismatch")
+                            continue
+                        relative = locked.get("path")
+                        digest = locked.get("manifest_sha256")
+                        if (
+                            not isinstance(relative, str)
+                            or not relative
+                            or Path(relative).is_absolute()
+                            or not isinstance(digest, str)
+                        ):
+                            failures.append("E2E gap report source lineage mismatch")
+                            continue
+                        source_root = (repository_root / relative).resolve()
+                        try:
+                            source_root.relative_to(repository_root)
+                            source_manifest_path = source_root / "run.manifest.json"
+                            source_manifest = json.loads(
+                                source_manifest_path.read_text(encoding="utf-8")
+                            )
+                        except (
+                            ValueError,
+                            OSError,
+                            UnicodeDecodeError,
+                            json.JSONDecodeError,
+                        ):
+                            failures.append("E2E gap report source is not resolvable")
+                            continue
+                        if (
+                            _sha256(source_manifest_path) != digest
+                            or source_manifest.get("run_id") != locked.get("run_id")
+                            or source_manifest.get("bundle_kind")
+                            != locked.get("bundle_kind")
+                            or verify_run_bundle(source_root).get("passed") is not True
+                        ):
+                            failures.append("E2E gap report source lineage mismatch")
 
     if model_e2e_frontier:
         source = documents_by_role.get("model-e2e-frontier-input")
