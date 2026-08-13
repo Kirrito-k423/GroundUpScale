@@ -21,6 +21,10 @@ from groundupscale.measurement_adapters import ascend_npu_runtime
 from groundupscale.measurement_adapters.ascend_npu_runtime import (
     assess_ascend_npu_runtime,
 )
+from groundupscale.operator_shape_semantics import (
+    UnsupportedOperatorShape,
+    semantics_from_case,
+)
 
 RuntimeLoader = Callable[[], tuple[object, object]]
 CollectionExecutor = Callable[
@@ -55,6 +59,21 @@ _MATMUL_CANDIDATES: dict[str, dict[str, object]] = {
             "split_axis": "k",
         },
     },
+}
+
+_FLASH_ATTENTION_CANDIDATES: dict[str, dict[str, object]] = {
+    "torch_npu.npu_fusion_attention": {
+        "candidate_family": "torch-npu-flash-attention",
+        "operator_entrypoint": "torch_npu.npu_fusion_attention",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {
+            "input_layout": "TND",
+            "keep_probability": 1.0,
+        },
+    }
 }
 
 
@@ -1230,12 +1249,24 @@ class AscendNpuMeasurementAdapter:
         )
         memory = dict(raw["memory"])
         memory["schema"] = "groundupscale.dev/memory-observation/v1alpha1"
+        try:
+            operator_shape = semantics_from_case(case)
+        except UnsupportedOperatorShape as error:
+            raise ValueError(str(error)) from error
         candidate_id = str(case["candidate"])
-        candidate_spec = _MATMUL_CANDIDATES.get(candidate_id)
+        candidate_specs = (
+            _MATMUL_CANDIDATES
+            if operator_shape.operation == "MatMul"
+            else _FLASH_ATTENTION_CANDIDATES
+        )
+        candidate_spec = candidate_specs.get(candidate_id)
         if candidate_spec is None:
-            raise ValueError(f"unsupported MatMul candidate: {candidate_id}")
+            raise ValueError(
+                f"unsupported {operator_shape.operation} candidate: {candidate_id}"
+            )
         candidate_identity = {
             "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+            "operation": operator_shape.operation,
             "candidate_id": candidate_id,
             "candidate_family": candidate_spec["candidate_family"],
             "build_identity": {
@@ -1254,6 +1285,8 @@ class AscendNpuMeasurementAdapter:
             },
             "execution_mode": "pytorch-eager",
             "shape": deepcopy(case["shape"]),
+            "operator_shape_identity": operator_shape.shape_identity,
+            "semantic_domain": deepcopy(operator_shape.domain_facets),
             "dtype": case["dtype"],
             "layout": case["layout"],
             "minimum_alignment_bytes": raw.get(
@@ -1273,14 +1306,8 @@ class AscendNpuMeasurementAdapter:
         candidate_identity["candidate_digest"] = content_fingerprint(
             candidate_identity
         )
-        return {
-            "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
-            "operation": "collect",
-            "status": "completed",
-            "device": "ascend-npu",
-            "logical_device": f"npu:{self.logical_device_index}",
-            "candidate_identity": candidate_identity,
-            "input_corpus": {
+        if operator_shape.operation == "MatMul":
+            input_corpus = {
                 "schema": "groundupscale.dev/input-corpus/v1alpha1",
                 "seed": case["seed"],
                 "initialization": "cpu-torch-randn-fixed-seed",
@@ -1290,7 +1317,31 @@ class AscendNpuMeasurementAdapter:
                 "layout": case["layout"],
                 "left_sha256": raw["left_sha256"],
                 "right_sha256": raw["right_sha256"],
-            },
+            }
+        else:
+            input_corpus = {
+                "schema": "groundupscale.dev/input-corpus/v1alpha1",
+                "seed": case["seed"],
+                "initialization": "cpu-torch-randn-fixed-seed",
+                "shape": deepcopy(case["shape"]),
+                "dtype": case["dtype"],
+                "layout": case["layout"],
+                "q_sha256": raw["q_sha256"],
+                "k_sha256": raw["k_sha256"],
+                "v_sha256": raw["v_sha256"],
+                "sequence_lengths": list(
+                    operator_shape.normalized_shape["sequence_lengths"]
+                ),
+                "sequence_shape_identity": operator_shape.shape_identity,
+            }
+        return {
+            "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
+            "operation": "collect",
+            "status": "completed",
+            "device": "ascend-npu",
+            "logical_device": f"npu:{self.logical_device_index}",
+            "candidate_identity": candidate_identity,
+            "input_corpus": input_corpus,
             "execution_contract": {
                 "schema": "groundupscale.dev/execution-contract/v1alpha1",
                 "operation": case["operation"],
@@ -1306,6 +1357,16 @@ class AscendNpuMeasurementAdapter:
                 "timer": deepcopy(timing_plan["timer"]),
                 "completion_protocol": deepcopy(
                     timing_plan["completion_boundary"]
+                ),
+                **(
+                    {
+                        "causal": case["causal"],
+                        "mask": case["mask"],
+                        "dropout_probability": case["dropout_probability"],
+                        "mode": case["mode"],
+                    }
+                    if operator_shape.operation == "FlashAttentionForward"
+                    else {}
                 ),
             },
             "instrumentation_profile": {

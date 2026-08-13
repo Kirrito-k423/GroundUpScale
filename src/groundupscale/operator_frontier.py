@@ -15,6 +15,12 @@ from statistics import median, stdev
 from typing import Any, cast
 
 from groundupscale.ir import content_fingerprint
+from groundupscale.operator_shape_semantics import (
+    OperatorShapeSemantics,
+    UnsupportedOperatorShape,
+    semantics_for_coordinate,
+    semantics_from_case,
+)
 from groundupscale.run_bundle import (
     RUN_ID_PATTERN,
     RunBundleExistsError,
@@ -151,6 +157,7 @@ class _Observation:
     manifest_sha256: str
     run_id: str
     cohort_id: str
+    operator_shape: OperatorShapeSemantics
     m: int
     n: int
     k: int
@@ -173,7 +180,7 @@ class _Observation:
     layout: str
     alignment_bytes: int
     seed: int
-    input_identity: tuple[str, str]
+    input_identity: tuple[str, ...]
     execution_contract_digest: str
     execution_protocol_digest: str
     execution_mode: str
@@ -284,32 +291,24 @@ def _observation(path: str | Path) -> _Observation:
     preflight, _ = _artifact(root, manifest, "measurement-preflight")
     timing_plan, _ = _artifact(root, manifest, "timing-plan")
 
-    shape = case.get("shape")
-    left = shape.get("left") if isinstance(shape, dict) else None
-    right = shape.get("right") if isinstance(shape, dict) else None
-    if (
-        not isinstance(left, list)
-        or not isinstance(right, list)
-        or len(left) != 2
-        or len(right) != 2
-        or any(
-            not isinstance(dimension, int)
-            or isinstance(dimension, bool)
-            or dimension <= 0
-            for dimension in (*left, *right)
-        )
-        or left[1] != right[0]
-    ):
+    try:
+        operator_shape = semantics_from_case(case)
+    except UnsupportedOperatorShape as error:
         raise OperatorFrontierQualificationError(
-            f"{root}: MatMul requires positive integer M/N/K and compatible operands",
+            f"{root}: {error}",
             reason_code="unsupported-shape-regime",
-        )
+        ) from error
     candidate_body = dict(candidate)
     candidate_digest = candidate_body.pop("candidate_digest", None)
     candidate_protocol_body = {
         key: value
         for key, value in candidate_body.items()
-        if key not in {"shape", "minimum_alignment_bytes"}
+        if key
+        not in {
+            "shape",
+            "operator_shape_identity",
+            "minimum_alignment_bytes",
+        }
     }
     session = environment.get("measurement_session")
     summary = raw_timing.get("summary")
@@ -369,19 +368,30 @@ def _observation(path: str | Path) -> _Observation:
             f"{root}: incomplete qualification identity",
             reason_code="incomplete-qualification-identity",
         )
-    left_identity = input_corpus.get("left_sha256")
-    right_identity = input_corpus.get("right_sha256")
-    if (
-        not isinstance(left_identity, str)
-        or len(left_identity) != 64
-        or not isinstance(right_identity, str)
-        or len(right_identity) != 64
+    if operator_shape.operation == "MatMul":
+        identities = (
+            input_corpus.get("left_sha256"),
+            input_corpus.get("right_sha256"),
+        )
+    else:
+        identities = (
+            input_corpus.get("q_sha256"),
+            input_corpus.get("k_sha256"),
+            input_corpus.get("v_sha256"),
+        )
+    if any(
+        not isinstance(identity, str) or len(identity) != 64
+        for identity in identities
+    ) or (
+        operator_shape.operation == "FlashAttentionForward"
+        and input_corpus.get("sequence_shape_identity")
+        != operator_shape.shape_identity
     ):
         raise OperatorFrontierQualificationError(
             f"{root}: incomplete input identity",
             reason_code="incomplete-qualification-identity",
         )
-    input_identity = (left_identity, right_identity)
+    input_identity = cast(tuple[str, ...], identities)
     execution_body = {
         key: value
         for key, value in execution.items()
@@ -392,14 +402,16 @@ def _observation(path: str | Path) -> _Observation:
         for key, value in execution_body.items()
         if key != "shape"
     }
+    normalized_shape = operator_shape.normalized_shape
     return _Observation(
         root=root,
         manifest_sha256=_sha256(manifest_path),
         run_id=str(manifest["run_id"]),
         cohort_id=str(manifest["hardware_cohort"]),
-        m=int(left[0]),
-        n=int(right[1]),
-        k=int(left[1]),
+        operator_shape=operator_shape,
+        m=int(normalized_shape.get("m", operator_shape.coordinate_value or 0)),
+        n=int(normalized_shape.get("n", 0)),
+        k=int(normalized_shape.get("k", 0)),
         candidate_id=str(candidate["candidate_id"]),
         candidate_family=str(candidate["candidate_family"]),
         candidate_digest=candidate_digest,
@@ -552,10 +564,28 @@ def _require_collection_plan_identity(
             reason_code="collection-plan-evidence-mismatch",
         )
     first = observations[0]
+    domain_expected = (
+        {"fixed_n": first.n, "fixed_k": first.k}
+        if first.operator_shape.operation == "MatMul"
+        else {
+            key: first.operator_shape.domain_facets[key]
+            for key in (
+                "operation",
+                "sequence_count",
+                "head_count",
+                "head_dimension",
+                "causal",
+                "mask",
+                "dropout_probability",
+                "mode",
+            )
+            if key in first.operator_shape.domain_facets
+        }
+    )
+    if first.operator_shape.operation == "FlashAttentionForward":
+        domain_expected["operation"] = first.operator_shape.operation
     expected = {
         "hardware_cohort": first.cohort_id,
-        "fixed_n": first.n,
-        "fixed_k": first.k,
         "dtype": first.dtype,
         "layout": first.layout,
         "candidate_ids": sorted({item.candidate_id for item in observations}),
@@ -567,11 +597,13 @@ def _require_collection_plan_identity(
         "instrumentation_profile": first.instrumentation_profile,
         "random_seed": first.seed,
         "raw_sample_retention": "preserve-all-no-selective-exclusion",
+        **domain_expected,
     }
     if any(collection_plan.get(key) != value for key, value in expected.items()) or any(
         item.cohort_id != first.cohort_id
-        or item.n != first.n
-        or item.k != first.k
+        or item.operator_shape.operation != first.operator_shape.operation
+        or item.operator_shape.domain_facets
+        != first.operator_shape.domain_facets
         or item.dtype != first.dtype
         or item.layout != first.layout
         or item.execution_mode != first.execution_mode
@@ -623,6 +655,8 @@ def _require_common_identity(observations: Sequence[_Observation]) -> str:
             item.execution_mode,
             item.runtime_device_name,
             item.logical_device,
+            item.operator_shape.operation,
+            _canonical_digest(item.operator_shape.domain_facets),
         )
         for item in observations
     }
@@ -653,7 +687,7 @@ def _same_shape_input_and_contract(observations: Sequence[_Observation]) -> bool
     return len(
         {
             (
-                item.m,
+                item.operator_shape.shape_identity,
                 item.seed,
                 item.input_identity,
                 item.execution_contract_digest,
@@ -705,11 +739,11 @@ def _source_record(
         "path": os.path.relpath(observation.root, bundle_root),
         "manifest_sha256": observation.manifest_sha256,
         "hardware_cohort": observation.cohort_id,
-        "shape": (
-            {"s": observation.m}
-            if observation.m == observation.n == observation.k
-            else {"m": observation.m, "n": observation.n, "k": observation.k}
-        ),
+        "semantic_operation": observation.operator_shape.operation,
+        "shape": observation.operator_shape.normalized_shape,
+        "shape_identity": observation.operator_shape.shape_identity,
+        "declared_work": observation.operator_shape.declared_work,
+        "work_formula": observation.operator_shape.work_formula,
         "candidate_id": observation.candidate_id,
         "candidate_family": observation.candidate_family,
         "candidate_digest": observation.candidate_digest,
@@ -755,14 +789,18 @@ def _write_operator_frontier_documents(
     logical_device: str,
 ) -> Path:
     policy_document = qualification["policy"]
+    semantic_operation = cast(dict[str, object], surface["domain"])[
+        "semantic_operation"
+    ]
+    coordinate = cast(dict[str, object], surface["coordinate"])["axis"]
     inputs = {
         "resolved_configuration": {
             "analysis_plan": analysis_plan,
             "qualification_policy": policy_document,
         },
         "resolved_ir": {
-            "semantic_operation": "MatMul",
-            "shape_coordinate": "fixed-nk-m",
+            "semantic_operation": semantic_operation,
+            "shape_coordinate": coordinate,
         },
         "hardware": {
             "device": runtime_device_name,
@@ -827,6 +865,263 @@ def _write_operator_frontier_documents(
     (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
     os.replace(temporary, destination)
     return destination
+
+
+def _write_exact_distribution_bundle(
+    artifact_store: str | Path,
+    *,
+    run_id: str,
+    policy: _QualificationPolicy,
+    searches: Sequence[_Observation],
+    holdouts: Sequence[_Observation],
+    query_shapes: Sequence[dict[str, object]],
+) -> Path:
+    observations = (*searches, *holdouts)
+    _require_independent_sessions(observations)
+    cohort_id = _require_common_identity(observations)
+    first = observations[0]
+    if first.operator_shape.operation != "FlashAttentionForward":
+        raise OperatorFrontierQualificationError(
+            "exact distribution qualification requires ragged TND evidence",
+            reason_code="unsupported-shape-regime",
+        )
+    scope = policy.document["scope"]
+    assert isinstance(scope, dict)
+    vectors = scope.get("sequence_vectors")
+    if (
+        scope.get("sequence_distribution_mode") != "exact-only"
+        or not isinstance(vectors, list)
+        or sorted(tuple(item) for item in vectors if isinstance(item, list))
+        != sorted(
+            {
+                tuple(cast(list[int], item.operator_shape.normalized_shape["sequence_lengths"]))
+                for item in observations
+            }
+        )
+    ):
+        raise OperatorFrontierQualificationError(
+            "qualification policy does not cover ragged sequence identities",
+            reason_code="qualification-policy-scope-mismatch",
+        )
+    expected_scope = {
+        "hardware_cohort": cohort_id,
+        "operation": first.operator_shape.operation,
+        **{
+            key: value
+            for key, value in first.operator_shape.domain_facets.items()
+            if key != "semantic_operation"
+        },
+        "candidate_ids": sorted({item.candidate_id for item in observations}),
+    }
+    if any(scope.get(key) != value for key, value in expected_scope.items()):
+        raise OperatorFrontierQualificationError(
+            "qualification policy does not cover ragged sequence domain",
+            reason_code="qualification-policy-scope-mismatch",
+        )
+    if any(
+        item.correctness != "passed"
+        or item.timing_quality != "passed"
+        or item.warmup_iterations < policy.minimum_warmup_iterations
+        for item in observations
+    ):
+        raise OperatorFrontierQualificationError(
+            "ragged evidence failed qualification",
+            reason_code="independent-holdout-failed",
+        )
+    search_by_identity = {
+        identity: [
+            item for item in searches if item.operator_shape.shape_identity == identity
+        ]
+        for identity in {item.operator_shape.shape_identity for item in searches}
+    }
+    holdout_by_identity = {
+        identity: [
+            item for item in holdouts if item.operator_shape.shape_identity == identity
+        ]
+        for identity in search_by_identity
+    }
+    if any(
+        len(search_by_identity[identity]) < policy.minimum_search_sessions
+        or len(holdout_by_identity[identity]) < policy.minimum_holdout_sessions
+        or not _same_shape_input_and_contract(search_by_identity[identity])
+        or not _same_shape_input_and_contract(holdout_by_identity[identity])
+        for identity in search_by_identity
+    ):
+        raise OperatorFrontierQualificationError(
+            "ragged evidence lacks independent exact-Shape sessions",
+            reason_code="independent-holdout-failed",
+        )
+    runs_root = Path(artifact_store).resolve() / "runs"
+    destination = runs_root / run_id
+    if destination.exists():
+        raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+    source_records = [
+        *(
+            _source_record(item, lane="search", bundle_root=destination)
+            for item in searches
+        ),
+        *(
+            _source_record(item, lane="holdout", bundle_root=destination)
+            for item in holdouts
+        ),
+    ]
+    evidence_digest = _canonical_digest(
+        {
+            "policy": policy.digest,
+            "sources": sorted(item.manifest_sha256 for item in observations),
+        }
+    )
+    domain = {
+        **first.operator_shape.domain_facets,
+        "sequence_distribution": "exact-only",
+        "alignment_regime": "minimum-64-byte",
+        "alignment_validated": True,
+        "working_set_regime": "ragged-sequence-vector-exact-anchor",
+        "working_set_validated": True,
+        "kernel_dispatch_regime": first.candidate_family,
+        "kernel_dispatch_validated": True,
+        "regime_validated": True,
+        "execution_mode": first.execution_mode,
+        "threads": 1,
+        "candidate_protocol_digest": first.candidate_protocol_digest,
+        "candidate_set_digest": _canonical_digest(
+            sorted({item.candidate_protocol_digest for item in observations})
+        ),
+        "execution_protocol_digest": first.execution_protocol_digest,
+    }
+    anchors: list[dict[str, object]] = []
+    anchor_latency_variances: list[float] = []
+    for identity, search_records in sorted(search_by_identity.items()):
+        holdout_records = holdout_by_identity[identity]
+        semantics = search_records[0].operator_shape
+        medians = [item.median_ns for item in holdout_records]
+        latency_ns = float(median(medians))
+        rates = [semantics.declared_work / (value * 1e-9) for value in medians]
+        standard_latency = float(stdev(medians))
+        anchor_latency_variances.append(standard_latency**2)
+        anchor_id = f"ascend-flash-attention-ragged-{identity.rsplit('/', 1)[-1][:12]}"
+        anchors.append(
+            {
+                "anchor_id": anchor_id,
+                "anchor_version": f"v-{evidence_digest[:16]}",
+                "shape": {
+                    "sequence_distribution_index": len(anchors) + 1
+                },
+                "operator_shape_identity": identity,
+                "normalized_operator_shape": semantics.normalized_shape,
+                "effective_rate": float(median(rates)),
+                "rate_unit": "FLOP/s",
+                "candidate_id": search_records[0].candidate_id,
+                "candidate_family": search_records[0].candidate_family,
+                "candidate_digest": search_records[0].candidate_digest,
+                "candidate_protocol_digest": search_records[0].candidate_protocol_digest,
+                "execution_protocol_digest": search_records[0].execution_protocol_digest,
+                "cohort_id": cohort_id,
+                "domain": domain,
+                "observation_validity": "QUALIFIED",
+                "frontier_role": "ACTIVE",
+                "evidence_ref": "artifact://frontier/qualification.json",
+                "state_transitions": _active_transitions(anchor_id),
+                "latency_ns": latency_ns,
+                "declared_work": semantics.declared_work,
+                "standard_uncertainty_rate": float(stdev(rates)),
+                "standard_uncertainty_latency_ns": standard_latency,
+            }
+        )
+    surface: dict[str, object] = {
+        "surface_id": f"surface://{cohort_id}/flash-attention/tnd-forward/ragged/{evidence_digest[:16]}",
+        "version": f"v-{evidence_digest[:16]}",
+        "previous_version": None,
+        "qualification_status": "qualified",
+        "cohort_id": cohort_id,
+        "domain": domain,
+        "candidate_family": first.candidate_family,
+        "anchor_lifecycle_policy": {
+            "policy_id": "frontier-anchor-lifecycle",
+            "version": "v2",
+            "scope": f"{cohort_id}-flash-attention-ragged-exact",
+            "change_reason": "issue-37 exact-only ragged TND identity",
+            "revalidation": "on cohort, domain, candidate, vector, evidence, or policy change",
+        },
+        "coordinate": {
+            "axis": "sequence_distribution_index",
+            "transform": "identity",
+            "transform_version": "v1",
+        },
+        "work_formula": first.operator_shape.work_formula,
+        "anchors": anchors,
+        "cells": [
+            {
+                "cell_id": f"flash-attention-ragged-exact-{index}",
+                "anchor_ids": [anchor["anchor_id"], anchor["anchor_id"]],
+                "status": "retained",
+                "regime_id": "ragged-exact-anchor",
+                "confirmation_shape": anchor["shape"],
+                "confirmation_observed_rate": anchor["effective_rate"],
+                "confirmation_evidence_refs": [anchor["evidence_ref"]],
+                "interpolation_standard_uncertainty_rate": 0.0,
+            }
+            for index, anchor in enumerate(anchors, start=1)
+        ],
+        "uncertainty_policy": {
+            "policy_id": "ascend-flash-attention-ragged-exact-uncertainty",
+            "version": "v1",
+            "scope": "qualified exact sequence vectors only",
+            "change_reason": "independent exact-Shape holdout",
+            "revalidation": "on cohort, vector, evidence, or policy change",
+            "combination": policy.document["uncertainty_combination"],
+            "target_coverage": policy.target_coverage,
+            "anchor_covariance": [
+                [0.0 for _ in anchors] for _ in anchors
+            ],
+            "anchor_latency_covariance": [
+                [variance if row == column else 0.0 for column, variance in enumerate(anchor_latency_variances)]
+                for row in range(len(anchor_latency_variances))
+            ],
+            "response_model_standard_uncertainty_latency_ns": 0.0,
+            "instrumentation_standard_uncertainty_latency_ns": first.timer_resolution_ns,
+            "boundary_uncertainty": {
+                "status": "not_applicable",
+                "reason_code": "exact-sequence-distribution-anchor-only",
+            },
+            "calibration_evidence_refs": [item.evidence_ref for item in holdouts],
+        },
+        "evidence_refs": ["artifact://frontier/qualification.json"],
+    }
+    surface["input_digest"] = _canonical_digest(surface)
+    policy_document = {**policy.document, "input_digest": policy.digest}
+    qualification: dict[str, object] = {
+        "schema": QUALIFICATION_SCHEMA,
+        "status": "qualified",
+        "policy": policy_document,
+        "hardware_cohort": cohort_id,
+        "anchors": anchors,
+        "surface": surface,
+        "source_runs": source_records,
+    }
+    queries = [
+        {
+            "query_id": f"ascend-flash-attention-ragged-{index}",
+            "surface_id": surface["surface_id"],
+            "surface_version": surface["version"],
+            "shape": shape,
+            "domain": domain,
+        }
+        for index, shape in enumerate(query_shapes, start=1)
+    ]
+    return _write_operator_frontier_documents(
+        runs_root,
+        destination,
+        run_id=run_id,
+        cohort_id=cohort_id,
+        source_records=source_records,
+        surface=surface,
+        qualification=qualification,
+        queries=queries,
+        analysis_plan="issue-37-ascend-flash-attention-ragged-exact",
+        runtime_device_name=first.runtime_device_name,
+        logical_device=first.logical_device,
+    )
 
 
 def _write_unknown_bounded_collection_bundle(
@@ -1001,6 +1296,7 @@ class _BoundedCorpus:
 
 @dataclass(frozen=True)
 class _BoundedResponseAnalysis:
+    reference_shape: OperatorShapeSemantics
     fixed_n: int
     fixed_k: int
     slope_ns_per_work: float
@@ -1028,23 +1324,51 @@ def _bounded_corpus(
     cohort_id = _require_common_identity(observations)
     _require_collection_plan_identity(policy, observations)
     plan = cast(dict[str, Any], policy.document["collection_plan"])
-    main_shapes = tuple(sorted(cast(list[int], plan["main_sweep_m"])))
+    first = observations[0]
+    main_key = (
+        "main_sweep_m"
+        if first.operator_shape.operation == "MatMul"
+        else "main_sweep_sequence_lengths"
+    )
+    holdout_key = (
+        "independent_holdout_m"
+        if first.operator_shape.operation == "MatMul"
+        else "independent_holdout_sequence_lengths"
+    )
+    validation_key = (
+        "independent_validation_m"
+        if first.operator_shape.operation == "MatMul"
+        else "independent_validation_sequence_lengths"
+    )
+    main_shapes = tuple(sorted(cast(list[int], plan[main_key])))
     holdout_shapes = tuple(
-        sorted(cast(list[int], plan.get("independent_holdout_m", [])))
+        sorted(cast(list[int], plan.get(holdout_key, [])))
     )
     validation_shapes = tuple(
-        sorted(cast(list[int], plan["independent_validation_m"]))
+        sorted(cast(list[int], plan[validation_key]))
     )
     by_main_shape = {
-        shape: [item for item in searches if item.m == shape]
+        shape: [
+            item
+            for item in searches
+            if item.operator_shape.coordinate_value == shape
+        ]
         for shape in main_shapes
     }
     by_holdout_shape = {
-        shape: [item for item in holdouts if item.m == shape]
+        shape: [
+            item
+            for item in holdouts
+            if item.operator_shape.coordinate_value == shape
+        ]
         for shape in main_shapes
     }
     by_validation_shape = {
-        shape: [item for item in confirmations if item.m == shape]
+        shape: [
+            item
+            for item in confirmations
+            if item.operator_shape.coordinate_value == shape
+        ]
         for shape in validation_shapes
     }
     minimum_counts = (
@@ -1054,9 +1378,27 @@ def _bounded_corpus(
     )
     if (
         holdout_shapes != main_shapes
-        or sorted({item.m for item in searches}) != list(main_shapes)
-        or sorted({item.m for item in holdouts}) != list(holdout_shapes)
-        or sorted({item.m for item in confirmations}) != list(validation_shapes)
+        or sorted(
+            {
+                cast(int, item.operator_shape.coordinate_value)
+                for item in searches
+            }
+        )
+        != list(main_shapes)
+        or sorted(
+            {
+                cast(int, item.operator_shape.coordinate_value)
+                for item in holdouts
+            }
+        )
+        != list(holdout_shapes)
+        or sorted(
+            {
+                cast(int, item.operator_shape.coordinate_value)
+                for item in confirmations
+            }
+        )
+        != list(validation_shapes)
         or any(
             len(records) < minimum
             for groups, minimum in zip(
@@ -1090,17 +1432,31 @@ def _bounded_corpus(
         )
     scope = policy.document["scope"]
     assert isinstance(scope, dict)
-    expected_scope = {
-        "hardware_cohort": cohort_id,
-        "operation": "MatMul",
-        "dtype": observations[0].dtype,
-        "layout": observations[0].layout,
-        "fixed_n": observations[0].n,
-        "fixed_k": observations[0].k,
-        "anchor_m": list(main_shapes),
-        "confirmation_m": list(validation_shapes),
-        "candidate_ids": sorted({item.candidate_id for item in observations}),
-    }
+    if first.operator_shape.operation == "MatMul":
+        expected_scope = {
+            "hardware_cohort": cohort_id,
+            "operation": "MatMul",
+            "dtype": first.dtype,
+            "layout": first.layout,
+            "fixed_n": first.n,
+            "fixed_k": first.k,
+            "anchor_m": list(main_shapes),
+            "confirmation_m": list(validation_shapes),
+            "candidate_ids": sorted({item.candidate_id for item in observations}),
+        }
+    else:
+        expected_scope = {
+            "hardware_cohort": cohort_id,
+            **{
+                key: value
+                for key, value in first.operator_shape.domain_facets.items()
+                if key != "semantic_operation"
+            },
+            "operation": first.operator_shape.operation,
+            "anchor_sequence_lengths": list(main_shapes),
+            "confirmation_sequence_lengths": list(validation_shapes),
+            "candidate_ids": sorted({item.candidate_id for item in observations}),
+        }
     if any(scope.get(key) != value for key, value in expected_scope.items()):
         raise OperatorFrontierQualificationError(
             "qualification policy does not cover this bounded evidence corpus",
@@ -1134,7 +1490,7 @@ def _analyze_bounded_response(
     fixed_k = first.k
     points = [
         (
-            float(2 * shape * fixed_n * fixed_k),
+            semantics_for_coordinate(first.operator_shape, shape).declared_work,
             float(median([item.median_ns for item in records])),
         )
         for shape, records in sorted(corpus.by_main_shape.items())
@@ -1156,13 +1512,16 @@ def _analyze_bounded_response(
     ):
         for shape, records in sorted(grouped.items()):
             observed = float(median([item.median_ns for item in records]))
-            modeled = setup_latency_ns + (2 * shape * fixed_n * fixed_k) * slope
+            modeled = setup_latency_ns + (
+                semantics_for_coordinate(first.operator_shape, shape).declared_work
+                * slope
+            )
             error = abs(observed - modeled) / observed
             relative_errors.append(error)
             validation_records.append(
                 {
                     "lane": lane,
-                    "shape": {"m": shape},
+                    "shape": {first.operator_shape.coordinate_axis: shape},
                     "observed_latency_ns": observed,
                     "modeled_latency_ns": modeled,
                     "relative_error": error,
@@ -1198,11 +1557,21 @@ def _analyze_bounded_response(
         <= float(maximum_setup_fraction)
     )
     ramp_max_m = max(
-        (cast(dict[str, int], record["shape"])["m"] for record in ramp_validation),
+        (
+            cast(dict[str, int], record["shape"])[
+                first.operator_shape.coordinate_axis
+            ]
+            for record in ramp_validation
+        ),
         default=None,
     )
     steady_min_m = min(
-        (cast(dict[str, int], record["shape"])["m"] for record in steady_validation),
+        (
+            cast(dict[str, int], record["shape"])[
+                first.operator_shape.coordinate_axis
+            ]
+            for record in steady_validation
+        ),
         default=None,
     )
     boundary_confirmed = (
@@ -1222,6 +1591,7 @@ def _analyze_bounded_response(
     )
     qualified = error_budget_passed and boundary_confirmed
     return _BoundedResponseAnalysis(
+        reference_shape=first.operator_shape,
         fixed_n=fixed_n,
         fixed_k=fixed_k,
         slope_ns_per_work=slope,
@@ -1265,6 +1635,9 @@ def _write_bounded_collection_bundle(
     by_holdout_shape = corpus.by_holdout_shape
     fixed_n = analysis.fixed_n
     fixed_k = analysis.fixed_k
+    reference_shape = analysis.reference_shape
+    operation = reference_shape.operation
+    coordinate_axis = reference_shape.coordinate_axis
     slope = analysis.slope_ns_per_work
     setup_latency_ns = analysis.setup_latency_ns
     asymptotic_rate = analysis.asymptotic_rate
@@ -1305,14 +1678,23 @@ def _write_bounded_collection_bundle(
             "sources": sorted(item.manifest_sha256 for item in observations),
         }
     )
-    surface_id = f"surface://{cohort_id}/matmul/fixed-nk/{evidence_digest[:16]}"
+    operation_slug = (
+        "matmul/fixed-nk"
+        if operation == "MatMul"
+        else "flash-attention/tnd-forward/equal-length"
+    )
+    surface_id = f"surface://{cohort_id}/{operation_slug}/{evidence_digest[:16]}"
     domain = {
-        "semantic_operation": "MatMul",
-        "dtype": searches[0].dtype,
-        "layout": searches[0].layout,
+        **reference_shape.domain_facets,
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": True,
-        "working_set_regime": f"fixed-n{fixed_n}-k{fixed_k}-m{main_shapes[0]}-{main_shapes[-1]}",
+        "working_set_regime": (
+            f"fixed-n{fixed_n}-k{fixed_k}-m{main_shapes[0]}-{main_shapes[-1]}"
+            if operation == "MatMul"
+            else (
+                f"equal-length-sequence-{main_shapes[0]}-{main_shapes[-1]}"
+            )
+        ),
         "working_set_validated": True,
         "kernel_dispatch_regime": searches[0].candidate_family,
         "kernel_dispatch_validated": True,
@@ -1324,9 +1706,12 @@ def _write_bounded_collection_bundle(
             sorted({item.candidate_protocol_digest for item in observations})
         ),
         "execution_protocol_digest": searches[0].execution_protocol_digest,
-        "fixed_n": fixed_n,
-        "fixed_k": fixed_k,
-        "varying_axis": "m",
+        **(
+            {"fixed_n": fixed_n, "fixed_k": fixed_k}
+            if operation == "MatMul"
+            else {"sequence_distribution": "equal-length"}
+        ),
+        "varying_axis": coordinate_axis,
     }
     response_attempt: dict[str, object] = {
         "target": "latency",
@@ -1362,16 +1747,28 @@ def _write_bounded_collection_bundle(
             holdout_records = by_holdout_shape[shape]
             holdout_medians = [item.median_ns for item in holdout_records]
             latency_ns = float(median(holdout_medians))
-            work = float(2 * shape * fixed_n * fixed_k)
+            shape_semantics = semantics_for_coordinate(reference_shape, shape)
+            work = shape_semantics.declared_work
             rates = [work / (value * 1e-9) for value in holdout_medians]
-            anchor_id = f"ascend-matmul-fixed-n{fixed_n}-k{fixed_k}-m{shape}-{evidence_digest[:12]}"
+            anchor_prefix = (
+                f"ascend-matmul-fixed-n{fixed_n}-k{fixed_k}-m"
+                if operation == "MatMul"
+                else "ascend-flash-attention-tnd-forward-s"
+            )
+            anchor_id = f"{anchor_prefix}{shape}-{evidence_digest[:12]}"
             standard_latency = float(stdev(holdout_medians))
             anchor_latency_variances.append(standard_latency**2)
             anchors.append(
                 {
                     "anchor_id": anchor_id,
                     "anchor_version": f"v-{evidence_digest[:16]}",
-                    "shape": {"m": shape},
+                    "shape": {coordinate_axis: shape},
+                    "operator_shape_identity": shape_semantics.shape_identity,
+                    "sequence_lengths": shape_semantics.normalized_shape.get(
+                        "sequence_lengths"
+                    ),
+                    "declared_work": work,
+                    "work_formula": reference_shape.work_formula,
                     "effective_rate": float(median(rates)),
                     "rate_unit": "FLOP/s",
                     "candidate_id": search_records[0].candidate_id,
@@ -1394,7 +1791,8 @@ def _write_bounded_collection_bundle(
                 }
             )
         anchor_by_m = {
-            cast(dict[str, int], item["shape"])["m"]: item for item in anchors
+            cast(dict[str, int], item["shape"])[coordinate_axis]: item
+            for item in anchors
         }
         regime_shapes = {
             "ramp": [
@@ -1418,10 +1816,18 @@ def _write_bounded_collection_bundle(
         }
         for classification, shapes in regime_shapes.items():
             for left, right in zip(shapes, shapes[1:], strict=False):
-                regime_id = f"{cohort_id}-fixed-n{fixed_n}-k{fixed_k}-{classification}"
+                regime_scope = (
+                    f"fixed-n{fixed_n}-k{fixed_k}"
+                    if operation == "MatMul"
+                    else "flash-attention-tnd-equal-length"
+                )
+                regime_id = f"{cohort_id}-{regime_scope}-{classification}"
                 cells.append(
                     {
-                        "cell_id": f"ascend-matmul-{classification}-m{left}-{right}-{evidence_digest[:12]}",
+                        "cell_id": (
+                            f"ascend-{operation_slug.replace('/', '-')}-{classification}-"
+                            f"{coordinate_axis}{left}-{right}-{evidence_digest[:12]}"
+                        ),
                         "anchor_ids": [
                             anchor_by_m[left]["anchor_id"],
                             anchor_by_m[right]["anchor_id"],
@@ -1429,7 +1835,11 @@ def _write_bounded_collection_bundle(
                         "status": "retained",
                         "regime_id": regime_id,
                         "confirmation_shape": {
-                            "m": ramp_max_m if classification == "ramp" else steady_min_m
+                            coordinate_axis: (
+                                ramp_max_m
+                                if classification == "ramp"
+                                else steady_min_m
+                            )
                         },
                         "confirmation_observed_rate": asymptotic_rate,
                         "confirmation_evidence_refs": validation_refs_by_regime[classification],
@@ -1453,15 +1863,19 @@ def _write_bounded_collection_bundle(
             boundary_right = regime_shapes["steady"][0]
             cells.append(
                 {
-                    "cell_id": f"ascend-matmul-boundary-m{boundary_left}-{boundary_right}-{evidence_digest[:12]}",
+                    "cell_id": (
+                        f"ascend-{operation_slug.replace('/', '-')}-boundary-"
+                        f"{coordinate_axis}{boundary_left}-{boundary_right}-"
+                        f"{evidence_digest[:12]}"
+                    ),
                     "anchor_ids": [
                         anchor_by_m[boundary_left]["anchor_id"],
                         anchor_by_m[boundary_right]["anchor_id"],
                     ],
                     "status": "regime_boundary",
-                    "regime_id": f"{cohort_id}-fixed-n{fixed_n}-k{fixed_k}-boundary",
+                    "regime_id": f"{cohort_id}-{operation_slug.replace('/', '-')}-boundary",
                     "confirmation_shape": {
-                        "m": [ramp_max_m, steady_min_m]
+                        coordinate_axis: [ramp_max_m, steady_min_m]
                     },
                     "confirmation_observed_rate": asymptotic_rate,
                     "confirmation_evidence_refs": [
@@ -1487,14 +1901,12 @@ def _write_bounded_collection_bundle(
         "cohort_id": cohort_id,
         "domain": domain,
         "candidate_family": searches[0].candidate_family,
-        "coordinate": {"axis": "m", "transform": "identity", "transform_version": "v1"},
-        "work_formula": {
-            "kind": "matmul-2mnk-fixed-nk",
-            "version": "v1",
-            "fixed_n": fixed_n,
-            "fixed_k": fixed_k,
-            "work_unit": "FLOP",
+        "coordinate": {
+            "axis": coordinate_axis,
+            "transform": "identity",
+            "transform_version": "v1",
         },
+        "work_formula": reference_shape.work_formula,
         "anchors": anchors,
         "cells": cells,
         "response_attempt": response_attempt,
@@ -1503,14 +1915,26 @@ def _write_bounded_collection_bundle(
                 "anchor_lifecycle_policy": {
                     "policy_id": "frontier-anchor-lifecycle",
                     "version": "v2",
-                    "scope": f"{cohort_id}-fixed-nk-matmul-bounded-m-sweep",
-                    "change_reason": "issue-36 qualified bounded M sweep",
+                    "scope": f"{cohort_id}-{operation_slug}-bounded-sweep",
+                    "change_reason": (
+                        "issue-36 qualified bounded M sweep"
+                        if operation == "MatMul"
+                        else "issue-37 qualified equal-length TND sweep"
+                    ),
                     "revalidation": "on cohort, corpus, policy, response, or boundary change",
                 },
                 "uncertainty_policy": {
-                    "policy_id": "ascend-matmul-bounded-m-sweep-uncertainty",
+                    "policy_id": (
+                        "ascend-matmul-bounded-m-sweep-uncertainty"
+                        if operation == "MatMul"
+                        else "ascend-flash-attention-tnd-sweep-uncertainty"
+                    ),
                     "version": "v1",
-                    "scope": "two independently validated fixed-N/K Shape regimes",
+                    "scope": (
+                        "two independently validated fixed-N/K Shape regimes"
+                        if operation == "MatMul"
+                        else "two independently validated equal-length TND Shape regimes"
+                    ),
                     "change_reason": "independent holdout and boundary validation",
                     "revalidation": "on cohort, corpus, policy, response, or boundary change",
                     "combination": policy.document["uncertainty_combination"],
@@ -1532,7 +1956,14 @@ def _write_bounded_collection_bundle(
                     "instrumentation_standard_uncertainty_rate": 0.0,
                     "instrumentation_standard_uncertainty_latency_ns": searches[0].timer_resolution_ns,
                     "boundary_standard_uncertainty_latency_ns": slope
-                    * float(2 * (cast(int, steady_min_m) - cast(int, ramp_max_m)) * fixed_n * fixed_k)
+                    * abs(
+                        semantics_for_coordinate(
+                            reference_shape, cast(int, steady_min_m)
+                        ).declared_work
+                        - semantics_for_coordinate(
+                            reference_shape, cast(int, ramp_max_m)
+                        ).declared_work
+                    )
                     / 2.0,
                     "calibration_evidence_refs": [item.evidence_ref for item in confirmations],
                 },
@@ -1566,10 +1997,14 @@ def _write_bounded_collection_bundle(
     }
     queries = [
         {
-            "query_id": f"ascend-matmul-fixed-nk-m{size}",
+            "query_id": (
+                f"ascend-matmul-fixed-nk-m{size}"
+                if operation == "MatMul"
+                else f"ascend-flash-attention-tnd-s{size}"
+            ),
             "surface_id": surface["surface_id"],
             "surface_version": surface["version"],
-            "shape": {"m": size},
+            "shape": {coordinate_axis: size},
             "domain": surface["domain"],
         }
         for size in query_sizes
@@ -1583,7 +2018,11 @@ def _write_bounded_collection_bundle(
         surface=surface,
         qualification=qualification,
         queries=queries,
-        analysis_plan="issue-36-ascend-matmul-bounded-m-sweep",
+        analysis_plan=(
+            "issue-36-ascend-matmul-bounded-m-sweep"
+            if operation == "MatMul"
+            else "issue-37-ascend-flash-attention-tnd-forward"
+        ),
         runtime_device_name=searches[0].runtime_device_name,
         logical_device=searches[0].logical_device,
     )
@@ -1602,6 +2041,7 @@ class OperatorFrontierBundleWriter:
         holdout_runs: Iterable[str | Path],
         confirmation_runs: Iterable[str | Path],
         query_sizes: Sequence[int],
+        query_shapes: Sequence[dict[str, object]] = (),
     ) -> Path:
         if not RUN_ID_PATTERN.fullmatch(run_id):
             raise ValueError(f"unsafe run_id: {run_id!r}")
@@ -1611,10 +2051,35 @@ class OperatorFrontierBundleWriter:
         holdouts = [_observation(path) for path in holdout_runs]
         confirmations = [_observation(path) for path in confirmation_runs]
         all_observations = [*searches, *holdouts, *confirmations]
+        scope = policy.document.get("scope")
+        if (
+            isinstance(scope, dict)
+            and scope.get("sequence_distribution_mode") == "exact-only"
+        ):
+            if confirmations:
+                raise OperatorFrontierQualificationError(
+                    "ragged exact-only qualification does not interpolate",
+                    reason_code="unsupported-sequence-distribution-interpolation",
+                )
+            return _write_exact_distribution_bundle(
+                artifact_store,
+                run_id=run_id,
+                policy=policy,
+                searches=searches,
+                holdouts=holdouts,
+                query_shapes=query_shapes,
+            )
         bounded_plan = policy.document.get("collection_plan")
-        if isinstance(bounded_plan, dict) and len(
-            cast(list[object], bounded_plan.get("main_sweep_m", []))
-        ) > 2:
+        bounded_shapes = (
+            bounded_plan.get("main_sweep_m", [])
+            if isinstance(bounded_plan, dict)
+            else []
+        )
+        if isinstance(bounded_plan, dict) and not bounded_shapes:
+            bounded_shapes = bounded_plan.get(
+                "main_sweep_sequence_lengths", []
+            )
+        if isinstance(bounded_shapes, list) and len(bounded_shapes) > 2:
             if not holdouts or not confirmations:
                 return _write_unknown_bounded_collection_bundle(
                     artifact_store,

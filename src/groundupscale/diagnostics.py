@@ -10,7 +10,7 @@ from math import hypot, isclose, isfinite
 from pathlib import Path
 from re import fullmatch
 from statistics import median
-from typing import Any
+from typing import Any, cast
 from unicodedata import normalize
 
 from groundupscale.measurement_contract import (
@@ -21,6 +21,10 @@ from groundupscale.measurement_contract import (
     MeasurementContractError,
     ProfilingOverheadPolicy,
     TimerEvidence,
+)
+from groundupscale.operator_shape_semantics import (
+    UnsupportedOperatorShape,
+    semantics_from_surface_query,
 )
 from groundupscale.run_bundle import verify_run_bundle
 
@@ -7559,6 +7563,146 @@ def _query_capability_surface(
             query, surface, "invalid_latency_response_model"
         )
     anchors_value = surface.get("anchors")
+    surface_domain = surface.get("domain")
+    if (
+        isinstance(surface_domain, dict)
+        and surface_domain.get("sequence_distribution") == "exact-only"
+    ):
+        try:
+            query_semantics = semantics_from_surface_query(
+                surface, query.get("shape")
+            )
+        except UnsupportedOperatorShape:
+            return _unknown_surface_query(
+                query,
+                surface,
+                "unsupported_sequence_distribution_interpolation",
+            )
+        matching_anchor = next(
+            (
+                anchor
+                for anchor in anchors_value
+                if isinstance(anchors_value, list)
+                and isinstance(anchor, dict)
+                and anchor.get("operator_shape_identity")
+                == query_semantics.shape_identity
+            ),
+            None,
+        )
+        if not isinstance(matching_anchor, dict):
+            return _unknown_surface_query(
+                query,
+                surface,
+                "unsupported_sequence_distribution_interpolation",
+            )
+        policy = _surface_policy(surface)
+        latency_ns = matching_anchor.get("latency_ns")
+        standard_latency = matching_anchor.get(
+            "standard_uncertainty_latency_ns"
+        )
+        if (
+            policy is None
+            or not _finite_number(latency_ns)
+            or latency_ns <= 0
+            or not _finite_number(standard_latency)
+            or standard_latency < 0
+        ):
+            return _unknown_surface_query(
+                query, surface, "insufficient_uncertainty_evidence"
+            )
+        effective_rate = query_semantics.declared_work / (
+            float(latency_ns) * 1e-9
+        )
+        components = {
+            "anchor_standard_latency_ns": float(standard_latency),
+            "response_model_standard_latency_ns": 0.0,
+            "instrumentation_standard_latency_ns": policy.get(
+                "instrumentation_standard_uncertainty_latency_ns"
+            ),
+            "boundary_standard_latency_ns": None,
+        }
+        if any(
+            value is not None and (not _finite_number(value) or value < 0)
+            for value in components.values()
+        ):
+            return _unknown_surface_query(
+                query, surface, "insufficient_uncertainty_evidence"
+            )
+        combined = sum(
+            float(value) ** 2
+            for value in components.values()
+            if value is not None
+        ) ** 0.5
+        evidence_refs = [
+            matching_anchor["evidence_ref"],
+            *cast(list[str], policy.get("calibration_evidence_refs", [])),
+            *cast(list[str], surface.get("evidence_refs", [])),
+        ]
+        latency = {
+            "declared_work": query_semantics.declared_work,
+            "work_unit": "FLOP",
+            "value_ns": float(latency_ns),
+        }
+        return {
+            "query_id": query.get("query_id"),
+            "status": "exact_anchor",
+            "reason_code": None,
+            "surface": {
+                "surface_id": surface["surface_id"],
+                "version": surface["version"],
+                "input_digest": surface["input_digest"],
+            },
+            "cohort_id": surface["cohort_id"],
+            "domain": surface_domain,
+            "domain_policy": None,
+            "query_shape": query.get("shape"),
+            "operator_shape_identity": query_semantics.shape_identity,
+            "normalized_operator_shape": query_semantics.normalized_shape,
+            "candidate_families": [surface["candidate_family"]],
+            "algorithm_families": [],
+            "selected_candidate_family": surface["candidate_family"],
+            "selected_algorithm_family": None,
+            "cell_id": None,
+            "anchors": [
+                {
+                    "anchor_id": matching_anchor["anchor_id"],
+                    "anchor_version": matching_anchor["anchor_version"],
+                    "shape": matching_anchor["normalized_operator_shape"],
+                    "latency_ns": latency_ns,
+                    "evidence_ref": matching_anchor["evidence_ref"],
+                }
+            ],
+            "weights": [1.0],
+            "latency": latency,
+            "work_rate_latency": latency,
+            "effective_rate": {"value": effective_rate, "unit": "FLOP/s"},
+            "response": {
+                "target": "latency",
+                "kind": "exact-sequence-distribution-anchor",
+                "version": "v1",
+                "setup_latency_ns": 0.0,
+                "asymptotic_rate": effective_rate,
+                "rate_unit": "FLOP/s",
+            },
+            "shape_regime": {
+                "identity": "ragged-exact-anchor",
+                "classification": "exact-only",
+            },
+            "uncertainty": {
+                "components": components,
+                "combined_standard_latency_ns": combined,
+                "target_coverage": policy.get("target_coverage"),
+                "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+                "calibration_evidence_refs": policy.get(
+                    "calibration_evidence_refs", []
+                ),
+                "latency_interval": {
+                    "lower_ns": max(0.0, float(latency_ns) - combined),
+                    "upper_ns": float(latency_ns) + combined,
+                },
+            },
+            "evidence_refs": evidence_refs,
+        }
     if len(axes) == 2 and (
         not _nonempty_string(surface.get("candidate_family"))
         or not _nonempty_string(surface.get("algorithm_family"))
@@ -7575,10 +7719,12 @@ def _query_capability_surface(
         )
     shape = query.get("shape")
     work_formula = surface.get("work_formula")
-    integer_shape_required = (
-        isinstance(work_formula, dict)
-        and work_formula.get("kind") == "matmul-2mnk-fixed-nk"
-    )
+    integer_shape_required = isinstance(work_formula, dict) and work_formula.get(
+        "kind"
+    ) in {
+        "matmul-2mnk-fixed-nk",
+        "flash-attention-tnd-forward-qk-pv",
+    }
     if (
         not isinstance(shape, dict)
         or set(shape) != set(axes)
@@ -8958,12 +9104,14 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"{winner_text}"
             f"{domain_policy_text}; "
             f"{response_text}"
+            f"declared-work={latency['declared_work']:.6f} {latency['work_unit']}; "
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
             f"latency={latency['value_ns']:.6f} ns; "
             f"cell={query['cell_id']}; "
             f"anchors={','.join(anchor['anchor_id'] for anchor in query['anchors'])}; "
             f"weights={json.dumps(query['weights'], separators=(',', ':'))}; "
-            f"uncertainty={json.dumps(query['uncertainty']['components'], separators=(',', ':'), sort_keys=True)}"
+            f"uncertainty={json.dumps(query['uncertainty']['components'], separators=(',', ':'), sort_keys=True)}; "
+            f"evidence={','.join(query.get('evidence_refs', []))}"
         )
     trigger = result.get("diagnostic_trigger")
     if isinstance(trigger, dict):
