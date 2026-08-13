@@ -1553,10 +1553,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     enforce_supersession = (
         transformer_matmul_frontier or transformer_matmul_exact_anchor
     ) and root.name.endswith("-v4")
-    if supersedes and enforce_supersession:
+    if enforce_supersession:
         seen_superseded_ids: set[str] = set()
         seen_superseded_paths: set[Path] = set()
-        if not isinstance(supersedes, list):
+        if not isinstance(supersedes, list) or not supersedes:
             failures.append("invalid supersession lineage")
         else:
             for record in supersedes:

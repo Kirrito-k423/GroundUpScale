@@ -462,6 +462,18 @@ def test_verifier_rejects_forged_supersession_lineage(tmp_path: Path) -> None:
     assert verification["passed"] is False
     assert "supersession lineage mismatch" in verification["failures"]
 
+    for missing in (None, []):
+        if missing is None:
+            manifest.pop("supersedes", None)
+        else:
+            manifest["supersedes"] = missing
+        manifest_path.write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+        )
+        verification = verify_run_bundle(replacement)
+        assert verification["passed"] is False
+        assert "invalid supersession lineage" in verification["failures"]
+
 
 def test_exact_anchor_yields_known_latency_and_rate_is_only_derived(
     tmp_path: Path,

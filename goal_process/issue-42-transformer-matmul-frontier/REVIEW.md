@@ -71,3 +71,9 @@ Standards：3 MUST-FIX、1 SHOULD-FIX；最严重为派生 verifier 可绕过 so
 - v4 `supersedes` lineage 记录 bundle-relative path、run_id 与 manifest SHA-256；公共 verifier 校验结构、唯一性、目标 identity/digest，伪造 run/digest/path 均拒绝。
 - v4 每个 candidate coverage hole 的 `minimum_next_measurement` 明确：缺 1 个 eligible candidate；先采 3 个独立 search sessions，若其成为 best-of-correct winner，再采 3 个独立 holdout sessions。四个 repeatability hole 同时保留其独立 qualification session 边界和当前禁止追加轮次的约束。
 - v1/v2/v3 路径和内容保持不变；v4 为新的 active authority，仍为诚实的 `0/5 structured unknown`。
+
+## Final reviewer verdict
+
+- **Spec: PASS** — candidate coverage hole 精确命名 1 个缺失候选、3 search 与条件性 3 holdout；四域保留真实 repeatability boundary。
+- **Standards: PASS pending final missing/empty lineage recheck** — v4 对 `supersedes` 缺失或空列表也 fail closed；伪造 run/digest/path 测试通过。
+- Final tests: focused `17 passed`; full `565 passed in 96.03s`; evidence closure `55/55` verifier PASS; compileall/diff-check PASS；v3 diff 为空。
