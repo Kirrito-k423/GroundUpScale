@@ -572,6 +572,7 @@ def write_schedule_effect_frontier_bundle(
     *,
     run_id: str,
     document: dict[str, object],
+    source_runs: list[dict[str, str]] | None = None,
 ) -> Path:
     """Publish a replayable paired-lane observed decomposition Run Bundle."""
 
@@ -660,6 +661,14 @@ def write_schedule_effect_frontier_bundle(
                 "producer": producer,
                 "source": "python://groundupscale.observed_decomposition",
             },
+            **(
+                {
+                    "source_manifest_integrity": "required",
+                    "source_runs": source_runs,
+                }
+                if source_runs
+                else {}
+            ),
             "artifacts": artifacts,
             "immutability": (
                 "writer refuses an existing run_id; artifact digests are authoritative"
@@ -1818,6 +1827,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     manifest_path = root / "run.manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     failures: list[str] = []
+    verified_source_runs: dict[str, tuple[Path, dict[str, object]]] = {}
     artifacts = manifest.get("artifacts", [])
     if not isinstance(artifacts, list):
         artifacts = []
@@ -1876,6 +1886,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     or source_manifest.get("status") != "completed"
                 ):
                     failures.append(f"source Run identity mismatch: {source_id}")
+                    continue
+                verified_source_runs[source_id] = (source_root, source_manifest)
     exact_shape = manifest.get("bundle_kind") == "exact-shape-measurement"
     floor_comparison = (
         manifest.get("bundle_kind") == "physical-floor-observation-comparison"
@@ -2044,13 +2056,23 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         if not isinstance(artifact, dict):
             failures.append("invalid artifact entry")
             continue
-        artifact_path = (root / artifact["path"]).resolve()
+        relative_path = artifact.get("path")
+        expected_digest = artifact.get("sha256")
+        if (
+            not isinstance(relative_path, str)
+            or not relative_path
+            or not isinstance(expected_digest, str)
+            or re.fullmatch(r"[0-9a-f]{64}", expected_digest) is None
+        ):
+            failures.append("invalid artifact entry")
+            continue
+        artifact_path = (root / relative_path).resolve()
         if root not in artifact_path.parents:
-            failures.append(f"path escapes bundle: {artifact['path']}")
+            failures.append(f"path escapes bundle: {relative_path}")
         elif not artifact_path.is_file():
-            failures.append(f"missing artifact: {artifact['path']}")
-        elif _sha256(artifact_path) != artifact["sha256"]:
-            failures.append(f"digest mismatch: {artifact['path']}")
+            failures.append(f"missing artifact: {relative_path}")
+        elif _sha256(artifact_path) != expected_digest:
+            failures.append(f"digest mismatch: {relative_path}")
         if (
             structured_bundle
             and artifact_path.is_file()
@@ -2061,20 +2083,20 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     artifact_path.read_text(encoding="utf-8")
                 )
             except (UnicodeDecodeError, json.JSONDecodeError):
-                failures.append(f"invalid JSON artifact: {artifact['path']}")
+                failures.append(f"invalid JSON artifact: {relative_path}")
             else:
                 if not isinstance(artifact_document, dict):
-                    failures.append(f"invalid JSON artifact: {artifact['path']}")
+                    failures.append(f"invalid JSON artifact: {relative_path}")
                     continue
                 if artifact_document.get("schema") != artifact.get("schema"):
-                    failures.append(f"schema mismatch: {artifact['path']}")
+                    failures.append(f"schema mismatch: {relative_path}")
                 role = artifact.get("role")
                 if (
                     isinstance(role, str)
                     and role_counts.get(role) == 1
                 ):
                     documents_by_role[role] = artifact_document
-                    paths_by_role[role] = str(artifact["path"])
+                    paths_by_role[role] = relative_path
 
     if model_e2e_frontier:
         source = documents_by_role.get("model-e2e-frontier-input")
@@ -2213,15 +2235,23 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         ):
             failures.append("invalid schedule effect Frontier bundle identity")
         else:
+            baseline_lane = schedule_input.get("baseline_timing_lane")
+            diagnostic_lane = schedule_input.get("diagnostic_profiling_lane")
+            if not isinstance(baseline_lane, dict) or not isinstance(
+                diagnostic_lane, dict
+            ):
+                failures.append("invalid schedule effect measurement lanes")
+                baseline_lane = {}
+                diagnostic_lane = {}
             expected_baseline = {
                 "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
-                **schedule_input.get("baseline_timing_lane", {}),
+                **baseline_lane,
             }
             expected_diagnostic = {
                 "schema": (
                     "groundupscale.dev/diagnostic-profiling-observation/v1alpha1"
                 ),
-                **schedule_input.get("diagnostic_profiling_lane", {}),
+                **diagnostic_lane,
             }
             if baseline_observation != expected_baseline:
                 failures.append("baseline timing observation derivation mismatch")
@@ -2229,6 +2259,60 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 failures.append(
                     "diagnostic profiling observation derivation mismatch"
                 )
+
+            def verify_source(source: object) -> bool:
+                if not isinstance(source, dict):
+                    return False
+                run_id = source.get("run_id")
+                evidence_ref = source.get("evidence_ref")
+                digest = source.get("artifact_sha256")
+                source_record = verified_source_runs.get(str(run_id))
+                prefix = f"run-bundle://{run_id}/"
+                if (
+                    source_record is None
+                    or not isinstance(evidence_ref, str)
+                    or not evidence_ref.startswith(prefix)
+                    or not isinstance(digest, str)
+                ):
+                    return False
+                source_root, source_manifest = source_record
+                source_verification = verify_run_bundle(source_root)
+                if source_verification.get("passed") is not True:
+                    return False
+                source_path = evidence_ref.removeprefix(prefix)
+                source_artifacts = source_manifest.get("artifacts")
+                if not isinstance(source_artifacts, list):
+                    return False
+                matching = [
+                    artifact
+                    for artifact in source_artifacts
+                    if isinstance(artifact, dict)
+                    and artifact.get("path") == source_path
+                    and artifact.get("sha256") == digest
+                    and isinstance(artifact.get("produced_by"), str)
+                    and bool(artifact["produced_by"])
+                ]
+                return (
+                    len(matching) == 1
+                    and (source_root / source_path).is_file()
+                    and _sha256(source_root / source_path) == digest
+                )
+
+            source_values: list[object] = [
+                baseline_lane.get("source"),
+                (
+                    diagnostic_lane.get("device_timeline", {}).get("source")
+                    if isinstance(diagnostic_lane.get("device_timeline"), dict)
+                    else diagnostic_lane.get("source")
+                ),
+            ]
+            ablation_value = diagnostic_lane.get("overhead_ablation")
+            if isinstance(ablation_value, dict) and isinstance(
+                ablation_value.get("source_boundary"), dict
+            ):
+                source_values.append(ablation_value["source_boundary"])
+            if not all(verify_source(source) for source in source_values):
+                failures.append("schedule effect source lineage mismatch")
             try:
                 replay = compose_observed_decomposition(schedule_input)
             except (KeyError, TypeError, ValueError):

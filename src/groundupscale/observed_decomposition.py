@@ -39,6 +39,41 @@ def _positive_samples(value: object) -> bool:
     )
 
 
+def _linear_percentile(samples: list[float], fraction: float) -> float:
+    ordered = sorted(samples)
+    position = (len(ordered) - 1) * fraction
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = position - lower
+    return ordered[lower] * (1 - weight) + ordered[upper] * weight
+
+
+def timing_summary(value: object) -> dict[str, float | int]:
+    """Return replayable repeated-sample statistics for one timing lane."""
+
+    if not _positive_samples(value):
+        raise ObservedDecompositionError("invalid-baseline-raw-samples")
+    samples = [float(sample) for sample in value]
+    sample_median = float(median(samples))
+    q1 = _linear_percentile(samples, 0.25)
+    q3 = _linear_percentile(samples, 0.75)
+    median_absolute_deviation = float(
+        median(abs(sample - sample_median) for sample in samples)
+    )
+    return {
+        "count": len(samples),
+        "minimum_ns": min(samples),
+        "q1_ns": q1,
+        "median_ns": sample_median,
+        "q3_ns": q3,
+        "maximum_ns": max(samples),
+        "iqr_ns": q3 - q1,
+        "iqr_fraction_of_median": (q3 - q1) / sample_median,
+        "median_absolute_deviation_ns": median_absolute_deviation,
+        "mad_fraction_of_median": median_absolute_deviation / sample_median,
+    }
+
+
 def _identity(value: object) -> dict[str, object]:
     required = (
         "benchmark_case",
@@ -94,12 +129,21 @@ def _union_duration(intervals: list[tuple[float, float]]) -> float:
 
 def _ablation_decision(
     pair_id: str,
+    identity: Mapping[str, object],
     baseline: Mapping[str, object],
     diagnostic: Mapping[str, object],
 ) -> tuple[bool, str | None, dict[str, object] | None]:
     value = diagnostic.get("overhead_ablation")
-    if not isinstance(value, dict) or value.get("status") == "not_provided":
-        return False, "profiling-overhead-ablation-missing", None
+    if not isinstance(value, dict) or value.get("status") in {
+        "not_provided",
+        "unavailable",
+    }:
+        reason_code = (
+            value.get("reason_code")
+            if isinstance(value, dict) and _nonempty(value.get("reason_code"))
+            else "profiling-overhead-ablation-missing"
+        )
+        return False, str(reason_code), None
     policy = value.get("policy")
     selection = value.get("selection")
     holdout = value.get("holdout")
@@ -115,8 +159,14 @@ def _ablation_decision(
         or not isinstance(policy.get("maximum_overhead_ratio"), (int, float))
         or isinstance(policy.get("maximum_overhead_ratio"), bool)
         or not 0 <= float(policy["maximum_overhead_ratio"]) < 1
+        or not isinstance(
+            policy.get("maximum_iqr_fraction_of_median"), (int, float)
+        )
+        or isinstance(policy.get("maximum_iqr_fraction_of_median"), bool)
+        or not 0 <= float(policy["maximum_iqr_fraction_of_median"]) < 1
         or not isinstance(selection, dict)
         or not isinstance(holdout, dict)
+        or holdout.get("identity") != identity
         or holdout.get("pair_id") != pair_id
         or holdout.get("baseline_lane_id") != baseline.get("lane_id")
         or holdout.get("diagnostic_lane_id") != diagnostic.get("lane_id")
@@ -136,6 +186,10 @@ def _ablation_decision(
             and all(_nonempty(session_id) for session_id in group)
             for group in session_groups
         )
+        or len(holdout.get("baseline_raw_samples_ns", []))
+        != len(session_groups[1])
+        or len(holdout.get("diagnostic_raw_samples_ns", []))
+        != len(session_groups[2])
         or not set(session_groups[0]).isdisjoint(session_groups[1])
         or not set(session_groups[0]).isdisjoint(session_groups[2])
         or not set(session_groups[1]).isdisjoint(session_groups[2])
@@ -154,15 +208,25 @@ def _ablation_decision(
     baseline_median = float(median(holdout["baseline_raw_samples_ns"]))
     diagnostic_median = float(median(holdout["diagnostic_raw_samples_ns"]))
     overhead_ratio = abs(diagnostic_median - baseline_median) / baseline_median
+    baseline_summary = timing_summary(holdout["baseline_raw_samples_ns"])
+    diagnostic_summary = timing_summary(holdout["diagnostic_raw_samples_ns"])
     decision = {
         "status": "qualified",
         "policy": deepcopy(policy),
         "observed_overhead_ratio": overhead_ratio,
+        "baseline_timing_summary": baseline_summary,
+        "diagnostic_timing_summary": diagnostic_summary,
         "selection_evidence_ref": selection["evidence_ref"],
         "holdout_evidence_ref": holdout["evidence_ref"],
         "decision_evidence_ref": value["evidence_ref"],
     }
-    if overhead_ratio > float(policy["maximum_overhead_ratio"]):
+    if (
+        overhead_ratio > float(policy["maximum_overhead_ratio"])
+        or float(baseline_summary["iqr_fraction_of_median"])
+        > float(policy["maximum_iqr_fraction_of_median"])
+        or float(diagnostic_summary["iqr_fraction_of_median"])
+        > float(policy["maximum_iqr_fraction_of_median"])
+    ):
         decision["status"] = "error-budget-exceeded"
         return False, "profiling-overhead-error-budget-exceeded", decision
     return True, None, decision
@@ -282,6 +346,24 @@ def compose_observed_decomposition(
         or not _nonempty(baseline.get("instrumentation_profile"))
         or not _nonempty(diagnostic.get("instrumentation_profile"))
         or not _positive_samples(baseline.get("raw_samples_ns"))
+        or baseline.get("timing_summary")
+        != timing_summary(baseline.get("raw_samples_ns"))
+        or not isinstance(baseline.get("normalized_window_samples_ns"), list)
+        or len(baseline["normalized_window_samples_ns"])
+        != len(baseline["raw_samples_ns"])
+        or not isinstance(baseline.get("windows_per_sample"), int)
+        or baseline["windows_per_sample"] <= 0
+        or not all(
+            isinstance(window, list)
+            and len(window) == baseline["windows_per_sample"]
+            and all(
+                isinstance(sample, (int, float))
+                and not isinstance(sample, bool)
+                and sample > 0
+                for sample in window
+            )
+            for window in baseline["normalized_window_samples_ns"]
+        )
         or not isinstance(baseline.get("warmup"), dict)
         or baseline["warmup"].get("outside_timing_boundary") is not True
         or not isinstance(baseline.get("timer"), dict)
@@ -301,7 +383,7 @@ def compose_observed_decomposition(
         raise ObservedDecompositionError("invalid-paired-measurement-lanes")
     baseline_source = _source(baseline.get("source"))
     qualified, reason_code, ablation = _ablation_decision(
-        pair_id, baseline, diagnostic
+        pair_id, identity, baseline, diagnostic
     )
     if qualified:
         decomposition = _timeline_decomposition(diagnostic.get("device_timeline"))
@@ -317,8 +399,13 @@ def compose_observed_decomposition(
             "reason_code": reason_code,
             "evidence_boundaries": evidence_boundaries,
             "required_next_measurement": (
-                "independent paired baseline/diagnostic holdout for the exact "
-                "Instrumentation Profile and versioned overhead Error Budget"
+                "collect an independent exact-identity paired baseline/diagnostic "
+                "holdout for the versioned overhead and uncertainty Error Budget; "
+                "export a complete same-identity Ascend device timeline"
+                if "profiler-device-timeline-export-incomplete"
+                in evidence_boundaries
+                else "collect an independent exact-identity paired baseline/diagnostic "
+                "holdout for the versioned overhead and uncertainty Error Budget"
             ),
             "e2e_duration_ns": None,
             "leaves": [],
@@ -340,6 +427,11 @@ def compose_observed_decomposition(
             "kind": "baseline-timing-median",
             "median_ns": median(samples),
             "raw_sample_count": len(samples),
+            "timing_summary": deepcopy(baseline["timing_summary"]),
+            "normalized_window_samples_ns": deepcopy(
+                baseline["normalized_window_samples_ns"]
+            ),
+            "windows_per_sample": baseline["windows_per_sample"],
             "instrumentation_profile": baseline["instrumentation_profile"],
             "timer": deepcopy(baseline["timer"]),
             "synchronization": baseline["synchronization"],
@@ -366,4 +458,5 @@ __all__ = [
     "SCHEDULE_EFFECT_INPUT_SCHEMA",
     "ObservedDecompositionError",
     "compose_observed_decomposition",
+    "timing_summary",
 ]

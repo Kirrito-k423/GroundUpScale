@@ -23,49 +23,15 @@
   },
   "lane_id": "issue47-ascend-diagnostic",
   "overhead_ablation": {
-    "evidence_ref": "artifact://issue-32/profiling-ablation",
-    "holdout": {
-      "baseline_lane_id": "issue47-ascend-baseline",
-      "baseline_raw_samples_ns": [
-        15894.500017166138,
-        15859.799981117249,
-        15206.300020217896
-      ],
-      "baseline_session_ids": [
-        "issue32-session-01-v7-baseline",
-        "issue32-session-02-v7-baseline",
-        "issue32-session-03-v7-baseline"
-      ],
-      "diagnostic_lane_id": "issue47-ascend-diagnostic",
-      "diagnostic_raw_samples_ns": [
-        212804.09812927246,
-        221654.10041809082,
-        202454.20455932617
-      ],
-      "diagnostic_session_ids": [
-        "issue32-session-01-v7-diagnostic",
-        "issue32-session-02-v7-diagnostic",
-        "issue32-session-03-v7-diagnostic"
-      ],
-      "evidence_ref": "artifact://issue-32/profiling-holdout",
-      "pair_id": "issue47-ascend-two-layer-prefill-pair-v1"
-    },
     "instrumentation_profile": "torch-npu-profiler/v1",
-    "policy": {
-      "maximum_overhead_ratio": 0.05,
-      "minimum_independent_sessions": 3,
-      "policy_id": "profiling-overhead-error-budget",
-      "version": "1.0.0"
+    "reason_code": "exact-identity-profiling-ablation-missing",
+    "source_boundary": {
+      "artifact_sha256": "c2ff5b377110347f941fd0d9f28ece821d61f41991edfb130ee7dde1d7a7e336",
+      "evidence_ref": "run-bundle://issue32-ascend-910b2-diagnostic-v1/diagnostic/evidence.json",
+      "reason_code": "available-ablation-has-incompatible-case-and-shape",
+      "run_id": "issue32-ascend-910b2-diagnostic-v1"
     },
-    "selection": {
-      "evidence_ref": "artifact://issue-32/profiling-selection",
-      "session_ids": [
-        "issue31-search-v4-s512-torch-matmul-01",
-        "issue31-search-v4-s512-torch-matmul-02",
-        "issue31-search-v4-s512-torch-matmul-03"
-      ]
-    },
-    "status": "qualified"
+    "status": "unavailable"
   },
   "pair_id": "issue47-ascend-two-layer-prefill-pair-v1",
   "paired_baseline_lane_id": "issue47-ascend-baseline",

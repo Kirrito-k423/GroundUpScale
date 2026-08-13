@@ -20,6 +20,148 @@
     },
     "instrumentation_profile": "ascend-npu-baseline-timing-v1",
     "lane_id": "issue47-ascend-baseline",
+    "normalized_window_samples_ns": [
+      [
+        1905000.0,
+        1936200.0,
+        1907900.0,
+        1923500.0,
+        1892900.0
+      ],
+      [
+        1921420.0,
+        1898240.0,
+        1893800.0,
+        1895880.0,
+        1903100.0
+      ],
+      [
+        1898520.0,
+        1901740.0,
+        1919360.0,
+        1910400.0,
+        1911600.0
+      ],
+      [
+        1905420.0,
+        1931680.0,
+        1924060.0,
+        1915880.0,
+        1921400.0
+      ],
+      [
+        1934740.0,
+        1906580.0,
+        1927120.0,
+        1909020.0,
+        1912120.0
+      ],
+      [
+        1908140.0,
+        1901260.0,
+        1912340.0,
+        1914260.0,
+        1913520.0
+      ],
+      [
+        1895100.0,
+        1923680.0,
+        1886000.0,
+        1908140.0,
+        1912680.0
+      ],
+      [
+        1928680.0,
+        1907020.0,
+        1921940.0,
+        1914560.0,
+        1914700.0
+      ],
+      [
+        1902580.0,
+        1908940.0,
+        1923080.0,
+        1923040.0,
+        1910520.0
+      ],
+      [
+        1912460.0,
+        1930700.0,
+        1935920.0,
+        1936640.0,
+        1946140.0
+      ],
+      [
+        1943660.0,
+        1907220.0,
+        1932780.0,
+        1921740.0,
+        1913780.0
+      ],
+      [
+        1922060.0,
+        1917720.0,
+        1905240.0,
+        1914220.0,
+        1923960.0
+      ],
+      [
+        1910480.0,
+        1953140.0,
+        1924760.0,
+        1933020.0,
+        1932020.0
+      ],
+      [
+        1942720.0,
+        1911620.0,
+        1944900.0,
+        1919280.0,
+        1930840.0
+      ],
+      [
+        1917480.0,
+        1906400.0,
+        1923040.0,
+        1921660.0,
+        1937660.0
+      ],
+      [
+        1911340.0,
+        1929660.0,
+        1919860.0,
+        1922060.0,
+        1922260.0
+      ],
+      [
+        1945580.0,
+        1922080.0,
+        1946660.0,
+        1937240.0,
+        1934500.0
+      ],
+      [
+        1948020.0,
+        1934780.0,
+        1934580.0,
+        1925220.0,
+        1948640.0
+      ],
+      [
+        1914140.0,
+        1939100.0,
+        1925220.0,
+        1915300.0,
+        1922900.0
+      ],
+      [
+        1929940.0,
+        1918620.0,
+        1922680.0,
+        1939640.0,
+        1917660.0
+      ]
+    ],
     "pair_id": "issue47-ascend-two-layer-prefill-pair-v1",
     "raw_samples_ns": [
       1907900.0,
@@ -54,10 +196,23 @@
       "resolution_ns": 20.0,
       "source": "torch.npu.Event.elapsed_time"
     },
+    "timing_summary": {
+      "count": 20,
+      "iqr_fraction_of_median": 0.006851311194725037,
+      "iqr_ns": 13165.0,
+      "mad_fraction_of_median": 0.004871118327582707,
+      "maximum_ns": 1937240.0,
+      "median_absolute_deviation_ns": 9360.0,
+      "median_ns": 1921530.0,
+      "minimum_ns": 1898240.0,
+      "q1_ns": 1911720.0,
+      "q3_ns": 1924885.0
+    },
     "warmup": {
       "iterations": 20,
       "outside_timing_boundary": true
-    }
+    },
+    "windows_per_sample": 5
   },
   "diagnostic_profiling_lane": {
     "device_timeline_status": {
@@ -84,49 +239,15 @@
     },
     "lane_id": "issue47-ascend-diagnostic",
     "overhead_ablation": {
-      "evidence_ref": "artifact://issue-32/profiling-ablation",
-      "holdout": {
-        "baseline_lane_id": "issue47-ascend-baseline",
-        "baseline_raw_samples_ns": [
-          15894.500017166138,
-          15859.799981117249,
-          15206.300020217896
-        ],
-        "baseline_session_ids": [
-          "issue32-session-01-v7-baseline",
-          "issue32-session-02-v7-baseline",
-          "issue32-session-03-v7-baseline"
-        ],
-        "diagnostic_lane_id": "issue47-ascend-diagnostic",
-        "diagnostic_raw_samples_ns": [
-          212804.09812927246,
-          221654.10041809082,
-          202454.20455932617
-        ],
-        "diagnostic_session_ids": [
-          "issue32-session-01-v7-diagnostic",
-          "issue32-session-02-v7-diagnostic",
-          "issue32-session-03-v7-diagnostic"
-        ],
-        "evidence_ref": "artifact://issue-32/profiling-holdout",
-        "pair_id": "issue47-ascend-two-layer-prefill-pair-v1"
-      },
       "instrumentation_profile": "torch-npu-profiler/v1",
-      "policy": {
-        "maximum_overhead_ratio": 0.05,
-        "minimum_independent_sessions": 3,
-        "policy_id": "profiling-overhead-error-budget",
-        "version": "1.0.0"
+      "reason_code": "exact-identity-profiling-ablation-missing",
+      "source_boundary": {
+        "artifact_sha256": "c2ff5b377110347f941fd0d9f28ece821d61f41991edfb130ee7dde1d7a7e336",
+        "evidence_ref": "run-bundle://issue32-ascend-910b2-diagnostic-v1/diagnostic/evidence.json",
+        "reason_code": "available-ablation-has-incompatible-case-and-shape",
+        "run_id": "issue32-ascend-910b2-diagnostic-v1"
       },
-      "selection": {
-        "evidence_ref": "artifact://issue-32/profiling-selection",
-        "session_ids": [
-          "issue31-search-v4-s512-torch-matmul-01",
-          "issue31-search-v4-s512-torch-matmul-02",
-          "issue31-search-v4-s512-torch-matmul-03"
-        ]
-      },
-      "status": "qualified"
+      "status": "unavailable"
     },
     "pair_id": "issue47-ascend-two-layer-prefill-pair-v1",
     "paired_baseline_lane_id": "issue47-ascend-baseline",

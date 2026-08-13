@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
+from groundupscale.observed_decomposition import timing_summary
 from groundupscale.run_bundle import (
     verify_run_bundle,
     write_schedule_effect_frontier_bundle,
 )
+from hashlib import sha256
 
 
 REPOSITORY_ROOT = Path(__file__).parents[2]
@@ -54,9 +57,6 @@ def build_document() -> dict[str, object]:
     issue32_evidence = _read_json(
         ISSUE32 / issue32_evidence_artifact["path"]
     )
-    source_ablation = issue32_evidence["diagnostic_profiling_lane"][
-        "overhead_ablation"
-    ]
     e2e = next(
         case
         for case in benchmark["cases"]
@@ -84,6 +84,11 @@ def build_document() -> dict[str, object]:
             "identity": identity,
             "instrumentation_profile": "ascend-npu-baseline-timing-v1",
             "raw_samples_ns": e2e["latency"]["samples_ns"],
+            "timing_summary": timing_summary(e2e["latency"]["samples_ns"]),
+            "normalized_window_samples_ns": e2e["latency"][
+                "normalized_window_samples_ns"
+            ],
+            "windows_per_sample": e2e["latency"]["windows_per_sample"],
             "warmup": {
                 "iterations": e2e["warmup_iterations"],
                 "outside_timing_boundary": True,
@@ -145,32 +150,46 @@ def build_document() -> dict[str, object]:
                 ),
             },
             "overhead_ablation": {
-                "status": source_ablation["status"],
+                "status": "unavailable",
+                "reason_code": "exact-identity-profiling-ablation-missing",
                 "instrumentation_profile": "torch-npu-profiler/v1",
-                "policy": {
-                    "policy_id": "profiling-overhead-error-budget",
-                    "version": "1.0.0",
-                    "maximum_overhead_ratio": 0.05,
-                    "minimum_independent_sessions": 3,
+                "source_boundary": {
+                    "run_id": issue32_manifest["run_id"],
+                    "evidence_ref": (
+                        "run-bundle://issue32-ascend-910b2-diagnostic-v1/"
+                        + issue32_evidence_artifact["path"]
+                    ),
+                    "artifact_sha256": issue32_evidence_artifact["sha256"],
+                    "reason_code": (
+                        "available-ablation-has-incompatible-case-and-shape"
+                    ),
                 },
-                "selection": source_ablation["selection"],
-                "holdout": {
-                    **source_ablation["holdout"],
-                    "pair_id": pair_id,
-                    "baseline_lane_id": baseline_lane_id,
-                    "diagnostic_lane_id": diagnostic_lane_id,
-                },
-                "evidence_ref": source_ablation["evidence_ref"],
             },
         },
     }
 
 
 def main() -> None:
+    evidence_root = Path(__file__).parent / "evidence"
+    destination = evidence_root / "runs" / RUN_ID
+    source_runs = [
+        {
+            "run_id": manifest["run_id"],
+            "path": os.path.relpath(source, destination),
+            "manifest_sha256": sha256(
+                (source / "run.manifest.json").read_bytes()
+            ).hexdigest(),
+        }
+        for source, manifest in (
+            (ISSUE30, _read_json(ISSUE30 / "run.manifest.json")),
+            (ISSUE32, _read_json(ISSUE32 / "run.manifest.json")),
+        )
+    ]
     run = write_schedule_effect_frontier_bundle(
-        Path(__file__).parent / "evidence",
+        evidence_root,
         run_id=RUN_ID,
         document=build_document(),
+        source_runs=source_runs,
     )
     verification = verify_run_bundle(run)
     if verification["passed"] is not True:

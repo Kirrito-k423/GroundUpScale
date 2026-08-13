@@ -7,7 +7,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "schedule-effect-input",
       "schema": "groundupscale.dev/schedule-effect-input/v1alpha1",
-      "sha256": "4d7839fb98c6c6c855c884d1fc8cc4d2c453ebe67c21b6a5268bbb99a35a1a3d"
+      "sha256": "85259e385c6c4a47709d9702943ec3a4d55994b668b9ee64f6b8c72eb992d823"
     },
     {
       "inputs": [
@@ -18,7 +18,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "baseline-timing-observation",
       "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
-      "sha256": "40321f2ee45232dea3f64253b55412d51bffe3f0bf9f8b24068db22eda0d339d"
+      "sha256": "6fcbe2c109ac679572e29efce4bf82e68fc529cea01cc51755cee41e9b7c930a"
     },
     {
       "inputs": [
@@ -29,7 +29,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "diagnostic-profiling-observation",
       "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
-      "sha256": "0a58bdb9667e9a88dbcd0f24c108e18bf66c77d28428e4439e2d8fd7cd51ecf6"
+      "sha256": "89f0a8322cd15e3b2d29d7eb27abaa1d0680d3323222b45acc7475114fcc0710"
     },
     {
       "inputs": [
@@ -42,7 +42,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "observed-decomposition",
       "schema": "groundupscale.dev/observed-decomposition/v1alpha1",
-      "sha256": "42a0d50d5ca0a8852aca6fb93789f7cafb9b522d7043491833315f56d6d30a25"
+      "sha256": "b164ddd450e231bfa233d3d3f709e5cf9b8a14a01163d57fe8625632bd70e50d"
     }
   ],
   "bundle_kind": "schedule-effect-frontier",
@@ -54,5 +54,18 @@
   },
   "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
   "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_manifest_integrity": "required",
+  "source_runs": [
+    {
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "path": "../../../../issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+      "run_id": "ascend-910b2-transformer-demo-20260811-v1"
+    },
+    {
+      "manifest_sha256": "67e4250978b852d461cac801370d78ffaa50c121984143691c4e5139ea91e386",
+      "path": "../../../../issue-32-ascend-diagnostic-bundle/evidence/runs/issue32-ascend-910b2-diagnostic-v1",
+      "run_id": "issue32-ascend-910b2-diagnostic-v1"
+    }
+  ],
   "status": "completed"
 }
