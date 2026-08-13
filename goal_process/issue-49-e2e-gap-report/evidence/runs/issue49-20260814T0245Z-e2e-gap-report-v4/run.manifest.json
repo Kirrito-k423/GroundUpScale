@@ -7,7 +7,7 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "e2e-gap-report-input",
       "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
-      "sha256": "609715dacec70e87a8625642c65ad131bfba72aa43e7e4dfaf83e5ec3a42065b"
+      "sha256": "bb87fa1c880a2cb3ee530925a353432b3d9acfe8e8f0fb9299db9d9da0de5394"
     },
     {
       "inputs": [
@@ -18,7 +18,7 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "e2e-gap-report",
       "schema": "groundupscale.dev/e2e-gap-report/v1alpha1",
-      "sha256": "80c991c13b3272d39cc328f47f55c2129645c5402c41bb7a7828e88dd566d90d"
+      "sha256": "3ea53de637ebc6b807a5bd8ab13298134eaa0719fc454e5505f3e9c77d5c86a2"
     },
     {
       "inputs": [
@@ -29,13 +29,13 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "html-report",
       "schema": "groundupscale.dev/e2e-gap-report-html/v1alpha1",
-      "sha256": "7eabefe21e5e7fb72837b46368675e68918e5ec8f1fb72252a3a01c7d4ad676b"
+      "sha256": "729eec6a0bd9db3826ed3d689bc0965344f6d3ab42823ff83496c609b53b819c"
     }
   ],
   "bundle_kind": "e2e-gap-report",
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "producer": "groundupscale@0.1.0",
-  "run_id": "issue49-20260814T0135Z-e2e-gap-report-v2",
+  "run_id": "issue49-20260814T0245Z-e2e-gap-report-v4",
   "schema": "groundupscale.dev/run-manifest/v1alpha1",
   "source_bundles": [
     {

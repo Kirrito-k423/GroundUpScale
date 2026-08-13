@@ -66,6 +66,7 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
         raise GapReportError("invalid-side-items")
     items: list[dict[str, Any]] = []
     seen: set[str] = set()
+    accounting_ids: set[str] = set()
     for raw_item in raw:
         item = _mapping(raw_item, "invalid-side-item")
         path = item.get("stable_path")
@@ -74,6 +75,16 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
         seen.add(path)
         if item.get("inclusive") is True:
             raise GapReportError("inclusive-parent-is-navigation-only")
+        accounting_id = item.get("accounting_id", path)
+        if not isinstance(accounting_id, str) or accounting_id in accounting_ids:
+            raise GapReportError("non-mutually-exclusive-items")
+        accounting_ids.add(accounting_id)
+        accounting_kind = item.get("accounting_kind", "mutually-exclusive-leaf")
+        if accounting_kind not in {
+            "mutually-exclusive-leaf",
+            "exclusive-parent",
+        }:
+            raise GapReportError("invalid-mutually-exclusive-accounting-kind")
         status = item.get("status", "known")
         duration = item.get("duration_ns")
         if status == "known":
@@ -97,6 +108,8 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
                     "direct-qualified" if status == "known" else "structured-unknown",
                 ),
                 "evidence_refs": _refs(item.get("evidence_refs", [])),
+                "accounting_id": accounting_id,
+                "accounting_kind": accounting_kind,
                 **(
                     {"evidence_boundaries": list(item["evidence_boundaries"])}
                     if isinstance(item.get("evidence_boundaries"), list)
@@ -169,14 +182,27 @@ def _side(value: object, policy: Mapping[str, Any], *, predicted: bool) -> dict[
     selected = _select(items, e2e, policy)
     all_attributed = sum(item["duration_ns"] for item in selected["all_items"])
     selected_ns = sum(item["duration_ns"] for item in selected["selected"])
-    unattributed = _number(side.get("unattributed_ns", 0), "invalid-unattributed") if available else None
-    overlap = _number(side.get("overlap_ns", 0), "invalid-overlap") if available else None
+    unattributed_value = side.get("unattributed_ns")
+    overlap_value = side.get("overlap_ns")
+    unattributed = (
+        _number(unattributed_value, "invalid-unattributed")
+        if available and unattributed_value is not None
+        else None
+    )
+    overlap = (
+        _number(overlap_value, "invalid-overlap")
+        if available and overlap_value is not None
+        else None
+    )
     accounted = (
         all_attributed + unattributed - overlap
         if available and unattributed is not None and overlap is not None
         else None
     )
+    residual = e2e - accounted if e2e is not None and accounted is not None else None
+    reconciled = residual is not None and abs(residual) <= max(1e-6, e2e * 1e-12)
     reconciliation = {
+        "status": "reconciled" if reconciled else "unknown",
         "e2e_ns": e2e,
         "selected_ns": selected_ns if available else None,
         "all_attributed_ns": all_attributed if available else None,
@@ -184,12 +210,13 @@ def _side(value: object, policy: Mapping[str, Any], *, predicted: bool) -> dict[
         "unattributed_ns": unattributed,
         "overlap_ns": overlap,
         "accounted_e2e_ns": accounted,
-        "residual_ns": e2e - accounted if e2e is not None and accounted is not None else None,
+        "residual_ns": 0.0 if reconciled else residual,
     }
     uncertainty = side.get("standard_uncertainty_ns")
     return {
         "status": status,
-        "available": available,
+        "available": available and reconciled,
+        "identity": dict(_mapping(side.get("identity"), "missing-side-identity")),
         "e2e_duration_ns": e2e,
         "standard_uncertainty_ns": (
             _number(uncertainty, "invalid-side-uncertainty")
@@ -213,11 +240,31 @@ def _side(value: object, policy: Mapping[str, Any], *, predicted: bool) -> dict[
     }
 
 
-def _classification(row: Mapping[str, Any]) -> str:
-    operation = str(row.get("operation_class") or "").lower()
-    if operation in {"view", "transpose", "reshape", "copy"}:
-        return "materialization-layout"
-    return "scheduling-integration"
+CLASSIFICATIONS = {
+    "capability-model",
+    "implementation-headroom",
+    "materialization-layout",
+    "scheduling-integration",
+    "instrumentation",
+    "noise",
+}
+
+
+def _classification(
+    row: Mapping[str, Any], evidence_by_path: Mapping[str, Any]
+) -> dict[str, Any] | None:
+    evidence = evidence_by_path.get(row["stable_path"])
+    if not isinstance(evidence, Mapping):
+        return None
+    classification = evidence.get("classification")
+    refs = evidence.get("evidence_refs")
+    if classification not in CLASSIFICATIONS or not isinstance(refs, list) or not refs:
+        return None
+    return {
+        "classification": classification,
+        "classification_reason_code": evidence.get("reason_code"),
+        "classification_evidence_refs": _refs(refs),
+    }
 
 
 def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
@@ -229,6 +276,8 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     policy = _mapping(document.get("policy"), "invalid-report-policy")
     predicted = _side(document.get("predicted"), policy, predicted=True)
     observed = _side(document.get("observed"), policy, predicted=False)
+    if predicted["identity"] != identity or observed["identity"] != identity:
+        raise GapReportError("side-identity-mismatch")
 
     predicted_by_path = {item["stable_path"]: item for item in predicted["all_items"]}
     observed_by_path = {item["stable_path"]: item for item in observed["all_items"]}
@@ -242,9 +291,11 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
         p_ns = p["duration_ns"] if p else None
         o_ns = o["duration_ns"] if o else None
         gap = abs(o_ns - p_ns) if p_ns is not None and o_ns is not None else None
+        p_uncertainty = p.get("standard_uncertainty_ns") if p else None
+        o_uncertainty = o.get("standard_uncertainty_ns") if o else None
         combined = (
-            sqrt((p.get("standard_uncertainty_ns") or 0) ** 2 + (o.get("standard_uncertainty_ns") or 0) ** 2)
-            if p is not None and o is not None
+            sqrt(p_uncertainty**2 + o_uncertainty**2)
+            if p_uncertainty is not None and o_uncertainty is not None
             else None
         )
         rows.append(
@@ -260,6 +311,7 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
                 "predicted_share_of_e2e": p.get("share_of_e2e") if p else None,
                 "observed_share_of_e2e": o.get("share_of_e2e") if o else None,
                 "combined_uncertainty_ns": combined,
+                "diagnosis_eligible": combined is not None,
                 "predicted_evidence_quality": p.get("evidence_quality") if p else "unavailable",
                 "observed_evidence_quality": o.get("evidence_quality") if o else "unavailable",
                 "predicted_evidence_refs": p.get("evidence_refs", []) if p else [],
@@ -271,9 +323,17 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     p_e2e, o_e2e = predicted["e2e_duration_ns"], observed["e2e_duration_ns"]
     p_u, o_u = predicted["standard_uncertainty_ns"], observed["standard_uncertainty_ns"]
     point_prediction = predicted.get("bound_kind") == "point-prediction"
-    comparable = p_e2e is not None and o_e2e is not None and point_prediction
+    comparable = (
+        predicted["available"]
+        and observed["available"]
+        and p_e2e is not None
+        and o_e2e is not None
+        and p_u is not None
+        and o_u is not None
+        and point_prediction
+    )
     e2e_gap = abs(o_e2e - p_e2e) if comparable else None
-    combined_e2e = sqrt((p_u or 0) ** 2 + (o_u or 0) ** 2) if comparable else None
+    combined_e2e = sqrt(p_u**2 + o_u**2) if comparable else None
     metrics = {
         "e2e_absolute_gap_ns": e2e_gap,
         "e2e_ratio": o_e2e / p_e2e if comparable and p_e2e else None,
@@ -287,6 +347,9 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     minimum_gap = _number(diagnosis_policy.get("minimum_absolute_gap_ns"), "invalid-diagnosis-policy")
     minimum_relative = _number(diagnosis_policy.get("minimum_relative_gap"), "invalid-diagnosis-policy")
     triggered = []
+    evidence_by_path = _mapping(
+        document.get("diagnostic_evidence", {}), "invalid-diagnostic-evidence"
+    )
     if comparable:
         for row in rows:
             gap = row["absolute_gap_ns"]
@@ -301,7 +364,9 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
                 and relative is not None
                 and relative > minimum_relative
             ):
-                triggered.append({**row, "classification": _classification(row)})
+                classification = _classification(row, evidence_by_path)
+                if classification is not None:
+                    triggered.append({**row, **classification})
     diagnosis = {
         "status": "evaluated" if comparable else "unavailable",
         "policy": dict(policy),
@@ -310,26 +375,40 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     }
     if triggered:
         largest = max(triggered, key=lambda row: row["absolute_gap_ns"])
+        scopes = document.get("scopes", [])
+        if not isinstance(scopes, list):
+            raise GapReportError("invalid-navigation-scopes")
+        navigation = next(
+            (
+                scope
+                for scope in scopes
+                if isinstance(scope, Mapping)
+                and scope.get("kind") == "inclusive-navigation"
+                and scope.get("children_accounting") == "non-overlapping"
+                and largest["stable_path"] in scope.get("children", [])
+            ),
+            None,
+        )
         drilldown = {
             "kind": "actionable-operation",
             "stable_path": largest["stable_path"],
             "classification": largest["classification"],
-            "non_overlapping_children": [],
+            "navigation_scope": navigation.get("stable_path") if navigation else None,
+            "non_overlapping_children": list(navigation.get("children", [])) if navigation else [],
             "evidence_refs": sorted(set(largest["predicted_evidence_refs"] + largest["observed_evidence_refs"])),
         }
-    elif not observed["available"]:
+    elif not predicted["available"] or not observed["available"]:
         drilldown = {
             "kind": "evidence-boundary",
             "stable_path": None,
-            "evidence_boundaries": observed.get("evidence_boundaries", []),
-            "required_next_measurement": observed.get("required_next_measurement"),
-        }
-    elif not predicted["available"]:
-        drilldown = {
-            "kind": "evidence-boundary",
-            "stable_path": None,
-            "evidence_boundaries": predicted.get("evidence_boundaries", []),
-            "required_next_measurement": predicted.get("required_next_measurement"),
+            "evidence_boundaries": {
+                "predicted": predicted.get("evidence_boundaries", []),
+                "observed": observed.get("evidence_boundaries", []),
+            },
+            "required_next_measurement": {
+                "predicted": predicted.get("required_next_measurement"),
+                "observed": observed.get("required_next_measurement"),
+            },
         }
     else:
         drilldown = {"kind": "none", "stable_path": None, "evidence_boundaries": []}
@@ -369,7 +448,14 @@ def render_gap_report_html(report: Mapping[str, Any]) -> str:
         "</tr>"
         for row in report["gap_table"]
     )
-    boundaries = ", ".join(report["drilldown"].get("evidence_boundaries", [])) or "none"
+    boundary_value = report["drilldown"].get("evidence_boundaries", [])
+    if isinstance(boundary_value, Mapping):
+        boundaries = "; ".join(
+            f"{side}: {', '.join(str(item) for item in values) or 'none'}"
+            for side, values in boundary_value.items()
+        )
+    else:
+        boundaries = ", ".join(str(item) for item in boundary_value) or "none"
     payload = json.dumps(canonical_data(report), ensure_ascii=False, sort_keys=True).replace("</", "<\\/")
     return f"""<!doctype html>
 <html><head><meta charset=\"utf-8\"><title>E2E prediction-observation gap report</title></head>
@@ -388,6 +474,26 @@ def write_gap_report_bundle(
     if not RUN_ID_PATTERN.fullmatch(run_id):
         raise GapReportError("unsafe-run-id")
     report = compose_gap_report(document)
+    selected_rows = report["gap_table"]
+    sources_value = document.get("source_bundles")
+    if selected_rows:
+        if not isinstance(sources_value, list) or not sources_value:
+            raise GapReportError("selected-rows-require-locked-source-bundles")
+        source_ids = {
+            source.get("run_id")
+            for source in sources_value
+            if isinstance(source, Mapping)
+        }
+        for row in selected_rows:
+            for side in ("predicted", "observed"):
+                if row[f"{side}_time_ns"] is None:
+                    continue
+                refs = row[f"{side}_evidence_refs"]
+                if not refs or not all(
+                    any(ref.startswith(f"run://{run_id}") for run_id in source_ids)
+                    for ref in refs
+                ):
+                    raise GapReportError("selected-row-direct-source-ref-mismatch")
     root = Path(artifact_store).resolve() / "runs"
     root.mkdir(parents=True, exist_ok=True)
     destination = root / run_id
@@ -421,6 +527,12 @@ def write_gap_report_bundle(
             **(
                 {"source_bundles": list(document["source_bundles"])}
                 if isinstance(document.get("source_bundles"), list)
+                and all(
+                    isinstance(source, Mapping)
+                    and isinstance(source.get("path"), str)
+                    and isinstance(source.get("manifest_sha256"), str)
+                    for source in document["source_bundles"]
+                )
                 else {}
             ),
         }

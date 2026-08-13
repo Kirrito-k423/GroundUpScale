@@ -1,40 +1,4 @@
 {
-  "derivation": {
-    "input_sha256": "609715dacec70e87a8625642c65ad131bfba72aa43e7e4dfaf83e5ec3a42065b"
-  },
-  "diagnosis": {
-    "policy": {
-      "classifications": [
-        "capability-model",
-        "implementation-headroom",
-        "materialization-layout",
-        "scheduling-integration",
-        "instrumentation",
-        "noise"
-      ],
-      "deep_diagnosis": {
-        "minimum_absolute_gap_ns": 50000,
-        "minimum_relative_gap": 0.1
-      },
-      "mandatory_share_of_e2e": 0.1,
-      "policy_id": "issue49-e2e-gap-materiality-v1",
-      "top_k": 10,
-      "version": "1"
-    },
-    "reason_code": "comparison-not-applicable",
-    "status": "unavailable",
-    "triggered": []
-  },
-  "drilldown": {
-    "evidence_boundaries": [
-      "exact-identity-profiling-ablation-missing",
-      "profiler-device-timeline-export-incomplete"
-    ],
-    "kind": "evidence-boundary",
-    "required_next_measurement": "collect an independent exact-identity paired baseline/diagnostic holdout for the versioned overhead and uncertainty Error Budget; export a complete same-identity Ascend device timeline",
-    "stable_path": null
-  },
-  "gap_table": [],
   "identity": {
     "candidate_id": "ascend-two-layer-transformer-pytorch-eager-v1",
     "case": "two-layer-prefill",
@@ -46,19 +10,8 @@
       512
     ]
   },
-  "metrics": {
-    "applicability": "unavailable-non-point-or-missing-side",
-    "combined_uncertainty_ns": null,
-    "e2e_absolute_gap_ns": null,
-    "e2e_ratio": null,
-    "frontier_efficiency": null,
-    "relative_prediction_error": null
-  },
   "observed": {
     "accounting": "interval-union-or-critical-path",
-    "all_items": [],
-    "available": false,
-    "bound_kind": null,
     "e2e_duration_ns": null,
     "evidence_boundaries": [
       "exact-identity-profiling-ablation-missing",
@@ -67,29 +20,42 @@
     "evidence_refs": [
       "run://issue47-ascend-observed-decomposition-20260813-v1"
     ],
-    "mandatory": [],
-    "reason_code": "exact-identity-profiling-ablation-missing",
-    "reconciliation": {
-      "accounted_e2e_ns": null,
-      "all_attributed_ns": null,
-      "e2e_ns": null,
-      "other_ns": null,
-      "overlap_ns": null,
-      "residual_ns": null,
-      "selected_ns": null,
-      "unattributed_ns": null
+    "identity": {
+      "candidate_id": "ascend-two-layer-transformer-pytorch-eager-v1",
+      "case": "two-layer-prefill",
+      "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "shape": [
+        1,
+        512,
+        512
+      ]
     },
+    "items": [],
+    "reason_code": "exact-identity-profiling-ablation-missing",
     "required_next_measurement": "collect an independent exact-identity paired baseline/diagnostic holdout for the versioned overhead and uncertainty Error Budget; export a complete same-identity Ascend device timeline",
-    "selected": [],
     "standard_uncertainty_ns": null,
-    "status": "unavailable",
-    "top10": [],
-    "unknown_items": []
+    "status": "unavailable"
+  },
+  "policy": {
+    "classifications": [
+      "capability-model",
+      "implementation-headroom",
+      "materialization-layout",
+      "scheduling-integration",
+      "instrumentation",
+      "noise"
+    ],
+    "deep_diagnosis": {
+      "minimum_absolute_gap_ns": 50000,
+      "minimum_relative_gap": 0.1
+    },
+    "mandatory_share_of_e2e": 0.1,
+    "policy_id": "issue49-e2e-gap-materiality-v1",
+    "top_k": 10,
+    "version": "1"
   },
   "predicted": {
-    "accounting": null,
-    "all_items": [],
-    "available": false,
     "bound_kind": "point-prediction",
     "e2e_duration_ns": null,
     "evidence_boundaries": [
@@ -155,24 +121,18 @@
     "evidence_refs": [
       "run://issue48-20260814T0002Z-schedule-frontier-unknown-v2"
     ],
-    "mandatory": [],
-    "reason_code": "incomplete-schedule-frontier",
-    "reconciliation": {
-      "accounted_e2e_ns": null,
-      "all_attributed_ns": null,
-      "e2e_ns": null,
-      "other_ns": null,
-      "overlap_ns": null,
-      "residual_ns": null,
-      "selected_ns": null,
-      "unattributed_ns": null
+    "identity": {
+      "candidate_id": "ascend-two-layer-transformer-pytorch-eager-v1",
+      "case": "two-layer-prefill",
+      "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "shape": [
+        1,
+        512,
+        512
+      ]
     },
-    "required_next_measurement": "qualify every mandatory leaf and schedule effect in the same Hardware Cohort",
-    "selected": [],
-    "standard_uncertainty_ns": null,
-    "status": "unknown",
-    "top10": [],
-    "unknown_items": [
+    "items": [
       {
         "duration_ns": null,
         "evidence_boundaries": [
@@ -797,13 +757,29 @@
         "standard_uncertainty_ns": null,
         "status": "unknown"
       }
-    ]
+    ],
+    "reason_code": "incomplete-schedule-frontier",
+    "required_next_measurement": "qualify every mandatory leaf and schedule effect in the same Hardware Cohort",
+    "standard_uncertainty_ns": null,
+    "status": "unknown"
   },
-  "schema": "groundupscale.dev/e2e-gap-report/v1alpha1",
-  "status": "structured-unknown",
-  "visibility_rule": {
-    "mandatory_share_of_e2e": 0.1,
-    "selection": "independent-per-side-then-exact-stable-path-union",
-    "top_k": 10
-  }
+  "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
+  "source_bundles": [
+    {
+      "bundle_kind": "model-e2e-frontier",
+      "evidence_ref": "run://issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "manifest_sha256": "dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "path": "goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "schedule-effect-frontier",
+      "evidence_ref": "run://issue47-ascend-observed-decomposition-20260813-v1",
+      "manifest_sha256": "8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "path": "goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1",
+      "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+      "verification_passed": true
+    }
+  ]
 }

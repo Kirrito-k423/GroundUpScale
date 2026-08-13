@@ -2173,11 +2173,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ) != [paths_by_role.get("e2e-gap-report-input")]:
                     failures.append("E2E gap report lineage mismatch")
                 locked_sources = source.get("source_bundles")
-                if locked_sources is not None:
+                manifest_sources = manifest.get("source_bundles")
+                if manifest_sources is not None:
                     if (
                         not isinstance(locked_sources, list)
                         or not locked_sources
-                        or manifest.get("source_bundles") != locked_sources
+                        or manifest_sources != locked_sources
                     ):
                         failures.append("E2E gap report source lineage mismatch")
                         locked_sources = []

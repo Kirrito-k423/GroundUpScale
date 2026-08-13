@@ -47,6 +47,20 @@ def build_document() -> dict[str, object]:
     predicted = _load(PREDICTED_RUN / "comparison/model-e2e-frontier.json")
     observed = _load(OBSERVED_RUN / "observation/observed-decomposition.json")
     identity = observed["identity"]
+    report_identity = {
+        "case": identity["benchmark_case"],
+        "shape": identity["shape"],
+        "candidate_id": identity["candidate_id"],
+        "hardware_cohort": identity["hardware_cohort"],
+        "completion_boundary": identity["completion_boundary"],
+    }
+    if (
+        predicted["model_id"] != "two-layer-transformer-prefill"
+        or predicted["hardware_cohort"] != report_identity["hardware_cohort"]
+        or predicted["axes"]["observation"]["value_ns"]
+        != observed["baseline_e2e_observation"]["median_ns"]
+    ):
+        raise RuntimeError("#47/#48 same-boundary identity mismatch")
     predicted_leaves = predicted["coverage"]["predicted_leaves"]
     predicted_items = [
         {
@@ -80,13 +94,7 @@ def build_document() -> dict[str, object]:
     ]
     return {
         "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
-        "identity": {
-            "case": identity["benchmark_case"],
-            "shape": identity["shape"],
-            "candidate_id": identity["candidate_id"],
-            "hardware_cohort": identity["hardware_cohort"],
-            "completion_boundary": identity["completion_boundary"],
-        },
+        "identity": report_identity,
         "policy": {
             "policy_id": "issue49-e2e-gap-materiality-v1",
             "version": "1",
@@ -106,6 +114,7 @@ def build_document() -> dict[str, object]:
             ],
         },
         "predicted": {
+            "identity": report_identity,
             "status": "known" if predicted["status"] == "complete" else "unknown",
             "e2e_duration_ns": predicted["schedule"]["selected_feasible_duration_ns"],
             "standard_uncertainty_ns": predicted["uncertainty"]["combined_ns"],
@@ -121,6 +130,7 @@ def build_document() -> dict[str, object]:
             "evidence_refs": [_manifest_source(PREDICTED_RUN)["evidence_ref"]],
         },
         "observed": {
+            "identity": report_identity,
             "status": observed_decomposition["status"],
             "e2e_duration_ns": observed_decomposition["e2e_duration_ns"],
             "standard_uncertainty_ns": None,
@@ -145,7 +155,7 @@ def build_document() -> dict[str, object]:
 if __name__ == "__main__":
     destination = write_gap_report_bundle(
         Path(__file__).parent / "evidence",
-        run_id="issue49-20260814T0135Z-e2e-gap-report-v2",
+        run_id="issue49-20260814T0245Z-e2e-gap-report-v4",
         document=build_document(),
     )
     print(destination)
