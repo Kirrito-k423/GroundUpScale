@@ -1,0 +1,78 @@
+{
+  "device_timeline_status": {
+    "evidence_ref": "run-bundle://issue32-ascend-910b2-diagnostic-v1/diagnostic/evidence.json",
+    "reason_code": "profiler-device-timeline-export-incomplete",
+    "status": "unavailable"
+  },
+  "identity": {
+    "benchmark_case": "two-layer-prefill",
+    "candidate_id": "ascend-two-layer-transformer-pytorch-eager-v1",
+    "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "shape": [
+      1,
+      512,
+      512
+    ]
+  },
+  "instrumentation_profile": "torch-npu-profiler/v1",
+  "instrumentation_timing": {
+    "clock_domain": "host-monotonic",
+    "elapsed_ns": 50840320,
+    "source": "issue30-single-host-diagnostic-trace"
+  },
+  "lane_id": "issue47-ascend-diagnostic",
+  "overhead_ablation": {
+    "evidence_ref": "artifact://issue-32/profiling-ablation",
+    "holdout": {
+      "baseline_lane_id": "issue47-ascend-baseline",
+      "baseline_raw_samples_ns": [
+        15894.500017166138,
+        15859.799981117249,
+        15206.300020217896
+      ],
+      "baseline_session_ids": [
+        "issue32-session-01-v7-baseline",
+        "issue32-session-02-v7-baseline",
+        "issue32-session-03-v7-baseline"
+      ],
+      "diagnostic_lane_id": "issue47-ascend-diagnostic",
+      "diagnostic_raw_samples_ns": [
+        212804.09812927246,
+        221654.10041809082,
+        202454.20455932617
+      ],
+      "diagnostic_session_ids": [
+        "issue32-session-01-v7-diagnostic",
+        "issue32-session-02-v7-diagnostic",
+        "issue32-session-03-v7-diagnostic"
+      ],
+      "evidence_ref": "artifact://issue-32/profiling-holdout",
+      "pair_id": "issue47-ascend-two-layer-prefill-pair-v1"
+    },
+    "instrumentation_profile": "torch-npu-profiler/v1",
+    "policy": {
+      "maximum_overhead_ratio": 0.05,
+      "minimum_independent_sessions": 3,
+      "policy_id": "profiling-overhead-error-budget",
+      "version": "1.0.0"
+    },
+    "selection": {
+      "evidence_ref": "artifact://issue-32/profiling-selection",
+      "session_ids": [
+        "issue31-search-v4-s512-torch-matmul-01",
+        "issue31-search-v4-s512-torch-matmul-02",
+        "issue31-search-v4-s512-torch-matmul-03"
+      ]
+    },
+    "status": "qualified"
+  },
+  "pair_id": "issue47-ascend-two-layer-prefill-pair-v1",
+  "paired_baseline_lane_id": "issue47-ascend-baseline",
+  "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
+  "source": {
+    "artifact_sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+    "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/comparison/error-attribution.json",
+    "run_id": "ascend-910b2-transformer-demo-20260811-v1"
+  }
+}

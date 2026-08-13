@@ -1,0 +1,58 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "schedule/effects.input.json",
+      "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
+      "role": "schedule-effect-input",
+      "schema": "groundupscale.dev/schedule-effect-input/v1alpha1",
+      "sha256": "4d7839fb98c6c6c855c884d1fc8cc4d2c453ebe67c21b6a5268bbb99a35a1a3d"
+    },
+    {
+      "inputs": [
+        "schedule/effects.input.json"
+      ],
+      "media_type": "application/json",
+      "path": "observation/baseline-timing.json",
+      "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
+      "role": "baseline-timing-observation",
+      "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+      "sha256": "40321f2ee45232dea3f64253b55412d51bffe3f0bf9f8b24068db22eda0d339d"
+    },
+    {
+      "inputs": [
+        "schedule/effects.input.json"
+      ],
+      "media_type": "application/json",
+      "path": "observation/diagnostic-profiling.json",
+      "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
+      "role": "diagnostic-profiling-observation",
+      "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
+      "sha256": "0a58bdb9667e9a88dbcd0f24c108e18bf66c77d28428e4439e2d8fd7cd51ecf6"
+    },
+    {
+      "inputs": [
+        "schedule/effects.input.json",
+        "observation/baseline-timing.json",
+        "observation/diagnostic-profiling.json"
+      ],
+      "media_type": "application/json",
+      "path": "observation/observed-decomposition.json",
+      "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
+      "role": "observed-decomposition",
+      "schema": "groundupscale.dev/observed-decomposition/v1alpha1",
+      "sha256": "42a0d50d5ca0a8852aca6fb93789f7cafb9b522d7043491833315f56d6d30a25"
+    }
+  ],
+  "bundle_kind": "schedule-effect-frontier",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; artifact digests are authoritative",
+  "producer_lineage": {
+    "producer": "groundupscale.schedule-effect-frontier@1.0.0",
+    "source": "python://groundupscale.observed_decomposition"
+  },
+  "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "completed"
+}

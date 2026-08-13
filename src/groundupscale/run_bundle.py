@@ -7,6 +7,7 @@ import math
 import os
 import platform
 import re
+import shutil
 import statistics
 import subprocess
 import tempfile
@@ -38,6 +39,11 @@ from groundupscale.alias_materialization import (
 from groundupscale.execution_runtime import ExecutionRuntime
 from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.measurement_contract import COHORT_IDENTITY_DIMENSIONS
+from groundupscale.observed_decomposition import (
+    OBSERVED_DECOMPOSITION_SCHEMA,
+    SCHEDULE_EFFECT_INPUT_SCHEMA,
+    compose_observed_decomposition,
+)
 from groundupscale.physical_floor_report import render_physical_floor_report
 from groundupscale.pipeline import CompiledAnalysis
 
@@ -134,6 +140,14 @@ COMPOUND_OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
 )
 OPERATOR_PHASE_MEASUREMENT_REQUIRED_ROLES = frozenset(
     {"operator-phase-capability-observation"}
+)
+SCHEDULE_EFFECT_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
+        "schedule-effect-input",
+        "baseline-timing-observation",
+        "diagnostic-profiling-observation",
+        "observed-decomposition",
+    }
 )
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
@@ -551,6 +565,113 @@ class RunBundleExistsError(FileExistsError):
 
 class EnvironmentValidityError(RuntimeError):
     pass
+
+
+def write_schedule_effect_frontier_bundle(
+    artifact_store: str | Path,
+    *,
+    run_id: str,
+    document: dict[str, object],
+) -> Path:
+    """Publish a replayable paired-lane observed decomposition Run Bundle."""
+
+    if not RUN_ID_PATTERN.fullmatch(run_id):
+        raise ValueError(f"unsafe run_id: {run_id!r}")
+    result = compose_observed_decomposition(document)
+    runs_root = Path(artifact_store).resolve() / "runs"
+    runs_root.mkdir(parents=True, exist_ok=True)
+    destination = runs_root / run_id
+    if destination.exists():
+        raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+    temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_root))
+    producer = "groundupscale.schedule-effect-frontier@1.0.0"
+    artifacts: list[dict[str, object]] = []
+
+    def write_json(
+        role: str,
+        relative: str,
+        value: object,
+        schema: str,
+        inputs: list[str],
+    ) -> None:
+        path = temporary / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(_json_bytes(value))
+        artifacts.append(
+            {
+                "role": role,
+                "path": relative,
+                "media_type": "application/json",
+                "schema": schema,
+                "sha256": _sha256(path),
+                "produced_by": producer,
+                "inputs": inputs,
+            }
+        )
+
+    try:
+        write_json(
+            "schedule-effect-input",
+            "schedule/effects.input.json",
+            document,
+            SCHEDULE_EFFECT_INPUT_SCHEMA,
+            [],
+        )
+        baseline_artifact = {
+            "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+            **document["baseline_timing_lane"],
+        }
+        diagnostic_artifact = {
+            "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
+            **document["diagnostic_profiling_lane"],
+        }
+        write_json(
+            "baseline-timing-observation",
+            "observation/baseline-timing.json",
+            baseline_artifact,
+            "groundupscale.dev/baseline-timing-observation/v1alpha1",
+            ["schedule/effects.input.json"],
+        )
+        write_json(
+            "diagnostic-profiling-observation",
+            "observation/diagnostic-profiling.json",
+            diagnostic_artifact,
+            "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
+            ["schedule/effects.input.json"],
+        )
+        write_json(
+            "observed-decomposition",
+            "observation/observed-decomposition.json",
+            result,
+            OBSERVED_DECOMPOSITION_SCHEMA,
+            [
+                "schedule/effects.input.json",
+                "observation/baseline-timing.json",
+                "observation/diagnostic-profiling.json",
+            ],
+        )
+        manifest = {
+            "schema": "groundupscale.dev/run-manifest/v1alpha1",
+            "run_id": run_id,
+            "bundle_kind": "schedule-effect-frontier",
+            "status": "completed",
+            "hardware_cohort": result["identity"]["hardware_cohort"],
+            "producer_lineage": {
+                "producer": producer,
+                "source": "python://groundupscale.observed_decomposition",
+            },
+            "artifacts": artifacts,
+            "immutability": (
+                "writer refuses an existing run_id; artifact digests are authoritative"
+            ),
+        }
+        (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
+        os.replace(temporary, destination)
+        return destination
+    except BaseException:
+        if temporary.exists():
+            shutil.rmtree(temporary)
+        raise
 
 
 def write_blocked_transformer_run(
@@ -1764,6 +1885,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     model_e2e_frontier = (
         manifest.get("bundle_kind") == "model-e2e-frontier"
     )
+    schedule_effect_frontier = (
+        manifest.get("bundle_kind") == "schedule-effect-frontier"
+    )
     compound_operator_frontier = (
         manifest.get("bundle_kind") == "compound-operator-frontier"
     )
@@ -1790,6 +1914,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or transformer_matmul_surface
         or compound_operator_frontier
         or operator_phase_measurement
+        or schedule_effect_frontier
         or operator_phase_measurement
     )
     supersedes = manifest.get("supersedes")
@@ -1850,7 +1975,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             if isinstance(artifact, dict):
                 role = artifact.get("role")
                 role_counts[role] = role_counts.get(role, 0) + 1
-        if model_e2e_frontier:
+        if schedule_effect_frontier:
+            required_roles = SCHEDULE_EFFECT_FRONTIER_REQUIRED_ROLES
+        elif model_e2e_frontier:
             required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
         elif transformer_matmul_exact_anchor:
             required_roles = TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES
@@ -2067,6 +2194,72 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         ),
                     }:
                         failures.append("layout execution authority mismatch")
+
+    if schedule_effect_frontier:
+        schedule_input = documents_by_role.get("schedule-effect-input")
+        baseline_observation = documents_by_role.get(
+            "baseline-timing-observation"
+        )
+        diagnostic_observation = documents_by_role.get(
+            "diagnostic-profiling-observation"
+        )
+        decomposition = documents_by_role.get("observed-decomposition")
+        if (
+            manifest.get("status") != "completed"
+            or not isinstance(schedule_input, dict)
+            or not isinstance(baseline_observation, dict)
+            or not isinstance(diagnostic_observation, dict)
+            or not isinstance(decomposition, dict)
+        ):
+            failures.append("invalid schedule effect Frontier bundle identity")
+        else:
+            expected_baseline = {
+                "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+                **schedule_input.get("baseline_timing_lane", {}),
+            }
+            expected_diagnostic = {
+                "schema": (
+                    "groundupscale.dev/diagnostic-profiling-observation/v1alpha1"
+                ),
+                **schedule_input.get("diagnostic_profiling_lane", {}),
+            }
+            if baseline_observation != expected_baseline:
+                failures.append("baseline timing observation derivation mismatch")
+            if diagnostic_observation != expected_diagnostic:
+                failures.append(
+                    "diagnostic profiling observation derivation mismatch"
+                )
+            try:
+                replay = compose_observed_decomposition(schedule_input)
+            except (KeyError, TypeError, ValueError):
+                failures.append("observed decomposition replay failed")
+            else:
+                if decomposition != replay:
+                    failures.append("observed decomposition derivation mismatch")
+                identity = replay.get("identity")
+                if (
+                    not isinstance(identity, dict)
+                    or manifest.get("hardware_cohort")
+                    != identity.get("hardware_cohort")
+                ):
+                    failures.append("observed decomposition cohort mismatch")
+                result_artifact = next(
+                    (
+                        artifact
+                        for artifact in artifacts
+                        if isinstance(artifact, dict)
+                        and artifact.get("role") == "observed-decomposition"
+                    ),
+                    None,
+                )
+                if not isinstance(result_artifact, dict) or result_artifact.get(
+                    "inputs"
+                ) != [
+                    paths_by_role.get("schedule-effect-input"),
+                    paths_by_role.get("baseline-timing-observation"),
+                    paths_by_role.get("diagnostic-profiling-observation"),
+                ]:
+                    failures.append("observed decomposition lineage mismatch")
 
     if operator_frontier:
         qualification = documents_by_role.get(
@@ -4294,5 +4487,6 @@ __all__ = [
     "RunBundleExistsError",
     "RunBundleWriter",
     "verify_run_bundle",
+    "write_schedule_effect_frontier_bundle",
     "write_blocked_transformer_run",
 ]

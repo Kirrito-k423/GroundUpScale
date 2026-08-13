@@ -1,0 +1,85 @@
+{
+  "baseline_e2e_observation": {
+    "correctness": {
+      "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/observation/correctness.json",
+      "max_absolute_error": 9.5367431640625e-07,
+      "no_cpu_fallback": true,
+      "passed": true,
+      "semantic_leaf_count": 52
+    },
+    "instrumentation_profile": "ascend-npu-baseline-timing-v1",
+    "kind": "baseline-timing-median",
+    "median_ns": 1921530.0,
+    "raw_sample_count": 20,
+    "source": {
+      "artifact_sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07",
+      "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/observation/raw/benchmark.json",
+      "run_id": "ascend-910b2-transformer-demo-20260811-v1"
+    },
+    "status": "valid",
+    "synchronization": "end-event-synchronize-plus-device-synchronize",
+    "timer": {
+      "kind": "npu-event",
+      "resolution_ns": 20.0,
+      "source": "torch.npu.Event.elapsed_time"
+    },
+    "warmup": {
+      "iterations": 20,
+      "outside_timing_boundary": true
+    }
+  },
+  "diagnostic_instrumentation_timing": {
+    "clock_domain": "host-monotonic",
+    "elapsed_ns": 50840320,
+    "source": "issue30-single-host-diagnostic-trace"
+  },
+  "diagnostic_source": {
+    "artifact_sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+    "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/comparison/error-attribution.json",
+    "run_id": "ascend-910b2-transformer-demo-20260811-v1"
+  },
+  "identity": {
+    "benchmark_case": "two-layer-prefill",
+    "candidate_id": "ascend-two-layer-transformer-pytorch-eager-v1",
+    "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "shape": [
+      1,
+      512,
+      512
+    ]
+  },
+  "observed_decomposition": {
+    "e2e_duration_ns": null,
+    "evidence_boundaries": [
+      "profiling-overhead-error-budget-exceeded",
+      "profiler-device-timeline-export-incomplete"
+    ],
+    "inclusive_parents": [],
+    "leaves": [],
+    "reason_code": "profiling-overhead-error-budget-exceeded",
+    "reconciliation": {
+      "all_attributed_ns": null,
+      "overlap_ns": null,
+      "reconciled_e2e_ns": null,
+      "unattributed_ns": null
+    },
+    "required_next_measurement": "independent paired baseline/diagnostic holdout for the exact Instrumentation Profile and versioned overhead Error Budget",
+    "status": "unavailable"
+  },
+  "pair_id": "issue47-ascend-two-layer-prefill-pair-v1",
+  "profiling_overhead_ablation": {
+    "decision_evidence_ref": "artifact://issue-32/profiling-ablation",
+    "holdout_evidence_ref": "artifact://issue-32/profiling-holdout",
+    "observed_overhead_ratio": 12.417829883267002,
+    "policy": {
+      "maximum_overhead_ratio": 0.05,
+      "minimum_independent_sessions": 3,
+      "policy_id": "profiling-overhead-error-budget",
+      "version": "1.0.0"
+    },
+    "selection_evidence_ref": "artifact://issue-32/profiling-selection",
+    "status": "error-budget-exceeded"
+  },
+  "schema": "groundupscale.dev/observed-decomposition/v1alpha1"
+}
