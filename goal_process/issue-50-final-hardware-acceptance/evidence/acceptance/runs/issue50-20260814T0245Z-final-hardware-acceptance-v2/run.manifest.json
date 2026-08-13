@@ -1,0 +1,131 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/final-hardware-acceptance-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "final-hardware-acceptance-input",
+      "schema": "groundupscale.dev/final-hardware-acceptance-input/v1alpha1",
+      "sha256": "adeab2fa81a5c6e234b7ecb5ab08a8e8123ed84e2f7fad776c8542ed3ddfe176"
+    },
+    {
+      "inputs": [
+        "resolved/final-hardware-acceptance-input.json"
+      ],
+      "media_type": "application/json",
+      "path": "acceptance/final-hardware-acceptance.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "final-hardware-acceptance",
+      "schema": "groundupscale.dev/final-hardware-acceptance/v1alpha1",
+      "sha256": "621e2ca0abb2cfebdaa1ea93d0e312d232eb036ec59695bd0de72a7d6e237bba"
+    },
+    {
+      "inputs": [
+        "acceptance/final-hardware-acceptance.json"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/final-hardware-acceptance-html/v1alpha1",
+      "sha256": "def84480b0c5b8eff841f5cc47c7cec74c708ad43e3798ebf13a878d753f88e6"
+    }
+  ],
+  "bundle_kind": "final-hardware-acceptance",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "producer": "groundupscale@0.1.0",
+  "run_id": "issue50-20260814T0245Z-final-hardware-acceptance-v2",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_bundles": [
+    {
+      "bundle_kind": "model-e2e-frontier",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "path": "goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "schedule-effect-frontier",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "path": "goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1",
+      "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "e2e-gap-report",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "d582877c0f095e5a8a918a28e2888c71ce1b28ea7746738cac8f62fbc7f1ea10",
+      "path": "goal_process/issue-49-e2e-gap-report/evidence/runs/issue49-20260814T0345Z-e2e-gap-report-v6",
+      "run_id": "issue49-20260814T0345Z-e2e-gap-report-v6",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "transformer-demo",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "283d1874626bb7c777b74c5af13bf9e8ef69f91d70336384857397a2651f9719",
+      "path": "goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260813T175228Z-independent-e2e-holdout-v1",
+      "run_id": "issue50-20260813T175228Z-independent-e2e-holdout-v1",
+      "verification_passed": true
+    }
+  ],
+  "status": "completed"
+}

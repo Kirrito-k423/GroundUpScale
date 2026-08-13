@@ -1516,6 +1516,38 @@ class RunBundleWriter:
                 memory_observation=memory_observation,
             )
             write_bytes("html-report", "reports/report.html", report.encode("utf-8"), media_type="text/html", schema="groundupscale.dev/html-report/v1alpha2", inputs=("explanation-graph", "prediction-observation-comparison"))
+            lock_started_at = os.environ.get("GROUNDUPSCALE_LOCK_STARTED_AT")
+            lock_owner = os.environ.get("GROUNDUPSCALE_LOCK_OWNER")
+            if lock_started_at is not None or lock_owner is not None:
+                if (
+                    os.environ.get("GROUNDUPSCALE_ISSUE") != "50"
+                    or os.environ.get("ASCEND_RT_VISIBLE_DEVICES") != "0"
+                    or not lock_started_at
+                    or not lock_owner
+                ):
+                    raise ValueError("incomplete Ascend host lock publication context")
+                lock_session = {
+                    "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+                    "issue": 50,
+                    "run_id": selected_run_id,
+                    "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+                    "wrapper_path": "/home/t00906153/.groundupscale/bin/with-ascend-lock",
+                    "wrapper_sha256": os.environ.get("GROUNDUPSCALE_LOCK_WRAPPER_SHA256"),
+                    "owner": lock_owner,
+                    "measurement_started_at": lock_started_at,
+                    "measurement_ended_at": datetime.now(UTC).isoformat(),
+                    "hardware_cohort": self.npu_evidence.cohort.get("cohort_id") if self.npu_evidence else None,
+                    "ascend_rt_visible_devices": "0",
+                    "logical_device": device,
+                    "whole_host_exclusive": True,
+                }
+                write_json(
+                    "ascend-host-lock-session",
+                    "observation/ascend-host-lock-session.json",
+                    lock_session,
+                    str(lock_session["schema"]),
+                    ("hardware-cohort", "benchmark-observation"),
+                )
 
             manifest = {
                 "schema": "groundupscale.dev/run-manifest/v1alpha1",
@@ -1836,6 +1868,59 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     failures: list[str] = []
     verified_source_runs: dict[str, tuple[Path, dict[str, object]]] = {}
+
+    def verify_locked_sources(
+        locked_sources: object,
+        manifest_sources: object,
+        *,
+        label: str,
+        require_nonempty: bool,
+        require_identity: bool = False,
+    ) -> None:
+        if (
+            not isinstance(locked_sources, list)
+            or (require_nonempty and not locked_sources)
+            or manifest_sources != locked_sources
+        ):
+            failures.append(f"{label} source lineage mismatch")
+            return
+        repository_root = root
+        while repository_root != repository_root.parent and not (
+            repository_root / "pyproject.toml"
+        ).is_file():
+            repository_root = repository_root.parent
+        for locked in locked_sources:
+            if not isinstance(locked, dict):
+                failures.append(f"{label} source lineage mismatch")
+                continue
+            relative = locked.get("path")
+            digest = locked.get("manifest_sha256")
+            if (
+                not isinstance(relative, str)
+                or not relative
+                or Path(relative).is_absolute()
+                or not isinstance(digest, str)
+                or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                or locked.get("verification_passed") is not True
+                or (require_identity and not isinstance(locked.get("identity"), dict))
+            ):
+                failures.append(f"{label} source lineage mismatch")
+                continue
+            source_root = (repository_root / relative).resolve()
+            try:
+                source_root.relative_to(repository_root)
+                source_manifest_path = source_root / "run.manifest.json"
+                source_manifest = json.loads(source_manifest_path.read_text())
+            except (ValueError, OSError, UnicodeDecodeError, json.JSONDecodeError):
+                failures.append(f"{label} source is not resolvable")
+                continue
+            if (
+                _sha256(source_manifest_path) != digest
+                or source_manifest.get("run_id") != locked.get("run_id")
+                or source_manifest.get("bundle_kind") != locked.get("bundle_kind")
+                or verify_run_bundle(source_root).get("passed") is not True
+            ):
+                failures.append(f"{label} source lineage mismatch")
     artifacts = manifest.get("artifacts", [])
     if not isinstance(artifacts, list):
         artifacts = []
@@ -2209,55 +2294,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 locked_sources = source.get("source_bundles")
                 manifest_sources = manifest.get("source_bundles")
                 if manifest_sources is not None:
-                    if (
-                        not isinstance(locked_sources, list)
-                        or not locked_sources
-                        or manifest_sources != locked_sources
-                    ):
-                        failures.append("E2E gap report source lineage mismatch")
-                        locked_sources = []
-                    repository_root = root
-                    while repository_root != repository_root.parent and not (
-                        repository_root / "pyproject.toml"
-                    ).is_file():
-                        repository_root = repository_root.parent
-                    for locked in locked_sources:
-                        if not isinstance(locked, dict):
-                            failures.append("E2E gap report source lineage mismatch")
-                            continue
-                        relative = locked.get("path")
-                        digest = locked.get("manifest_sha256")
-                        if (
-                            not isinstance(relative, str)
-                            or not relative
-                            or Path(relative).is_absolute()
-                            or not isinstance(digest, str)
-                        ):
-                            failures.append("E2E gap report source lineage mismatch")
-                            continue
-                        source_root = (repository_root / relative).resolve()
-                        try:
-                            source_root.relative_to(repository_root)
-                            source_manifest_path = source_root / "run.manifest.json"
-                            source_manifest = json.loads(
-                                source_manifest_path.read_text(encoding="utf-8")
-                            )
-                        except (
-                            ValueError,
-                            OSError,
-                            UnicodeDecodeError,
-                            json.JSONDecodeError,
-                        ):
-                            failures.append("E2E gap report source is not resolvable")
-                            continue
-                        if (
-                            _sha256(source_manifest_path) != digest
-                            or source_manifest.get("run_id") != locked.get("run_id")
-                            or source_manifest.get("bundle_kind")
-                            != locked.get("bundle_kind")
-                            or verify_run_bundle(source_root).get("passed") is not True
-                        ):
-                            failures.append("E2E gap report source lineage mismatch")
+                    verify_locked_sources(
+                        locked_sources,
+                        manifest_sources,
+                        label="E2E gap report",
+                        require_nonempty=True,
+                    )
 
     if final_hardware_acceptance:
         source = documents_by_role.get("final-hardware-acceptance-input")
@@ -2270,7 +2312,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             (item for item in artifacts if isinstance(item, dict) and item.get("role") == "html-report"),
             None,
         )
-        if not all(isinstance(item, dict) for item in (source, actual, result_entry, report_entry)):
+        if manifest.get("status") != "completed" or not all(isinstance(item, dict) for item in (source, actual, result_entry, report_entry)):
             failures.append("invalid final hardware acceptance bundle identity")
         else:
             try:
@@ -2292,46 +2334,13 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append("final hardware acceptance lineage mismatch")
                 if manifest.get("hardware_cohort") != expected["identity"]["hardware_cohort"]:
                     failures.append("final hardware acceptance cohort mismatch")
-                locked_sources = source.get("source_bundles")
-                if not isinstance(locked_sources, list) or manifest.get("source_bundles") != locked_sources:
-                    failures.append("final hardware acceptance source lineage mismatch")
-                elif locked_sources:
-                    repository_root = root
-                    while repository_root != repository_root.parent and not (
-                        repository_root / "pyproject.toml"
-                    ).is_file():
-                        repository_root = repository_root.parent
-                    for locked in locked_sources:
-                        if not isinstance(locked, dict):
-                            failures.append("final hardware acceptance source lineage mismatch")
-                            continue
-                        relative = locked.get("path")
-                        digest = locked.get("manifest_sha256")
-                        if (
-                            not isinstance(relative, str)
-                            or not relative
-                            or Path(relative).is_absolute()
-                            or not isinstance(digest, str)
-                            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
-                            or locked.get("verification_passed") is not True
-                        ):
-                            failures.append("final hardware acceptance source lineage mismatch")
-                            continue
-                        source_root = (repository_root / relative).resolve()
-                        try:
-                            source_root.relative_to(repository_root)
-                            source_manifest_path = source_root / "run.manifest.json"
-                            source_manifest = json.loads(source_manifest_path.read_text())
-                        except (ValueError, OSError, UnicodeDecodeError, json.JSONDecodeError):
-                            failures.append("final hardware acceptance source is not resolvable")
-                            continue
-                        if (
-                            _sha256(source_manifest_path) != digest
-                            or source_manifest.get("run_id") != locked.get("run_id")
-                            or source_manifest.get("bundle_kind") != locked.get("bundle_kind")
-                            or verify_run_bundle(source_root).get("passed") is not True
-                        ):
-                            failures.append("final hardware acceptance source lineage mismatch")
+                verify_locked_sources(
+                    source.get("source_bundles"),
+                    manifest.get("source_bundles"),
+                    label="final hardware acceptance",
+                    require_nonempty=True,
+                    require_identity=True,
+                )
 
     if model_e2e_frontier:
         source = documents_by_role.get("model-e2e-frontier-input")

@@ -113,7 +113,10 @@ def _validate_holdout(holdout: Mapping[str, Any], identity: Mapping[str, Any]) -
     lock_session = _mapping(environment.get("lock_session"), "invalid-holdout-lock-session")
     gates = _mapping(holdout.get("gates"), "invalid-holdout-gates")
     boundaries: list[str] = []
-    required_gates = ("environment", "correctness", "no_cpu_fallback", "timing", "synchronization")
+    required_gates = (
+        "environment", "correctness", "no_cpu_fallback", "timing",
+        "synchronization", "execution_contract",
+    )
     boundaries.extend(f"holdout-gate:{gate}" for gate in required_gates if gates.get(gate) != "passed")
     if timer.get("primary") != "torch.npu.Event.elapsed_time" or timer.get("unit") != "ns":
         boundaries.append("holdout-timer")
@@ -162,6 +165,21 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
         raise FinalAcceptanceError("invalid-construction-run-identities")
     if holdout.get("run_id") in construction_ids:
         raise FinalAcceptanceError("holdout-run-identity-not-independent")
+    sources = document.get("source_bundles")
+    if not isinstance(sources, list) or len(sources) < 4:
+        raise FinalAcceptanceError("final-acceptance-requires-locked-sources")
+    locked_ids = {
+        item.get("run_id") for item in sources if isinstance(item, Mapping)
+    }
+    if set(construction_ids) != locked_ids - {holdout.get("run_id")}:
+        raise FinalAcceptanceError("construction-run-lineage-mismatch")
+    source_identities = document.get("source_identities")
+    if not isinstance(source_identities, list) or len(source_identities) != len(sources):
+        raise FinalAcceptanceError("source-identity-lineage-missing")
+    for source_identity in source_identities:
+        locked = _mapping(source_identity, "source-identity-lineage-missing")
+        if locked.get("run_id") not in locked_ids or locked.get("identity") != identity:
+            raise FinalAcceptanceError("source-identity-mismatch")
 
     holdout_boundaries = _validate_holdout(holdout, identity)
     leaves_value = schedule.get("leaves")
@@ -191,9 +209,36 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
     ]
     schedule_known = schedule.get("status") == "known"
     schedule_ns = schedule.get("selected_complete_schedule_duration_ns")
+    missing_schedule = schedule.get("missing_evidence", [])
+    if not isinstance(missing_schedule, list) or not all(isinstance(item, str) for item in missing_schedule):
+        raise FinalAcceptanceError("invalid-schedule-evidence-boundary")
+    if schedule_known and missing_schedule:
+        raise FinalAcceptanceError("known-schedule-contains-missing-evidence")
     if schedule_known:
         schedule_ns = _number(schedule_ns, "invalid-schedule-duration")
-        if not known_durations or schedule_ns != sum(known_durations):
+        execution_ir = _mapping(schedule.get("execution_ir"), "missing-schedule-execution-ir")
+        if (
+            execution_ir.get("status") != "known"
+            or execution_ir.get("critical_path_duration_ns") != schedule_ns
+            or not isinstance(execution_ir.get("physical_events"), list)
+            or not execution_ir["physical_events"]
+            or not isinstance(execution_ir.get("dependency_edges"), list)
+            or not isinstance(execution_ir.get("resource_claims"), list)
+            or not execution_ir["resource_claims"]
+            or not isinstance(execution_ir.get("transformations"), list)
+        ):
+            raise FinalAcceptanceError("invalid-selected-schedule-execution-ir")
+        if any(
+            isinstance(item, Mapping)
+            and item.get("duration_ns") is not None
+            and not any(
+                isinstance(event, Mapping)
+                and event.get("event_id") == item.get("event_id")
+                and event.get("duration_ns") == item.get("duration_ns")
+                for event in execution_ir["physical_events"]
+            )
+            for item in leaves_value
+        ):
             raise FinalAcceptanceError("schedule-duration-reconciliation-mismatch")
         leaf_uncertainties = [
             _number(item.get("standard_uncertainty_ns"), "invalid-schedule-uncertainty")
@@ -208,10 +253,6 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
         for item in leaves_value
     ):
         raise FinalAcceptanceError("unknown-schedule-contains-selected-evidence")
-    missing_schedule = schedule.get("missing_evidence", [])
-    if not isinstance(missing_schedule, list) or not all(isinstance(item, str) for item in missing_schedule):
-        raise FinalAcceptanceError("invalid-schedule-evidence-boundary")
-
     reconciliation = _mapping(decomposition.get("reconciliation"), "invalid-decomposition-reconciliation")
     observed_ns = _number(holdout.get("median_ns"), "invalid-holdout-median")
     expected_observed_uncertainty = _number(holdout.get("iqr_ns"), "invalid-holdout-iqr") / 1.349

@@ -18,6 +18,9 @@ mkdir -p "$session_dir"
 started_at=$(date -Iseconds)
 owner_start=$(cat /home/t00906153/.groundupscale/locks/ascend-910b2-host.owner)
 wrapper_sha256=$(sha256sum "$wrapper" | awk '{print $1}')
+export GROUNDUPSCALE_LOCK_STARTED_AT="$started_at"
+export GROUNDUPSCALE_LOCK_OWNER="$owner_start"
+export GROUNDUPSCALE_LOCK_WRAPPER_SHA256="$wrapper_sha256"
 printf '%s\n' "$started_at" > "$session_dir/started-at.txt"
 printf '%s\n' "$owner_start" > "$session_dir/lock-owner-start.txt"
 printf '%s\n' "$ASCEND_RT_VISIBLE_DEVICES" > "$session_dir/device-visibility.txt"
@@ -37,47 +40,6 @@ PYTHONPATH="$repo/src" "$python" -m groundupscale.cli run \
 ended_at=$(date -Iseconds)
 printf '%s\n' "$ended_at" > "$session_dir/ended-at.txt"
 printf '%s\n' "$owner_start" > "$session_dir/lock-owner-end.txt"
-
-PYTHONPATH="$repo/src" "$python" - "$run_dir" "$started_at" "$ended_at" "$owner_start" "$wrapper_sha256" <<'PY'
-from hashlib import sha256
-import json
-from pathlib import Path
-import sys
-
-run = Path(sys.argv[1])
-started_at, ended_at, owner, wrapper_sha256 = sys.argv[2:]
-manifest_path = run / "run.manifest.json"
-manifest = json.loads(manifest_path.read_text())
-metadata = {
-    "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
-    "issue": 50,
-    "run_id": manifest["run_id"],
-    "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
-    "wrapper_path": "/home/t00906153/.groundupscale/bin/with-ascend-lock",
-    "wrapper_sha256": wrapper_sha256,
-    "owner": owner,
-    "measurement_started_at": started_at,
-    "measurement_ended_at": ended_at,
-    "hardware_cohort": manifest["hardware_cohort"],
-    "ascend_rt_visible_devices": "0",
-    "logical_device": "npu:0",
-    "whole_host_exclusive": True,
-}
-payload = (json.dumps(metadata, indent=2, sort_keys=True) + "\n").encode()
-relative = "observation/ascend-host-lock-session.json"
-target = run / relative
-target.write_bytes(payload)
-manifest["artifacts"].append({
-    "role": "ascend-host-lock-session",
-    "path": relative,
-    "media_type": "application/json",
-    "schema": metadata["schema"],
-    "sha256": sha256(payload).hexdigest(),
-    "produced_by": "groundupscale@0.1.0",
-    "inputs": [],
-})
-manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
-PY
 
 PYTHONPATH="$repo/src" "$python" -m groundupscale.cli verify-run "$run_dir" --json \
   > "$session_dir/verify-run.json"

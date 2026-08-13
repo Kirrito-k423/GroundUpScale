@@ -64,6 +64,9 @@ def build() -> dict[str, object]:
         "hardware_cohort": lock_session["hardware_cohort"],
         "completion_boundary": case["timing_boundaries"]["completion_protocol"],
     }
+    locked_sources = [source(path) for path in (RUN48, RUN47, RUN49, HOLDOUT)]
+    for item in locked_sources:
+        item["identity"] = identity
     samples = [float(value) for value in case["latency"]["samples_ns"]]
     missing = [
         f"{item['operation_class']} @ {item['stable_path']}: {item['required_evidence']}"
@@ -72,7 +75,11 @@ def build() -> dict[str, object]:
     return {
         "schema": "groundupscale.dev/final-hardware-acceptance-input/v1alpha1",
         "identity": identity,
-        "source_bundles": [source(path) for path in (RUN48, RUN47, RUN49, HOLDOUT)],
+        "source_bundles": locked_sources,
+        "source_identities": [
+            {"run_id": item["run_id"], "identity": identity}
+            for item in locked_sources
+        ],
         "construction_run_ids": [
             item["run_id"] for item in [source(RUN48), source(RUN47), source(RUN49)]
         ],
@@ -88,6 +95,7 @@ def build() -> dict[str, object]:
             ],
             "edges": schedule_input["schedule"]["dependencies"],
             "policy": schedule_input["schedule"],
+            "execution_ir": schedule_input["schedule"]["execution_ir"],
             "surfaces": [],
             "missing_evidence": missing,
         },
@@ -103,7 +111,14 @@ def build() -> dict[str, object]:
             "synchronization": {"protocol": case["timing_boundaries"]["completion_protocol"], "passed": True},
             "correctness": {"passed": correctness["passed"], "no_cpu_fallback": correctness["target_audit"]["fallback_enabled"] is False, "semantic_leaf_count": correctness["target_audit"]["semantic_leaf_count"]},
             "environment": {"device": environment["device"], "visibility": lock_session["ascend_rt_visible_devices"], "lock_session": lock_session},
-            "gates": {gate: "passed" for gate in ("environment", "correctness", "no_cpu_fallback", "timing", "synchronization")},
+            "gates": {
+                "environment": "passed" if environment["device"] == "npu:0" else "failed",
+                "correctness": "passed" if correctness["passed"] is True else "failed",
+                "no_cpu_fallback": "passed" if correctness["target_audit"]["fallback_enabled"] is False else "failed",
+                "timing": "passed" if case["warmup_convergence"]["converged"] is True else "failed",
+                "synchronization": "passed" if case["timing_boundaries"]["completion_protocol"] else "failed",
+                "execution_contract": "passed" if case["execution_contract"]["status"] == "supported" else "failed",
+            },
         },
         "decomposition": {
             "status": observed["observed_decomposition"]["status"],
@@ -120,6 +135,6 @@ if __name__ == "__main__":
     resolved.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     print(write_final_acceptance_bundle(
         Path(__file__).with_name("evidence") / "acceptance",
-        run_id="issue50-20260814T0200Z-final-hardware-acceptance-v1",
+        run_id="issue50-20260814T0245Z-final-hardware-acceptance-v2",
         document=document,
     ))

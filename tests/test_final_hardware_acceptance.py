@@ -42,17 +42,36 @@ def _document(*, schedule_status: str = "known") -> dict[str, object]:
             "selected_candidate_id": "candidate-a" if schedule_status == "known" else None,
             "evidence_refs": ["run://qualification-a#candidate-a"],
             "standard_uncertainty_ns": 20.0,
+            "event_id": "event-a",
         }],
         "edges": [],
         "policy": {"resource_contention": "explicit", "implicit_fusion": "forbidden"},
         "surfaces": [{"operation_class": "MatMul", "anchor_ids": ["anchor-a"], "candidate_ids": ["candidate-a"]}],
         "missing_evidence": [] if schedule_status == "known" else ["operator.matmul.exact-domain"],
+        "execution_ir": {
+            "status": "known" if schedule_status == "known" else "unknown",
+            "critical_path_duration_ns": 800.0 if schedule_status == "known" else None,
+            "physical_events": [{"event_id": "event-a", "duration_ns": 800.0}] if schedule_status == "known" else [],
+            "dependency_edges": [],
+            "resource_claims": [{"resource": "npu:0"}] if schedule_status == "known" else [],
+            "transformations": [],
+        },
     }
     return {
         "schema": "groundupscale.dev/final-hardware-acceptance-input/v1alpha1",
         "identity": IDENTITY,
         "source_bundles": [],
-        "construction_run_ids": ["construction-a", "qualification-a"],
+        "construction_run_ids": ["construction-a", "qualification-a", "decomposition-a"],
+        "source_bundles": [
+            {"run_id": run_id, "bundle_kind": "test", "path": run_id,
+             "manifest_sha256": "f" * 64, "verification_passed": True,
+             "identity": IDENTITY}
+            for run_id in ("construction-a", "qualification-a", "decomposition-a", "issue50-independent-holdout-a")
+        ],
+        "source_identities": [
+            {"run_id": run_id, "identity": IDENTITY}
+            for run_id in ("construction-a", "qualification-a", "decomposition-a", "issue50-independent-holdout-a")
+        ],
         "schedule": schedule,
         "holdout": {
             "run_id": "issue50-independent-holdout-a",
@@ -92,7 +111,7 @@ def _document(*, schedule_status: str = "known") -> dict[str, object]:
             "gates": {
                 "environment": "passed", "correctness": "passed",
                 "no_cpu_fallback": "passed", "timing": "passed",
-                "synchronization": "passed",
+                "synchronization": "passed", "execution_contract": "passed",
             },
         },
         "decomposition": {
@@ -150,8 +169,19 @@ def test_final_acceptance_rejects_semantic_tampering(mutation, reason: str) -> N
 def test_final_acceptance_bundle_replays_without_npu_and_rejects_rehashed_tamper(
     tmp_path: Path,
 ) -> None:
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
+    document = _document()
+    for source in document["source_bundles"]:
+        source_root = repository / source["path"]
+        source_root.mkdir()
+        manifest = {"schema": "groundupscale.dev/run-manifest/v1alpha1", "run_id": source["run_id"], "bundle_kind": source["bundle_kind"], "status": "completed", "artifacts": []}
+        manifest_path = source_root / "run.manifest.json"
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+        source["manifest_sha256"] = sha256(manifest_path.read_bytes()).hexdigest()
     run = write_final_acceptance_bundle(
-        tmp_path, run_id="issue50-final-acceptance-test-a", document=_document()
+        repository, run_id="issue50-final-acceptance-test-a", document=document
     )
     assert verify_run_bundle(run)["passed"] is True
 
@@ -182,15 +212,24 @@ def test_final_acceptance_verifier_recursively_locks_source_manifest(
     source_manifest_path = source / "run.manifest.json"
     source_manifest_path.write_text(json.dumps(source_manifest, sort_keys=True) + "\n")
     document = _document()
-    document["source_bundles"] = [{
+    document["source_bundles"][0] = {
         "run_id": "source-a", "bundle_kind": "unstructured-test-source", "path": "source",
-        "manifest_sha256": sha256(source_manifest_path.read_bytes()).hexdigest(),
-        "verification_passed": True,
-    }]
+        "manifest_sha256": sha256(source_manifest_path.read_bytes()).hexdigest(), "verification_passed": True,
+        "identity": IDENTITY,
+    }
+    document["source_identities"][0] = {"run_id": "source-a", "identity": IDENTITY}
+    document["construction_run_ids"][0] = "source-a"
     repository = tmp_path / "repository"
     repository.mkdir()
     (repository / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
     source.rename(repository / "source")
+    for source_record in document["source_bundles"][1:]:
+        source_root = repository / source_record["path"]
+        source_root.mkdir()
+        manifest = {"schema": "groundupscale.dev/run-manifest/v1alpha1", "run_id": source_record["run_id"], "bundle_kind": source_record["bundle_kind"], "status": "completed", "artifacts": []}
+        manifest_path = source_root / "run.manifest.json"
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+        source_record["manifest_sha256"] = sha256(manifest_path.read_bytes()).hexdigest()
     run = write_final_acceptance_bundle(
         repository, run_id="issue50-final-acceptance-source-lock-a", document=document
     )
@@ -202,3 +241,36 @@ def test_final_acceptance_verifier_recursively_locks_source_manifest(
     verification = verify_run_bundle(run)
     assert verification["passed"] is False
     assert "final hardware acceptance source lineage mismatch" in verification["failures"]
+
+
+def test_final_acceptance_rejects_known_schedule_with_missing_evidence() -> None:
+    document = _document()
+    document["schedule"]["missing_evidence"] = ["operator.matmul.exact-domain"]
+    with pytest.raises(FinalAcceptanceError, match="known-schedule-contains-missing-evidence"):
+        compose_final_acceptance(document)
+
+
+def test_final_acceptance_requires_locked_sources_and_same_identity() -> None:
+    document = _document()
+    document["source_bundles"] = []
+    with pytest.raises(FinalAcceptanceError, match="final-acceptance-requires-locked-sources"):
+        compose_final_acceptance(document)
+
+    document = _document()
+    document["source_identities"][0]["identity"] = {**IDENTITY, "dtype": "float16"}
+    with pytest.raises(FinalAcceptanceError, match="source-identity-mismatch"):
+        compose_final_acceptance(document)
+
+
+def test_final_acceptance_preserves_failed_holdout_gates_as_boundary() -> None:
+    document = _document(schedule_status="unknown")
+    document["holdout"]["gates"]["timing"] = "failed"
+    result = compose_final_acceptance(document)
+    assert "holdout-gate:timing" in result["evidence_boundary"]["holdout"]
+
+
+def test_final_acceptance_requires_validated_schedule_execution_ir() -> None:
+    document = _document()
+    document["schedule"]["execution_ir"]["resource_claims"] = []
+    with pytest.raises(FinalAcceptanceError, match="invalid-selected-schedule-execution-ir"):
+        compose_final_acceptance(document)
