@@ -1997,6 +1997,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         or actual_missing != semantic_contract.get("missing_evidence")
                         or actual_uncertainty != semantic_contract.get("standard_uncertainty_ns")
                         or not isinstance(final_schedule, dict)
+                        or final_schedule.get("status") != replay.get("status")
                         or final_schedule.get("stable_paths") != actual_paths
                         or final_schedule.get("leaves") != actual_leaves
                         or final_schedule.get("edges") != actual_edges

@@ -218,7 +218,7 @@ def test_final_acceptance_rejects_coordinated_rehashed_stable_path_attack() -> N
     assert "final hardware acceptance source semantic contract mismatch" in verification["failures"]
 
 
-@pytest.mark.parametrize("attack", ["schedule", "decomposition", "identity"])
+@pytest.mark.parametrize("attack", ["schedule", "status", "decomposition", "identity"])
 def test_final_acceptance_rejects_coordinated_source_contract_attacks(
     attack: str,
 ) -> None:
@@ -232,6 +232,15 @@ def test_final_acceptance_rejects_coordinated_source_contract_attacks(
         forged = [[paths[0], paths[1]]]
         document["schedule"]["edges"] = forged
         document["source_bundles"][0]["semantic_contract"]["edges"] = forged
+    elif attack == "status":
+        document["schedule"]["status"] = "blocked"
+        with pytest.raises(FinalAcceptanceError, match="invalid-schedule-status"):
+            write_final_acceptance_bundle(
+                repository,
+                run_id="issue50-coordinated-status-attack",
+                document=document,
+            )
+        return
     elif attack == "decomposition":
         forged = {"observed_e2e_ns": 1.0, "accounted_e2e_ns": 1.0, "residual_ns": 0.0}
         document["decomposition"]["reconciliation"] = forged

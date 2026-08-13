@@ -185,6 +185,6 @@ if __name__ == "__main__":
     resolved.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     print(write_final_acceptance_bundle(
         Path(__file__).with_name("evidence") / "acceptance",
-        run_id="issue50-20260814T0415Z-final-hardware-acceptance-v4",
+        run_id="issue50-20260814T0445Z-final-hardware-acceptance-v5",
         document=document,
     ))

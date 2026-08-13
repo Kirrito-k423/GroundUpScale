@@ -1,0 +1,1332 @@
+{
+  "construction_run_ids": [
+    "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+    "issue47-ascend-observed-decomposition-20260813-v1",
+    "issue49-20260814T0345Z-e2e-gap-report-v6"
+  ],
+  "decomposition": {
+    "evidence_boundaries": [
+      "exact-identity-profiling-ablation-missing",
+      "profiler-device-timeline-export-incomplete"
+    ],
+    "reconciliation": {
+      "all_attributed_ns": null,
+      "overlap_ns": null,
+      "reconciled_e2e_ns": null,
+      "unattributed_ns": null
+    },
+    "stable_paths": [],
+    "status": "unavailable"
+  },
+  "derivation": {
+    "input_sha256": "322cd2be2c75a85b7cff1a67fc01af96f63a82651e627c76126ae68071b57147"
+  },
+  "evidence_boundary": {
+    "decomposition": [
+      "observed-decomposition-unavailable"
+    ],
+    "holdout": [
+      "holdout-gate:environment",
+      "holdout-gate:execution_contract",
+      "holdout-gate:timing"
+    ],
+    "schedule": [
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "schedule.device-dispatch @ schedule/device-dispatch: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-queueing @ schedule/device-queueing: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-transformations @ schedule/device-transformations: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-copies @ schedule/device-copies: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-idle @ schedule/device-idle: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-synchronization @ schedule/device-synchronization: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "source-identity-mismatch:issue47-ascend-observed-decomposition-20260813-v1",
+      "source-identity-mismatch:issue49-20260814T0345Z-e2e-gap-report-v6"
+    ]
+  },
+  "holdout": {
+    "correctness": {
+      "no_cpu_fallback": true,
+      "passed": true,
+      "semantic_leaf_count": 52
+    },
+    "environment": {
+      "device": "npu:0",
+      "lock_session": {
+        "ascend_rt_visible_devices": "0",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "issue": 50,
+        "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+        "logical_device": "npu:0",
+        "measurement_ended_at": "2026-08-13T18:31:01.330020+00:00",
+        "measurement_started_at": "2026-08-14T02:30:01+08:00",
+        "owner": "issue=50 pid=3984228 host=localhost.localdomain started=2026-08-14T02:30:01+08:00",
+        "run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+        "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+        "whole_host_exclusive": true,
+        "wrapper_path": "/home/t00906153/.groundupscale/bin/with-ascend-lock",
+        "wrapper_sha256": "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+      },
+      "visibility": "0"
+    },
+    "gates": {
+      "correctness": "passed",
+      "environment": "failed",
+      "execution_contract": "failed",
+      "no_cpu_fallback": "passed",
+      "synchronization": "passed",
+      "timing": "failed"
+    },
+    "identity": {
+      "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+      "case": "two-layer-prefill",
+      "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+      "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+      "dtype": "float32",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+      "shape": [
+        1,
+        512,
+        512
+      ],
+      "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+    },
+    "iqr_ns": 11340.0,
+    "median_ns": 1927420.0,
+    "observation_digest": "0a2df167d04427344d9a9fa3a0208cf4a34553277fea3c29a0c68e547ef47c4b",
+    "raw_samples_ns": [
+      1951380.0,
+      1929940.0,
+      1936880.0,
+      1927420.0,
+      1935420.0,
+      1927920.0,
+      1941780.0,
+      1935000.0,
+      1922280.0,
+      1921780.0,
+      1923180.0,
+      1934060.0,
+      1921940.0,
+      1928140.0,
+      1908100.0,
+      1927420.0,
+      1925880.0,
+      1924640.0,
+      1908920.0,
+      1926200.0
+    ],
+    "run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+    "sample_count": 20,
+    "standard_uncertainty_ns": 8406.226834692365,
+    "synchronization": {
+      "passed": true,
+      "protocol": "end-event-synchronize-plus-device-synchronize"
+    },
+    "timer": {
+      "primary": "torch.npu.Event.elapsed_time",
+      "unit": "ns"
+    },
+    "warmup": {
+      "iterations": 20,
+      "outside_timing_boundary": true
+    }
+  },
+  "holdout_run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+  "identity": {
+    "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+    "case": "two-layer-prefill",
+    "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+    "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+    "dtype": "float32",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+    "shape": [
+      1,
+      512,
+      512
+    ],
+    "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+  },
+  "metrics": {
+    "absolute_gap_ns": null,
+    "combined_uncertainty_ns": null,
+    "frontier_efficiency": null,
+    "observation_to_frontier_ratio": null,
+    "qualified_e2e_observation_ns": null,
+    "relative_gap": null,
+    "selected_complete_schedule_achievable_frontier_ns": null
+  },
+  "schedule": {
+    "bound_kind": "schedule-achievable-frontier",
+    "edges": [],
+    "execution_ir": {
+      "dependency_edges": [],
+      "physical_events": [],
+      "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+      "status": "unknown",
+      "unknown_reason": "mandatory leaves and effects lack selected physical events"
+    },
+    "leaves": [
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      },
+      {
+        "duration_ns": null,
+        "evidence_refs": [],
+        "selected_candidate_id": null,
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+      }
+    ],
+    "missing_evidence": [
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+      "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+      "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+      "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+      "schedule.device-dispatch @ schedule/device-dispatch: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-queueing @ schedule/device-queueing: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-transformations @ schedule/device-transformations: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-copies @ schedule/device-copies: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-idle @ schedule/device-idle: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+      "schedule.device-synchronization @ schedule/device-synchronization: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+    ],
+    "policy": {
+      "dependencies": [],
+      "evidence_refs": [
+        "issue://github/Kirrito-k423/GroundUpScale/48",
+        "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1"
+      ],
+      "execution_ir": {
+        "dependency_edges": [],
+        "physical_events": [],
+        "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+        "status": "unknown",
+        "unknown_reason": "mandatory leaves and effects lack selected physical events"
+      },
+      "kind": "serialized-unfused",
+      "mandatory_effect_ids": [
+        "device-dispatch",
+        "device-queueing",
+        "device-transformations",
+        "device-copies",
+        "device-idle",
+        "device-synchronization"
+      ],
+      "mandatory_effects": [
+        {
+          "effect_id": "device-dispatch",
+          "operation_class": "schedule.device-dispatch",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        },
+        {
+          "effect_id": "device-queueing",
+          "operation_class": "schedule.device-queueing",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        },
+        {
+          "effect_id": "device-transformations",
+          "operation_class": "schedule.device-transformations",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        },
+        {
+          "effect_id": "device-copies",
+          "operation_class": "schedule.device-copies",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        },
+        {
+          "effect_id": "device-idle",
+          "operation_class": "schedule.device-idle",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        },
+        {
+          "effect_id": "device-synchronization",
+          "operation_class": "schedule.device-synchronization",
+          "required_evidence": "same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        }
+      ],
+      "policy_id": "issue48-explicit-single-stream-v1",
+      "rejected_optimizations": [
+        {
+          "kind": "fusion",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        },
+        {
+          "kind": "overlap",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        },
+        {
+          "kind": "chunk-pipeline",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        },
+        {
+          "kind": "dispatch-hiding",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        },
+        {
+          "kind": "queue-hiding",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        },
+        {
+          "kind": "synchronization-hiding",
+          "reason_code": "missing-explicit-candidate-or-contract-and-direct-evidence",
+          "status": "rejected"
+        }
+      ],
+      "version": "1"
+    },
+    "selected_complete_schedule_duration_ns": null,
+    "stable_paths": [
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+      "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+    ],
+    "standard_uncertainty_ns": null,
+    "status": "unknown",
+    "surfaces": []
+  },
+  "schema": "groundupscale.dev/final-hardware-acceptance/v1alpha1",
+  "source_bundles": [
+    {
+      "bundle_kind": "model-e2e-frontier",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "path": "goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "semantic_contract": {
+        "edges": [],
+        "input_path": "resolved/model-e2e-frontier-input.json",
+        "leaves": [
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+          },
+          {
+            "duration_ns": null,
+            "evidence_refs": [],
+            "selected_candidate_id": null,
+            "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+          }
+        ],
+        "missing_evidence": [
+          "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+          "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "operator.softmax.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax: issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "layout.alias-or-materialization-audit @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view: issue #46 defines the public audit contract but publishes no immutable audit Run Bundle for this indexed Stable Path",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "operator.rmsnorm.phase-graph @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm: issue #43 v3 phase graph is structured unknown; collect the named missing phase evidence in the exact Hardware Cohort",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.silu.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu: issue #45 does not publish a repository-contained immutable source Run Bundle covering the SiLU execution domain",
+          "operator.mul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Mul execution domain",
+          "operator.matmul.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj: issue #42 v4 exact domain is structured unknown: one additional eligible candidate needs three independent search sessions and, if best-of-correct, three independent holdout sessions",
+          "operator.add.exact-domain @ semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2: issue #45 does not publish a repository-contained immutable source Run Bundle covering every Add execution domain",
+          "schedule.device-dispatch @ schedule/device-dispatch: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+          "schedule.device-queueing @ schedule/device-queueing: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+          "schedule.device-transformations @ schedule/device-transformations: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+          "schedule.device-copies @ schedule/device-copies: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+          "schedule.device-idle @ schedule/device-idle: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration",
+          "schedule.device-synchronization @ schedule/device-synchronization: same Completion Boundary direct device evidence; host-only diagnostic spans are not device duration"
+        ],
+        "path": "comparison/model-e2e-frontier.json",
+        "source_status": "unknown",
+        "stable_paths": [
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj",
+          "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2"
+        ],
+        "standard_uncertainty_ns": null
+      },
+      "source_role": "schedule-frontier",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "schedule-effect-frontier",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "path": "goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1",
+      "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+      "semantic_contract": {
+        "evidence_boundaries": [
+          "exact-identity-profiling-ablation-missing",
+          "profiler-device-timeline-export-incomplete"
+        ],
+        "final_decomposition": {
+          "evidence_boundaries": [
+            "exact-identity-profiling-ablation-missing",
+            "profiler-device-timeline-export-incomplete"
+          ],
+          "reconciliation": {
+            "all_attributed_ns": null,
+            "overlap_ns": null,
+            "reconciled_e2e_ns": null,
+            "unattributed_ns": null
+          },
+          "stable_paths": [],
+          "status": "unavailable"
+        },
+        "path": "observation/observed-decomposition.json",
+        "source_reconciliation": {
+          "all_attributed_ns": null,
+          "overlap_ns": null,
+          "reconciled_e2e_ns": null,
+          "unattributed_ns": null
+        }
+      },
+      "source_role": "observed-decomposition",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "e2e-gap-report",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-npu-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "d582877c0f095e5a8a918a28e2888c71ce1b28ea7746738cac8f62fbc7f1ea10",
+      "path": "goal_process/issue-49-e2e-gap-report/evidence/runs/issue49-20260814T0345Z-e2e-gap-report-v6",
+      "run_id": "issue49-20260814T0345Z-e2e-gap-report-v6",
+      "semantic_contract": {
+        "path": "comparison/e2e-gap-report.json"
+      },
+      "source_role": "gap-report",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "transformer-demo",
+      "identity": {
+        "analysis_case_sha256": "f0c2817f788dd6aca56ae2d52f958331b78c8e8c6bfc825f64641126d3a702e9",
+        "case": "two-layer-prefill",
+        "completion_boundary": "end-event-synchronize-plus-device-synchronize",
+        "deployment_intent_sha256": "ae709697935b4d1d04ae8e7a392e3e07cabe57e87849afe2328037b8b8776510",
+        "dtype": "float32",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "model_spec_sha256": "a53538aa7746ab0b85b5a88d3dcd487791b76fb37219f574e190242751a8fe29",
+        "shape": [
+          1,
+          512,
+          512
+        ],
+        "workload_spec_sha256": "7a241b39032f15cf6de22bc0ab3feba8cb4eedf61b5c00440275a9f87302f9bf"
+      },
+      "manifest_sha256": "c2a4e7dbba4884d405f48d81c2a15e27047f536ea93e54247b839fbdbded5b58",
+      "path": "goal_process/issue-50-final-hardware-acceptance/evidence/holdout/runs/issue50-20260814T0315Z-independent-e2e-holdout-v2",
+      "run_id": "issue50-20260814T0315Z-independent-e2e-holdout-v2",
+      "semantic_contract": {
+        "benchmark_path": "observation/raw/benchmark.json",
+        "correctness_path": "observation/correctness.json",
+        "inputs_lock_path": "resolved/inputs.lock.json",
+        "lock_session_path": "observation/ascend-host-lock-session.json",
+        "median_ns": 1927420.0,
+        "samples": [
+          1951380.0,
+          1929940.0,
+          1936880.0,
+          1927420.0,
+          1935420.0,
+          1927920.0,
+          1941780.0,
+          1935000.0,
+          1922280.0,
+          1921780.0,
+          1923180.0,
+          1934060.0,
+          1921940.0,
+          1928140.0,
+          1908100.0,
+          1927420.0,
+          1925880.0,
+          1924640.0,
+          1908920.0,
+          1926200.0
+        ]
+      },
+      "source_role": "independent-holdout",
+      "verification_passed": true
+    }
+  ],
+  "status": "structured-unknown"
+}

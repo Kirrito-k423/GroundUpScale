@@ -214,7 +214,10 @@ def compose_final_acceptance(document: Mapping[str, object]) -> dict[str, Any]:
         _number(item.get("duration_ns"), "invalid-schedule-leaf-duration")
         for item in leaves_value if isinstance(item, Mapping) and item.get("duration_ns") is not None
     ]
-    schedule_known = schedule.get("status") == "known"
+    schedule_status = schedule.get("status")
+    if schedule_status not in {"known", "unknown"}:
+        raise FinalAcceptanceError("invalid-schedule-status")
+    schedule_known = schedule_status == "known"
     schedule_ns = schedule.get("selected_complete_schedule_duration_ns")
     missing_schedule = schedule.get("missing_evidence", [])
     if not isinstance(missing_schedule, list) or not all(isinstance(item, str) for item in missing_schedule):
