@@ -986,28 +986,20 @@ class RunBundleWriter:
                 for operation in self.compiled.cost.cost_ir.walk_operations()
                 if operation.operation in {"View", "Transpose"}
             ]
-            hardware_candidates = {
-                candidate.stable_path.removeprefix("cost/"): candidate
-                for candidate in (
-                    self.compiled.hardware_prediction.candidates
-                    if self.compiled.hardware_prediction is not None
-                    else ()
-                )
+            alias_audits_by_path = {
+                str(audit.get("stable_path")): audit
+                for audit in alias_audits
+                if isinstance(audit, dict)
+                and isinstance(audit.get("stable_path"), str)
             }
             selected_candidates: dict[str, object] = {}
             for operation in alias_operations:
                 stable_path = operation.stable_path.removeprefix("cost/")
-                selected = hardware_candidates.get(stable_path)
-                selected_candidates[stable_path] = (
-                    selected.candidate_id
-                    if selected is not None
-                    else "runtime-candidate:"
-                    + content_fingerprint(
-                        stable_path,
-                        operation.operation,
-                        device,
-                        self.compiled.cost.compilation_fingerprint,
-                    )
+                audit = alias_audits_by_path.get(stable_path, {})
+                selected_candidates[stable_path] = audit.get(
+                    "selected_candidate_id",
+                    "runtime-candidate-unresolved:"
+                    + content_fingerprint(stable_path, operation.operation, device),
                 )
             alias_materialization = build_alias_materialization_evidence(
                 alias_audits=(
@@ -1257,6 +1249,22 @@ class RunBundleWriter:
                     if self.compiled.hardware_prediction is not None
                     else None
                 ),
+                "layout_execution": {
+                    "status": alias_materialization["status"],
+                    "authoritative_artifact": (
+                        "observation/alias-materialization.json"
+                    ),
+                    "evidence_version_id": alias_materialization[
+                        "evidence_version_id"
+                    ],
+                    "schedule": alias_materialization["schedule"],
+                    "decomposition": alias_materialization["decomposition"],
+                    "policy": (
+                        "View/Transpose candidate duration is unknown in the "
+                        "hardware backend until this runtime audit qualifies "
+                        "the selected candidate"
+                    ),
+                },
             }
             write_json("prediction", "prediction/metrics.json", prediction, prediction["schema"], ("cost-ir",))
             write_json("explanation-graph", "prediction/explanation.graph.json", explanation, explanation["schema"], ("prediction", "prediction-observation-comparison", "benchmark-observation", "alignment-map"))

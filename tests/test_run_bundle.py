@@ -172,13 +172,20 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     assert prediction["duration"]["compulsory_bytes"] == 37_756_928
     assert prediction["duration"]["materialized_bytes"] == 289_415_168
     assert prediction["duration"]["empirical_hardware_floor_ns"] is None
-    assert prediction["duration"]["resource_physical_floor_ns"] == pytest.approx(
-        6_833_309.828880091
-    )
+    assert prediction["duration"]["resource_physical_floor_ns"] is None
+    assert prediction["layout_execution"] == {
+        "status": "qualified",
+        "authoritative_artifact": "observation/alias-materialization.json",
+        "evidence_version_id": alias_evidence["evidence_version_id"],
+        "schedule": alias_evidence["schedule"],
+        "decomposition": alias_evidence["decomposition"],
+        "policy": (
+            "View/Transpose candidate duration is unknown in the hardware backend "
+            "until this runtime audit qualifies the selected candidate"
+        ),
+    }
     assert prediction["duration"]["schedule"] == "serialized-unfused"
-    assert prediction["duration"]["ideal_dag_hardware_floor_ns"] == (
-        pytest.approx(5_553_975.963160659)
-    )
+    assert prediction["duration"]["ideal_dag_hardware_floor_ns"] is None
     inputs_lock = json.loads(
         (run / "resolved/inputs.lock.json").read_text(encoding="utf-8")
     )
@@ -222,20 +229,14 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
         if item["case_id"] == "two-layer-prefill"
     )
     assert e2e_comparison["predicted"]["empirical_hardware_floor_ns"] is None
-    assert e2e_comparison["predicted"][
-        "resource_physical_floor_ns"
-    ] == pytest.approx(6_833_309.828880091)
+    assert e2e_comparison["predicted"]["resource_physical_floor_ns"] is None
     assert e2e_comparison["predicted"]["minimum_work_flops"] == 9_710_850_048
     assert e2e_comparison["predicted"]["compulsory_bytes"] == 37_756_928
     assert e2e_comparison["predicted"]["materialized_bytes"] == 289_415_168
     assert e2e_comparison["predicted"]["schedule"] == "serialized-unfused"
-    assert e2e_comparison["predicted"]["ideal_dag_hardware_floor_ns"] == (
-        pytest.approx(5_553_975.963160659)
-    )
+    assert e2e_comparison["predicted"]["ideal_dag_hardware_floor_ns"] is None
     assert e2e_comparison["predicted"]["limiting_resource"] is None
-    assert e2e_comparison["predicted"]["resource_limiting_resource"] == (
-        "compute.fp32"
-    )
+    assert e2e_comparison["predicted"]["resource_limiting_resource"] is None
     assert e2e_comparison["predicted"]["full_duration_ns"] is None
     assert e2e_comparison["observed"]["median_ns"] > 0
     assert e2e_comparison["comparison"]["relative_prediction_error"] is None
@@ -310,7 +311,7 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     assert environment["process"]["session_id"] == "test-cpu-run"
     report = (run / "reports/report.html").read_text(encoding="utf-8")
     assert "GroundUpScale 可解释运行报告" in report
-    assert "Resource Physical Floor：6.833 ms" in report
+    assert "Resource Physical Floor：not available" in report
     assert "serialized-unfused" in report
     assert "理想 DAG" in report
     assert "时间分解比较契约" in report
@@ -365,13 +366,9 @@ def test_run_bundle_is_atomic_self_describing_and_digest_verifiable(
     assert len(explain_summary["cases"]) == 10
     assert explain_summary["duration_status"] == "phase-capabilities-incomplete"
     assert explain_summary["hardware_empirical_floor_ns"] is None
-    assert explain_summary["hardware_resource_physical_floor_ns"] == pytest.approx(
-        6_833_309.828880091
-    )
+    assert explain_summary["hardware_resource_physical_floor_ns"] is None
     assert explain_summary["hardware_floor_schedule"] == "serialized-unfused"
-    assert explain_summary["hardware_ideal_dag_floor_ns"] == pytest.approx(
-        5_553_975.963160659
-    )
+    assert explain_summary["hardware_ideal_dag_floor_ns"] is None
     assert explain_summary["full_duration_ns"] is None
     assert explain_summary["hardware_capability_environment_eligible"] is False
     assert explain_summary["comparison_status"] == (
@@ -684,8 +681,6 @@ def test_explain_replays_v1alpha1_bundle_without_alpha2_phase_fields(
     assert explained.returncode == 0, explained.stderr
     summary = json.loads(explained.stdout)
     assert summary["schema"] == "groundupscale.dev/explain-summary/v1alpha2"
-    assert summary["hardware_empirical_floor_ns"] == pytest.approx(
-        6_833_309.828880091
-    )
+    assert summary["hardware_empirical_floor_ns"] is None
     assert summary["hardware_resource_physical_floor_ns"] is None
     assert all(item["schedule"] is None for item in summary["latency_comparisons"])

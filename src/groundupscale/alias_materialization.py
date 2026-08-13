@@ -31,6 +31,23 @@ def _valid_tensor_contract(value: object) -> bool:
     )
 
 
+def _nonempty_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value)
+
+
+def _valid_candidate_selection(
+    audit: Mapping[str, object], candidate_id: object
+) -> bool:
+    selection = audit.get("candidate_selection_evidence")
+    return bool(
+        _nonempty_string(candidate_id)
+        and audit.get("selected_candidate_id") == candidate_id
+        and isinstance(selection, Mapping)
+        and selection.get("kind") == "executed-runtime-leaf"
+        and _nonempty_string(selection.get("evidence_ref"))
+    )
+
+
 def build_alias_materialization_evidence(
     *,
     alias_audits: Sequence[Mapping[str, object]],
@@ -67,8 +84,9 @@ def build_alias_materialization_evidence(
             and audit.get("operation") == expected.get("operation")
             and _valid_tensor_contract(audit.get("input_contract"))
             and _valid_tensor_contract(audit.get("output_contract"))
-            and isinstance(candidate_id, str)
-            and candidate_id
+            and _nonempty_string(audit.get("input_storage_identity"))
+            and _nonempty_string(audit.get("output_storage_identity"))
+            and _valid_candidate_selection(audit, candidate_id)
         )
         aliases = bool(
             audited
@@ -166,6 +184,27 @@ def build_alias_materialization_evidence(
                     else {"status": "unknown", "value_ns": None}
                 ),
                 "physical_event": physical_event,
+                "dependency_edges": (
+                    [
+                        {
+                            "kind": "semantic-data",
+                            "source": f"value:{stable_path}:input",
+                            "target": event_id,
+                        },
+                        {
+                            "kind": "execution-order",
+                            "source": event_id,
+                            "target": f"value:{stable_path}:output",
+                        },
+                        {
+                            "kind": "execution-resource",
+                            "source": event_id,
+                            "target": "memory.interface",
+                        },
+                    ]
+                    if physical_event is not None
+                    else []
+                ),
             }
         )
     document: dict[str, Any] = {
@@ -179,11 +218,27 @@ def build_alias_materialization_evidence(
         "execution_mode": execution_mode,
         "operations": operations,
         "schedule": {
+            "policy": "serialized-explicit-events",
             "physical_events": [
                 item["physical_event"]
                 for item in operations
                 if item["physical_event"] is not None
-            ]
+            ],
+            "dependency_edges": [
+                edge for item in operations for edge in item["dependency_edges"]
+            ],
+            "composition": {
+                "serialized_duration_ns": sum(
+                    item["duration"]["value_ns"]
+                    for item in operations
+                    if item["decision"] == "materialization"
+                ),
+                "selected_duration_ns": sum(
+                    item["duration"]["value_ns"]
+                    for item in operations
+                    if item["decision"] == "materialization"
+                ),
+            },
         },
         "decomposition": {
             "materialization_duration_ns": sum(
@@ -232,12 +287,19 @@ def verify_alias_materialization_evidence(
         demand = operation.get("resource_demand")
         duration = operation.get("duration")
         event = operation.get("physical_event")
-        if (
+        dependency_edges = operation.get("dependency_edges")
+        if decision != "unknown" and (
             not isinstance(candidate, dict)
             or not isinstance(candidate.get("candidate_id"), str)
             or not candidate.get("candidate_id")
             or candidate.get("hardware_cohort") != cohort
             or candidate.get("execution_mode") != execution_mode
+            or not isinstance(audit, dict)
+            or audit.get("stable_path") != operation.get("stable_path")
+            or audit.get("operation") != operation.get("operation")
+            or not _valid_candidate_selection(
+                audit, candidate.get("candidate_id")
+            )
         ):
             failures.append("selected candidate execution domain mismatch")
         if decision == "alias-preserving":
@@ -245,6 +307,8 @@ def verify_alias_materialization_evidence(
                 not isinstance(audit, dict)
                 or not _valid_tensor_contract(audit.get("input_contract"))
                 or not _valid_tensor_contract(audit.get("output_contract"))
+                or not _nonempty_string(audit.get("input_storage_identity"))
+                or not _nonempty_string(audit.get("output_storage_identity"))
                 or audit.get("input_storage_identity")
                 != audit.get("output_storage_identity")
                 or demand
@@ -260,6 +324,7 @@ def verify_alias_materialization_evidence(
                     "evidence_kind": "verified-alias-preserving-candidate",
                 }
                 or event is not None
+                or dependency_edges != []
             ):
                 failures.append("unverified alias zero")
         elif decision == "materialization":
@@ -267,6 +332,8 @@ def verify_alias_materialization_evidence(
                 not isinstance(audit, dict)
                 or not _valid_tensor_contract(audit.get("input_contract"))
                 or not _valid_tensor_contract(audit.get("output_contract"))
+                or not _nonempty_string(audit.get("input_storage_identity"))
+                or not _nonempty_string(audit.get("output_storage_identity"))
                 or audit.get("input_storage_identity")
                 == audit.get("output_storage_identity")
                 or not isinstance(demand, dict)
@@ -276,22 +343,82 @@ def verify_alias_materialization_evidence(
                 or not isinstance(event, dict)
                 or event.get("duration_ns") != duration.get("value_ns")
                 or event.get("stable_path") != operation.get("stable_path")
+                or event.get("candidate_id") != candidate.get("candidate_id")
+                or event.get("provenance")
+                != {"evidence_refs": duration.get("evidence_refs")}
+                or event.get("resource_claims")
+                != [
+                    {
+                        "resource_id": "memory.interface",
+                        "kind": "throughput",
+                        "read_bytes": demand.get("memory_read_bytes"),
+                        "write_bytes": demand.get("memory_write_bytes"),
+                        "lifetime": {
+                            "start": event.get("event_id"),
+                            "end": event.get("event_id"),
+                        },
+                        "provenance": {
+                            "evidence_refs": duration.get("evidence_refs")
+                        },
+                    }
+                ]
+                or dependency_edges
+                != [
+                    {
+                        "kind": "semantic-data",
+                        "source": f"value:{operation.get('stable_path')}:input",
+                        "target": event.get("event_id"),
+                    },
+                    {
+                        "kind": "execution-order",
+                        "source": event.get("event_id"),
+                        "target": f"value:{operation.get('stable_path')}:output",
+                    },
+                    {
+                        "kind": "execution-resource",
+                        "source": event.get("event_id"),
+                        "target": "memory.interface",
+                    },
+                ]
             ):
                 failures.append("invalid materialization event")
             else:
                 expected_events.append(event)
-                materialization_duration += duration["value_ns"]
+                value_ns = duration.get("value_ns")
+                if not isinstance(value_ns, (int, float)) or isinstance(value_ns, bool):
+                    failures.append("invalid materialization event")
+                else:
+                    materialization_duration += value_ns
         elif decision == "unknown":
             unknown_paths.append(operation.get("stable_path"))
             if (
                 demand != {"status": "unknown"}
                 or duration != {"status": "unknown", "value_ns": None}
                 or event is not None
+                or dependency_edges != []
             ):
                 failures.append("invalid structured unknown")
         else:
             failures.append("invalid alias materialization decision")
-    if body.get("schedule") != {"physical_events": expected_events}:
+    expected_edges = [
+        edge
+        for operation in operations
+        if isinstance(operation, dict)
+        for edge in (
+            operation.get("dependency_edges")
+            if isinstance(operation.get("dependency_edges"), list)
+            else []
+        )
+    ]
+    if body.get("schedule") != {
+        "policy": "serialized-explicit-events",
+        "physical_events": expected_events,
+        "dependency_edges": expected_edges,
+        "composition": {
+            "serialized_duration_ns": materialization_duration,
+            "selected_duration_ns": materialization_duration,
+        },
+    }:
         failures.append("physical event schedule mismatch")
     if body.get("decomposition") != {
         "materialization_duration_ns": materialization_duration,

@@ -753,16 +753,12 @@ def test_m4_cpu_backend_emits_empirical_algorithm_independent_hardware_floors() 
         2_281_867.569778439
     )
     assert prediction.program_bounds.schedule == "serialized-unfused"
-    assert prediction.program_bounds.ideal_dag_hardware_floor_ns == pytest.approx(
-        5_553_975.963160659
-    )
+    assert prediction.program_bounds.ideal_dag_hardware_floor_ns is None
     assert prediction.program_bounds.serialized_hardware_floor_ns is None
     assert prediction.program_bounds.empirical_hardware_floor_ns is None
-    assert prediction.program_bounds.resource_physical_floor_ns == pytest.approx(
-        6_833_309.828880091
-    )
+    assert prediction.program_bounds.resource_physical_floor_ns is None
     assert prediction.program_bounds.limiting_resource is None
-    assert prediction.program_bounds.resource_limiting_resource == "compute.fp32"
+    assert prediction.program_bounds.resource_limiting_resource is None
     assert prediction.program_bounds.full_duration_ns is None
     assert prediction.program_bounds.compute_time.status == "unknown"
     assert prediction.program_bounds.compute_time.reason == (
@@ -800,7 +796,13 @@ def test_m4_cpu_backend_emits_empirical_algorithm_independent_hardware_floors() 
     assert aliases
     assert all(candidate.compulsory_bytes == 0 for candidate in aliases)
     assert all(
-        candidate.duration.empirical_hardware_floor_ns == 0 for candidate in aliases
+        candidate.duration.empirical_hardware_floor_ns is None for candidate in aliases
+    )
+    assert all(candidate.duration.resource_physical_floor_ns is None for candidate in aliases)
+    assert all(candidate.duration.status == "alias-audit-required" for candidate in aliases)
+    assert all(
+        candidate.duration.missing_capabilities == ("selected-candidate-alias-audit",)
+        for candidate in aliases
     )
 
     resources = {item.resource: item for item in prediction.measured_capabilities}
@@ -819,11 +821,11 @@ def test_m4_cpu_backend_emits_empirical_algorithm_independent_hardware_floors() 
     assert e2e.materialized_bytes == 289_415_168
     assert e2e.schedule == "serialized-unfused"
     assert e2e.critical_path_hardware_floor_ns is None
-    assert e2e.resource_hardware_floor_ns == pytest.approx(5_553_975.963160659)
-    assert e2e.ideal_dag_hardware_floor_ns == pytest.approx(5_553_975.963160659)
+    assert e2e.resource_hardware_floor_ns is None
+    assert e2e.ideal_dag_hardware_floor_ns is None
     assert e2e.serialized_hardware_floor_ns is None
     assert e2e.empirical_hardware_floor_ns is None
-    assert e2e.resource_physical_floor_ns == pytest.approx(6_833_309.828880091)
+    assert e2e.resource_physical_floor_ns is None
 
 
 def test_m4_gpu_plan_does_not_silently_reuse_the_cpu_backend() -> None:

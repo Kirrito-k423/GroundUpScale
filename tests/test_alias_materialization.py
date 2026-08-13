@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
+from groundupscale.ir import content_fingerprint
+
 from groundupscale.alias_materialization import (
     build_alias_materialization_evidence,
     verify_alias_materialization_evidence,
@@ -29,6 +33,11 @@ def test_verified_alias_candidate_is_the_only_evidence_backed_zero() -> None:
                 "operation": "Transpose",
                 "input_storage_identity": "storage:shared",
                 "output_storage_identity": "storage:shared",
+                "selected_candidate_id": "torch.transpose.npu.eager",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": "run://issue46-alias/correctness",
+                },
                 "input_contract": _contract(
                     shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
                 ),
@@ -88,6 +97,11 @@ def test_materializing_candidate_emits_scheduled_physical_event_and_demand() -> 
                 "operation": "Transpose",
                 "input_storage_identity": "storage:input",
                 "output_storage_identity": "storage:materialized-output",
+                "selected_candidate_id": "transpose-contiguous.npu.eager",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": "run://issue46-materialization/correctness",
+                },
                 "input_contract": _contract(
                     shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
                 ),
@@ -163,6 +177,11 @@ def test_missing_alias_audit_is_structured_unknown_and_a_new_evidence_version() 
                 "operation": "Transpose",
                 "input_storage_identity": "storage:shared",
                 "output_storage_identity": "storage:shared",
+                "selected_candidate_id": "torch.transpose.npu.eager",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": "run://issue46-alias/correctness",
+                },
                 "input_contract": _contract(
                     shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
                 ),
@@ -246,3 +265,92 @@ def test_verifier_rejects_zero_invented_without_an_alias_audit() -> None:
     assert verification["passed"] is False
     assert "evidence version digest mismatch" in verification["failures"]
     assert "unverified alias zero" in verification["failures"]
+
+
+def test_missing_storage_identities_fail_closed_as_unknown() -> None:
+    audit = {
+        "stable_path": STABLE_PATH,
+        "operation": "Transpose",
+        "selected_candidate_id": "torch.transpose.npu.eager",
+        "candidate_selection_evidence": {
+            "kind": "executed-runtime-leaf",
+            "evidence_ref": "run://issue46-alias/correctness",
+        },
+        "input_contract": _contract(
+            shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
+        ),
+        "output_contract": _contract(
+            shape=[1, 8, 512, 64], stride=[262144, 64, 512, 1]
+        ),
+    }
+    evidence = build_alias_materialization_evidence(
+        alias_audits=[audit],
+        expected_operations=[
+            {
+                "stable_path": STABLE_PATH,
+                "operation": "Transpose",
+                "logical_read_bytes": 1_048_576,
+                "logical_write_bytes": 1_048_576,
+            }
+        ],
+        selected_candidates={STABLE_PATH: "torch.transpose.npu.eager"},
+        execution_mode="pytorch-eager",
+        hardware_cohort=COHORT,
+    )
+
+    assert evidence["operations"][0]["decision"] == "unknown"
+    assert verify_alias_materialization_evidence(evidence)["passed"] is True
+
+
+def test_verifier_rejects_materialization_claim_and_provenance_tampering() -> None:
+    evidence = build_alias_materialization_evidence(
+        alias_audits=[
+            {
+                "stable_path": STABLE_PATH,
+                "operation": "Transpose",
+                "input_storage_identity": "storage:input",
+                "output_storage_identity": "storage:output",
+                "selected_candidate_id": "transpose-contiguous.npu.eager",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": "run://issue46-materialization/correctness",
+                },
+                "input_contract": _contract(
+                    shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
+                ),
+                "output_contract": _contract(
+                    shape=[1, 8, 512, 64], stride=[262144, 32768, 64, 1]
+                ),
+            }
+        ],
+        expected_operations=[
+            {
+                "stable_path": STABLE_PATH,
+                "operation": "Transpose",
+                "logical_read_bytes": 1_048_576,
+                "logical_write_bytes": 1_048_576,
+            }
+        ],
+        selected_candidates={
+            STABLE_PATH: {
+                "candidate_id": "transpose-contiguous.npu.eager",
+                "duration_ns": 18_400,
+                "evidence_refs": ["run://issue46-materialization/timing"],
+            }
+        },
+        execution_mode="pytorch-eager",
+        hardware_cohort=COHORT,
+    )
+    tampered = deepcopy(evidence)
+    event = tampered["operations"][0]["physical_event"]
+    event["resource_claims"] = []
+    event["provenance"] = {"evidence_refs": ["run://forged"]}
+    tampered["schedule"]["physical_events"] = [event]
+    tampered["evidence_version_id"] = content_fingerprint(
+        {key: value for key, value in tampered.items() if key != "evidence_version_id"}
+    )
+
+    verification = verify_alias_materialization_evidence(tampered)
+
+    assert verification["passed"] is False
+    assert "invalid materialization event" in verification["failures"]

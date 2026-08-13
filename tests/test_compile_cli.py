@@ -67,13 +67,13 @@ def test_compile_cli_writes_inspectable_structural_and_semantic_artifacts(
     ] is None
     assert hardware_prediction["program_bounds"][
         "resource_physical_floor_ns"
-    ] == pytest.approx(6_833_309.828880091)
+    ] is None
     assert hardware_prediction["program_bounds"]["schedule"] == (
         "serialized-unfused"
     )
     assert hardware_prediction["program_bounds"][
         "ideal_dag_hardware_floor_ns"
-    ] == pytest.approx(5_553_975.963160659)
+    ] is None
     assert len(hardware_prediction["measured_capabilities"]) == 2
     assert hardware_prediction["capabilities"]["fp32_flops_per_second"][
         "status"

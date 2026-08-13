@@ -723,6 +723,7 @@ def compile_apple_m4_cpu_prediction(
     all_operations = tuple(cost.walk_operations())
     candidates: list[ImplementationCandidate] = []
     for operation in all_operations:
+        alias_audit_required = operation.operation in {"View", "Transpose"}
         materialized_bytes = (
             operation.metrics.materialized_read_bytes
             + operation.metrics.materialized_write_bytes
@@ -782,12 +783,16 @@ def compile_apple_m4_cpu_prediction(
             else None
         )
         selected_floor = (
-            phase_schedule.selected_duration_ns
+            None
+            if alias_audit_required
+            else phase_schedule.selected_duration_ns
             if phase_schedule is not None
             else empirical_floor
         )
         selected_status = (
-            "phase-capabilities-incomplete"
+            "alias-audit-required"
+            if alias_audit_required
+            else "phase-capabilities-incomplete"
             if phase_schedule is not None and selected_floor is None
             else "phase-serialized-resource-reference"
             if phase_schedule is not None
@@ -799,7 +804,9 @@ def compile_apple_m4_cpu_prediction(
             else None
         )
         selected_missing = (
-            phase_schedule.missing_capabilities
+            ("selected-candidate-alias-audit",)
+            if alias_audit_required
+            else phase_schedule.missing_capabilities
             if phase_schedule is not None
             else ()
             if empirical_available
@@ -841,7 +848,9 @@ def compile_apple_m4_cpu_prediction(
                     memory_optimistic_lower_bound_ns=vendor_memory_floor,
                     empirical_compute_time_ns=empirical_compute,
                     empirical_memory_time_ns=empirical_memory,
-                    resource_physical_floor_ns=empirical_floor,
+                    resource_physical_floor_ns=(
+                        None if alias_audit_required else empirical_floor
+                    ),
                     empirical_hardware_floor_ns=selected_floor,
                     provisional_estimate_ns=provisional_estimate,
                     provisional_evidence_tier=(

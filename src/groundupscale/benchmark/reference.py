@@ -362,10 +362,18 @@ class AliasAudit:
     stable_path: str
     operation: str
     aliases_input_storage: bool
+    selected_candidate_id: str
+    candidate_selection_evidence: CandidateSelectionEvidence
     input_storage_identity: str
     output_storage_identity: str
     input_contract: AliasTensorExecutionContract
     output_contract: AliasTensorExecutionContract
+
+
+@dataclass(frozen=True)
+class CandidateSelectionEvidence:
+    kind: str
+    evidence_ref: str
 
 
 @dataclass(frozen=True)
@@ -520,6 +528,16 @@ class ReferenceRunner:
                         stable_path=module.stable_path,
                         operation=module.operation,
                         aliases_input_storage=aliases,
+                        selected_candidate_id=(
+                            f"runtime-candidate:{module.operation.casefold()}:"
+                            f"{device}:eager"
+                        ),
+                        candidate_selection_evidence=CandidateSelectionEvidence(
+                            kind="executed-runtime-leaf",
+                            evidence_ref=(
+                                f"correctness-observation://{module.stable_path}"
+                            ),
+                        ),
                         input_storage_identity=storage_identity(input_tensor),
                         output_storage_identity=storage_identity(output),
                         input_contract=alias_tensor_contract(input_tensor),
