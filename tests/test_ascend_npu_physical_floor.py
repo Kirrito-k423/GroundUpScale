@@ -495,7 +495,7 @@ def test_ascend_backend_maps_only_supported_matmul_regions_to_physical_floors() 
     "profile_mutation",
     ("environment-ineligible", "quality-quarantined", "operation-domain-mismatch"),
 )
-def test_ascend_backend_keeps_inapplicable_profiles_as_unknown_evidence(
+def test_ascend_backend_rejects_profile_policy_tampering_without_raw_evidence(
     tmp_path: Path,
     profile_mutation: str,
 ) -> None:
@@ -516,19 +516,13 @@ def test_ascend_backend_keeps_inapplicable_profiles_as_unknown_evidence(
         yaml.safe_dump(profile, sort_keys=False), encoding="utf-8"
     )
 
-    compiled = compile_analysis_plan(
-        repository, repository / "specs/plans/ascend-npu-prefill.yaml"
-    )
-    prediction = compiled.hardware_prediction
-    assert prediction is not None
-    assert prediction.measured_capabilities
-    assert prediction.status == "partial-unknown-resource-capability"
-    assert prediction.candidates == ()
-    assert any(
-        region.operation == "MatMul"
-        and region.reason == "ineligible-hardware-capability-profile"
-        for region in prediction.unsupported_regions
-    )
+    with pytest.raises(
+        SpecValidationError,
+        match="derived capability profile does not match raw observation",
+    ):
+        compile_analysis_plan(
+            repository, repository / "specs/plans/ascend-npu-prefill.yaml"
+        )
 
 
 def test_comparison_bundle_replays_stable_path_floor_quality_and_observation(

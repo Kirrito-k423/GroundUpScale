@@ -323,7 +323,11 @@ def compile_ascend_910b2_prediction(
                     memory_optimistic_lower_bound_ns=None,
                     empirical_compute_time_ns=compute_time,
                     empirical_memory_time_ns=memory_time,
+                    resource_physical_floor_ns=floor,
                     empirical_hardware_floor_ns=floor,
+                    provisional_estimate_ns=None,
+                    provisional_evidence_tier=None,
+                    provisional_reason_codes=(),
                     limiting_resource=limiting_resource,
                     full_duration_ns=None,
                     formula=(
@@ -337,6 +341,8 @@ def compile_ascend_910b2_prediction(
                     ),
                     assumptions=assumptions,
                 ),
+                phase_schedule=None,
+                provisional_phase_schedule=None,
             )
         )
 
@@ -355,6 +361,11 @@ def compile_ascend_910b2_prediction(
                 continue
             scope_flops = sum(operation.metrics.flops for operation in selected)
             scope_bytes = _scope_compulsory_bytes(all_operations, selected)
+            scope_materialized_bytes = sum(
+                operation.metrics.materialized_read_bytes
+                + operation.metrics.materialized_write_bytes
+                for operation in selected
+            )
             if any(
                 operation.node_id not in supported_cost_node_ids
                 for operation in selected
@@ -366,10 +377,21 @@ def compile_ascend_910b2_prediction(
                         operation_count=len(selected),
                         flops=scope_flops,
                         compulsory_bytes=scope_bytes,
+                        materialized_bytes=scope_materialized_bytes,
                         empirical_compute_time_ns=None,
                         empirical_memory_time_ns=None,
+                        schedule="unknown",
+                        serialized_hardware_floor_ns=None,
+                        critical_path_hardware_floor_ns=None,
+                        resource_hardware_floor_ns=None,
+                        resource_physical_floor_ns=None,
+                        ideal_dag_hardware_floor_ns=None,
                         empirical_hardware_floor_ns=None,
+                        provisional_estimate_ns=None,
+                        provisional_evidence_tier=None,
+                        provisional_reason_codes=(),
                         limiting_resource=None,
+                        resource_limiting_resource=None,
                         formula=(
                             "unknown: selected CostIR scope is outside the "
                             "eligible Hardware Capability Profile domain"
@@ -400,10 +422,27 @@ def compile_ascend_910b2_prediction(
                     operation_count=len(selected),
                     flops=scope_flops,
                     compulsory_bytes=scope_bytes,
+                    materialized_bytes=scope_materialized_bytes,
                     empirical_compute_time_ns=scope_compute,
                     empirical_memory_time_ns=scope_memory,
+                    schedule="aggregate-resource-floor",
+                    serialized_hardware_floor_ns=None,
+                    critical_path_hardware_floor_ns=None,
+                    resource_hardware_floor_ns=scope_floor,
+                    resource_physical_floor_ns=scope_floor,
+                    ideal_dag_hardware_floor_ns=scope_floor,
                     empirical_hardware_floor_ns=scope_floor,
+                    provisional_estimate_ns=None,
+                    provisional_evidence_tier=None,
+                    provisional_reason_codes=(),
                     limiting_resource=(
+                        "compute.fp32"
+                        if scope_floor is not None and scope_compute >= scope_memory
+                        else "memory.hbm"
+                        if scope_floor is not None
+                        else None
+                    ),
+                    resource_limiting_resource=(
                         "compute.fp32"
                         if scope_floor is not None and scope_compute >= scope_memory
                         else "memory.hbm"
@@ -482,8 +521,18 @@ def compile_ascend_910b2_prediction(
             vendor_memory_time_floor_ns=None,
             empirical_compute_time_ns=None,
             empirical_memory_time_ns=None,
+            schedule="unknown",
+            serialized_hardware_floor_ns=None,
+            critical_path_hardware_floor_ns=None,
+            resource_hardware_floor_ns=None,
+            resource_physical_floor_ns=None,
+            ideal_dag_hardware_floor_ns=None,
             empirical_hardware_floor_ns=None,
+            provisional_estimate_ns=None,
+            provisional_evidence_tier=None,
+            provisional_reason_codes=(),
             limiting_resource=None,
+            resource_limiting_resource=None,
             full_duration_ns=None,
             formula="unknown: complete program contains unsupported CostIR operations",
             assumptions=assumptions,

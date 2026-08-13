@@ -172,19 +172,26 @@ def _parser() -> argparse.ArgumentParser:
     compare_measurement.add_argument("--json", action="store_true", dest="as_json")
     qualify_frontier = subparsers.add_parser(
         "qualify-frontier",
-        help="qualify Ascend MatMul Anchors and publish a minimal Capability Surface",
+        help=(
+            "qualify an exact-Shape frontier profile, or publish a policy-qualified "
+            "operator Capability Surface"
+        ),
     )
-    qualify_frontier.add_argument("--policy", required=True)
+    qualify_frontier.add_argument("--policy")
     qualify_frontier.add_argument("--search-run", action="append", required=True)
     qualify_frontier.add_argument("--holdout-run", action="append", required=True)
-    qualify_frontier.add_argument(
-        "--confirmation-run", action="append", required=True
-    )
-    qualify_frontier.add_argument(
-        "--query-size", action="append", type=int, required=True
-    )
+    qualify_frontier.add_argument("--confirmation-run", action="append")
+    qualify_frontier.add_argument("--query-size", action="append", type=int)
     qualify_frontier.add_argument("--artifact-store", default=".groundupscale")
-    qualify_frontier.add_argument("--run-id", required=True)
+    qualify_frontier.add_argument("--run-id")
+    qualify_frontier.add_argument("--case-id")
+    qualify_frontier.add_argument("--stable-path-pattern")
+    qualify_frontier.add_argument("--candidate-family")
+    qualify_frontier.add_argument("--profile-name")
+    qualify_frontier.add_argument("--profile-version")
+    qualify_frontier.add_argument("--observation-output")
+    qualify_frontier.add_argument("--profile-output")
+    qualify_frontier.add_argument("--repository-root", default=".")
     qualify_frontier.add_argument("--json", action="store_true", dest="as_json")
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
@@ -684,7 +691,7 @@ def _run_analysis(
     return 0 if manifest["status"] == "completed" else 2
 
 
-def _run_qualify_frontier(args: argparse.Namespace) -> int:
+def _run_exact_shape_frontier_qualification(args: argparse.Namespace) -> int:
     try:
         document = qualify_exact_shape_frontier(
             search_runs=args.search_run,
@@ -1162,7 +1169,7 @@ def _run_explain(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_qualify_frontier(args: argparse.Namespace) -> int:
+def _run_operator_frontier_qualification(args: argparse.Namespace) -> int:
     try:
         policy = yaml.safe_load(Path(args.policy).read_text(encoding="utf-8"))
         if not isinstance(policy, dict):
@@ -1236,6 +1243,43 @@ def _run_diagnose(args: argparse.Namespace) -> int:
     else:
         print(render_diagnostic_report(result), end="")
     return 0
+
+
+def _run_qualify_frontier(args: argparse.Namespace) -> int:
+    if args.policy is not None:
+        missing = tuple(
+            option
+            for option, value in (
+                ("--confirmation-run", args.confirmation_run),
+                ("--query-size", args.query_size),
+                ("--run-id", args.run_id),
+            )
+            if not value
+        )
+        if missing:
+            raise ValueError(
+                "policy-qualified frontier requires " + ", ".join(missing)
+            )
+        return _run_operator_frontier_qualification(args)
+
+    missing = tuple(
+        option
+        for option, value in (
+            ("--case-id", args.case_id),
+            ("--stable-path-pattern", args.stable_path_pattern),
+            ("--candidate-family", args.candidate_family),
+            ("--profile-name", args.profile_name),
+            ("--profile-version", args.profile_version),
+            ("--observation-output", args.observation_output),
+            ("--profile-output", args.profile_output),
+        )
+        if not value
+    )
+    if missing:
+        raise ValueError(
+            "exact-Shape frontier qualification requires " + ", ".join(missing)
+        )
+    return _run_exact_shape_frontier_qualification(args)
 
 
 def _run_fit_calibration(args: argparse.Namespace) -> int:
@@ -1342,8 +1386,6 @@ def main(
         return _run_explain(args)
     if args.command == "diagnose":
         return _run_diagnose(args)
-    if args.command == "qualify-frontier":
-        return _run_qualify_frontier(args)
     if args.command == "fit-calibration":
         return _run_fit_calibration(args)
     if args.command == "validate-calibration":

@@ -432,13 +432,21 @@ def test_ascend_demo_runs_complete_model_and_replays_verified_artifacts(
     benchmark = json.loads(
         (run / "observation/raw/benchmark.json").read_text(encoding="utf-8")
     )
-    assert [case["case_id"] for case in benchmark["cases"]] == [
+    case_ids = [case["case_id"] for case in benchmark["cases"]]
+    assert case_ids[-5:] == [
         "matmul-q-proj",
         "rmsnorm-input",
         "softmax-attention",
         "transformer-layer",
         "two-layer-prefill",
     ]
+    assert {
+        "matmul-layer1-qk",
+        "matmul-layer0-gate-proj",
+        "matmul-layer0-qk",
+        "matmul-layer1-gate-proj",
+        "matmul-layer0-context",
+    } <= set(case_ids)
     assert benchmark["instrumentation_profile"] == "baseline-timing"
     assert benchmark["diagnostic_profiling"] == "separate-artifact"
     assert all(
@@ -480,7 +488,7 @@ def test_ascend_demo_runs_complete_model_and_replays_verified_artifacts(
     assert verify_summary["passed"] is True
     assert main(["explain", str(run), "--json"]) == 0
     explain_summary = json.loads(capsys.readouterr().out)
-    assert len(explain_summary["cases"]) == 5
+    assert [case["case_id"] for case in explain_summary["cases"]] == case_ids
     assert explain_summary["comparison_status"]
 
     manifest["producer_lineage"]["producer"] = "tampered-producer"

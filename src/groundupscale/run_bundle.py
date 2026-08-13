@@ -716,37 +716,48 @@ class RunBundleWriter:
                 if case.get("mode") == "operator"
             ]
             current_stage = "correctness"
+            compatibility_error: RuntimeError | None = None
             if self.execution_runtime is not None:
-                correctness_result = reference_runner.compare_cpu_target(
-                    self.execution_runtime, atol=0.001, rtol=0.001
-                )
-                target_audit = canonical_data(correctness_result.mps.audit)
-                target_audit["leaf_output_devices"] = dict(
-                    correctness_result.mps.audit.leaf_output_devices
-                )
-                target_audit["leaf_output_contracts"] = {
-                    path: canonical_data(contract)
-                    for path, contract in (
-                        correctness_result.mps.audit.leaf_output_contracts
+                try:
+                    correctness_result = reference_runner.compare_cpu_target(
+                        self.execution_runtime, atol=0.001, rtol=0.001
                     )
-                }
-                full_model_correctness = {
-                    "status": (
-                        "passed" if correctness_result.passed else "failed"
-                    ),
-                    "max_absolute_error": correctness_result.max_absolute_error,
-                    "max_relative_error": correctness_result.max_relative_error,
-                    "atol": correctness_result.atol,
-                    "rtol": correctness_result.rtol,
-                    "oracle": "cpu-float32-same-seed-same-weights",
-                    "cpu_output_sha256": correctness_result.cpu.output_sha256,
-                    "target_output_sha256": correctness_result.mps.output_sha256,
-                    "target_audit": target_audit,
-                }
-                if not correctness_result.passed:
-                    raise RuntimeError("cpu-correctness-oracle-failed")
-                if correctness_result.mps.audit.fallback_enabled:
-                    raise RuntimeError("cpu-fallback-detected")
+                except RuntimeError as error:
+                    compatibility_error = error
+                    full_model_correctness = {
+                        "status": "failed",
+                        "reason_codes": [str(error)],
+                    }
+                else:
+                    target_audit = canonical_data(correctness_result.mps.audit)
+                    target_audit["leaf_output_devices"] = dict(
+                        correctness_result.mps.audit.leaf_output_devices
+                    )
+                    target_audit["leaf_output_contracts"] = {
+                        path: canonical_data(contract)
+                        for path, contract in (
+                            correctness_result.mps.audit.leaf_output_contracts
+                        )
+                    }
+                    full_model_correctness = {
+                        "status": (
+                            "passed" if correctness_result.passed else "failed"
+                        ),
+                        "max_absolute_error": correctness_result.max_absolute_error,
+                        "max_relative_error": correctness_result.max_relative_error,
+                        "atol": correctness_result.atol,
+                        "rtol": correctness_result.rtol,
+                        "oracle": "cpu-float32-same-seed-same-weights",
+                        "cpu_output_sha256": correctness_result.cpu.output_sha256,
+                        "target_output_sha256": correctness_result.mps.output_sha256,
+                        "target_audit": target_audit,
+                    }
+                    if not correctness_result.passed:
+                        compatibility_error = RuntimeError(
+                            "cpu-correctness-oracle-failed"
+                        )
+                    elif correctness_result.mps.audit.fallback_enabled:
+                        compatibility_error = RuntimeError("cpu-fallback-detected")
             elif device == "mps":
                 correctness_result = reference_runner.compare_cpu_mps(
                     atol=1e-4, rtol=1e-3
@@ -784,6 +795,23 @@ class RunBundleWriter:
                 "operator_cases": operator_cases,
                 "full_model": full_model_correctness,
             }
+            if "target_audit" in full_model_correctness:
+                correctness.update(
+                    {
+                        key: full_model_correctness[key]
+                        for key in (
+                            "max_absolute_error",
+                            "max_relative_error",
+                            "atol",
+                            "rtol",
+                            "oracle",
+                            "cpu_output_sha256",
+                            "target_output_sha256",
+                            "target_audit",
+                        )
+                        if key in full_model_correctness
+                    }
+                )
             current_stage = "trace"
             trace = TraceRunner(
                 self.compiled.bundle,
@@ -887,6 +915,9 @@ class RunBundleWriter:
             assert comparison is not None
             assert explanation is not None
             assert correctness is not None
+            if compatibility_error is not None:
+                current_stage = "correctness"
+                raise compatibility_error
             current_stage = "publication"
             bundle = self.compiled.bundle
             resolved_documents = {
