@@ -661,6 +661,7 @@ def test_row_scalar_memory_probe_uses_one_value_per_row() -> None:
 
     assert result.shape == (4,)
     assert result.tolist() == rows[:, 0].tolist()
+    assert 2 * result.numel() * result.element_size() == 4 * 4 + 4 * 4
 
 
 def test_unknown_memory_resource_fails_closed() -> None:
