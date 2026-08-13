@@ -1,0 +1,1033 @@
+{
+  "axes": {
+    "observation": {
+      "evidence_refs": [
+        "fixture://issue-41/observation"
+      ],
+      "status": "known",
+      "value_ns": 25000.0
+    },
+    "operator_achievable_frontier": {
+      "aggregation": {
+        "kind": "serialized-semantic-leaf-frontiers",
+        "semantic_leaf_count": 52
+      },
+      "evidence_refs": [
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0",
+        "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0"
+      ],
+      "status": "known",
+      "value_ns": 6904.0
+    },
+    "resource_physical_floor": {
+      "evidence_refs": [
+        "fixture://issue-41/resource-floor"
+      ],
+      "status": "known",
+      "value_ns": 4000.0
+    },
+    "schedule_achievable_frontier": {
+      "evidence_refs": [
+        "fixture://issue-41/schedule-policy"
+      ],
+      "status": "known",
+      "value_ns": 8104.0
+    }
+  },
+  "comparison": {
+    "absolute_gap_ns": -16896.0,
+    "combined_uncertainty_ns": 24.20743687382041,
+    "error_status": "evaluated-schedule-frontier",
+    "frontier_efficiency": 0.32416,
+    "relative_prediction_error": -0.67584,
+    "schedule_to_observation_ratio": 0.32416,
+    "status": "evaluated"
+  },
+  "coverage": {
+    "predicted_leaves": [
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-4",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6"
+        ],
+        "duration_ns": 721.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-4",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "RMSNorm",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_key_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/qk_matmul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Mul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/scale",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/causal_mask",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4"
+        ],
+        "duration_ns": 510.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Softmax",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_matmul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/out_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_1",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6"
+        ],
+        "duration_ns": 721.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "RMSNorm",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/up_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "SiLU",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/silu",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Mul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_mul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/down_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_2",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6"
+        ],
+        "duration_ns": 721.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "RMSNorm",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_key_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/qk_matmul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Mul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/scale",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/causal_mask",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4"
+        ],
+        "duration_ns": 510.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Softmax",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Transpose",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_transpose",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_matmul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0"
+        ],
+        "duration_ns": 0.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "View",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_view",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/out_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/residual_1",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5",
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6"
+        ],
+        "duration_ns": 721.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5",
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "RMSNorm",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/up_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "SiLU",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/silu",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Mul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_mul",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "MatMul",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/down_proj",
+        "status": "known"
+      },
+      {
+        "candidate_ids": [
+          "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0"
+        ],
+        "duration_ns": 100.0,
+        "evidence_refs": [
+          "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0"
+        ],
+        "missing_operation_classes": [],
+        "operation_class": "Add",
+        "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/residual_2",
+        "status": "known"
+      }
+    ],
+    "repeated_layer_indices": [
+      0,
+      1
+    ],
+    "semantic_leaf_count": 52,
+    "stable_path_unique": true
+  },
+  "derivation": {
+    "input_sha256": "6375d62fb1228d2cace1a61a527a0494f9f8eef328b2a72ce93f23da637bfec4",
+    "result_sha256": "b91dcaf605bc589d1f514a15833189a3f4ce0b0d6192d828a7292f0161df3b66",
+    "steps": [
+      "validate-indexed-stable-path-coverage",
+      "resolve-mandatory-operation-candidates",
+      "resolve-mandatory-schedule-effects",
+      "compose-selected-feasible-schedule",
+      "compare-same-boundary-observation"
+    ]
+  },
+  "evidence": {
+    "classification": "deterministic-synthetic",
+    "evidence_refs": [
+      "fixture://issue-41/full-demo"
+    ],
+    "promotion_eligible": false,
+    "source_issue": "#41"
+  },
+  "hardware_cohort": "synthetic-ascend-910b2-contract",
+  "missing_evidence": [],
+  "model_id": "two-layer-transformer-prefill",
+  "schedule": {
+    "ideal_dag_duration_ns": 1200.0,
+    "kind": "serialized-unfused",
+    "mandatory_effects": [
+      {
+        "candidate_id": "schedule-device-dispatch",
+        "duration_ns": 500.0,
+        "effect_id": "device-dispatch",
+        "evidence_refs": [
+          "fixture://issue-41/schedule-device-dispatch"
+        ],
+        "operation_class": "schedule.device-dispatch",
+        "status": "known"
+      },
+      {
+        "candidate_id": "schedule-device-synchronization",
+        "duration_ns": 700.0,
+        "effect_id": "device-synchronization",
+        "evidence_refs": [
+          "fixture://issue-41/schedule-device-synchronization"
+        ],
+        "operation_class": "schedule.device-synchronization",
+        "status": "known"
+      }
+    ],
+    "policy_id": "fixture://issue-41/serialized-unfused",
+    "selected_feasible_duration_ns": 8104.0,
+    "serialized_unfused_duration_ns": 8104.0,
+    "version": "1"
+  },
+  "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
+  "status": "complete",
+  "uncertainty": {
+    "candidate_components_ns": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "combination": "root-sum-square",
+    "combined_ns": 24.20743687382041,
+    "evidence_refs": [
+      "fixture://issue-41/uncertainty"
+    ],
+    "observation_component_ns": 20.0,
+    "policy_id": "fixture://issue-41/root-sum-square",
+    "schedule_component_ns": 10.0,
+    "schedule_effect_components_ns": [
+      1.0,
+      1.0
+    ],
+    "version": "1"
+  }
+}

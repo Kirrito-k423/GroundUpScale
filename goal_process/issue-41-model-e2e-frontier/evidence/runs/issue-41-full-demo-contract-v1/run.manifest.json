@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/model-e2e-frontier-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-e2e-frontier-input",
+      "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
+      "sha256": "6375d62fb1228d2cace1a61a527a0494f9f8eef328b2a72ce93f23da637bfec4"
+    },
+    {
+      "inputs": [
+        "model-e2e-frontier-input"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/model-e2e-frontier.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
+      "sha256": "6d4b25eb548390a0b98b950854e56534d5e86bb7c96e432fb0e7ed5035090245"
+    },
+    {
+      "inputs": [
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/plain",
+      "path": "reports/model-e2e-frontier.txt",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/model-e2e-frontier-report/v1alpha1",
+      "sha256": "bfa5e59a6de96d940f142be3f04d86fd64be699809f6072169af2cba9f9c28fa"
+    }
+  ],
+  "bundle_kind": "model-e2e-frontier",
+  "hardware_cohort": "synthetic-ascend-910b2-contract",
+  "immutability": "writer refuses an existing run_id; artifact digests and semantic replay are authoritative",
+  "producer_lineage": {
+    "producer": "groundupscale@0.1.0",
+    "source": "python://groundupscale.model_e2e_frontier"
+  },
+  "run_id": "issue-41-full-demo-contract-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "complete"
+}

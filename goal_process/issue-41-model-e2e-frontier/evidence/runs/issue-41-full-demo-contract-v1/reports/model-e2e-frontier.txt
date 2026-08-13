@@ -1,0 +1,9 @@
+Model E2E Frontier: complete
+Model: two-layer-transformer-prefill
+Hardware Cohort: synthetic-ascend-910b2-contract
+Resource Physical Floor: 0.004000 ms
+Operator Achievable Frontier: 0.006904 ms
+Schedule Achievable Frontier: 0.008104 ms
+E2E Observation: 0.025000 ms
+Relative prediction error: -0.675840000
+Four axes are independent and never overwrite one another.

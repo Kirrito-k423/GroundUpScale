@@ -95,6 +95,13 @@ OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
         "diagnostic-evidence",
     }
 )
+MODEL_E2E_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
+        "model-e2e-frontier-input",
+        "prediction-observation-comparison",
+        "html-report",
+    }
+)
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
@@ -1501,8 +1508,15 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     )
     transformer_demo = manifest.get("bundle_kind") == "transformer-demo"
     operator_frontier = manifest.get("bundle_kind") == "operator-frontier"
+    model_e2e_frontier = (
+        manifest.get("bundle_kind") == "model-e2e-frontier"
+    )
     structured_bundle = (
-        exact_shape or floor_comparison or transformer_demo or operator_frontier
+        exact_shape
+        or floor_comparison
+        or transformer_demo
+        or operator_frontier
+        or model_e2e_frontier
     )
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
@@ -1511,7 +1525,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             if isinstance(artifact, dict):
                 role = artifact.get("role")
                 role_counts[role] = role_counts.get(role, 0) + 1
-        if operator_frontier:
+        if model_e2e_frontier:
+            required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
+        elif operator_frontier:
             required_roles = OPERATOR_FRONTIER_REQUIRED_ROLES
         elif transformer_demo:
             if manifest.get("status") == "completed":
@@ -1590,6 +1606,50 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ):
                     documents_by_role[role] = artifact_document
                     paths_by_role[role] = str(artifact["path"])
+
+    if model_e2e_frontier:
+        source = documents_by_role.get("model-e2e-frontier-input")
+        comparison = documents_by_role.get(
+            "prediction-observation-comparison"
+        )
+        report_entry = next(
+            (
+                artifact
+                for artifact in artifacts
+                if isinstance(artifact, dict)
+                and artifact.get("role") == "html-report"
+            ),
+            None,
+        )
+        if (
+            manifest.get("status") not in {"complete", "unknown"}
+            or not isinstance(source, dict)
+            or not isinstance(comparison, dict)
+            or not isinstance(report_entry, dict)
+            or manifest.get("hardware_cohort")
+            != comparison.get("hardware_cohort")
+        ):
+            failures.append("invalid model E2E Frontier bundle identity")
+        else:
+            try:
+                from groundupscale.model_e2e_frontier import (
+                    compose_model_e2e_frontier,
+                    render_model_e2e_frontier_report,
+                )
+
+                expected = compose_model_e2e_frontier(source)
+                report_path = (root / str(report_entry["path"])).resolve()
+                actual_report = report_path.read_text(encoding="utf-8")
+                expected_report = render_model_e2e_frontier_report(expected)
+            except (OSError, UnicodeDecodeError, ValueError) as error:
+                failures.append(f"invalid model E2E Frontier evidence: {error}")
+            else:
+                if comparison != expected:
+                    failures.append("model E2E comparison derivation mismatch")
+                if actual_report != expected_report:
+                    failures.append("model E2E human report projection mismatch")
+                if manifest.get("status") != expected.get("status"):
+                    failures.append("model E2E manifest status mismatch")
 
     if operator_frontier:
         qualification = documents_by_role.get(

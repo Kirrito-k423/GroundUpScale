@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/model-e2e-frontier-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-e2e-frontier-input",
+      "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
+      "sha256": "d2fb93ee17b9157f928c5801c94f588ed4ca94960b5c5b7b9ff8078c8f9e156d"
+    },
+    {
+      "inputs": [
+        "model-e2e-frontier-input"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/model-e2e-frontier.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
+      "sha256": "e0d31a7d71f1da516ccf622bcd2caa3b51c6321c50b92aa9e5d0a4237c275c8b"
+    },
+    {
+      "inputs": [
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/plain",
+      "path": "reports/model-e2e-frontier.txt",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/model-e2e-frontier-report/v1alpha1",
+      "sha256": "2570cd281df03a305f14a531baefc5a34c43e62d00be8b2a96b97e5da6546763"
+    }
+  ],
+  "bundle_kind": "model-e2e-frontier",
+  "hardware_cohort": "synthetic-ascend-910b2-contract",
+  "immutability": "writer refuses an existing run_id; artifact digests and semantic replay are authoritative",
+  "producer_lineage": {
+    "producer": "groundupscale@0.1.0",
+    "source": "python://groundupscale.model_e2e_frontier"
+  },
+  "run_id": "issue-41-missing-rmsnorm-phase-v1",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "unknown"
+}

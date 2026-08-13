@@ -916,6 +916,32 @@ def _run_compare_measurement(args: argparse.Namespace) -> int:
 def _run_explain(args: argparse.Namespace) -> int:
     run = Path(args.run_bundle).resolve()
     manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
+    if manifest.get("bundle_kind") == "model-e2e-frontier":
+        from groundupscale.model_e2e_frontier import (
+            load_model_e2e_frontier_report,
+        )
+
+        published = load_model_e2e_frontier_report(run)
+        result = published["machine_result"]
+        summary = {
+            "schema": "groundupscale.dev/explain-summary/v1alpha3",
+            "bundle_kind": manifest["bundle_kind"],
+            "run_id": manifest["run_id"],
+            "status": result["status"],
+            "hardware_cohort": result["hardware_cohort"],
+            "semantic_leaf_count": result["coverage"][
+                "semantic_leaf_count"
+            ],
+            "axes": result["axes"],
+            "comparison": result["comparison"],
+            "missing_evidence": result["missing_evidence"],
+            "report": str(run / "reports/model-e2e-frontier.txt"),
+        }
+        if args.as_json:
+            print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print(published["human_report"], end="")
+        return 0
     if manifest.get("bundle_kind") == "physical-floor-observation-comparison":
         comparison = json.loads(
             (run / "comparison/physical-floor-vs-observation.json").read_text(
