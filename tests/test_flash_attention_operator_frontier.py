@@ -242,7 +242,7 @@ def _flash_attention_policy() -> dict[str, object]:
 def test_bounded_flash_attention_publishes_replayable_unknown_for_partial_corpus(
     tmp_path: Path,
 ) -> None:
-    search, _, _ = _flash_attention_inputs(tmp_path)
+    search, holdout, validation = _flash_attention_inputs(tmp_path)
     policy = _flash_attention_policy()
 
     run = OperatorFrontierBundleWriter().run(
@@ -250,8 +250,8 @@ def test_bounded_flash_attention_publishes_replayable_unknown_for_partial_corpus
         run_id="flash-attention-bounded-unknown-v1",
         qualification_policy=policy,
         search_runs=search,
-        holdout_runs=[],
-        confirmation_runs=[],
+        holdout_runs=holdout,
+        confirmation_runs=validation[:3],
         query_sizes=(128, 4096, 8192, 9000),
     )
 
@@ -314,7 +314,16 @@ def test_equal_length_tnd_flash_attention_qualifies_and_queries_public_surface(
     qualification = json.loads(
         (run / "frontier/qualification.json").read_text(encoding="utf-8")
     )
+    diagnostic = json.loads(
+        (run / "diagnostic/evidence.json").read_text(encoding="utf-8")
+    )
     assert qualification["status"] == "qualified"
+    assert diagnostic["resolved_configuration"]["analysis_plan"] == (
+        "test-ascend-flash-attention-tnd-forward-v1"
+    )
+    assert qualification["surface"]["anchor_lifecycle_policy"][
+        "change_reason"
+    ] == "test-ascend-flash-attention-tnd-forward-v1"
     assert qualification["surface"]["work_formula"] == {
         "kind": "flash-attention-tnd-forward-qk-pv",
         "version": "v1",

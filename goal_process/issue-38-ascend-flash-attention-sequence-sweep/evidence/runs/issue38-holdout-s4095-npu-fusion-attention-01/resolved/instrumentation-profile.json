@@ -1,0 +1,42 @@
+{
+  "accepted_overhead": {
+    "correctness_oracle": "outside-timed-region",
+    "diagnostic_profiler": "disabled",
+    "event_pair": "accepted-primary-timer-overhead",
+    "memory_queries": "outside-timed-region",
+    "rule": "only candidate executions lie between timing events"
+  },
+  "collectors": [
+    "torch.npu.Event.elapsed_time",
+    "torch.npu.memory_*",
+    "cpu-float64-correctness-oracle"
+  ],
+  "diagnostic_profiling": {
+    "status": "not_requested"
+  },
+  "evidence_ref": "artifact://resolved/instrumentation-profile.json",
+  "intrusion": "minimally-instrumented",
+  "lane": "baseline-timing",
+  "metadata": {
+    "fields": [
+      "shape",
+      "dtype",
+      "layout",
+      "seed",
+      "warmup_iterations",
+      "repetitions",
+      "inner_iterations",
+      "timer_source",
+      "timer_resolution_ns"
+    ],
+    "policy": "allowlisted-exact-shape-contract"
+  },
+  "profile_id": "ascend-npu-baseline-timing-v1",
+  "schema": "groundupscale.dev/instrumentation-profile/v1alpha1",
+  "status": "active",
+  "synchronization": {
+    "before_sample": "device-synchronize",
+    "completion": "end-event-synchronize-plus-device-synchronize",
+    "per_module_synchronization": false
+  }
+}

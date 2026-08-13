@@ -1,0 +1,12 @@
+{
+  "atol": 0.02,
+  "finite": true,
+  "max_absolute_error": 0.0004315376281738281,
+  "max_relative_error": 63.700199127197266,
+  "oracle": "npu-float32-decomposed-attention",
+  "rtol": 0.02,
+  "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+  "shape_exact": true,
+  "status": "passed",
+  "target_output_sha256": "65a674baef711f8554101c3e352f6672d6fc61926ab89bc2b4cbf77b06ef428e"
+}

@@ -1,0 +1,10 @@
+{
+  "absolute_timestamps_subtracted": false,
+  "closed": true,
+  "device_event_id": "per-sample-torch-npu-event-pair",
+  "kind": "device-event-stream-completion",
+  "protocol": "end-event-synchronize-plus-device-synchronize",
+  "schema": "groundupscale.dev/completion-boundary/v1alpha1",
+  "stream_id": "default-npu-stream",
+  "stream_synchronized": true
+}

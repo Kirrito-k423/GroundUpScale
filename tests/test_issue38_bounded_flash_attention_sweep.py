@@ -28,6 +28,11 @@ UNKNOWN_EVIDENCE = (
     / "goal_process/issue-38-ascend-flash-attention-sequence-sweep/"
     "evidence/qualification-unknown.json"
 )
+PUBLISHED_BUNDLE = (
+    ROOT
+    / "goal_process/issue-38-ascend-flash-attention-sequence-sweep/"
+    "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v1"
+)
 
 
 def test_issue38_collection_plan_locks_bounded_equal_length_tnd_domain() -> None:
@@ -256,6 +261,40 @@ def test_qualification_publisher_uses_all_three_independent_evidence_lanes() -> 
     assert "9000" in source
 
 
+def test_qualification_publisher_can_start_without_external_pythonpath() -> None:
+    completed = subprocess.run(
+        [str(Path(os.sys.executable)), str(PUBLISH_SCRIPT), "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--workspace" in completed.stdout
+
+
+def test_qualification_publisher_replays_existing_real_bundle() -> None:
+    completed = subprocess.run(
+        [
+            str(Path(os.sys.executable)),
+            str(PUBLISH_SCRIPT),
+            "--workspace",
+            str(ROOT),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    summary = yaml.safe_load(completed.stdout)
+    assert summary["verification_passed"] is True
+    assert summary["qualification_status"] == "unknown"
+    assert summary["reason_code"] == "bounded-collection-corpus-incomplete"
+
+
 def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() -> None:
     evidence = yaml.safe_load(UNKNOWN_EVIDENCE.read_text(encoding="utf-8"))
 
@@ -265,7 +304,8 @@ def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() ->
     assert evidence["hardware_cohort"] == "ascend-npu-23b93a89d5fecc79"
     assert evidence["collection"]["main"]["verified_run_bundles"] == 99
     assert evidence["collection"]["holdout"]["verified_run_bundles"] == 99
-    assert evidence["collection"]["validation"]["verified_run_bundles"] == 21
+    assert evidence["collection"]["validation"]["verified_run_bundles"] == 36
+    assert len(evidence["qualification_gate_failures"]) == 5
     assert evidence["stopping_decision"] == {
         "status": "stopped",
         "supplemental_rounds_executed": 0,
@@ -278,3 +318,21 @@ def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() ->
         query["status"] == "unknown"
         for query in evidence["representative_queries"]
     )
+
+
+def test_real_unknown_qualification_bundle_is_self_contained_and_verifiable() -> None:
+    from groundupscale.diagnostics import diagnose_run_bundle
+    from groundupscale.run_bundle import verify_run_bundle
+
+    verification = verify_run_bundle(PUBLISHED_BUNDLE)
+    diagnosis = diagnose_run_bundle(PUBLISHED_BUNDLE)
+
+    assert verification["passed"] is True
+    assert [
+        query["status"]
+        for query in diagnosis["capability_surface_queries"]
+    ] == ["unknown"] * 7
+    assert {
+        query["reason_code"]
+        for query in diagnosis["capability_surface_queries"]
+    } == {"bounded-collection-corpus-incomplete"}

@@ -1,0 +1,22 @@
+{
+  "dtype": "float16",
+  "initialization": "cpu-torch-randn-fixed-seed",
+  "k_sha256": "347ac0d293f62565f9f0b135afa5cccd3eb00d23b132d544daf54a637879134b",
+  "layout": "TND",
+  "q_sha256": "dcaa7f1b510a166596c85c9f9c470a5a54223d2e743d4445ea2119ce33a7c6a9",
+  "schema": "groundupscale.dev/input-corpus/v1alpha1",
+  "seed": 20260813,
+  "sequence_lengths": [
+    1
+  ],
+  "sequence_shape_identity": "operator-shape://FlashAttentionForward/2b447c4bfbba1667c0b70b8f199e7a823aa737ac2c1c40dea44e4ee1478739db",
+  "shape": {
+    "head_count": 8,
+    "head_dimension": 64,
+    "sequence_count": 1,
+    "sequence_lengths": [
+      1
+    ]
+  },
+  "v_sha256": "6299494c0249eb77c016063633b11cf79651012ec60c99f80e7ff33cb04e4652"
+}

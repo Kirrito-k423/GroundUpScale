@@ -48,9 +48,9 @@
       "last_read_only_inventory_at": "2026-08-13T12:35:00+08:00"
     },
     "validation": {
-      "status": "incomplete",
-      "verified_run_bundles": 21,
-      "last_confirmed_sequence_length": 1280,
+      "status": "complete-but-not-stable",
+      "verified_run_bundles": 36,
+      "last_confirmed_sequence_length": 7168,
       "declared_run_bundles": 36
     },
     "supplemental": {
@@ -81,9 +81,48 @@
     "stage": "independent-validation",
     "reason": "UniVPN-backed SSH path closed before key exchange",
     "last_observation": "TCP/22 accepted, then kex_exchange_identification closed by remote host",
+    "recovered": true,
+    "recovered_at": "2026-08-13T13:23:00+08:00",
     "same_cohort_preserved": true,
     "raw_run_bundles_deleted": false
   },
+  "qualification_gate_failures": [
+    {
+      "lane": "main",
+      "sequence_length": 8,
+      "session_medians_ns": [160840, 182350, 164320],
+      "session_median_relative_range": 0.1309031158714703,
+      "maximum_allowed": 0.1
+    },
+    {
+      "lane": "main",
+      "sequence_length": 255,
+      "session_medians_ns": [167250, 164290, 185490],
+      "session_median_relative_range": 0.12675635276532138,
+      "maximum_allowed": 0.1
+    },
+    {
+      "lane": "validation",
+      "sequence_length": 48,
+      "session_medians_ns": [186240, 160520, 163000],
+      "session_median_relative_range": 0.15779141104294478,
+      "maximum_allowed": 0.1
+    },
+    {
+      "lane": "validation",
+      "sequence_length": 160,
+      "session_medians_ns": [169930, 178780, 188580],
+      "session_median_relative_range": 0.10431815639333258,
+      "maximum_allowed": 0.1
+    },
+    {
+      "lane": "validation",
+      "sequence_length": 640,
+      "session_medians_ns": [187510, 164670, 163460],
+      "session_median_relative_range": 0.14604967510779135,
+      "maximum_allowed": 0.1
+    }
+  ],
   "stopping_decision": {
     "status": "stopped",
     "supplemental_rounds_executed": 0,
@@ -121,5 +160,6 @@
     "resume_validation": "bash goal_process/issue-38-ascend-flash-attention-sequence-sweep/collect_bounded_sequence_sweep.sh validation",
     "publish": "python goal_process/issue-38-ascend-flash-attention-sequence-sweep/publish_qualification.py --workspace /home/t00906153/GroundUpScale-issue38-20260813",
     "behavior": "existing immutable Run Bundles are verified and skipped before missing runs are collected"
-  }
+  },
+  "published_run_bundle": "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v1"
 }

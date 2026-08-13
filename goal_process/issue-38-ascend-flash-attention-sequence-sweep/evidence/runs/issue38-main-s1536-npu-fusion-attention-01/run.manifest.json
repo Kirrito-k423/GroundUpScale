@@ -1,0 +1,233 @@
+{
+  "adapter": {
+    "adapter_id": "ascend-npu",
+    "adapter_version": "v1",
+    "protocol_id": "exact-shape-measurement",
+    "protocol_version": "v1"
+  },
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/case.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "benchmark-case",
+      "schema": "groundupscale.dev/exact-shape-flash-attention-tnd-case/v1alpha1",
+      "sha256": "6e59a82524c6d88597c49232eb631bc5975593312ce9b4aefb1cc77560d68526"
+    },
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "adapter/capabilities.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "measurement-capability-manifest",
+      "schema": "groundupscale.dev/measurement-capability-manifest/v1alpha1",
+      "sha256": "e2f0f5b77c06b205d72a7adf69d6fb804191b02ddee5e14f79d3e5cbef968cca"
+    },
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "adapter/cohort.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "hardware-cohort",
+      "schema": "groundupscale.dev/hardware-cohort/v1alpha1",
+      "sha256": "58a02880e09fd38aa78b8e19d1e27a1d76af32f129a7465213ffd63d6985a7e7"
+    },
+    {
+      "inputs": [
+        "measurement-capability-manifest",
+        "hardware-cohort"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/preflight.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "measurement-preflight",
+      "schema": "groundupscale.dev/measurement-preflight/v1alpha1",
+      "sha256": "5707e2731caddbfa4b40788483c506969052b112fabeeab2e82bf791de6ae038"
+    },
+    {
+      "inputs": [
+        "benchmark-case",
+        "measurement-capability-manifest"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/timing-plan.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "timing-plan",
+      "schema": "groundupscale.dev/timing-plan/v1alpha1",
+      "sha256": "658ae352bc9e334e69b5ba830b1956240fcfa274e9ba6fe1e7f53fa3d3df1cd1"
+    },
+    {
+      "inputs": [
+        "timing-plan",
+        "measurement-preflight"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/collection.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "measurement-collection",
+      "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
+      "sha256": "0408ace277a1513d8246361d29caa3bd8c406380fd9329561cf37c4497567962"
+    },
+    {
+      "inputs": [
+        "measurement-preflight",
+        "hardware-cohort"
+      ],
+      "media_type": "application/json",
+      "path": "resolved/environment.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "environment",
+      "schema": "groundupscale.dev/environment/v1alpha1",
+      "sha256": "783c3db313fa6d65549078e8e0448978b7b5ea101ba97eab4ae9110677fb119e"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "observation/candidate.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "candidate-identity",
+      "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+      "sha256": "5598e34d8d99efc33deb69e189b52087119313b87ea959387e2fef518510da18"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "resolved/input-corpus.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "input-corpus",
+      "schema": "groundupscale.dev/input-corpus/v1alpha1",
+      "sha256": "b54694b45ce619155b2230e6ad8a5980290183237bb2bd646819a7817dc0d451"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "resolved/execution-contract.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "execution-contract",
+      "schema": "groundupscale.dev/execution-contract/v1alpha1",
+      "sha256": "95282c0136bbd7c66e59af9a987b36e50b1c5ee8f23126bd13cd24a338f510fe"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "resolved/instrumentation-profile.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "instrumentation-profile",
+      "schema": "groundupscale.dev/instrumentation-profile/v1alpha1",
+      "sha256": "46b8dd7154eeaffe220b9bd1f63866da027aa2f42dcc14eb1b708bec26e158bf"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "observation/correctness.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "correctness-observation",
+      "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+      "sha256": "086cc1d194acf42b104753ee99113bed620a6cd991acc58eb3c2d0ce1e5e4bcb"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "observation/raw-timing.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "raw-timing-observation",
+      "schema": "groundupscale.dev/raw-timing-observation/v1alpha1",
+      "sha256": "7cd90808d6772b4375cca25d1d0a66e97d42effecf4a130ff46e9449e3505dc6"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "observation/memory.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "memory-observation",
+      "schema": "groundupscale.dev/memory-observation/v1alpha1",
+      "sha256": "29951ae19a56acb66e2bafd03acd3cf722520bd5e4532960a0d9d2e2230a08df"
+    },
+    {
+      "inputs": [
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "observation/completion-boundary.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "completion-boundary",
+      "schema": "groundupscale.dev/completion-boundary/v1alpha1",
+      "sha256": "244d6cea171d4e8d64988d020378806cfa55f2f0063a6a752191f8e367025cec"
+    },
+    {
+      "inputs": [
+        "measurement-capability-manifest",
+        "hardware-cohort",
+        "measurement-preflight",
+        "timing-plan",
+        "measurement-collection"
+      ],
+      "media_type": "application/json",
+      "path": "adapter/operations.json",
+      "produced_by": "groundupscale@0.1.0+source.b59a35dbfe7dd50a",
+      "role": "measurement-operation-evidence",
+      "schema": "groundupscale.dev/measurement-operation-evidence/v1alpha1",
+      "sha256": "f42c6dc3b9cbf17eb51fec68b249ab5313fa759cf8579ecfd8b04d178c0e462d"
+    }
+  ],
+  "bundle_kind": "exact-shape-measurement",
+  "created_at": "2026-08-13T03:18:20.780222+00:00",
+  "device": "ascend-npu",
+  "frontier_role": {
+    "reason_code": "issue-28-does-not-promote-frontier",
+    "status": "not-evaluated"
+  },
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; artifact digests are authoritative",
+  "observation_validity": {
+    "completion_boundary": "closed",
+    "correctness": "passed",
+    "raw_timing_sample_count": 100,
+    "reason_codes": [],
+    "status": "valid",
+    "timing_quality": "passed"
+  },
+  "producer_lineage": {
+    "package_version": "0.1.0",
+    "producer": "groundupscale",
+    "schema": "groundupscale.dev/producer-lineage/v1alpha1",
+    "source_files": [
+      {
+        "path": "src/groundupscale/measurement_adapters/ascend_npu.py",
+        "sha256": "0a7ce3ba35693ede4bc57ed2b386ba402c4bf9c6d051683d8d22891d1af70410"
+      },
+      {
+        "path": "src/groundupscale/measurement_adapters/ascend_npu_runtime.py",
+        "sha256": "cdc11a02485cc2cd919bc5f3505c067881b49c9d3443603bfe8498378b412010"
+      },
+      {
+        "path": "src/groundupscale/measurement_run.py",
+        "sha256": "e8227f2389d84eb5fd190dd2e288761d9856090cd116b9b6cbd2ccb64962cd6b"
+      },
+      {
+        "path": "src/groundupscale/run_bundle.py",
+        "sha256": "f672d5e5102a59b5cd9fa0ef0ce11ab27162f40260349cfa0edcc04fb6cec405"
+      }
+    ],
+    "source_sha256": "b59a35dbfe7dd50a57a9d03857c6a35e92581fd5a859e5cf9465ddc11504a88d",
+    "source_state": "content-addressed-working-tree"
+  },
+  "run_id": "issue38-main-s1536-npu-fusion-attention-01",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "completed"
+}

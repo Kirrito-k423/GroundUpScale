@@ -1,0 +1,56 @@
+{
+  "build_identity": {
+    "extension": "torch_npu",
+    "extension_version": "2.7.1",
+    "framework": "torch",
+    "framework_version": "2.7.1+cpu",
+    "operator_entrypoint": "torch_npu.npu_fusion_attention"
+  },
+  "candidate_device": "npu:0",
+  "candidate_digest": "9b935d27e11346ac26e6c3ee3738fe3ee756c90bd346c33d921b826019ad8388",
+  "candidate_family": "torch-npu-flash-attention",
+  "candidate_id": "torch_npu.npu_fusion_attention",
+  "compilation_parameters": {
+    "compiler": "pytorch-eager",
+    "graph_compilation": false
+  },
+  "cpu_fallback": false,
+  "dtype": "float16",
+  "evidence_ref": "artifact://observation/candidate.json",
+  "execution_mode": "pytorch-eager",
+  "layout": "TND",
+  "minimum_alignment_bytes": 512,
+  "operation": "FlashAttentionForward",
+  "operator_shape_identity": "operator-shape://FlashAttentionForward/377d2657af7531235ca62a1baf60f81c8640ee32140741a15348923dca5353f2",
+  "runtime_device_name": "Ascend910B2",
+  "runtime_identity": {
+    "candidate_device": "npu:0",
+    "logical_device": "npu:0",
+    "runtime_device_name": "Ascend910B2"
+  },
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+  "semantic_domain": {
+    "causal": false,
+    "dropout_probability": 0.0,
+    "dtype": "float16",
+    "head_count": 8,
+    "head_dimension": 64,
+    "layout": "TND",
+    "mask": "none",
+    "mode": "forward",
+    "semantic_operation": "FlashAttentionForward",
+    "sequence_count": 1
+  },
+  "shape": {
+    "head_count": 8,
+    "head_dimension": 64,
+    "sequence_count": 1,
+    "sequence_lengths": [
+      384
+    ]
+  },
+  "tuning_parameters": {
+    "input_layout": "TND",
+    "keep_probability": 1.0
+  }
+}

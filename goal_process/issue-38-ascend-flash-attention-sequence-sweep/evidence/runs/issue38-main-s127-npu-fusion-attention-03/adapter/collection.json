@@ -1,0 +1,325 @@
+{
+  "candidate_identity": {
+    "build_identity": {
+      "extension": "torch_npu",
+      "extension_version": "2.7.1",
+      "framework": "torch",
+      "framework_version": "2.7.1+cpu",
+      "operator_entrypoint": "torch_npu.npu_fusion_attention"
+    },
+    "candidate_device": "npu:0",
+    "candidate_digest": "72cb7d3836edba064f50d9e09b4c440a5ae865e51272338e4387cf93142eec93",
+    "candidate_family": "torch-npu-flash-attention",
+    "candidate_id": "torch_npu.npu_fusion_attention",
+    "compilation_parameters": {
+      "compiler": "pytorch-eager",
+      "graph_compilation": false
+    },
+    "cpu_fallback": false,
+    "dtype": "float16",
+    "evidence_ref": "artifact://observation/candidate.json",
+    "execution_mode": "pytorch-eager",
+    "layout": "TND",
+    "minimum_alignment_bytes": 512,
+    "operation": "FlashAttentionForward",
+    "operator_shape_identity": "operator-shape://FlashAttentionForward/a100c7c881b19085de684b7e575c634e2209e1808719d93efadf93ca55181e96",
+    "runtime_device_name": "Ascend910B2",
+    "runtime_identity": {
+      "candidate_device": "npu:0",
+      "logical_device": "npu:0",
+      "runtime_device_name": "Ascend910B2"
+    },
+    "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+    "semantic_domain": {
+      "causal": false,
+      "dropout_probability": 0.0,
+      "dtype": "float16",
+      "head_count": 8,
+      "head_dimension": 64,
+      "layout": "TND",
+      "mask": "none",
+      "mode": "forward",
+      "semantic_operation": "FlashAttentionForward",
+      "sequence_count": 1
+    },
+    "shape": {
+      "head_count": 8,
+      "head_dimension": 64,
+      "sequence_count": 1,
+      "sequence_lengths": [
+        127
+      ]
+    },
+    "tuning_parameters": {
+      "input_layout": "TND",
+      "keep_probability": 1.0
+    }
+  },
+  "completion_boundary": {
+    "absolute_timestamps_subtracted": false,
+    "closed": true,
+    "device_event_id": "per-sample-torch-npu-event-pair",
+    "kind": "device-event-stream-completion",
+    "protocol": "end-event-synchronize-plus-device-synchronize",
+    "schema": "groundupscale.dev/completion-boundary/v1alpha1",
+    "stream_id": "default-npu-stream",
+    "stream_synchronized": true
+  },
+  "correctness": {
+    "atol": 0.02,
+    "finite": true,
+    "max_absolute_error": 0.00025832653045654297,
+    "max_relative_error": 36.76553726196289,
+    "oracle": "npu-float32-decomposed-attention",
+    "rtol": 0.02,
+    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+    "shape_exact": true,
+    "status": "passed",
+    "target_output_sha256": "4c9219c8fc94f9a04999d58740417579f49709a831e4b92c87b1e787abf8e60f"
+  },
+  "device": "ascend-npu",
+  "evidence_ref": "artifact://adapter/collection.json",
+  "execution_contract": {
+    "candidate": "torch_npu.npu_fusion_attention",
+    "causal": false,
+    "completion_protocol": {
+      "kind": "device-event-stream-completion",
+      "protocol": "end-event-synchronize-plus-device-synchronize"
+    },
+    "dropout_probability": 0.0,
+    "dtype": "float16",
+    "inner_iterations": 1,
+    "layout": "TND",
+    "logical_device": "npu:0",
+    "mask": "none",
+    "mode": "forward",
+    "operation": "FlashAttentionForward",
+    "repetitions": 100,
+    "sample_exclusion": "none-preserve-all-raw-samples",
+    "schema": "groundupscale.dev/execution-contract/v1alpha1",
+    "shape": {
+      "head_count": 8,
+      "head_dimension": 64,
+      "sequence_count": 1,
+      "sequence_lengths": [
+        127
+      ]
+    },
+    "timer": {
+      "kind": "device-event",
+      "source": "torch.npu.Event.elapsed_time",
+      "unit": "nanoseconds"
+    },
+    "warmup_iterations": 20
+  },
+  "input_corpus": {
+    "dtype": "float16",
+    "initialization": "cpu-torch-randn-fixed-seed",
+    "k_sha256": "a5c548eeb98b85a66db69dc8b0443232ee437828fd6efa3fa2f616a5bc7f7e47",
+    "layout": "TND",
+    "q_sha256": "8ca21682195fc31edb40093ade55df705de4dcbcf75d0f62ee78488a593a50b9",
+    "schema": "groundupscale.dev/input-corpus/v1alpha1",
+    "seed": 20260813,
+    "sequence_lengths": [
+      127
+    ],
+    "sequence_shape_identity": "operator-shape://FlashAttentionForward/a100c7c881b19085de684b7e575c634e2209e1808719d93efadf93ca55181e96",
+    "shape": {
+      "head_count": 8,
+      "head_dimension": 64,
+      "sequence_count": 1,
+      "sequence_lengths": [
+        127
+      ]
+    },
+    "v_sha256": "6fa6e0eee1114f3002f0ccb08cf188c6c6cfd8eb23a8ed72eb511457cf1e072d"
+  },
+  "instrumentation_profile": {
+    "accepted_overhead": {
+      "correctness_oracle": "outside-timed-region",
+      "diagnostic_profiler": "disabled",
+      "event_pair": "accepted-primary-timer-overhead",
+      "memory_queries": "outside-timed-region",
+      "rule": "only candidate executions lie between timing events"
+    },
+    "collectors": [
+      "torch.npu.Event.elapsed_time",
+      "torch.npu.memory_*",
+      "cpu-float64-correctness-oracle"
+    ],
+    "diagnostic_profiling": {
+      "status": "not_requested"
+    },
+    "evidence_ref": "artifact://resolved/instrumentation-profile.json",
+    "intrusion": "minimally-instrumented",
+    "lane": "baseline-timing",
+    "metadata": {
+      "fields": [
+        "shape",
+        "dtype",
+        "layout",
+        "seed",
+        "warmup_iterations",
+        "repetitions",
+        "inner_iterations",
+        "timer_source",
+        "timer_resolution_ns"
+      ],
+      "policy": "allowlisted-exact-shape-contract"
+    },
+    "profile_id": "ascend-npu-baseline-timing-v1",
+    "schema": "groundupscale.dev/instrumentation-profile/v1alpha1",
+    "status": "active",
+    "synchronization": {
+      "before_sample": "device-synchronize",
+      "completion": "end-event-synchronize-plus-device-synchronize",
+      "per_module_synchronization": false
+    }
+  },
+  "logical_device": "npu:0",
+  "memory": {
+    "allocated_bytes_after": 1989120,
+    "allocated_bytes_before": 0,
+    "maximum_allocated_bytes": 35479552,
+    "reserved_bytes_after": 60817408,
+    "schema": "groundupscale.dev/memory-observation/v1alpha1"
+  },
+  "operation": "collect",
+  "raw_timing": {
+    "sample_derivation": "device-event-elapsed-ns / inner_iterations",
+    "samples": [
+      269920,
+      179480,
+      182120,
+      188320,
+      177820,
+      179440,
+      177420,
+      179200,
+      179240,
+      180680,
+      166780,
+      165620,
+      168580,
+      170220,
+      175740,
+      166220,
+      173160,
+      175440,
+      176020,
+      176940,
+      177340,
+      174840,
+      204380,
+      177360,
+      176580,
+      178980,
+      167220,
+      165840,
+      163880,
+      166380,
+      166620,
+      166480,
+      174540,
+      178920,
+      176700,
+      177340,
+      177880,
+      175560,
+      178960,
+      176320,
+      180640,
+      179420,
+      163180,
+      172660,
+      167040,
+      166040,
+      165860,
+      164740,
+      173060,
+      169780,
+      176840,
+      169260,
+      175380,
+      175460,
+      179260,
+      177600,
+      174520,
+      182100,
+      175420,
+      167040,
+      166920,
+      165480,
+      166120,
+      166940,
+      175020,
+      184960,
+      179800,
+      175680,
+      175520,
+      177060,
+      178360,
+      175860,
+      176920,
+      178900,
+      172540,
+      166520,
+      165700,
+      164700,
+      162440,
+      167360,
+      170380,
+      176760,
+      178560,
+      182080,
+      180140,
+      178040,
+      176440,
+      178800,
+      182340,
+      177740,
+      166540,
+      164800,
+      165140,
+      189820,
+      164540,
+      164640,
+      176600,
+      177420,
+      182980,
+      174820
+    ],
+    "schema": "groundupscale.dev/raw-timing-observation/v1alpha1",
+    "summary": {
+      "count": 100,
+      "iqr": 11605.0,
+      "iqr_fraction_of_median": 0.0660463263331626,
+      "mad_fraction_of_median": 0.021171248079221446,
+      "maximum": 269920,
+      "median": 175710.0,
+      "median_absolute_deviation": 3720.0,
+      "minimum": 162440,
+      "p10": 165606.0,
+      "p90": 180820.0,
+      "q1": 167015.0,
+      "q3": 178620.0
+    },
+    "timer_resolution_ns": 20.0,
+    "timer_source": "torch.npu.Event.elapsed_time",
+    "unit": "nanoseconds"
+  },
+  "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
+  "status": "completed",
+  "timing_quality": {
+    "excluded_samples": 0,
+    "maximum_iqr_fraction_of_median": 0.1,
+    "maximum_timer_resolution_fraction_of_median": 0.01,
+    "observed_iqr_fraction_of_median": 0.0660463263331626,
+    "policy_id": "issue28-session-dispersion-v1",
+    "reason_codes": [],
+    "schema": "groundupscale.dev/timing-quality/v1alpha1",
+    "status": "passed",
+    "timer_resolution_fraction_of_median": 0.00011382391440441637,
+    "timer_resolution_ns": 20.0
+  }
+}

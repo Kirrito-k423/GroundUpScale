@@ -3,8 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 
 import yaml
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
 from groundupscale.diagnostics import diagnose_run_bundle
 from groundupscale.operator_frontier import OperatorFrontierBundleWriter
@@ -31,15 +35,17 @@ def main() -> int:
         "goal_process/issue-38-ascend-flash-attention-sequence-sweep/evidence"
     )
     policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
-    run = OperatorFrontierBundleWriter().run(
-        evidence,
-        run_id=args.run_id,
-        qualification_policy=policy,
-        search_runs=_runs(evidence / "runs", "main"),
-        holdout_runs=_runs(evidence / "runs", "holdout"),
-        confirmation_runs=_runs(evidence / "runs", "validation"),
-        query_sizes=(1, 128, 1024, 4096, 6144, 8192, 9000),
-    )
+    run = evidence / "runs" / args.run_id
+    if not run.exists():
+        run = OperatorFrontierBundleWriter().run(
+            evidence,
+            run_id=args.run_id,
+            qualification_policy=policy,
+            search_runs=_runs(evidence / "runs", "main"),
+            holdout_runs=_runs(evidence / "runs", "holdout"),
+            confirmation_runs=_runs(evidence / "runs", "validation"),
+            query_sizes=(1, 128, 1024, 4096, 6144, 8192, 9000),
+        )
     verification = verify_run_bundle(run)
     qualification = json.loads(
         (run / "frontier/qualification.json").read_text(encoding="utf-8")

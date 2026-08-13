@@ -1,0 +1,403 @@
+{
+  "cohort_digest": "23b93a89d5fecc791721f36b6337ab1e1157624e9bcd1baa872ec5ff6afb498b",
+  "cohort_id": "ascend-npu-23b93a89d5fecc79",
+  "communication": {
+    "status": "not_applicable"
+  },
+  "device": "910B2/V1/vdie=EEC1A664 01002AF1 41054972 D0D28485 104301E3",
+  "evidence_ref": "artifact://adapter/cohort.json",
+  "execution_context": {
+    "affinity": "192-223",
+    "concurrency": 1,
+    "context": "pytorch-eager",
+    "numa": "6",
+    "stream": "default-npu-stream"
+  },
+  "hardware": {
+    "chip_logic_id": 0,
+    "device_name": "910B2",
+    "device_version": "V1",
+    "firmware_reported_by_board": "7.7.0.10.220",
+    "hbm_capacity_bytes": 68719476736,
+    "hbm_clock_mhz": 1600,
+    "logical_device": "npu:0",
+    "machine_name": "localhost.localdomain",
+    "pcie_bus_id": "0000:C1:00.0",
+    "physical_device": {
+      "chip_id": 0,
+      "npu_id": 0
+    },
+    "real_time_power_watts": 92.5,
+    "sources": {
+      "device_identity": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_board",
+      "device_mapping": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_mapping",
+      "frequency": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+      "logical_device": "environment://ASCEND_RT_VISIBLE_DEVICES",
+      "machine_name": "python://platform.node",
+      "memory": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+      "power": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_power"
+    },
+    "vdie_id": "EEC1A664 01002AF1 41054972 D0D28485 104301E3"
+  },
+  "health": {
+    "competing_process": false,
+    "competing_processes": [],
+    "sources": {
+      "health": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_health",
+      "processes": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_summary"
+    },
+    "status": "OK",
+    "throttling": "unknown"
+  },
+  "numeric_execution": {
+    "alignment_bytes": 64,
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "layout": "row-major-contiguous",
+    "threads": 1
+  },
+  "operation": "fingerprint_cohort",
+  "partition": "physical-npu=0/chip=0;logical-device=npu:0;ASCEND_RT_VISIBLE_DEVICES=0;chip-logic-id=0",
+  "power_clock": {
+    "clock_policy": "hbm=1600MHz;ai-core=unknown",
+    "power_policy": "unsupported(npu-smi-work-mode-query)",
+    "sources": {
+      "clock_policy": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+      "power_policy": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_work_mode"
+    }
+  },
+  "runtime_device_name": "Ascend910B2",
+  "schema": "groundupscale.dev/hardware-cohort/v1alpha1",
+  "software": "cann=8.5.0;driver=25.3.rc1;firmware=7.8.0.2.212;kernel=5.10.0-60.18.0.50.oe2203.aarch64;os=openEuler 22.03 LTS;python=3.11.14;torch=2.7.1+cpu;torch_npu=2.7.1",
+  "software_evidence": {
+    "cann": {
+      "source": "file:///usr/local/Ascend/ascend-toolkit/latest/compiler/version.info",
+      "value": "8.5.0"
+    },
+    "driver": {
+      "source": "file:///usr/local/Ascend/driver/version.info",
+      "value": "25.3.rc1"
+    },
+    "firmware": {
+      "source": "file:///usr/local/Ascend/firmware/version.info",
+      "value": "7.8.0.2.212"
+    },
+    "kernel": {
+      "source": "python://platform.release",
+      "value": "5.10.0-60.18.0.50.oe2203.aarch64"
+    },
+    "os": {
+      "source": "file:///etc/os-release",
+      "value": "openEuler 22.03 LTS"
+    },
+    "python": {
+      "source": "python://platform.python_version",
+      "value": "3.11.14"
+    },
+    "torch": {
+      "source": "python://torch.__version__",
+      "value": "2.7.1+cpu"
+    },
+    "torch_npu": {
+      "source": "python://torch_npu.__version__",
+      "value": "2.7.1"
+    }
+  },
+  "status": "completed",
+  "system_probe": {
+    "command_snapshots": {
+      "cann_version": {
+        "sha256": "58c5b07417b7115e55b1017cac01344b3f6474e2634570524e864c8a30ecd941",
+        "source": "file:///usr/local/Ascend/ascend-toolkit/latest/compiler/version.info",
+        "status": "measured",
+        "text": "Version=8.5.0\nversion_dir=cann\nrequired_package_runtime_version=\"8.5.0\"\nrequired_package_metadef_version=\"8.5.0\"\nrequired_package_opbase_version=\"8.5.0\"\nrequired_package_bisheng-compiler_version=\"8.5.0\"\nrequired_package_ge-executor_version=\"8.5.0\"\nrequired_package_tbe-tik_version=\"8.5.0\"\ntimestamp=20250725_000000000\n"
+      },
+      "driver_version": {
+        "sha256": "a0fce5090957e67c1cf66557aae8d5ff5df4ce6e6e1ef888d4454e53b060bfda",
+        "source": "file:///usr/local/Ascend/driver/version.info",
+        "status": "measured",
+        "text": "Version=25.3.rc1\nascendhal_version=7.35.23\naicpu_version=1.0\ntdt_version=1.0\nlog_version=1.0\nprof_version=2.0\ndvppkernels_version=1.1\ntsfw_version=1.0\nInnerversion=V100R001C23SPC002B212\ncompatible_version=[V100R001C19],[V100R001C20],[V100R001C21],[V100R001C22],[V100R001C23]\ncompatible_version_fw=[7.0.0,8.9.9]\npackage_version=25.3.rc1\n"
+      },
+      "firmware_version": {
+        "sha256": "d8d9046098637c6a24a4eae611a35354442ef91b3b9526626cbf7a958f3b207e",
+        "source": "file:///usr/local/Ascend/firmware/version.info",
+        "status": "measured",
+        "text": "Version=7.8.0.2.212\nfirmware_version=1.0\npackage_version=25.3.rc1\ncompatible_version_drv=[23.0.0,23.0.0.],[24.0,24.0.],[24.1,24.1.],[25.0,25.3.]\n"
+      },
+      "npu_board": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "board",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tNPU ID                         : 0\n\tChip ID                        : 0\n\tChip Type                      : Ascend\n\tChip Name                      : 910B2\n\tChip Version                   : V1\n\tBoard ID                       : 0x31\n\tPCB ID                         : NA\n\tBOM ID                         : 1\n\tVDie ID                        : EEC1A664 01002AF1 41054972 D0D28485 104301E3\n\tNDie ID                        : 00000000 00000000 00000000 00000000 00000000\n\tChip Position ID               : 0\n\tPCIe Bus Info                  : 0000:C1:00.0\n\tFirmware Version               : 7.7.0.10.220\n",
+        "stdout_sha256": "8c40f6c48999c3c780fdb3937b6c42b924b36c91770514da4d1ad6fe4ba4b5d6"
+      },
+      "npu_hccs": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "hccs",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\thccs health status             : OK\n\thccs lane mode                 : [4            4            4            4            4            4            4            ]\n\thccs link lane list            : [1111         1111         1111         1111         1111         1111         1111         ]\n\thccs link speed                : [224          224          224          224          224          224          224          ]\n\thccs tx packets                : [3042099401   1021787919   3201341330   4222505313   3853462979   4014188280   345085427    ]\n\thccs tx bytes                  : [60841988020  20435758380  64026826600  84450106260  77069259580  80283765600  6901708540   ]\n\thccs rx packets                : [3671350744   2900062369   3391152195   1987907484   1648220175   1831902995   2240180492   ]\n\thccs rx bytes                  : [73427014880  58001247380  67823043900  39758149680  32964403500  36638059900  44803609840  ]\n\thccs retry count               : [0            0            0            0            0            0            0            ]\n\thccs error count               : [0            0            0            0            0            0            0            ]\n\thccs first error lane          : NA\n",
+        "stdout_sha256": "7032d784928165ab1d67e78259755aed1d7cbd78992ea8dddbf8ce3347f0f603"
+      },
+      "npu_health": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "health",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tHealth Status                  : OK\n\tError Code                     : NA\n\tError Information              : NA\n",
+        "stdout_sha256": "c0b1f1f5618d065a5d47c41fec1f5e9ae65f17d827ef8053d2a3d782d15c300a"
+      },
+      "npu_mapping": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-m"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tNPU ID                         Chip ID                        Chip Logic ID                  Chip Name                     \n\t0                              0                              0                              Ascend 910B2\n\t0                              1                              -                              Mcu                           \n\t1                              0                              1                              Ascend 910B2\n\t1                              1                              -                              Mcu                           \n\t2                              0                              2                              Ascend 910B2\n\t2                              1                              -                              Mcu                           \n\t3                              0                              3                              Ascend 910B2\n\t3                              1                              -                              Mcu                           \n\t4                              0                              4                              Ascend 910B2\n\t4                              1                              -                              Mcu                           \n\t5                              0                              5                              Ascend 910B2\n\t5                              1                              -                              Mcu                           \n\t6                              0                              6                              Ascend 910B2\n\t6                              1                              -                              Mcu                           \n\t7                              0                              7                              Ascend 910B2\n\t7                              1                              -                              Mcu                           \n",
+        "stdout_sha256": "16edde1882d422ac2b89e9f5973c857adf33bc19a58a9007875348f2efe00bff"
+      },
+      "npu_memory": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "memory",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tDDR Capacity(MB)               : 0\n\tDDR Clock Speed(MHz)           : 0\n\tHBM Capacity(MB)               : 65536\n\tHBM Clock Speed(MHz)           : 1600\n\tHBM Temperature(C)             : 33\n\tHBM Manufacturer ID            : 0x57\n",
+        "stdout_sha256": "1bafef90f4e35ec7363140df7804745cb294114f9f5b2e58f761bdf2ce4c46df"
+      },
+      "npu_power": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "power",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tNPU Real-time Power(W)         : 92.5\n",
+        "stdout_sha256": "e5e767678bfff0eacdd47f05c04f1af6a36b32bcc640f086a43720d2a63a22e9"
+      },
+      "npu_sensors": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "sensors",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\tSoc Max Temperature (C)        : 36\n\tSFP Temperature (C)            : 53\n\tNDIE Temperature (C)           : 36\n\tHBM Temperature (C)            : 33\n",
+        "stdout_sha256": "676d288ca74eada63986933e2a0cf4544f24ebc60416c00f1c06a18495d61011"
+      },
+      "npu_summary": {
+        "command": [
+          "npu-smi",
+          "info"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "+------------------------------------------------------------------------------------------------+\n| npu-smi 25.3.rc1                 Version: 25.3.rc1                                             |\n+---------------------------+---------------+----------------------------------------------------+\n| NPU   Name                | Health        | Power(W)    Temp(C)           Hugepages-Usage(page)|\n| Chip                      | Bus-Id        | AICore(%)   Memory-Usage(MB)  HBM-Usage(MB)        |\n+===========================+===============+====================================================+\n| 0     910B2               | OK            | 100.3       37                0    / 0             |\n| 0                         | 0000:C1:00.0  | 0           0    / 0          3462 / 65536         |\n+===========================+===============+====================================================+\n| 1     910B2               | OK            | 87.9        35                0    / 0             |\n| 0                         | 0000:C2:00.0  | 0           0    / 0          3399 / 65536         |\n+===========================+===============+====================================================+\n| 2     910B2               | OK            | 90.5        37                0    / 0             |\n| 0                         | 0000:81:00.0  | 0           0    / 0          3400 / 65536         |\n+===========================+===============+====================================================+\n| 3     910B2               | OK            | 94.1        35                0    / 0             |\n| 0                         | 0000:82:00.0  | 0           0    / 0          3399 / 65536         |\n+===========================+===============+====================================================+\n| 4     910B2               | OK            | 92.2        41                0    / 0             |\n| 0                         | 0000:01:00.0  | 0           0    / 0          3398 / 65536         |\n+===========================+===============+====================================================+\n| 5     910B2               | OK            | 96.9        40                0    / 0             |\n| 0                         | 0000:02:00.0  | 0           0    / 0          3399 / 65536         |\n+===========================+===============+====================================================+\n| 6     910B2               | OK            | 93.5        40                0    / 0             |\n| 0                         | 0000:41:00.0  | 0           0    / 0          3399 / 65536         |\n+===========================+===============+====================================================+\n| 7     910B2               | OK            | 90.0        39                0    / 0             |\n| 0                         | 0000:42:00.0  | 0           0    / 0          3410 / 65536         |\n+===========================+===============+====================================================+\n+---------------------------+---------------+----------------------------------------------------+\n| NPU     Chip              | Process id    | Process name             | Process memory(MB)      |\n+===========================+===============+====================================================+\n| 0       0                 | 366538        | python                   | 105                     |\n+===========================+===============+====================================================+\n| No running processes found in NPU 1                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 2                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 3                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 4                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 5                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 6                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 7                                                            |\n+===========================+===============+====================================================+\n",
+        "stdout_sha256": "7ec0fd9a087e041cef73eb93e4fc6e1b8a8beb98ef99e544cc6596d8b604589c"
+      },
+      "npu_topology": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "topo",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "\t   NPU0       NPU1       NPU2       NPU3       NPU4       NPU5       NPU6       NPU7       CPU Affinity\nNPU0       X          HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       192-223\nNPU1       HCCS       X          HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       192-223\nNPU2       HCCS       HCCS       X          HCCS       HCCS       HCCS       HCCS       HCCS       128-159\nNPU3       HCCS       HCCS       HCCS       X          HCCS       HCCS       HCCS       HCCS       128-159\nNPU4       HCCS       HCCS       HCCS       HCCS       X          HCCS       HCCS       HCCS       0-31\nNPU5       HCCS       HCCS       HCCS       HCCS       HCCS       X          HCCS       HCCS       0-31\nNPU6       HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       X          HCCS       64-95\nNPU7       HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       HCCS       X          64-95\n\nLegend:\n\n  X    = Self\n  SYS  = Path traversing PCIe and NUMA nodes. Nodes are connected through SMP, such as QPI, UPI.\n  PHB  = Path traversing PCIe and the PCIe host bridge of a CPU.\n  PIX  = Path traversing a single PCIe switch\n  PXB  = Path traversing multipul PCIe switches\n  HCCS = Connection traversing HCCS.\n  NA   = Unknown relationship.\n",
+        "stdout_sha256": "538f9eed17ec2ffb3e4d9a1644a249ee0045625326c525553b8ab108fa57602d"
+      },
+      "npu_work_mode": {
+        "command": [
+          "npu-smi",
+          "info",
+          "-t",
+          "work-mode",
+          "-i",
+          "0",
+          "-c",
+          "0"
+        ],
+        "returncode": 0,
+        "status": "measured",
+        "stderr": "",
+        "stdout": "This device does not support querying work-mode.\n",
+        "stdout_sha256": "9186b405c59855978533fca159711910c6a03588b38d34d64c13ed52869f33f7"
+      },
+      "os_release": {
+        "sha256": "60000c628771796bd48b4922c8a6a3efd41bd3530685660cafce77e8f61e02be",
+        "source": "file:///etc/os-release",
+        "status": "measured",
+        "text": "NAME=\"openEuler\"\nVERSION=\"22.03 LTS\"\nID=\"openEuler\"\nVERSION_ID=\"22.03\"\nPRETTY_NAME=\"openEuler 22.03 LTS\"\nANSI_COLOR=\"0;31\"\n\n"
+      },
+      "pcie_numa_node": {
+        "sha256": "06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7",
+        "source": "file:///sys/bus/pci/devices/0000:c1:00.0/numa_node",
+        "status": "measured",
+        "text": "6\n"
+      }
+    },
+    "evidence_ref": "artifact://adapter/cohort.json#system_probe",
+    "hardware": {
+      "chip_logic_id": 0,
+      "device_name": "910B2",
+      "device_version": "V1",
+      "firmware_reported_by_board": "7.7.0.10.220",
+      "hbm_capacity_bytes": 68719476736,
+      "hbm_clock_mhz": 1600,
+      "logical_device": "npu:0",
+      "machine_name": "localhost.localdomain",
+      "pcie_bus_id": "0000:C1:00.0",
+      "physical_device": {
+        "chip_id": 0,
+        "npu_id": 0
+      },
+      "real_time_power_watts": 92.5,
+      "sources": {
+        "device_identity": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_board",
+        "device_mapping": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_mapping",
+        "frequency": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+        "logical_device": "environment://ASCEND_RT_VISIBLE_DEVICES",
+        "machine_name": "python://platform.node",
+        "memory": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+        "power": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_power"
+      },
+      "vdie_id": "EEC1A664 01002AF1 41054972 D0D28485 104301E3"
+    },
+    "health": {
+      "competing_process": false,
+      "competing_processes": [],
+      "sources": {
+        "health": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_health",
+        "processes": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_summary"
+      },
+      "status": "OK",
+      "throttling": "unknown"
+    },
+    "power_clock": {
+      "clock_policy": "hbm=1600MHz;ai-core=unknown",
+      "power_policy": "unsupported(npu-smi-work-mode-query)",
+      "sources": {
+        "clock_policy": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_memory",
+        "power_policy": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_work_mode"
+      }
+    },
+    "schema": "groundupscale.dev/ascend-system-probe/v1alpha1",
+    "software": {
+      "cann": {
+        "source": "file:///usr/local/Ascend/ascend-toolkit/latest/compiler/version.info",
+        "value": "8.5.0"
+      },
+      "driver": {
+        "source": "file:///usr/local/Ascend/driver/version.info",
+        "value": "25.3.rc1"
+      },
+      "firmware": {
+        "source": "file:///usr/local/Ascend/firmware/version.info",
+        "value": "7.8.0.2.212"
+      },
+      "kernel": {
+        "source": "python://platform.release",
+        "value": "5.10.0-60.18.0.50.oe2203.aarch64"
+      },
+      "os": {
+        "source": "file:///etc/os-release",
+        "value": "openEuler 22.03 LTS"
+      }
+    },
+    "status": "completed",
+    "topology": {
+      "cpu_affinity": "192-223",
+      "hccs_sha256": "41c690cadc362f6687ece7b531945d0e60b4fc2a390f5f5c9d8239e467126965",
+      "numa_node": "6",
+      "sources": {
+        "hccs": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_hccs",
+        "numa_node": "file:///sys/bus/pci/devices/0000:c1:00.0/numa_node",
+        "topology": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_topology"
+      },
+      "topology_sha256": "538f9eed17ec2ffb3e4d9a1644a249ee0045625326c525553b8ab108fa57602d"
+    }
+  },
+  "timer_protocol": {
+    "adapter_id": "ascend-npu",
+    "adapter_version": "v1",
+    "completion_kind": "device-event-stream-completion",
+    "duration_reducer": null,
+    "monotonic": true,
+    "protocol_id": "exact-shape-measurement",
+    "protocol_version": "v1",
+    "resolution_ns": 20.0,
+    "source": "torch.npu.Event.elapsed_time"
+  },
+  "topology": "pcie=0000:C1:00.0;topology-sha256=538f9eed17ec2ffb3e4d9a1644a249ee0045625326c525553b8ab108fa57602d;hccs-sha256=41c690cadc362f6687ece7b531945d0e60b4fc2a390f5f5c9d8239e467126965",
+  "topology_evidence": {
+    "cpu_affinity": "192-223",
+    "hccs_sha256": "41c690cadc362f6687ece7b531945d0e60b4fc2a390f5f5c9d8239e467126965",
+    "numa_node": "6",
+    "sources": {
+      "hccs": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_hccs",
+      "numa_node": "file:///sys/bus/pci/devices/0000:c1:00.0/numa_node",
+      "topology": "artifact://adapter/cohort.json#system_probe/command_snapshots/npu_topology"
+    },
+    "topology_sha256": "538f9eed17ec2ffb3e4d9a1644a249ee0045625326c525553b8ab108fa57602d"
+  }
+}

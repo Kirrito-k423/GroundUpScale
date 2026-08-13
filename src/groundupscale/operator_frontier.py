@@ -2033,11 +2033,7 @@ def _write_bounded_collection_bundle(
                     "policy_id": "frontier-anchor-lifecycle",
                     "version": "v2",
                     "scope": f"{cohort_id}-{operation_slug}-bounded-sweep",
-                    "change_reason": (
-                        "issue-36 qualified bounded M sweep"
-                        if operation == "MatMul"
-                        else "issue-37 qualified equal-length TND sweep"
-                    ),
+                    "change_reason": str(plan["plan_id"]),
                     "revalidation": "on cohort, corpus, policy, response, or boundary change",
                 },
                 "uncertainty_policy": {
@@ -2135,11 +2131,7 @@ def _write_bounded_collection_bundle(
         surface=surface,
         qualification=qualification,
         queries=queries,
-        analysis_plan=(
-            "issue-36-ascend-matmul-bounded-m-sweep"
-            if operation == "MatMul"
-            else "issue-37-ascend-flash-attention-tnd-forward"
-        ),
+        analysis_plan=str(plan["plan_id"]),
         runtime_device_name=searches[0].runtime_device_name,
         logical_device=searches[0].logical_device,
     )
@@ -2207,15 +2199,31 @@ class OperatorFrontierBundleWriter:
                     confirmations=confirmations,
                     query_sizes=query_sizes,
                 )
-            return _write_bounded_collection_bundle(
-                artifact_store,
-                run_id=run_id,
-                policy=policy,
-                searches=searches,
-                holdouts=holdouts,
-                confirmations=confirmations,
-                query_sizes=query_sizes,
-            )
+            try:
+                return _write_bounded_collection_bundle(
+                    artifact_store,
+                    run_id=run_id,
+                    policy=policy,
+                    searches=searches,
+                    holdouts=holdouts,
+                    confirmations=confirmations,
+                    query_sizes=query_sizes,
+                )
+            except OperatorFrontierQualificationError as error:
+                if error.reason_code != "bounded-collection-corpus-incomplete":
+                    raise
+                try:
+                    return _write_unknown_bounded_collection_bundle(
+                        artifact_store,
+                        run_id=run_id,
+                        policy=policy,
+                        searches=searches,
+                        holdouts=holdouts,
+                        confirmations=confirmations,
+                        query_sizes=query_sizes,
+                    )
+                except OperatorFrontierQualificationError:
+                    raise error
         if not searches or not holdouts or not confirmations:
             raise OperatorFrontierQualificationError(
                 "search, holdout, and confirmation evidence are required",

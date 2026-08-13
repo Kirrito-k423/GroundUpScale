@@ -1,0 +1,25 @@
+{
+  "operations": [
+    {
+      "evidence_ref": "artifact://adapter/capabilities.json",
+      "operation": "discover_capabilities"
+    },
+    {
+      "evidence_ref": "artifact://adapter/cohort.json",
+      "operation": "fingerprint_cohort"
+    },
+    {
+      "evidence_ref": "artifact://adapter/preflight.json",
+      "operation": "preflight"
+    },
+    {
+      "evidence_ref": "artifact://adapter/timing-plan.json",
+      "operation": "build_timing_plan"
+    },
+    {
+      "evidence_ref": "artifact://adapter/collection.json",
+      "operation": "collect"
+    }
+  ],
+  "schema": "groundupscale.dev/measurement-operation-evidence/v1alpha1"
+}
