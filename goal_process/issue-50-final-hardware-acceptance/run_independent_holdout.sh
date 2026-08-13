@@ -82,4 +82,3 @@ PY
 PYTHONPATH="$repo/src" "$python" -m groundupscale.cli verify-run "$run_dir" --json \
   > "$session_dir/verify-run.json"
 test "$(PYTHONPATH="$repo/src" "$python" -c 'import json,sys; print(str(json.load(open(sys.argv[1]))["passed"]).lower())' "$session_dir/verify-run.json")" = true
-
