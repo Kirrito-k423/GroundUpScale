@@ -2826,7 +2826,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         if isinstance(prediction_document, dict)
                         else None
                     )
-                    if layout_execution != {
+                    if isinstance(prediction_document, dict) and layout_execution != {
                         "status": alias_document.get("status"),
                         "authoritative_artifact": str(alias_entries[0].get("path")),
                         "evidence_version_id": alias_document.get(
