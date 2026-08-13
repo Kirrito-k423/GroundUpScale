@@ -403,6 +403,63 @@ class SoftmaxOperatorFrontierBundleWriter:
             reason_code = None
         else:
             missing_evidence.extend(boundary_evidence)
+            for phase in SOFTMAX_PHASE_ORDER:
+                records = records_by_phase.get(phase)
+                selected = records[1][0] if records is not None else None
+                phase_id = f"softmax-phase:{phase}"
+                phase_documents.append(
+                    {
+                        "phase_id": phase_id,
+                        "phase_name": phase,
+                        "predecessor_phase_ids": [predecessor] if predecessor else [],
+                        "candidate": (
+                            {
+                                "candidate_id": selected.candidate_id,
+                                "candidate_family": selected.candidate_family,
+                                "candidate_digest": selected.candidate_digest,
+                            }
+                            if selected is not None
+                            else None
+                        ),
+                        "required_capability_class": SOFTMAX_PHASE_CAPABILITIES[phase],
+                        "resource_demands": {
+                            "exact_operation_invocations": 1,
+                            "declared_elements": (
+                                prod(selected.shape) if selected is not None else None
+                            ),
+                            "capability_class": SOFTMAX_PHASE_CAPABILITIES[phase],
+                        },
+                        "input_roles": _softmax_phase_input_roles(phase),
+                        "output_roles": [_softmax_phase_output_role(phase)],
+                        "assumptions": [
+                            "fixed-shape-float32-contiguous",
+                            "candidate-invocation-includes-operand-data-movement",
+                            "no-fusion-no-chunk-pipeline-no-cross-phase-overlap",
+                        ],
+                        "provenance": {
+                            "semantic_ir_sha256": semantic_ir_entry["sha256"],
+                            "source_run_ids": (
+                                [item.run_id for item in (*records[0], *records[1])]
+                                if records is not None
+                                else []
+                            ),
+                        },
+                        "local_composition": "exact-operation-probe",
+                        "selected_duration_ns": None,
+                        "standard_uncertainty_ns": None,
+                        "source_run_ids": (
+                            [item.run_id for item in (*records[0], *records[1])]
+                            if records is not None
+                            else []
+                        ),
+                        "source_digests": (
+                            [item.manifest_sha256 for item in (*records[0], *records[1])]
+                            if records is not None
+                            else []
+                        ),
+                    }
+                )
+                predecessor = phase_id
             composition = {
                 "status": "unknown",
                 "rule": "serialized-critical-path-sum",

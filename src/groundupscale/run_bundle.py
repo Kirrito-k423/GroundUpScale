@@ -2034,20 +2034,83 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             ["softmax-phase:sum_reduce"],
                         ]
                         and all(
-                            phase.get("local_composition")
-                            == "exact-operation-probe"
-                            and isinstance(phase.get("candidate"), dict)
-                            and isinstance(
-                                phase["candidate"].get("candidate_digest"), str
+                            phase.get("local_composition") == "exact-operation-probe"
+                            and (
+                                isinstance(phase.get("candidate"), dict)
+                                and isinstance(phase["candidate"].get("candidate_digest"), str)
+                                or qualification.get("status") == "unknown"
+                                and phase.get("candidate") is None
                             )
                             and set(phase.get("source_run_ids", [])) <= source_ids
-                            and len(phase.get("source_run_ids", [])) >= 2
+                            and (
+                                len(phase.get("source_run_ids", [])) >= 2
+                                or qualification.get("status") == "unknown"
+                                and phase.get("candidate") is None
+                                and phase.get("source_run_ids") == []
+                            )
                             and len(phase.get("source_digests", []))
                             == len(phase.get("source_run_ids", []))
                             for phase in phases
                         )
                     )
-                    if valid_phases and qualification.get("status") == "qualified":
+                    source_demo = surface.get("source_demo")
+                    stable_paths = phase_graph.get("stable_paths")
+                    if isinstance(source_demo, dict):
+                        demo_relative_path = source_demo.get("path")
+                        demo_root = (
+                            (root / demo_relative_path).resolve()
+                            if isinstance(demo_relative_path, str)
+                            and not Path(demo_relative_path).is_absolute()
+                            else root
+                        )
+                        try:
+                            demo_manifest_path = demo_root / "run.manifest.json"
+                            demo_manifest = json.loads(demo_manifest_path.read_text())
+                            semantic_entry = next(
+                                item for item in demo_manifest["artifacts"]
+                                if item.get("role") == "semantic-ir"
+                            )
+                            semantic_path = demo_root / semantic_entry["path"]
+                            semantic = json.loads(semantic_path.read_text())
+                            demo_valid = (
+                                verify_run_bundle(demo_root).get("passed") is True
+                                and source_demo.get("manifest_sha256") == _sha256(demo_manifest_path)
+                                and source_demo.get("semantic_ir_sha256") == _sha256(semantic_path)
+                                and source_demo.get("semantic_ir_path") == semantic_entry["path"]
+                                and stable_paths == _semantic_softmax_paths(semantic.get("root"))
+                            )
+                        except (OSError, KeyError, StopIteration, TypeError, json.JSONDecodeError):
+                            demo_valid = False
+                    else:
+                        demo_valid = False
+                    session = surface.get("measurement_session")
+                    session_valid = (
+                        qualification.get("status") == "unknown"
+                        and session is None
+                        and not source_runs
+                        or isinstance(session, dict)
+                        and session.get("schema") == "groundupscale.dev/ascend-host-lock-session/v1alpha1"
+                        and session.get("issue") == 44
+                        and session.get("lock_path")
+                        == "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock"
+                        and session.get("owner_start") == session.get("owner_end")
+                        and "issue=44 " in str(session.get("owner_start"))
+                        and session.get("device_visibility") == "0"
+                        and session.get("hardware_cohort") == manifest.get("hardware_cohort")
+                        and session.get("wrapper_sha256")
+                        == "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+                        and str(session.get("started_at")) < str(session.get("ended_at"))
+                    )
+                    if not demo_valid or not session_valid:
+                        valid_phases = False
+
+                    if valid_phases and replay and (
+                        qualification.get("status") == "qualified"
+                        or all(
+                            set(replay.get(phase, {})) == {"search", "holdout"}
+                            for phase, _, _ in _SOFTMAX_PHASE_SPECS
+                        )
+                    ):
                         process_identities: set[tuple[object, object]] = set()
                         replay_domains: set[str] = set()
                         for phase_document, spec in zip(phases, _SOFTMAX_PHASE_SPECS):
@@ -2078,14 +2141,21 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 float(search["standard_uncertainty_ns"]),
                                 float(holdout["standard_uncertainty_ns"]),
                             )
+                            expected_candidate = {
+                                "candidate_id": holdout["candidate_id"],
+                                "candidate_family": holdout["candidate_family"],
+                                "candidate_digest": holdout["candidate_digest"],
+                            }
+                            expected_duration = holdout["median_ns"]
+                            if qualification.get("status") == "unknown":
+                                expected_duration = None
+                                expected_uncertainty = None
                             if not (
                                 phase_document.get("source_run_ids") == expected_source_ids
                                 and phase_document.get("source_digests") == expected_source_digests
-                                and phase_document.get("selected_duration_ns") == holdout["median_ns"]
+                                and phase_document.get("selected_duration_ns") == expected_duration
                                 and phase_document.get("standard_uncertainty_ns") == expected_uncertainty
-                                and phase_document["candidate"].get("candidate_id") == holdout["candidate_id"]
-                                and phase_document["candidate"].get("candidate_family") == holdout["candidate_family"]
-                                and phase_document["candidate"].get("candidate_digest") == holdout["candidate_digest"]
+                                and phase_document.get("candidate") == expected_candidate
                                 and phase_document.get("resource_demands") == {
                                     "exact_operation_invocations": 1,
                                     "declared_elements": math.prod(holdout["shape"]),
@@ -2104,56 +2174,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 }
                             ):
                                 valid_phases = False
-                        if len(process_identities) != 10 or len(replay_domains) != 1:
-                            valid_phases = False
-
-                        source_demo = surface.get("source_demo")
-                        stable_paths = phase_graph.get("stable_paths")
-                        if isinstance(source_demo, dict):
-                            demo_relative_path = source_demo.get("path")
-                            demo_root = (
-                                (root / demo_relative_path).resolve()
-                                if isinstance(demo_relative_path, str)
-                                and not Path(demo_relative_path).is_absolute()
-                                else root
-                            )
-                            try:
-                                demo_manifest_path = demo_root / "run.manifest.json"
-                                demo_manifest = json.loads(demo_manifest_path.read_text())
-                                semantic_entry = next(
-                                    item for item in demo_manifest["artifacts"]
-                                    if item.get("role") == "semantic-ir"
-                                )
-                                semantic_path = demo_root / semantic_entry["path"]
-                                semantic = json.loads(semantic_path.read_text())
-                                demo_valid = (
-                                    verify_run_bundle(demo_root).get("passed") is True
-                                    and source_demo.get("manifest_sha256") == _sha256(demo_manifest_path)
-                                    and source_demo.get("semantic_ir_sha256") == _sha256(semantic_path)
-                                    and source_demo.get("semantic_ir_path") == semantic_entry["path"]
-                                    and stable_paths == _semantic_softmax_paths(semantic.get("root"))
-                                )
-                            except (OSError, KeyError, StopIteration, TypeError, json.JSONDecodeError):
-                                demo_valid = False
-                        else:
-                            demo_valid = False
-                        if not demo_valid:
-                            valid_phases = False
-
-                        session = surface.get("measurement_session")
-                        session_valid = (
-                            isinstance(session, dict)
-                            and session.get("schema") == "groundupscale.dev/ascend-host-lock-session/v1alpha1"
-                            and session.get("issue") == 44
-                            and session.get("owner_start") == session.get("owner_end")
-                            and "issue=44 " in str(session.get("owner_start"))
-                            and session.get("device_visibility") == "0"
-                            and session.get("hardware_cohort") == manifest.get("hardware_cohort")
-                            and session.get("wrapper_sha256")
-                            == "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
-                            and str(session.get("started_at")) < str(session.get("ended_at"))
-                        )
-                        if not session_valid:
+                        if len(process_identities) != 10 or (
+                            qualification.get("status") == "qualified"
+                            and len(replay_domains) != 1
+                        ):
                             valid_phases = False
                     if not isinstance(composition, dict) or composition.get(
                         "rule"
@@ -2219,6 +2243,16 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             )
                         )
                         if expected_reason == "legacy-synthetic-operand-domain":
+                            replay_manifest_digests = {
+                                str(record["manifest_sha256"])
+                                for record in replay_records
+                            }
+                            if (
+                                replay_manifest_digests
+                                != _SOFTMAX_LEGACY_NORMALIZATION_MANIFESTS
+                                and str(manifest.get("run_id")).startswith("issue44-20260813T")
+                            ):
+                                expected_reason = "unsupported-operand-domain-provenance"
                             actual_missing = [
                                 {
                                     "phase_name": phase,
@@ -2237,8 +2271,6 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             and missing == actual_missing
                             and qualification.get("reason_code") == expected_reason
                         )
-                    if qualification.get("status") == "unknown":
-                        valid_phases = phases == []
                     if not valid_phases or not composition_matches:
                         failures.append(
                             "Softmax Operator Frontier composition mismatch"

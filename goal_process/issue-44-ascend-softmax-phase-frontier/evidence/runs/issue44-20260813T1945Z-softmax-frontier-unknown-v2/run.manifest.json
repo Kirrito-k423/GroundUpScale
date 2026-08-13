@@ -7,7 +7,7 @@
       "produced_by": "groundupscale-operator-frontier-v1",
       "role": "operator-frontier-qualification",
       "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
-      "sha256": "fd54d8579a36142ebf86946893f1df60a9a553f7fd349975d308985f433b8a4c"
+      "sha256": "39474a5461a6527e855ffe3feeb7ed27d70b826feac3c0104829f1a38c96cf57"
     },
     {
       "inputs": [
@@ -18,11 +18,11 @@
       "produced_by": "groundupscale-operator-frontier-v1",
       "role": "diagnostic-evidence",
       "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
-      "sha256": "02e61cd74dfcfa0e0cc30b387f7b72c07a46fd8016311690f621e1a5db85fb26"
+      "sha256": "d5c794c45594671d1edb4049a7d57db7992ba078b3fd98c4f2b24a557317ca5f"
     }
   ],
   "bundle_kind": "operator-frontier",
-  "created_at": "2026-08-13T14:46:47.056751+00:00",
+  "created_at": "2026-08-13T14:52:02.751741+00:00",
   "device": "ascend-npu",
   "hardware_cohort": "ascend-npu-89022e60525d608f",
   "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
@@ -102,7 +102,7 @@
   ],
   "status": "completed",
   "surface": {
-    "input_digest": "ab5b3ab4efdbff45c1c5d25043ab94ae02ae6bbd364883fc0ec947d830a67552",
+    "input_digest": "817c7ead3e9df5ed0171993ef433a91f88ffdf455db22ad93f4ebd7c0bd7e7a1",
     "surface_id": "ascend-910b2-softmax-exact-phase-frontier",
     "version": "v1"
   }

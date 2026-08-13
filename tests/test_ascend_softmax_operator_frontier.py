@@ -234,6 +234,7 @@ def test_missing_softmax_phase_stays_structured_unknown(tmp_path: Path) -> None:
         qualification_policy=_policy(),
         phase_runs=phase_runs,
         source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -274,6 +275,7 @@ def test_softmax_phase_domain_mismatch_fails_closed(tmp_path: Path) -> None:
         qualification_policy=_policy(),
         phase_runs=phase_runs,
         source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -312,7 +314,10 @@ def test_legacy_softmax_operands_stay_structured_unknown(tmp_path: Path) -> None
     )
     assert qualification["status"] == "unknown"
     assert qualification["reason_code"] == "legacy-synthetic-operand-domain"
-    assert qualification["surface"]["operator_phase_graph"]["phases"] == []
+    phases = qualification["surface"]["operator_phase_graph"]["phases"]
+    assert [item["phase_name"] for item in phases] == [item[0] for item in PHASES]
+    assert all(item["selected_duration_ns"] is None for item in phases)
+    assert all(item["standard_uncertainty_ns"] is None for item in phases)
     assert qualification["surface"]["operator_phase_graph"]["composition"] == {
         "status": "unknown",
         "rule": "serialized-critical-path-sum",

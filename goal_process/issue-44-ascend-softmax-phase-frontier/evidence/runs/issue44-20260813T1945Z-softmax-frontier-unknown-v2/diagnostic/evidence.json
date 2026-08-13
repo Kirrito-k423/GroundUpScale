@@ -23,7 +23,7 @@
           512
         ]
       },
-      "input_digest": "ab5b3ab4efdbff45c1c5d25043ab94ae02ae6bbd364883fc0ec947d830a67552",
+      "input_digest": "817c7ead3e9df5ed0171993ef433a91f88ffdf455db22ad93f4ebd7c0bd7e7a1",
       "measurement_session": {
         "device_visibility": "0",
         "ended_at": "2026-08-13T19:03:24+08:00",
@@ -63,7 +63,243 @@
         },
         "fusion_contract": null,
         "graph_id": "softmax-max-subtract-exp-sum-normalize-v1",
-        "phases": [],
+        "phases": [
+          {
+            "assumptions": [
+              "fixed-shape-float32-contiguous",
+              "candidate-invocation-includes-operand-data-movement",
+              "no-fusion-no-chunk-pipeline-no-cross-phase-overlap"
+            ],
+            "candidate": {
+              "candidate_digest": "df496a49caf4b05c159b7e8e43efdee829b9bb31e1e69066bf27dab72445ea42",
+              "candidate_family": "pytorch-ascend-reduction-max",
+              "candidate_id": "torch.amax"
+            },
+            "input_roles": [
+              "softmax_input"
+            ],
+            "local_composition": "exact-operation-probe",
+            "output_roles": [
+              "row_max"
+            ],
+            "phase_id": "softmax-phase:max_reduce",
+            "phase_name": "max_reduce",
+            "predecessor_phase_ids": [],
+            "provenance": {
+              "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75",
+              "source_run_ids": [
+                "issue44-20260813T1910Z-max_reduce-search",
+                "issue44-20260813T1910Z-max_reduce-holdout"
+              ]
+            },
+            "required_capability_class": "compute.reduction.max.fp32",
+            "resource_demands": {
+              "capability_class": "compute.reduction.max.fp32",
+              "declared_elements": 2097152,
+              "exact_operation_invocations": 1
+            },
+            "selected_duration_ns": null,
+            "source_digests": [
+              "65f7db7d0b8d762bd66f9e01f6f85fd12b288f76924be1c1ac297bb7aa9828cd",
+              "42dd7a1004309672f42ce8e7ef5d8d7747f4f90537fe720b11be98bf8d4df36f"
+            ],
+            "source_run_ids": [
+              "issue44-20260813T1910Z-max_reduce-search",
+              "issue44-20260813T1910Z-max_reduce-holdout"
+            ],
+            "standard_uncertainty_ns": null
+          },
+          {
+            "assumptions": [
+              "fixed-shape-float32-contiguous",
+              "candidate-invocation-includes-operand-data-movement",
+              "no-fusion-no-chunk-pipeline-no-cross-phase-overlap"
+            ],
+            "candidate": {
+              "candidate_digest": "cc79d05e234ef5f4db757a6b759cee49912c93f85932594190fcd96e4150760b",
+              "candidate_family": "pytorch-ascend-elementwise-subtract",
+              "candidate_id": "torch.sub"
+            },
+            "input_roles": [
+              "softmax_input",
+              "row_max"
+            ],
+            "local_composition": "exact-operation-probe",
+            "output_roles": [
+              "centered_logits"
+            ],
+            "phase_id": "softmax-phase:subtract",
+            "phase_name": "subtract",
+            "predecessor_phase_ids": [
+              "softmax-phase:max_reduce"
+            ],
+            "provenance": {
+              "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75",
+              "source_run_ids": [
+                "issue44-20260813T1910Z-subtract-search",
+                "issue44-20260813T1910Z-subtract-holdout"
+              ]
+            },
+            "required_capability_class": "compute.elementwise.subtract.fp32",
+            "resource_demands": {
+              "capability_class": "compute.elementwise.subtract.fp32",
+              "declared_elements": 2097152,
+              "exact_operation_invocations": 1
+            },
+            "selected_duration_ns": null,
+            "source_digests": [
+              "87d19ebf8058adf70248d2315b2e3895e99cc75e6dba8764b527e8726b2af38c",
+              "196748d01d508ae414d414f492eedd0b54e45b260f0cfa4102ffa789b2e36a3d"
+            ],
+            "source_run_ids": [
+              "issue44-20260813T1910Z-subtract-search",
+              "issue44-20260813T1910Z-subtract-holdout"
+            ],
+            "standard_uncertainty_ns": null
+          },
+          {
+            "assumptions": [
+              "fixed-shape-float32-contiguous",
+              "candidate-invocation-includes-operand-data-movement",
+              "no-fusion-no-chunk-pipeline-no-cross-phase-overlap"
+            ],
+            "candidate": {
+              "candidate_digest": "f067811e2534e3024f0ab21eb93331f339852347e7e188d0654ae35ff85c21cf",
+              "candidate_family": "pytorch-ascend-transcendental-exp",
+              "candidate_id": "torch.exp"
+            },
+            "input_roles": [
+              "centered_logits"
+            ],
+            "local_composition": "exact-operation-probe",
+            "output_roles": [
+              "exponentials"
+            ],
+            "phase_id": "softmax-phase:exp",
+            "phase_name": "exp",
+            "predecessor_phase_ids": [
+              "softmax-phase:subtract"
+            ],
+            "provenance": {
+              "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75",
+              "source_run_ids": [
+                "issue44-20260813T1910Z-exp-search",
+                "issue44-20260813T1910Z-exp-holdout"
+              ]
+            },
+            "required_capability_class": "compute.transcendental.exp.fp32",
+            "resource_demands": {
+              "capability_class": "compute.transcendental.exp.fp32",
+              "declared_elements": 2097152,
+              "exact_operation_invocations": 1
+            },
+            "selected_duration_ns": null,
+            "source_digests": [
+              "f2a2cdb1e4408b1e687c5d2297fa2221b0465220742504107ca64ba1203676e5",
+              "b14bad53362f009001ddbe4579d3ce6b3a51ef7d968fd9a617a1c69429040e39"
+            ],
+            "source_run_ids": [
+              "issue44-20260813T1910Z-exp-search",
+              "issue44-20260813T1910Z-exp-holdout"
+            ],
+            "standard_uncertainty_ns": null
+          },
+          {
+            "assumptions": [
+              "fixed-shape-float32-contiguous",
+              "candidate-invocation-includes-operand-data-movement",
+              "no-fusion-no-chunk-pipeline-no-cross-phase-overlap"
+            ],
+            "candidate": {
+              "candidate_digest": "0dc41e009b5e6a869050b20b54d4cbf6606df7dbf3de35f20f14ea00745b4850",
+              "candidate_family": "pytorch-ascend-reduction-sum",
+              "candidate_id": "torch.sum"
+            },
+            "input_roles": [
+              "exponentials"
+            ],
+            "local_composition": "exact-operation-probe",
+            "output_roles": [
+              "row_sum"
+            ],
+            "phase_id": "softmax-phase:sum_reduce",
+            "phase_name": "sum_reduce",
+            "predecessor_phase_ids": [
+              "softmax-phase:exp"
+            ],
+            "provenance": {
+              "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75",
+              "source_run_ids": [
+                "issue44-20260813T1910Z-sum_reduce-search",
+                "issue44-20260813T1910Z-sum_reduce-holdout"
+              ]
+            },
+            "required_capability_class": "compute.reduction.sum.fp32",
+            "resource_demands": {
+              "capability_class": "compute.reduction.sum.fp32",
+              "declared_elements": 2097152,
+              "exact_operation_invocations": 1
+            },
+            "selected_duration_ns": null,
+            "source_digests": [
+              "67163f7b599fa89300cf71a9bbaa3ac692861521b78af6bb82f141e3b19ef24d",
+              "c7dc79d99aeb5f87e084068c1352b5cdb1678ba9f3e8adb9597db15bd5b65f6e"
+            ],
+            "source_run_ids": [
+              "issue44-20260813T1910Z-sum_reduce-search",
+              "issue44-20260813T1910Z-sum_reduce-holdout"
+            ],
+            "standard_uncertainty_ns": null
+          },
+          {
+            "assumptions": [
+              "fixed-shape-float32-contiguous",
+              "candidate-invocation-includes-operand-data-movement",
+              "no-fusion-no-chunk-pipeline-no-cross-phase-overlap"
+            ],
+            "candidate": {
+              "candidate_digest": "cec961dac8ae54a61be6efb590d9076c056398551542e26690c42ab5dae93338",
+              "candidate_family": "pytorch-ascend-elementwise-divide",
+              "candidate_id": "torch.div"
+            },
+            "input_roles": [
+              "exponentials",
+              "row_sum"
+            ],
+            "local_composition": "exact-operation-probe",
+            "output_roles": [
+              "softmax_output"
+            ],
+            "phase_id": "softmax-phase:normalize",
+            "phase_name": "normalize",
+            "predecessor_phase_ids": [
+              "softmax-phase:sum_reduce"
+            ],
+            "provenance": {
+              "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75",
+              "source_run_ids": [
+                "issue44-20260813T1910Z-normalize-search",
+                "issue44-20260813T1910Z-normalize-holdout"
+              ]
+            },
+            "required_capability_class": "compute.elementwise.divide.fp32",
+            "resource_demands": {
+              "capability_class": "compute.elementwise.divide.fp32",
+              "declared_elements": 2097152,
+              "exact_operation_invocations": 1
+            },
+            "selected_duration_ns": null,
+            "source_digests": [
+              "7d533c056c4a5bfbb59cd7de5489cac83097ace8dfae1bb966f96795003233ea",
+              "4f98dc94c76e5fb6b71b8950e3152203fe6c1fe729b5b3119ea37e9791a14304"
+            ],
+            "source_run_ids": [
+              "issue44-20260813T1910Z-normalize-search",
+              "issue44-20260813T1910Z-normalize-holdout"
+            ],
+            "standard_uncertainty_ns": null
+          }
+        ],
         "stable_paths": [
           "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
           "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
@@ -84,7 +320,7 @@
   ],
   "cohort_id": "ascend-npu-89022e60525d608f",
   "digests": {
-    "evidence_sha256": "b3c4fc2218e33a388edc8bfaeef775121f14e5f85531bd09df856b87f8caa850",
+    "evidence_sha256": "106b05e99221c5120ba0b584ae58aa84a0c3939745cca7e05d8201d4c82436d5",
     "input_sha256": "a3a81708ffc48ae6a46ba63496aa4abe0baffefbcbfad383fd870ecf35a855bb"
   },
   "execution_domain": {
