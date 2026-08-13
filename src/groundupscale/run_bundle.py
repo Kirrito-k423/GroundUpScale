@@ -2424,6 +2424,52 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 )
                 for phase_id, graph_phase in graph_by_phase.items()
             )
+            source_lane_keys = {
+                (source.get("phase_id"), source.get("lane"))
+                for source in source_runs
+                if isinstance(source, dict)
+            } if isinstance(source_runs, list) else set()
+            expected_missing = [
+                {
+                    "phase_id": phase_id,
+                    "phase_name": graph_phase.get("phase_name"),
+                    "operation_class": graph_phase.get("operation_class"),
+                    "required_evidence": (
+                        "verified search and independent-holdout Run Bundles with "
+                        "replayable compute-or-exact and memory-pattern capability "
+                        "profiles matching this phase"
+                    ),
+                }
+                for phase_id, graph_phase in graph_by_phase.items()
+                if (phase_id, "search") not in source_lane_keys
+                or (phase_id, "independent-holdout") not in source_lane_keys
+            ]
+            expected_missing_ids = {
+                item["phase_id"] for item in expected_missing
+            }
+            unknown_schedule_mismatch = any(
+                not isinstance(scheduled_by_phase.get(phase_id), dict)
+                or scheduled_by_phase[phase_id].get("status") != "unknown"
+                or scheduled_by_phase[phase_id].get("candidate") is not None
+                or scheduled_by_phase[phase_id].get("constraints") is not None
+                or scheduled_by_phase[phase_id].get("capability_profile_refs")
+                is not None
+                or scheduled_by_phase[phase_id].get("local_duration_ns") is not None
+                or scheduled_by_phase[phase_id].get("standard_uncertainty_ns")
+                is not None
+                or scheduled_by_phase[phase_id].get("resource_composition")
+                != "unknown"
+                or scheduled_by_phase[phase_id].get("evidence_refs") != []
+                for phase_id in expected_missing_ids
+            )
+            if (
+                missing != expected_missing
+                or unknown_schedule_mismatch
+                or set(evidence_by_phase) != set(graph_by_phase) - expected_missing_ids
+            ):
+                failures.append(
+                    "compound operator Frontier missing evidence mismatch"
+                )
             known_durations = (
                 [phase.get("local_duration_ns") for phase in scheduled_phases]
                 if isinstance(scheduled_phases, list)
@@ -2440,8 +2486,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 else []
             )
             complete = bool(
-                isinstance(missing, list)
-                and not missing
+                not expected_missing
+                and missing == expected_missing
                 and known_durations
                 and all(
                     isinstance(value, (int, float))
@@ -2709,6 +2755,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             constraints = observation.get("constraints")
             capability_refs = observation.get("capability_profile_refs")
             raw_by_constraint = observation.get("raw_samples_by_constraint")
+            constraint_profiles = observation.get("constraint_profiles")
             exact = constraints.get("exact_operation_duration_ns") if isinstance(constraints, dict) else None
             matching = constraints.get("matching_compute_capability_duration_ns") if isinstance(constraints, dict) else None
             memory = constraints.get("memory_pattern_floor_ns") if isinstance(constraints, dict) else None
@@ -2722,12 +2769,17 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or observation.get("resource_composition")
                 != "max(compute-or-exact,memory-pattern-floor)"
                 or not isinstance(capability_refs, dict)
-                or set(capability_refs) != {"compute_or_exact", "memory_pattern"}
-                or not all(
-                    isinstance(reference, str) and reference
-                    for reference in capability_refs.values()
-                )
-                or len(set(capability_refs.values())) != 2
+                or capability_refs
+                != {
+                    "compute_or_exact": (
+                        "artifact://observation/phase-capability.json"
+                        "#constraint_profiles.compute_or_exact"
+                    ),
+                    "memory_pattern": (
+                        "artifact://observation/phase-capability.json"
+                        "#constraint_profiles.memory_pattern"
+                    ),
+                }
                 or not isinstance(raw_by_constraint, dict)
                 or set(raw_by_constraint) != {"compute_or_exact", "memory_pattern"}
                 or not all(
@@ -2741,6 +2793,47 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     )
                     for samples in raw_by_constraint.values()
                 )
+                or not isinstance(constraint_profiles, dict)
+                or set(constraint_profiles) != {"compute_or_exact", "memory_pattern"}
+                or not all(
+                    isinstance(profile, dict)
+                    for profile in constraint_profiles.values()
+                )
+                or constraint_profiles["compute_or_exact"].get(
+                    "measurement_policy"
+                ) != "median-ns-v1"
+                or constraint_profiles["memory_pattern"].get(
+                    "measurement_policy"
+                ) != "median-ns-v1"
+                or constraint_profiles["compute_or_exact"].get("probe_kind")
+                != observation.get("evidence_kind")
+                or constraint_profiles["memory_pattern"].get("probe_kind")
+                != "memory-pattern-probe"
+                or constraint_profiles["compute_or_exact"].get(
+                    "capability_resource"
+                )
+                != (
+                    observation.get("operation_class")
+                    if observation.get("evidence_kind") == "exact-operation-probe"
+                    else observation.get("required_compute_capability")
+                )
+                or constraint_profiles["memory_pattern"].get(
+                    "capability_resource"
+                ) != observation.get("required_memory_capability")
+                or constraint_profiles["compute_or_exact"].get("samples_ns")
+                != raw_by_constraint.get("compute_or_exact")
+                or constraint_profiles["memory_pattern"].get("samples_ns")
+                != raw_by_constraint.get("memory_pattern")
+                or constraint_profiles["compute_or_exact"].get("summary_ns")
+                != compute_or_exact
+                or constraint_profiles["memory_pattern"].get("summary_ns")
+                != memory
+                or statistics.median(
+                    constraint_profiles["compute_or_exact"].get("samples_ns", [])
+                ) != compute_or_exact
+                or statistics.median(
+                    constraint_profiles["memory_pattern"].get("samples_ns", [])
+                ) != memory
             ):
                 failures.append("invalid operator phase measurement composition")
 

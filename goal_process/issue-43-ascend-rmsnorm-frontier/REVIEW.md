@@ -38,7 +38,9 @@ No scope creep was found. The seven phase identities matched ADR 0037.
   `search` and `independent-holdout` source identities for each mandatory phase.
 - Both exact-operation and matching-capability evidence now retain compute/exact
   and separately sampled memory-pattern constraints, two distinct
-  capability-profile references, and recompute the phase-local maximum.
+  capability-profile references to bundle-local, resource-identified profile
+  sections. The verifier recomputes each median summary from its raw samples,
+  validates resource semantics, then recomputes the phase-local maximum.
 - The public verifier recursively verifies each source Run Manifest, cohort,
   phase, lane, candidate, observation and digest. It binds the holdout
   observation byte-for-byte to qualification evidence, both source records to
@@ -47,6 +49,10 @@ No scope creep was found. The seven phase identities matched ADR 0037.
   immutable source observation remains unchanged. The verifier replays the
   dependency DAG, rejects cycles or output mismatch, and recomputes topological
   order, serialized reference, critical path and RSS uncertainty.
+- Structured unknown is also replayed rather than trusted: the verifier derives
+  every missing phase from graph identity and absent search/holdout lanes, then
+  requires its schedule to contain no candidate, constraint, duration,
+  uncertainty or evidence reference. A fully rehashed forged missing set fails.
 - Added one explicit Cost Compilation Fingerprint across source manifests,
   observations, phase graph, qualification and Frontier manifest, and persisted
   lock owner, start, finish,
@@ -55,9 +61,11 @@ No scope creep was found. The seven phase identities matched ADR 0037.
   passed, but `mean_scale/search` exceeded the pre-registered 10% IQR/median
   limit. Per protocol, collection stopped without a retry. Two search Runs were
   retained (`square`, `reduce_sum`) as original session records. Because those
-  pre-fix observations did not contain independently sampled memory floors,
-  they are deliberately excluded from the hardened qualification. The v2
-  verified Frontier has zero qualified source Runs, is structured `unknown`,
+  pre-fix observations did not contain replayable, semantic memory profile
+  sections, they are deliberately excluded from the hardened qualification.
+  Immutable v1 and v2 are preserved; the v3 verified Frontier explicitly
+  supersedes v2 by run ID, relative path and Manifest digest. It has zero
+  qualified source Runs, is structured `unknown`,
   and names all seven missing search/holdout qualification boundaries.
 - The Divergent Change extraction remains a non-blocking follow-up: the public
   verifier is still the required acceptance seam and existing bundle kinds stay

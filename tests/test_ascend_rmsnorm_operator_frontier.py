@@ -90,14 +90,12 @@ def _phase_sources(
                     candidate=candidate,
                     compute_or_exact_duration_ns=float(index * 1_000 * ratio),
                     memory_pattern_floor_ns=float(index * 400),
-                    compute_or_exact_capability_profile_ref=(
-                        f"capability-profile://issue43/{phase.phase_name}/compute"
-                    ),
-                    memory_pattern_capability_profile_ref=(
-                        f"capability-profile://issue43/{phase.phase_name}/memory"
-                    ),
                     standard_uncertainty_ns=float(index * 10),
-                    raw_samples_ns=(index * 990, index * 1_000, index * 1_010),
+                    raw_samples_ns=(
+                        index * 990 * ratio,
+                        index * 1_000 * ratio,
+                        index * 1_010 * ratio,
+                    ),
                     memory_pattern_raw_samples_ns=(
                         index * 390,
                         index * 400,
@@ -169,6 +167,7 @@ def _rehash_connected_qualification(run: Path) -> None:
     diagnostic_path = run / diagnostic_artifact["path"]
     diagnostic = json.loads(diagnostic_path.read_text(encoding="utf-8"))
     diagnostic["qualification_digest"] = qualification["input_digest"]
+    diagnostic["missing_evidence"] = qualification["missing_evidence"]
     diagnostic["input_digest"] = _canonical_digest(
         {key: value for key, value in diagnostic.items() if key != "input_digest"}
     )
@@ -261,6 +260,19 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         != evidence["capability_profile_refs"]["memory_pattern"]
         for evidence in qualification["phase_evidence"]
     )
+    assert all(
+        evidence["capability_profile_refs"] == {
+            "compute_or_exact": (
+                "artifact://observation/phase-capability.json"
+                "#constraint_profiles.compute_or_exact"
+            ),
+            "memory_pattern": (
+                "artifact://observation/phase-capability.json"
+                "#constraint_profiles.memory_pattern"
+            ),
+        }
+        for evidence in qualification["phase_evidence"]
+    )
     assert (
         json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))[
             "compilation_fingerprint"
@@ -301,10 +313,11 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
             ),
             "phase_name": "rsqrt",
             "operation_class": "transcendental.rsqrt.fp32",
-            "required_evidence": (
-                "verified search and independent-holdout Run Bundles for a "
-                "semantically matching capability class or exact operation probe"
-            ),
+                "required_evidence": (
+                    "verified search and independent-holdout Run Bundles with "
+                    "replayable compute-or-exact and memory-pattern capability "
+                    "profiles matching this phase"
+                ),
         }
     ]
 
@@ -437,6 +450,39 @@ def test_incomplete_bundle_names_every_missing_mandatory_phase(tmp_path: Path) -
     assert verify_run_bundle(run)["passed"] is True
 
 
+def test_verifier_replays_structured_unknown_boundary_after_full_rehash(
+    tmp_path: Path,
+) -> None:
+    operation = _rmsnorm_operation()
+    run = RmsNormOperatorFrontierBundleWriter().run(
+        tmp_path,
+        run_id="issue43-rmsnorm-rehashed-false-missing-v1",
+        operation=operation,
+        execution_domain=_execution_domain(operation),
+        source_runs=[],
+        compilation_fingerprint=_cost_compilation_fingerprint(),
+    )
+
+    def mutate(document: dict[str, object]) -> None:
+        document["missing_evidence"] = [
+            {
+                "phase_id": "forged-phase",
+                "phase_name": "forged",
+                "operation_class": "forged",
+                "required_evidence": "forged",
+            }
+        ]
+
+    _rewrite_artifact(run, "compound-operator-frontier-qualification", mutate)
+    _rehash_connected_qualification(run)
+
+    verification = verify_run_bundle(run)
+    assert verification["passed"] is False
+    assert "compound operator Frontier missing evidence mismatch" in verification[
+        "failures"
+    ]
+
+
 def test_verifier_rejects_rehashed_phase_duration_tamper(tmp_path: Path) -> None:
     operation = _rmsnorm_operation()
     run = RmsNormOperatorFrontierBundleWriter().run(
@@ -534,33 +580,70 @@ def test_verifier_binds_fully_rehashed_derived_evidence_to_source_observation(
     ), verification["failures"]
 
 
-def test_phase_measurement_requires_independent_capability_profile_references(
+def test_phase_measurement_publishes_independent_replayable_capability_profiles(
     tmp_path: Path,
 ) -> None:
     operation = _rmsnorm_operation()
     phase = operation.phase_graph.phases[0]
-    with pytest.raises(ValueError, match="independent capability-profile references"):
-        RmsNormPhaseMeasurementBundleWriter().run(
-            tmp_path,
-            run_id="issue43-invalid-shared-capability-ref-v1",
-            phase=phase,
-            execution_domain=_execution_domain(operation),
-            lane="search",
-            evidence_kind="exact-operation-probe",
-            candidate={
-                "candidate_id": "candidate",
-                "candidate_family": "torch-npu.square",
-                "candidate_version": "v1",
-            },
-            compute_or_exact_duration_ns=100.0,
-            memory_pattern_floor_ns=90.0,
-            compute_or_exact_capability_profile_ref="capability-profile://same",
-            memory_pattern_capability_profile_ref="capability-profile://same",
-            standard_uncertainty_ns=1.0,
-            raw_samples_ns=(99.0, 100.0, 101.0),
-            memory_pattern_raw_samples_ns=(89.0, 90.0, 91.0),
-            compilation_fingerprint=_cost_compilation_fingerprint(),
+    run = RmsNormPhaseMeasurementBundleWriter().run(
+        tmp_path,
+        run_id="issue43-independent-capability-profiles-v1",
+        phase=phase,
+        execution_domain=_execution_domain(operation),
+        lane="search",
+        evidence_kind="exact-operation-probe",
+        candidate={
+            "candidate_id": "candidate",
+            "candidate_family": "torch-npu.square",
+            "candidate_version": "v1",
+        },
+        compute_or_exact_duration_ns=100.0,
+        memory_pattern_floor_ns=90.0,
+        standard_uncertainty_ns=1.0,
+        raw_samples_ns=(99.0, 100.0, 101.0),
+        memory_pattern_raw_samples_ns=(89.0, 90.0, 91.0),
+        compilation_fingerprint=_cost_compilation_fingerprint(),
+    )
+    observation = _artifact(run, "operator-phase-capability-observation")
+    assert observation["constraint_profiles"] == {
+        "compute_or_exact": {
+            "capability_resource": phase.operation_class,
+            "measurement_policy": "median-ns-v1",
+            "probe_kind": "exact-operation-probe",
+            "samples_ns": [99.0, 100.0, 101.0],
+            "summary_ns": 100.0,
+        },
+        "memory_pattern": {
+            "capability_resource": phase.memory_capability_resource,
+            "measurement_policy": "median-ns-v1",
+            "probe_kind": "memory-pattern-probe",
+            "samples_ns": [89.0, 90.0, 91.0],
+            "summary_ns": 90.0,
+        },
+    }
+
+
+def test_verifier_recomputes_constraint_summaries_from_profile_samples(
+    tmp_path: Path,
+) -> None:
+    operation = _rmsnorm_operation()
+    source = _phase_sources(tmp_path, operation)[0]
+
+    def mutate(document: dict[str, object]) -> None:
+        document["constraints"]["exact_operation_duration_ns"] = 1.0
+        document["local_duration_ns"] = max(
+            value for value in document["constraints"].values() if value is not None
         )
+        document["input_digest"] = content_fingerprint(
+            {key: value for key, value in document.items() if key != "input_digest"}
+        )
+
+    _rewrite_artifact(source, "operator-phase-capability-observation", mutate)
+    verification = verify_run_bundle(source)
+    assert verification["passed"] is False
+    assert "invalid operator phase measurement composition" in verification[
+        "failures"
+    ]
 
 
 @pytest.mark.parametrize(

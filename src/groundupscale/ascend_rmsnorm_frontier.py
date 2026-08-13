@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from math import isfinite, sqrt
 from pathlib import Path
+from statistics import median
 from typing import Iterable
 
 from groundupscale.ir import canonical_data, content_fingerprint
@@ -113,8 +114,6 @@ class RmsNormPhaseMeasurementBundleWriter:
         candidate: dict[str, str],
         compute_or_exact_duration_ns: float,
         memory_pattern_floor_ns: float,
-        compute_or_exact_capability_profile_ref: str,
-        memory_pattern_capability_profile_ref: str,
         standard_uncertainty_ns: float,
         raw_samples_ns: Iterable[float],
         memory_pattern_raw_samples_ns: Iterable[float],
@@ -152,18 +151,41 @@ class RmsNormPhaseMeasurementBundleWriter:
             or not compilation_fingerprint
         ):
             raise ValueError("phase measurement qualification gate failed")
-        capability_profile_refs = {
-            "compute_or_exact": compute_or_exact_capability_profile_ref,
-            "memory_pattern": memory_pattern_capability_profile_ref,
-        }
         if (
-            not all(
-                isinstance(reference, str) and reference
-                for reference in capability_profile_refs.values()
-            )
-            or len(set(capability_profile_refs.values())) != 2
+            compute_or_exact_duration_ns != median(samples)
+            or memory_pattern_floor_ns != median(memory_samples)
         ):
-            raise ValueError("phase measurement requires independent capability-profile references")
+            raise ValueError("phase measurement summary must replay from samples")
+        capability_profile_refs = {
+            "compute_or_exact": (
+                "artifact://observation/phase-capability.json"
+                "#constraint_profiles.compute_or_exact"
+            ),
+            "memory_pattern": (
+                "artifact://observation/phase-capability.json"
+                "#constraint_profiles.memory_pattern"
+            ),
+        }
+        constraint_profiles = {
+            "compute_or_exact": {
+                "capability_resource": (
+                    phase.operation_class
+                    if evidence_kind == "exact-operation-probe"
+                    else phase.compute_capability_resource
+                ),
+                "measurement_policy": "median-ns-v1",
+                "probe_kind": evidence_kind,
+                "samples_ns": samples,
+                "summary_ns": compute_or_exact_duration_ns,
+            },
+            "memory_pattern": {
+                "capability_resource": phase.memory_capability_resource,
+                "measurement_policy": "median-ns-v1",
+                "probe_kind": "memory-pattern-probe",
+                "samples_ns": memory_samples,
+                "summary_ns": memory_pattern_floor_ns,
+            },
+        }
         constraints, local_duration = _local_constraints(
             evidence_kind=evidence_kind,
             compute_or_exact_duration_ns=compute_or_exact_duration_ns,
@@ -183,6 +205,7 @@ class RmsNormPhaseMeasurementBundleWriter:
             "candidate": candidate,
             "constraints": constraints,
             "capability_profile_refs": capability_profile_refs,
+            "constraint_profiles": constraint_profiles,
             "local_duration_ns": local_duration,
             "resource_composition": "max(compute-or-exact,memory-pattern-floor)",
             "standard_uncertainty_ns": standard_uncertainty_ns,
@@ -359,8 +382,9 @@ class RmsNormOperatorFrontierBundleWriter:
                         "phase_name": phase.phase_name,
                         "operation_class": phase.operation_class,
                         "required_evidence": (
-                            "verified search and independent-holdout Run Bundles for a "
-                            "semantically matching capability class or exact operation probe"
+                            "verified search and independent-holdout Run Bundles with "
+                            "replayable compute-or-exact and memory-pattern capability "
+                            "profiles matching this phase"
                         ),
                     }
                 )

@@ -76,6 +76,24 @@ def _measure(call) -> list[float]:
     return samples
 
 
+def _memory_pattern_callable(
+    resource: str,
+    rows: torch.Tensor,
+    squared: torch.Tensor,
+    weight: torch.Tensor,
+):
+    probes = {
+        "memory.elementwise-read-write.fp32": lambda: rows.clone(),
+        "memory.row-reduction.fp32": lambda: squared.sum(dim=-1, keepdim=True),
+        "memory.row-scalar-read-write.fp32": lambda: rows + rows.new_tensor(0.0),
+        "memory.broadcast-read-write.fp32": lambda: rows * weight,
+    }
+    try:
+        return probes[resource]
+    except KeyError as error:
+        raise RuntimeError(f"unsupported memory capability profile: {resource}") from error
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifact-store", required=True)
@@ -156,7 +174,13 @@ def main() -> int:
             q1, _, q3 = statistics.quantiles(samples, n=4, method="inclusive")
             if (q3 - q1) / median > 0.10:
                 raise RuntimeError(f"{phase.phase_name}/{lane}: timing dispersion")
-            memory_pattern_call = lambda target=target: target.clone()
+            rows = x.reshape(-1, x.shape[-1])
+            memory_pattern_call = _memory_pattern_callable(
+                phase.memory_capability_resource,
+                rows,
+                rows * rows,
+                weight,
+            )
             memory_samples = _measure(memory_pattern_call)
             memory_median = float(statistics.median(memory_samples))
             memory_q1, _, memory_q3 = statistics.quantiles(
@@ -182,12 +206,6 @@ def main() -> int:
                     },
                     compute_or_exact_duration_ns=median,
                     memory_pattern_floor_ns=memory_median,
-                    compute_or_exact_capability_profile_ref=(
-                        f"capability-profile://{phase_run_id}/exact-operation"
-                    ),
-                    memory_pattern_capability_profile_ref=(
-                        f"capability-profile://{phase_run_id}/memory-pattern"
-                    ),
                     standard_uncertainty_ns=float(statistics.stdev(samples)),
                     raw_samples_ns=samples,
                     memory_pattern_raw_samples_ns=memory_samples,
