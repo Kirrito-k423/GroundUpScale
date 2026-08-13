@@ -170,6 +170,7 @@ def _session(args: argparse.Namespace) -> int:
                 run_id=anchor_id,
                 search_runs=lanes["search"],
                 holdout_runs=lanes["holdout"],
+                candidate_runs=lanes["search"],
             )
             anchor_verification = verify_run_bundle(anchor_run)
             if anchor_verification.get("passed") is not True:
@@ -177,8 +178,14 @@ def _session(args: argparse.Namespace) -> int:
                     f"exact Anchor verification failed: {anchor_verification}"
                 )
             anchor_runs.append(anchor_run)
+            anchor = json.loads(
+                (anchor_run / "frontier/exact-anchor.json").read_text(
+                    encoding="utf-8"
+                )
+            )
             results[domain] = {
-                "status": "qualified",
+                "status": anchor["status"],
+                "reason_codes": anchor["reason_codes"],
                 "anchor_run": str(anchor_run),
                 "search_runs": [str(path) for path in lanes["search"]],
                 "holdout_runs": [str(path) for path in lanes["holdout"]],

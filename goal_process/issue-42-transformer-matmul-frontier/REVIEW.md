@@ -48,4 +48,20 @@ Standards：3 MUST-FIX、1 SHOULD-FIX；最严重为派生 verifier 可绕过 so
 - Compile：`python -m compileall -q src tests ...` PASS
 - `git diff --check`：PASS
 
-待原 Standards/Spec reviewer 定向复审。
+## Second review and resolution
+
+- 裸 `transformer-matmul-exact-anchor` JSON 已禁止晋级；known 只接受递归 verifier 可重推的 Run Bundle。
+- exact Anchor qualification policy 已固定 `policy_id/version/scope`，并发布正交 `observation_validity` / `frontier_role` 及可回放 transition。
+- candidate manifest 记录候选覆盖、search session、correctness/eligibility 与拒绝理由；policy 要求至少两个 eligible candidate 才可 ACTIVE。预注册 NPU session 每域只覆盖一个候选，因此不追加 NPU 采集，五域全部诚实降级为 INACTIVE structured unknown。
+- 新增由 qualified exact Anchor 派生、递归验证的 exact-domain singleton Surface；Frontier 可按完整 identity 查询 Surface cell latency，并只由 latency 派生 rate。
+- 冻结 #30 无独立 `execution-ir` role；实现从其 manifest 中的 `execution-contract`、`correctness-observation`、`environment` roles 与 Semantic/Cost IR 编译显式 `transformer-matmul-execution-ir`。Stable Path、实际输出 contract、device/runtime/candidate lowering 任一不闭合即 fail closed，不再由 domain class 硬编码 candidate/runtime。
+- 旧 5 Anchor + 2 Frontier 及本轮 v2 均在原 `artifact-store/runs` 路径保持不可变；v3 manifest 以旧 `run_id + manifest_sha256` 显式记录 supersession。30 个原始锁内 measurement 未修改。active 权威 Run 为 `issue42-issue42-20260813-v1-transformer-matmul-frontier-v3`，边界为 `0/5 structured unknown`。
+
+### Final local verification
+
+- Issue focused：`15 passed in 2.31s`
+- Full suite：`563 passed in 96.28s`
+- Evidence closure：历史 v1/v2 + 30 measurement + 5 v3 Anchor + 1 v3 Frontier，`49/49` verifier PASS；当前 policy consumer 拒绝历史 Anchor 晋级
+- `compileall`、`git diff --check`：PASS
+
+待原 Standards/Spec reviewer 最终定向复审。

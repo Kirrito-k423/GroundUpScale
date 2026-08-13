@@ -1,0 +1,403 @@
+{
+  "distinct_domain_count": 5,
+  "domains": [
+    {
+      "declared_work_flop": 268435456.0,
+      "domain_class": "attention-context",
+      "domain_id": "matmul-domain:47731416960c5e5b85271504f873ba927059c59785f79035570ce6a2e8941193",
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1,
+            8
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1,
+            512
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [
+            1,
+            8
+          ],
+          "right_layout": "transposed",
+          "right_transposed": true
+        },
+        "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "transposed"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              8,
+              512,
+              512
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "transposed",
+            "shape": [
+              1,
+              8,
+              512,
+              64
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "source_cost_node_ids": [
+        "cost-op:0f55c67319e0b2fb83b772478bd1d35e5c1921b424f5aeeb557148f77c57e003",
+        "cost-op:7375d2a4f4683bb893ffa2674ba0e4119203dfdde1ffbcab075e25c6d1f6d1f3"
+      ],
+      "stable_paths": [
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
+      ]
+    },
+    {
+      "declared_work_flop": 268435456.0,
+      "domain_class": "attention-qk",
+      "domain_id": "matmul-domain:3842c50685282bf2145dad3aece3f6400406fd4dc3e0f9709058784c2d73d4cd",
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1,
+            8
+          ],
+          "left_layout": "transposed",
+          "left_transposed": true,
+          "result_batch_shape": [
+            1,
+            8
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [
+            1,
+            8
+          ],
+          "right_layout": "transposed",
+          "right_transposed": true
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "transposed",
+            "transposed"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "transposed",
+            "shape": [
+              1,
+              8,
+              512,
+              64
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "transposed",
+            "shape": [
+              1,
+              8,
+              64,
+              512
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            8,
+            512,
+            512
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "source_cost_node_ids": [
+        "cost-op:ae88abea5a34675beaa629d2460c765e0158c2b4b7993c4185c7c441e90befeb",
+        "cost-op:e6cf84b30f42156deca3835c615834aa5afed04367952dc496842875d6896bf1"
+      ],
+      "stable_paths": [
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+      ]
+    },
+    {
+      "declared_work_flop": 1073741824.0,
+      "domain_class": "mlp-contract",
+      "domain_id": "matmul-domain:ab19429430ad193c9f6c1cd47384a1a5f87d893225d4e136aa4f8b91d05e9681",
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [],
+          "right_layout": "contiguous",
+          "right_transposed": false
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "contiguous"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              512,
+              2048
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              2048,
+              512
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "source_cost_node_ids": [
+        "cost-op:678798287b8542e647d7268c231a7e91371a3cd32cd141282029abca4cba96b6",
+        "cost-op:84e361e02cf51a817fc2ad097068cb1d81d7e80f25997b2475f958ea1135431b"
+      ],
+      "stable_paths": [
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
+      ]
+    },
+    {
+      "declared_work_flop": 1073741824.0,
+      "domain_class": "mlp-expand",
+      "domain_id": "matmul-domain:11284ddd9e33ffc182961f4ba736f32506c1e4e6f4b6ed25eb4c3f1e17cf20ea",
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [],
+          "right_layout": "contiguous",
+          "right_transposed": false
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "contiguous"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              512,
+              512
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              512,
+              2048
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            2048
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "source_cost_node_ids": [
+        "cost-op:5f329c0f0ee567bb450bffae88957fb1d5d2f994b5a99db26e4942533f159ee8",
+        "cost-op:951af7137fd041811d83ca82c09458dac356367a873915f83ed86f740cf68b6b",
+        "cost-op:36b98bae1c77074741d2ef5f53c5e6888606ca1a2f95a8766bb6aa84ac5e5127",
+        "cost-op:c4cbe1d55265af33e57ca73e966a7ed86e0dbced5b7cc85e5825734018c4fbd3"
+      ],
+      "stable_paths": [
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
+      ]
+    },
+    {
+      "declared_work_flop": 268435456.0,
+      "domain_class": "projection",
+      "domain_id": "matmul-domain:f0fd5558d75b5a4a88de3491d986a6e2e3341bb2f1893000eaa8faa48a680984",
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [],
+          "right_layout": "contiguous",
+          "right_transposed": false
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "contiguous"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              512,
+              512
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              512,
+              512
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "source_cost_node_ids": [
+        "cost-op:64ed7c1d1bef2a38432c5c54eb4306d2a0ff5a25d4c362a42bcf3cc3d56a713f",
+        "cost-op:23ab4c5b9e4e1e7d1ed9ee45f059f5520763f8fa82d80c232dcd47c74a555eb9",
+        "cost-op:097dbec4b3e6c4dfa6dbf986ed23ca6c125f2464e225a8912135fce88be02887",
+        "cost-op:93d3c19c1ea159aba5f2987f5b2e6c48959b306e6873526c5fbe7a93fc3e9b22",
+        "cost-op:c2dbf23074b0a3474afd359fe78fa2990ae77688227fe5dabee500faeff2dc04",
+        "cost-op:e506886cec5f2a2379fb0df071efa5a22a3bdbc3cf5921a06fbc80fbe9b294cd",
+        "cost-op:d91e756a3c9c4087d9421b519ff1b2c7f3f3804908c8ebfa248030dc3200be8d",
+        "cost-op:9e573b1f4fb806d1d629ea44685e725e06e4ed2c93f7ebf3ee9b16997052df7f"
+      ],
+      "stable_paths": [
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj",
+        "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+      ]
+    }
+  ],
+  "matmul_leaf_count": 18,
+  "schema": "groundupscale.dev/matmul-domain-inventory/v1alpha1",
+  "source_closure": {
+    "cost_ir_matmul_count": 18,
+    "execution_ir_digest": "60eb4852931f530ec0d37237f2276d0ad0dc038ea989e29a39eb92912b5ff77e",
+    "execution_ir_matmul_count": 18,
+    "model_ir_indexed_matmul_count": 18,
+    "model_spec_matmul_definition_count": 9,
+    "semantic_ir_matmul_count": 18,
+    "workload_model_call_count": 1
+  },
+  "source_hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "source_run_id": "ascend-910b2-transformer-demo-20260811-v1",
+  "source_run_manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1"
+}

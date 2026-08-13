@@ -13,6 +13,7 @@ from groundupscale.run_bundle import verify_run_bundle
 from groundupscale.transformer_matmul_frontier import (
     TransformerMatmulExactAnchorBundleWriter,
     TransformerMatmulFrontierBundleWriter,
+    TransformerMatmulSurfaceBundleWriter,
     transformer_matmul_measurement_case,
 )
 
@@ -109,6 +110,17 @@ def test_public_bundle_lists_every_distinct_demo_matmul_domain(
     )
     assert inventory["matmul_leaf_count"] == 18
     assert inventory["distinct_domain_count"] == 5
+    assert inventory["source_closure"]["execution_ir_matmul_count"] == 18
+    assert inventory["source_closure"]["execution_ir_digest"]
+    execution_ir = _artifact(run, "transformer-matmul-execution-ir")
+    assert execution_ir["runtime"] == "torch-npu"
+    assert len(execution_ir["records"]) == 18
+    assert {
+        record["candidate_family"] for record in execution_ir["records"]
+    } == {
+        "pytorch-ascend-matmul",
+        "pytorch-ascend-matmul-transpose-contiguous",
+    }
     assert [domain["domain_class"] for domain in inventory["domains"]] == [
         "attention-context",
         "attention-qk",
@@ -330,7 +342,13 @@ def test_inventory_fails_closed_when_model_workload_or_semantic_sources_diverge(
     _copy_and_rehash_source_artifact(
         semantic_source, "semantic-ir", remove_one_semantic_matmul
     )
-    with pytest.raises(ValueError, match="four-source MatMul inventory mismatch"):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "four-source MatMul inventory mismatch|"
+            "Execution IR and Cost IR MatMul paths diverge"
+        ),
+    ):
         TransformerMatmulFrontierBundleWriter().run(
             tmp_path / "semantic-output",
             run_id="issue42-semantic-divergence-v1",
@@ -381,25 +399,36 @@ def _write_exact_anchor(
     return path
 
 
-def test_exact_anchor_yields_known_latency_and_rate_is_only_derived(
-    tmp_path: Path,
-) -> None:
+def test_bare_exact_anchor_document_cannot_promote_a_domain(tmp_path: Path) -> None:
     inventory_run = TransformerMatmulFrontierBundleWriter().run(
         tmp_path / "inventory",
-        run_id="issue42-exact-anchor-inventory-v1",
+        run_id="issue42-forged-anchor-inventory-v1",
         transformer_run=FROZEN_DEMO,
         frontier_runs=(),
     )
-    inventory = _artifact(inventory_run, "matmul-domain-inventory")
     projection = next(
         domain
-        for domain in inventory["domains"]
+        for domain in _artifact(inventory_run, "matmul-domain-inventory")["domains"]
         if domain["domain_class"] == "projection"
     )
-    anchor = _write_exact_anchor(
-        tmp_path / "projection-anchor.json",
-        domain=projection,
-        latency_ns=20_000.0,
+    forged = _write_exact_anchor(
+        tmp_path / "forged-anchor.json", domain=projection, latency_ns=1.0
+    )
+
+    with pytest.raises(ValueError, match="unsupported Frontier evidence document"):
+        TransformerMatmulFrontierBundleWriter().run(
+            tmp_path / "forged-output",
+            run_id="issue42-forged-anchor-rejected-v1",
+            transformer_run=FROZEN_DEMO,
+            frontier_runs=(forged,),
+        )
+
+
+def test_exact_anchor_yields_known_latency_and_rate_is_only_derived(
+    tmp_path: Path,
+) -> None:
+    anchor = _qualified_anchor_run(
+        tmp_path, domain_class="attention-qk", prefix="exact-known"
     )
 
     run = TransformerMatmulFrontierBundleWriter().run(
@@ -414,11 +443,13 @@ def test_exact_anchor_yields_known_latency_and_rate_is_only_derived(
     query = next(
         item
         for item in qualification["domain_queries"]
-        if item["domain_class"] == "projection"
+        if item["domain_class"] == "attention-qk"
     )
     assert query["status"] == "known"
-    assert query["latency_ns"] == 20_000.0
-    assert query["effective_rate"] == 13_421_772_800_000.0
+    assert query["latency_ns"] == 45_134.0
+    assert query["effective_rate"] == pytest.approx(
+        268_435_456 * 1_000_000_000 / 45_134.0
+    )
     assert query["effective_rate_derivation"] == (
         "declared_work_flop / latency_seconds"
     )
@@ -436,15 +467,8 @@ def test_issue36_incomplete_surface_is_unqualified_but_does_not_mask_anchor(
         frontier_runs=(),
     )
     inventory = _artifact(inventory_run, "matmul-domain-inventory")
-    projection = next(
-        domain
-        for domain in inventory["domains"]
-        if domain["domain_class"] == "projection"
-    )
-    anchor = _write_exact_anchor(
-        tmp_path / "projection-anchor.json",
-        domain=projection,
-        latency_ns=20_000.0,
+    anchor = _qualified_anchor_run(
+        tmp_path, domain_class="attention-qk", prefix="issue36-known"
     )
 
     run = TransformerMatmulFrontierBundleWriter().run(
@@ -459,7 +483,7 @@ def test_issue36_incomplete_surface_is_unqualified_but_does_not_mask_anchor(
     projection_query = next(
         item
         for item in qualification["domain_queries"]
-        if item["domain_class"] == "projection"
+        if item["domain_class"] == "attention-qk"
     )
     assert projection_query["status"] == "known"
     assert projection_query["considered_evidence"][0] == {
@@ -544,6 +568,7 @@ def _copy_domain_measurement(
     process_id: int,
     domain: dict[str, object],
     median_ns: int,
+    candidate_id: str = "torch.matmul",
 ) -> Path:
     source = (
         REPOSITORY_ROOT
@@ -584,6 +609,7 @@ def _copy_domain_measurement(
     )
 
     def candidate(value: dict[str, object]) -> None:
+        value["candidate_id"] = candidate_id
         value["candidate_family"] = identity["candidate_family"]  # type: ignore[index]
         value["execution_mode"] = identity["execution_mode"]  # type: ignore[index]
         value["transformer_matmul_domain"] = domain_record
@@ -671,6 +697,51 @@ def _copy_domain_measurement(
     return destination
 
 
+def _qualified_anchor_run(
+    tmp_path: Path, *, domain_class: str, prefix: str
+) -> Path:
+    inventory_run = TransformerMatmulFrontierBundleWriter().run(
+        tmp_path / f"{prefix}-inventory",
+        run_id=f"issue42-{prefix}-inventory-v1",
+        transformer_run=FROZEN_DEMO,
+        frontier_runs=(),
+    )
+    domain = next(
+        item
+        for item in _artifact(inventory_run, "matmul-domain-inventory")["domains"]
+        if item["domain_class"] == domain_class
+    )
+    candidates = [
+        _copy_domain_measurement(
+            tmp_path / f"{prefix}-candidate-{candidate_index}-{index}",
+            run_id=f"issue42-{prefix}-candidate-{candidate_index}-{index}",
+            process_id=700 + candidate_index * 10 + index,
+            domain=domain,
+            median_ns=45_130 + candidate_index * 10_000 + index,
+            candidate_id=candidate_id,
+        )
+        for candidate_index, candidate_id in enumerate(("torch.matmul", "torch.mm"))
+        for index in range(1, 4)
+    ]
+    holdout = [
+        _copy_domain_measurement(
+            tmp_path / f"{prefix}-holdout-{index}",
+            run_id=f"issue42-{prefix}-holdout-{index}",
+            process_id=800 + index,
+            domain=domain,
+            median_ns=45_132 + index,
+        )
+        for index in range(1, 4)
+    ]
+    return TransformerMatmulExactAnchorBundleWriter().run(
+        tmp_path / f"{prefix}-anchor",
+        run_id=f"issue42-{prefix}-anchor-v1",
+        search_runs=candidates[:3],
+        holdout_runs=holdout,
+        candidate_runs=candidates,
+    )
+
+
 def test_exact_anchor_bundle_rederives_disjoint_search_holdout_sessions(
     tmp_path: Path,
 ) -> None:
@@ -714,7 +785,25 @@ def test_exact_anchor_bundle_rederives_disjoint_search_holdout_sessions(
 
     assert verify_run_bundle(anchor_run)["passed"] is True
     anchor = _artifact(anchor_run, "transformer-matmul-exact-anchor")
-    assert anchor["latency_ns"] == 20_004.0
+    assert anchor["status"] == "unknown"
+    assert anchor["latency_ns"] is None
+    assert anchor["qualification_policy"] == {
+        "policy_id": "transformer-matmul-exact-anchor-qualification",
+        "version": "v1",
+        "scope": "exact-domain-best-of-correct-candidate",
+        "minimum_search_sessions_per_candidate": 3,
+        "minimum_holdout_sessions": 3,
+        "minimum_eligible_candidate_count": 2,
+        "maximum_relative_range": 0.1,
+    }
+    assert anchor["observation_validity"] == "QUALIFIED"
+    assert anchor["frontier_role"] == "INACTIVE"
+    assert anchor["reason_codes"] == ["candidate-coverage-incomplete"]
+    assert [item["axis"] for item in anchor["state_transitions"]] == [
+        "observation_validity",
+        "frontier_role",
+    ]
+    assert anchor["candidate_coverage"]["attempted_candidate_count"] == 1
     assert anchor["search_run_ids"] == [f"issue42-search-{index}" for index in range(1, 4)]
     assert anchor["holdout_run_ids"] == [f"issue42-holdout-{index}" for index in range(1, 4)]
 
@@ -728,8 +817,73 @@ def test_exact_anchor_bundle_rederives_disjoint_search_holdout_sessions(
     projection_query = next(
         item for item in qualification["domain_queries"] if item["domain_class"] == "projection"
     )
-    assert projection_query["status"] == "known"
-    assert projection_query["latency_ns"] == 20_004.0
+    assert projection_query["status"] == "unknown"
+    assert projection_query["reason_codes"] == ["exact-anchor-not-qualified"]
+
+
+def test_qualified_surface_cell_yields_known_latency(tmp_path: Path) -> None:
+    inventory_run = TransformerMatmulFrontierBundleWriter().run(
+        tmp_path / "inventory-surface",
+        run_id="issue42-surface-inventory-v1",
+        transformer_run=FROZEN_DEMO,
+        frontier_runs=(),
+    )
+    projection = next(
+        item
+        for item in _artifact(inventory_run, "matmul-domain-inventory")["domains"]
+        if item["domain_class"] == "projection"
+    )
+    candidates: list[Path] = []
+    for candidate_index, candidate_id in enumerate(("torch.matmul", "torch.mm")):
+        for index in range(1, 4):
+            run = _copy_domain_measurement(
+                tmp_path / f"candidate-{candidate_index}-{index}",
+                run_id=f"issue42-candidate-{candidate_index}-{index}",
+                process_id=500 + candidate_index * 10 + index,
+                domain=projection,
+                median_ns=20_000 + candidate_index * 1_000 + index,
+                candidate_id=candidate_id,
+            )
+            candidates.append(run)
+    search = candidates[:3]
+    holdout = [
+        _copy_domain_measurement(
+            tmp_path / f"surface-holdout-{index}",
+            run_id=f"issue42-surface-holdout-{index}",
+            process_id=600 + index,
+            domain=projection,
+            median_ns=20_002 + index,
+        )
+        for index in range(1, 4)
+    ]
+    anchor_run = TransformerMatmulExactAnchorBundleWriter().run(
+        tmp_path / "surface-anchor",
+        run_id="issue42-surface-anchor-v1",
+        search_runs=search,
+        holdout_runs=holdout,
+        candidate_runs=candidates,
+    )
+    surface_run = TransformerMatmulSurfaceBundleWriter().run(
+        tmp_path / "surface",
+        run_id="issue42-qualified-surface-v1",
+        anchor_run=anchor_run,
+    )
+    frontier_run = TransformerMatmulFrontierBundleWriter().run(
+        tmp_path / "surface-frontier",
+        run_id="issue42-known-from-surface-v1",
+        transformer_run=FROZEN_DEMO,
+        frontier_runs=(surface_run,),
+    )
+    query = next(
+        item
+        for item in _artifact(
+            frontier_run, "transformer-matmul-frontier-qualification"
+        )["domain_queries"]
+        if item["domain_class"] == "projection"
+    )
+    assert query["status"] == "known"
+    assert query["latency_ns"] == 20_004.0
+    assert query["selected_evidence_kind"] == "surface"
 
 
 def test_unrepeatable_holdout_publishes_replayable_structured_unknown(
@@ -777,7 +931,10 @@ def test_unrepeatable_holdout_publishes_replayable_structured_unknown(
     anchor = _artifact(anchor_run, "transformer-matmul-exact-anchor")
     assert anchor["status"] == "unknown"
     assert anchor["latency_ns"] is None
-    assert anchor["reason_codes"] == ["independent-holdout-repeatability-failed"]
+    assert anchor["reason_codes"] == [
+        "independent-holdout-repeatability-failed",
+        "candidate-coverage-incomplete",
+    ]
     assert anchor["repeatability"]["holdout_relative_range"] == 0.5
     assert anchor["repeatability"]["maximum_relative_range"] == 0.1
 

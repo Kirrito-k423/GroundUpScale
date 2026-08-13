@@ -104,12 +104,22 @@ MODEL_E2E_FRONTIER_REQUIRED_ROLES = frozenset(
 )
 TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES = frozenset(
     {
+        "transformer-matmul-execution-ir",
+        "matmul-domain-inventory",
+        "transformer-matmul-frontier-qualification",
+    }
+)
+LEGACY_TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
         "matmul-domain-inventory",
         "transformer-matmul-frontier-qualification",
     }
 )
 TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES = frozenset(
     {"transformer-matmul-exact-anchor"}
+)
+TRANSFORMER_MATMUL_SURFACE_REQUIRED_ROLES = frozenset(
+    {"transformer-matmul-surface"}
 )
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
@@ -1526,6 +1536,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     transformer_matmul_exact_anchor = (
         manifest.get("bundle_kind") == "transformer-matmul-exact-anchor"
     )
+    transformer_matmul_surface = (
+        manifest.get("bundle_kind") == "transformer-matmul-surface"
+    )
     structured_bundle = (
         exact_shape
         or floor_comparison
@@ -1534,6 +1547,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or model_e2e_frontier
         or transformer_matmul_frontier
         or transformer_matmul_exact_anchor
+        or transformer_matmul_surface
     )
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
@@ -1546,8 +1560,17 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
         elif transformer_matmul_exact_anchor:
             required_roles = TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES
+        elif transformer_matmul_surface:
+            required_roles = TRANSFORMER_MATMUL_SURFACE_REQUIRED_ROLES
         elif transformer_matmul_frontier:
-            required_roles = TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
+            required_roles = (
+                LEGACY_TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
+                if manifest.get("run_id") in {
+                    "issue42-issue42-20260813-v1-transformer-matmul-frontier",
+                    "issue42-issue42-20260813-v1-transformer-matmul-frontier-final",
+                }
+                else TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
+            )
         elif operator_frontier:
             required_roles = OPERATOR_FRONTIER_REQUIRED_ROLES
         elif transformer_demo:
@@ -2055,6 +2078,32 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             derivation_matches = False
         if not derivation_matches:
             failures.append("Transformer MatMul exact Anchor derivation mismatch")
+
+    if transformer_matmul_surface:
+        surface = documents_by_role.get("transformer-matmul-surface")
+        identity_matches = (
+            isinstance(surface, dict)
+            and manifest.get("status") == surface.get("status") == "qualified"
+            and manifest.get("device") == "ascend-npu"
+            and manifest.get("hardware_cohort") == surface.get("hardware_cohort")
+        )
+        if not identity_matches:
+            failures.append("Transformer MatMul Surface identity mismatch")
+        try:
+            from groundupscale.transformer_matmul_frontier import (
+                verify_transformer_matmul_surface_derivation,
+            )
+
+            derivation_matches = (
+                identity_matches
+                and verify_transformer_matmul_surface_derivation(
+                    root, manifest, surface
+                )
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            derivation_matches = False
+        if not derivation_matches:
+            failures.append("Transformer MatMul Surface derivation mismatch")
 
     if floor_comparison:
         comparison = documents_by_role.get(

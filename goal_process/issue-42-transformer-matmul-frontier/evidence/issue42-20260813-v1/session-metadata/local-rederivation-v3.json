@@ -1,0 +1,17 @@
+{
+  "additional_npu_measurements": 0,
+  "active_frontier_run": "issue42-issue42-20260813-v1-transformer-matmul-frontier-v3",
+  "active_store_contract": "30 immutable locked-session measurements plus 5 v3 exact-anchor decisions and 1 v3 Transformer MatMul Frontier",
+  "candidate_evidence_boundary": "The preregistered session collected one candidate per exact domain. No second candidate was collected; best-of-correct coverage is therefore incomplete and every v3 Anchor remains INACTIVE.",
+  "derived_at": "2026-08-13T13:00:00+00:00",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "issue": 42,
+  "observation_boundary": "attention-qk repeatability is QUALIFIED; the other four domains also fail the preregistered independent-holdout repeatability threshold",
+  "policy_id": "transformer-matmul-exact-anchor-qualification",
+  "policy_version": "v1",
+  "schema": "groundupscale.dev/issue42-local-rederivation/v1alpha1",
+  "session_id": "issue42-20260813-v1",
+  "supersession_contract": "Historical Run Bundles remain byte-for-byte immutable at their original artifact-store/runs paths. Each v3 manifest carries supersedes run_id and manifest_sha256 references.",
+  "supersession_reason": "Legacy derived decisions lacked versioned policy identity, orthogonal validity/role states, and exact-domain best-of-correct candidate coverage. The 30 locked-session measurement Run Bundles are unchanged.",
+  "v3_coverage": "0/5 structured unknown"
+}

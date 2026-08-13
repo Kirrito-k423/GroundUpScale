@@ -1,0 +1,84 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/exact-anchor.json",
+      "produced_by": "groundupscale-transformer-matmul-exact-anchor-v1",
+      "role": "transformer-matmul-exact-anchor",
+      "schema": "groundupscale.dev/transformer-matmul-exact-anchor/v1alpha1",
+      "sha256": "6d9cedae5b86e080bb35135534f92a54069b55d71143d7c840e0552ce795abc8"
+    }
+  ],
+  "bundle_kind": "transformer-matmul-exact-anchor",
+  "created_at": "2026-08-13T12:51:42.496200+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue42-issue42-20260813-v1-projection-exact-anchor-v3",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": {
+    "candidates": [
+      {
+        "manifest_sha256": "ccaa9b3b3293976353d7840e04c7b17c65a0048c1d8da26b6b34cd1f3d18627d",
+        "path": "../issue42-issue42-20260813-v1-projection-search-01",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-01"
+      },
+      {
+        "manifest_sha256": "0f5af35564daa9799d24b44295741feb7b9d0b85c5c48baca4b0d66beb5ee40b",
+        "path": "../issue42-issue42-20260813-v1-projection-search-02",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-02"
+      },
+      {
+        "manifest_sha256": "195fa10a028879a6ae4d2cbb55b85031ede9bc6548770cde6148c38026228f99",
+        "path": "../issue42-issue42-20260813-v1-projection-search-03",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-03"
+      }
+    ],
+    "holdout": [
+      {
+        "manifest_sha256": "5d68f30b523d1743cd2fb54ff976f52867143024bf8b9a9e3a96cca6e2bbd1ab",
+        "path": "../issue42-issue42-20260813-v1-projection-holdout-01",
+        "run_id": "issue42-issue42-20260813-v1-projection-holdout-01"
+      },
+      {
+        "manifest_sha256": "2227d338c08ce72bb0d017efd36ac03ae40bb3f78676fa542bdaebe10251ea06",
+        "path": "../issue42-issue42-20260813-v1-projection-holdout-02",
+        "run_id": "issue42-issue42-20260813-v1-projection-holdout-02"
+      },
+      {
+        "manifest_sha256": "182ba83962585d9fe76fcbca7e53a702af2b97644f83a658fc65fec6ee3add78",
+        "path": "../issue42-issue42-20260813-v1-projection-holdout-03",
+        "run_id": "issue42-issue42-20260813-v1-projection-holdout-03"
+      }
+    ],
+    "search": [
+      {
+        "manifest_sha256": "ccaa9b3b3293976353d7840e04c7b17c65a0048c1d8da26b6b34cd1f3d18627d",
+        "path": "../issue42-issue42-20260813-v1-projection-search-01",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-01"
+      },
+      {
+        "manifest_sha256": "0f5af35564daa9799d24b44295741feb7b9d0b85c5c48baca4b0d66beb5ee40b",
+        "path": "../issue42-issue42-20260813-v1-projection-search-02",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-02"
+      },
+      {
+        "manifest_sha256": "195fa10a028879a6ae4d2cbb55b85031ede9bc6548770cde6148c38026228f99",
+        "path": "../issue42-issue42-20260813-v1-projection-search-03",
+        "run_id": "issue42-issue42-20260813-v1-projection-search-03"
+      }
+    ]
+  },
+  "status": "unknown",
+  "supersedes": [
+    {
+      "manifest_sha256": "b3d1cd7e0a8e6a1c8d2997f71eec72f183be753568aadafbbeb08f387ec308c4",
+      "run_id": "issue42-issue42-20260813-v1-projection-exact-anchor"
+    },
+    {
+      "manifest_sha256": "2f70a8aa4db2f5bee9f69d4e07d38d49ab4d24a8859c796e4a777e97dc45ea59",
+      "run_id": "issue42-issue42-20260813-v1-projection-exact-anchor-v2"
+    }
+  ]
+}
