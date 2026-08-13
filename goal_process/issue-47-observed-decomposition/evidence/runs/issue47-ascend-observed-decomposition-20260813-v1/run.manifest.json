@@ -7,7 +7,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "schedule-effect-input",
       "schema": "groundupscale.dev/schedule-effect-input/v1alpha1",
-      "sha256": "85259e385c6c4a47709d9702943ec3a4d55994b668b9ee64f6b8c72eb992d823"
+      "sha256": "37db3d398ac10a7fff3dadc3acb9f97d9e5625592400adb8a7ed5d2854474596"
     },
     {
       "inputs": [
@@ -18,7 +18,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "baseline-timing-observation",
       "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
-      "sha256": "6fcbe2c109ac679572e29efce4bf82e68fc529cea01cc51755cee41e9b7c930a"
+      "sha256": "b69add26d5a9634ec4dd6076981401e5213111248ea7d25e6f21b60e678e0cdc"
     },
     {
       "inputs": [
@@ -29,7 +29,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "diagnostic-profiling-observation",
       "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
-      "sha256": "89f0a8322cd15e3b2d29d7eb27abaa1d0680d3323222b45acc7475114fcc0710"
+      "sha256": "87a0b915991663b306d9492485b0353bc224de78dd299552268a77f08e741bdb"
     },
     {
       "inputs": [
@@ -42,7 +42,7 @@
       "produced_by": "groundupscale.schedule-effect-frontier@1.0.0",
       "role": "observed-decomposition",
       "schema": "groundupscale.dev/observed-decomposition/v1alpha1",
-      "sha256": "b164ddd450e231bfa233d3d3f709e5cf9b8a14a01163d57fe8625632bd70e50d"
+      "sha256": "f0004725d45848948cb9883331f8c13ff621f2c7639ad72ba026c8b3e8b594f6"
     }
   ],
   "bundle_kind": "schedule-effect-frontier",

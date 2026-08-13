@@ -187,7 +187,12 @@
   "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
   "source": {
     "artifact_sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07",
+    "derivation": {
+      "case_id": "two-layer-prefill",
+      "kind": "benchmark-case-latency"
+    },
     "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/observation/raw/benchmark.json",
+    "expected_role": "benchmark-observation",
     "run_id": "ascend-910b2-transformer-demo-20260811-v1"
   },
   "synchronization": "end-event-synchronize-plus-device-synchronize",

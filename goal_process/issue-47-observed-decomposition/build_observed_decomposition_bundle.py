@@ -115,6 +115,11 @@ def build_document() -> dict[str, object]:
             },
             "source": {
                 "run_id": issue30_manifest["run_id"],
+                "expected_role": "benchmark-observation",
+                "derivation": {
+                    "kind": "benchmark-case-latency",
+                    "case_id": "two-layer-prefill",
+                },
                 "evidence_ref": (
                     "run-bundle://ascend-910b2-transformer-demo-20260811-v1/"
                     + benchmark_artifact["path"]
@@ -135,6 +140,11 @@ def build_document() -> dict[str, object]:
             },
             "source": {
                 "run_id": issue30_manifest["run_id"],
+                "expected_role": "error-attribution",
+                "derivation": {
+                    "kind": "json-field",
+                    "field": "e2e_trace_host_ns",
+                },
                 "evidence_ref": (
                     "run-bundle://ascend-910b2-transformer-demo-20260811-v1/"
                     + diagnostic_artifact["path"]
@@ -155,6 +165,7 @@ def build_document() -> dict[str, object]:
                 "instrumentation_profile": "torch-npu-profiler/v1",
                 "source_boundary": {
                     "run_id": issue32_manifest["run_id"],
+                    "expected_role": "diagnostic-evidence",
                     "evidence_ref": (
                         "run-bundle://issue32-ascend-910b2-diagnostic-v1/"
                         + issue32_evidence_artifact["path"]

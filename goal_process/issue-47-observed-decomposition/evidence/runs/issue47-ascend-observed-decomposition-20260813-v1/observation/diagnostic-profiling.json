@@ -28,6 +28,7 @@
     "source_boundary": {
       "artifact_sha256": "c2ff5b377110347f941fd0d9f28ece821d61f41991edfb130ee7dde1d7a7e336",
       "evidence_ref": "run-bundle://issue32-ascend-910b2-diagnostic-v1/diagnostic/evidence.json",
+      "expected_role": "diagnostic-evidence",
       "reason_code": "available-ablation-has-incompatible-case-and-shape",
       "run_id": "issue32-ascend-910b2-diagnostic-v1"
     },
@@ -38,7 +39,12 @@
   "schema": "groundupscale.dev/diagnostic-profiling-observation/v1alpha1",
   "source": {
     "artifact_sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+    "derivation": {
+      "field": "e2e_trace_host_ns",
+      "kind": "json-field"
+    },
     "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/comparison/error-attribution.json",
+    "expected_role": "error-attribution",
     "run_id": "ascend-910b2-transformer-demo-20260811-v1"
   }
 }

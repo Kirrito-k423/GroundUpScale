@@ -155,7 +155,12 @@
     "raw_sample_count": 20,
     "source": {
       "artifact_sha256": "3dae206865937c20a39df4d8d33824ebcc7c70299cbf6f5764a75e6fe75dff07",
+      "derivation": {
+        "case_id": "two-layer-prefill",
+        "kind": "benchmark-case-latency"
+      },
       "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/observation/raw/benchmark.json",
+      "expected_role": "benchmark-observation",
       "run_id": "ascend-910b2-transformer-demo-20260811-v1"
     },
     "status": "valid",
@@ -190,7 +195,12 @@
   },
   "diagnostic_source": {
     "artifact_sha256": "9dbafc261a6d8bd8efed9e9b04a17ee829a42f93edcab6364a9dde3042cd3c59",
+    "derivation": {
+      "field": "e2e_trace_host_ns",
+      "kind": "json-field"
+    },
     "evidence_ref": "run-bundle://ascend-910b2-transformer-demo-20260811-v1/comparison/error-attribution.json",
+    "expected_role": "error-attribution",
     "run_id": "ascend-910b2-transformer-demo-20260811-v1"
   },
   "identity": {

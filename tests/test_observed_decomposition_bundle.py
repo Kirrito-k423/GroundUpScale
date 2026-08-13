@@ -59,6 +59,11 @@ def _qualified_input() -> dict[str, object]:
             "correctness": {"passed": True, "semantic_leaf_count": 52},
             "source": {
                 "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+                "expected_role": "baseline-observation",
+                "derivation": {
+                    "kind": "benchmark-case-latency",
+                    "case_id": "two-layer-prefill",
+                },
                 "evidence_ref": (
                     "run-bundle://ascend-910b2-transformer-demo-20260811-v1/"
                     "baseline.json"
@@ -112,6 +117,11 @@ def _qualified_input() -> dict[str, object]:
                 ],
                 "source": {
                     "run_id": "issue47-synthetic-diagnostic-source-v1",
+                    "expected_role": "diagnostic-observation",
+                    "derivation": {
+                        "kind": "json-field",
+                        "field": "e2e_trace_host_ns",
+                    },
                     "collector": "torch-npu-profiler",
                     "evidence_ref": (
                         "run-bundle://issue47-synthetic-diagnostic-source-v1/"
@@ -175,7 +185,29 @@ def _source_runs(
             f"run-bundle://{source['run_id']}/", 1
         )[1]
         artifact_path = source_root / relative_artifact
-        artifact_path.write_text("{}\n", encoding="utf-8")
+        if role == "baseline-observation":
+            baseline = document["baseline_timing_lane"]
+            source_document = {
+                "cases": [
+                    {
+                        "case_id": "two-layer-prefill",
+                        "latency": {
+                            "samples_ns": baseline["raw_samples_ns"],
+                            "normalized_window_samples_ns": baseline[
+                                "normalized_window_samples_ns"
+                            ],
+                            "windows_per_sample": baseline["windows_per_sample"],
+                        },
+                    }
+                ]
+            }
+        else:
+            source_document = {
+                "e2e_trace_host_ns": document["diagnostic_profiling_lane"][
+                    "instrumentation_timing"
+                ]["elapsed_ns"]
+            }
+        _write_json(artifact_path, source_document)
         source["artifact_sha256"] = hashlib.sha256(
             artifact_path.read_bytes()
         ).hexdigest()
@@ -572,3 +604,48 @@ def test_fully_resigned_source_digest_forgery_fails_verifier(
     verification = verify_run_bundle(tampered)
     assert verification["passed"] is False
     assert "schedule effect source lineage mismatch" in verification["failures"]
+
+
+def test_fully_resigned_lane_tamper_with_real_source_digest_fails_verifier(
+    tmp_path: Path,
+) -> None:
+    document = _qualified_input()
+    source = _write_bundle(
+        tmp_path / "source",
+        run_id="issue47-derived-lane-tamper-v1",
+        document=document,
+    )
+    tampered = source.parent / "derived-lane-tampered"
+    shutil.copytree(source, tampered)
+    input_path = tampered / "schedule/effects.input.json"
+    schedule_input = json.loads(input_path.read_text(encoding="utf-8"))
+    samples = schedule_input["baseline_timing_lane"]["raw_samples_ns"]
+    schedule_input["baseline_timing_lane"]["raw_samples_ns"] = [
+        sample + 10_000 for sample in samples
+    ]
+    schedule_input["baseline_timing_lane"]["timing_summary"] = timing_summary(
+        schedule_input["baseline_timing_lane"]["raw_samples_ns"]
+    )
+    baseline_path = tampered / "observation/baseline-timing.json"
+    baseline = {
+        "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+        **schedule_input["baseline_timing_lane"],
+    }
+    from groundupscale.observed_decomposition import compose_observed_decomposition
+
+    result = compose_observed_decomposition(schedule_input)
+    result_path = tampered / "observation/observed-decomposition.json"
+    manifest_path = tampered / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    updates = {
+        "schedule-effect-input": _write_json(input_path, schedule_input),
+        "baseline-timing-observation": _write_json(baseline_path, baseline),
+        "observed-decomposition": _write_json(result_path, result),
+    }
+    for artifact in manifest["artifacts"]:
+        if artifact["role"] in updates:
+            artifact["sha256"] = updates[artifact["role"]]
+    _write_json(manifest_path, manifest)
+    verification = verify_run_bundle(tampered)
+    assert verification["passed"] is False
+    assert "schedule effect source derivation mismatch" in verification["failures"]

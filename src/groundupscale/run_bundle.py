@@ -2260,9 +2260,11 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     "diagnostic profiling observation derivation mismatch"
                 )
 
-            def verify_source(source: object) -> bool:
+            def verified_source_artifact(
+                source: object,
+            ) -> tuple[dict[str, object], dict[str, object]] | None:
                 if not isinstance(source, dict):
-                    return False
+                    return None
                 run_id = source.get("run_id")
                 evidence_ref = source.get("evidence_ref")
                 digest = source.get("artifact_sha256")
@@ -2273,46 +2275,110 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     or not isinstance(evidence_ref, str)
                     or not evidence_ref.startswith(prefix)
                     or not isinstance(digest, str)
+                    or not isinstance(source.get("expected_role"), str)
                 ):
-                    return False
+                    return None
                 source_root, source_manifest = source_record
                 source_verification = verify_run_bundle(source_root)
                 if source_verification.get("passed") is not True:
-                    return False
+                    return None
                 source_path = evidence_ref.removeprefix(prefix)
                 source_artifacts = source_manifest.get("artifacts")
                 if not isinstance(source_artifacts, list):
-                    return False
+                    return None
                 matching = [
                     artifact
                     for artifact in source_artifacts
                     if isinstance(artifact, dict)
                     and artifact.get("path") == source_path
                     and artifact.get("sha256") == digest
+                    and artifact.get("role") == source.get("expected_role")
                     and isinstance(artifact.get("produced_by"), str)
                     and bool(artifact["produced_by"])
                 ]
+                source_artifact_path = source_root / source_path
+                if (
+                    len(matching) != 1
+                    or not source_artifact_path.is_file()
+                    or _sha256(source_artifact_path) != digest
+                ):
+                    return None
+                try:
+                    source_document = json.loads(
+                        source_artifact_path.read_text(encoding="utf-8")
+                    )
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                    return None
                 return (
-                    len(matching) == 1
-                    and (source_root / source_path).is_file()
-                    and _sha256(source_root / source_path) == digest
+                    matching[0],
+                    source_document if isinstance(source_document, dict) else {},
                 )
 
-            source_values: list[object] = [
-                baseline_lane.get("source"),
-                (
+            baseline_source = baseline_lane.get("source")
+            diagnostic_source = (
                     diagnostic_lane.get("device_timeline", {}).get("source")
                     if isinstance(diagnostic_lane.get("device_timeline"), dict)
                     else diagnostic_lane.get("source")
-                ),
-            ]
+                )
+            source_values: list[object] = [baseline_source, diagnostic_source]
             ablation_value = diagnostic_lane.get("overhead_ablation")
             if isinstance(ablation_value, dict) and isinstance(
                 ablation_value.get("source_boundary"), dict
             ):
                 source_values.append(ablation_value["source_boundary"])
-            if not all(verify_source(source) for source in source_values):
+            verified_sources = [
+                verified_source_artifact(source) for source in source_values
+            ]
+            if not all(source is not None for source in verified_sources):
                 failures.append("schedule effect source lineage mismatch")
+            else:
+                baseline_document = verified_sources[0][1]
+                baseline_derivation = (
+                    baseline_source.get("derivation")
+                    if isinstance(baseline_source, dict)
+                    else None
+                )
+                diagnostic_document = verified_sources[1][1]
+                diagnostic_derivation = (
+                    diagnostic_source.get("derivation")
+                    if isinstance(diagnostic_source, dict)
+                    else None
+                )
+                try:
+                    baseline_case = next(
+                        case
+                        for case in baseline_document["cases"]
+                        if isinstance(case, dict)
+                        and isinstance(baseline_derivation, dict)
+                        and case.get("case_id")
+                        == baseline_derivation.get("case_id")
+                    )
+                    latency = baseline_case["latency"]
+                    baseline_derived = (
+                        baseline_derivation.get("kind")
+                        == "benchmark-case-latency"
+                        and baseline_lane.get("raw_samples_ns")
+                        == latency["samples_ns"]
+                        and baseline_lane.get("normalized_window_samples_ns")
+                        == latency["normalized_window_samples_ns"]
+                        and baseline_lane.get("windows_per_sample")
+                        == latency["windows_per_sample"]
+                    )
+                    diagnostic_derived = (
+                        isinstance(diagnostic_derivation, dict)
+                        and diagnostic_derivation.get("kind") == "json-field"
+                        and diagnostic_lane.get("instrumentation_timing", {}).get(
+                            "elapsed_ns"
+                        )
+                        == diagnostic_document[
+                            diagnostic_derivation["field"]
+                        ]
+                    )
+                except (KeyError, StopIteration, TypeError):
+                    baseline_derived = False
+                    diagnostic_derived = False
+                if not baseline_derived or not diagnostic_derived:
+                    failures.append("schedule effect source derivation mismatch")
             try:
                 replay = compose_observed_decomposition(schedule_input)
             except (KeyError, TypeError, ValueError):
