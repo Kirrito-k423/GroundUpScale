@@ -2325,11 +2325,19 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                             )
                     supersedes = expected.get("evidence", {}).get("supersedes")
                     if supersedes is not None:
+                        bundle_repository_root = next(
+                            (
+                                parent
+                                for parent in (root, *root.parents)
+                                if (parent / ".git").exists()
+                            ),
+                            None,
+                        )
                         if manifest.get("supersedes") != supersedes:
                             failures.append(
                                 "model E2E manifest supersession mismatch"
                             )
-                        elif repository_root is None:
+                        elif bundle_repository_root is None:
                             failures.append(
                                 "model E2E superseded bundle is not resolvable"
                             )
@@ -2338,7 +2346,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 root / str(supersedes.get("path"))
                             ).resolve()
                             try:
-                                superseded_root.relative_to(repository_root)
+                                superseded_root.relative_to(bundle_repository_root)
                             except ValueError:
                                 failures.append(
                                     "model E2E superseded path escapes repository"
