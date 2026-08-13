@@ -49,6 +49,9 @@ from groundupscale.operator_frontier import (
     OperatorFrontierBundleWriter,
     OperatorFrontierQualificationError,
 )
+from groundupscale.transformer_matmul_frontier import (
+    TransformerMatmulFrontierBundleWriter,
+)
 from groundupscale.physical_floor_bundle import PhysicalFloorComparisonBundleWriter
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.probe import run_environment_probe
@@ -206,6 +209,24 @@ def _parser() -> argparse.ArgumentParser:
     qualify_frontier.add_argument("--profile-output")
     qualify_frontier.add_argument("--repository-root", default=".")
     qualify_frontier.add_argument("--json", action="store_true", dest="as_json")
+    qualify_transformer_matmul = subparsers.add_parser(
+        "qualify-transformer-matmul",
+        help=(
+            "enumerate a Transformer demo's complete MatMul domains and match "
+            "qualified Frontier evidence"
+        ),
+    )
+    qualify_transformer_matmul.add_argument("transformer_run")
+    qualify_transformer_matmul.add_argument(
+        "--frontier-run", action="append", default=[]
+    )
+    qualify_transformer_matmul.add_argument(
+        "--artifact-store", default=".groundupscale"
+    )
+    qualify_transformer_matmul.add_argument("--run-id", required=True)
+    qualify_transformer_matmul.add_argument(
+        "--json", action="store_true", dest="as_json"
+    )
     verify_command = subparsers.add_parser(
         "verify-run", help="verify every artifact digest in a Run Bundle"
     )
@@ -1367,6 +1388,47 @@ def _run_qualify_frontier(args: argparse.Namespace) -> int:
     return _run_exact_shape_frontier_qualification(args)
 
 
+def _run_qualify_transformer_matmul(args: argparse.Namespace) -> int:
+    run = TransformerMatmulFrontierBundleWriter().run(
+        args.artifact_store,
+        run_id=args.run_id,
+        transformer_run=args.transformer_run,
+        frontier_runs=tuple(args.frontier_run),
+    )
+    manifest = json.loads(
+        (run / "run.manifest.json").read_text(encoding="utf-8")
+    )
+    entry = next(
+        item
+        for item in manifest["artifacts"]
+        if item["role"] == "transformer-matmul-frontier-qualification"
+    )
+    qualification = json.loads(
+        (run / entry["path"]).read_text(encoding="utf-8")
+    )
+    verification = verify_run_bundle(run)
+    summary = {
+        "run_id": args.run_id,
+        "status": qualification["status"],
+        "hardware_cohort": qualification["hardware_cohort"],
+        "coverage": (
+            f"{qualification['qualified_domain_count']}/"
+            f"{qualification['required_domain_count']}"
+        ),
+        "verification_passed": verification["passed"],
+        "run_bundle": str(run),
+    }
+    if args.as_json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(
+            f"Transformer MatMul Frontier {summary['run_id']}: "
+            f"{summary['status']} ({summary['coverage']} domains)"
+        )
+        print(f"  bundle: {summary['run_bundle']}")
+    return 0 if verification["passed"] else 1
+
+
 def _run_fit_calibration(args: argparse.Namespace) -> int:
     profile = fit_calibration(args.run_bundle)
     write_calibration_yaml(args.output, profile)
@@ -1467,6 +1529,8 @@ def main(
         return _run_compare_measurement(args)
     if args.command == "qualify-frontier":
         return _run_qualify_frontier(args)
+    if args.command == "qualify-transformer-matmul":
+        return _run_qualify_transformer_matmul(args)
     if args.command == "verify-run":
         return _run_verify(args)
     if args.command == "explain":

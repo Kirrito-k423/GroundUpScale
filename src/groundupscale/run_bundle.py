@@ -102,6 +102,12 @@ MODEL_E2E_FRONTIER_REQUIRED_ROLES = frozenset(
         "html-report",
     }
 )
+TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES = frozenset(
+    {
+        "matmul-domain-inventory",
+        "transformer-matmul-frontier-qualification",
+    }
+)
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
@@ -1511,12 +1517,16 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     model_e2e_frontier = (
         manifest.get("bundle_kind") == "model-e2e-frontier"
     )
+    transformer_matmul_frontier = (
+        manifest.get("bundle_kind") == "transformer-matmul-frontier"
+    )
     structured_bundle = (
         exact_shape
         or floor_comparison
         or transformer_demo
         or operator_frontier
         or model_e2e_frontier
+        or transformer_matmul_frontier
     )
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
@@ -1527,6 +1537,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 role_counts[role] = role_counts.get(role, 0) + 1
         if model_e2e_frontier:
             required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
+        elif transformer_matmul_frontier:
+            required_roles = TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
         elif operator_frontier:
             required_roles = OPERATOR_FRONTIER_REQUIRED_ROLES
         elif transformer_demo:
@@ -1689,6 +1701,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or diagnostic.get("cohort_id") != manifest.get("hardware_cohort")
             ):
                 failures.append("operator Frontier Surface identity mismatch")
+
             if (
                 isinstance(surface, dict)
                 and surface.get(
@@ -1974,6 +1987,28 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append(
                         f"operator Frontier source Run failed verification: {source_id}"
                     )
+
+    if transformer_matmul_frontier:
+        inventory = documents_by_role.get("matmul-domain-inventory")
+        qualification = documents_by_role.get(
+            "transformer-matmul-frontier-qualification"
+        )
+        try:
+            from groundupscale.transformer_matmul_frontier import (
+                verify_transformer_matmul_frontier_derivation,
+            )
+
+            derivation_matches = (
+                isinstance(inventory, dict)
+                and isinstance(qualification, dict)
+                and verify_transformer_matmul_frontier_derivation(
+                    root, manifest, inventory, qualification
+                )
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            derivation_matches = False
+        if not derivation_matches:
+            failures.append("Transformer MatMul Frontier derivation mismatch")
 
     if floor_comparison:
         comparison = documents_by_role.get(
