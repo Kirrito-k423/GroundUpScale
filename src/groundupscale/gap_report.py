@@ -75,6 +75,11 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
         seen.add(path)
         if item.get("inclusive") is True:
             raise GapReportError("inclusive-parent-is-navigation-only")
+        descendants = item.get("descendants", [])
+        if not isinstance(descendants, list) or not all(
+            isinstance(child, str) and child for child in descendants
+        ):
+            raise GapReportError("invalid-exclusive-parent-descendants")
         accounting_id = item.get("accounting_id", path)
         if not isinstance(accounting_id, str) or accounting_id in accounting_ids:
             raise GapReportError("non-mutually-exclusive-items")
@@ -110,6 +115,7 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "evidence_refs": _refs(item.get("evidence_refs", [])),
                 "accounting_id": accounting_id,
                 "accounting_kind": accounting_kind,
+                "descendants": list(descendants),
                 **(
                     {"evidence_boundaries": list(item["evidence_boundaries"])}
                     if isinstance(item.get("evidence_boundaries"), list)
@@ -117,6 +123,13 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
                 ),
             }
         )
+    known_paths = {item["stable_path"] for item in items}
+    for item in items:
+        if (
+            item["accounting_kind"] == "exclusive-parent"
+            and known_paths.intersection(item["descendants"])
+        ):
+            raise GapReportError("exclusive-parent-and-descendant-double-count")
     return items
 
 
@@ -367,14 +380,27 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
                 classification = _classification(row, evidence_by_path)
                 if classification is not None:
                     triggered.append({**row, **classification})
+    material_rows = []
+    if comparable:
+        for row in rows:
+            gap = row["absolute_gap_ns"]
+            uncertainty = row["combined_uncertainty_ns"]
+            observed_ns = row["observed_time_ns"]
+            relative = gap / observed_ns if gap is not None and observed_ns else None
+            if (
+                gap is not None and uncertainty is not None and gap > uncertainty
+                and gap > minimum_gap and relative is not None
+                and relative > minimum_relative
+            ):
+                material_rows.append(row)
     diagnosis = {
         "status": "evaluated" if comparable else "unavailable",
         "policy": dict(policy),
         "triggered": triggered,
         "reason_code": None if comparable else "comparison-not-applicable",
     }
-    if triggered:
-        largest = max(triggered, key=lambda row: row["absolute_gap_ns"])
+    if material_rows:
+        largest = max(material_rows, key=lambda row: row["absolute_gap_ns"])
         scopes = document.get("scopes", [])
         if not isinstance(scopes, list):
             raise GapReportError("invalid-navigation-scopes")
@@ -389,10 +415,14 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
             ),
             None,
         )
+        classification = _classification(largest, evidence_by_path)
         drilldown = {
-            "kind": "actionable-operation",
+            "kind": "actionable-operation" if classification else "evidence-boundary",
             "stable_path": largest["stable_path"],
-            "classification": largest["classification"],
+            "classification": classification.get("classification") if classification else None,
+            "evidence_boundary": (
+                None if classification else "diagnostic-classification-evidence-missing"
+            ),
             "navigation_scope": navigation.get("stable_path") if navigation else None,
             "non_overlapping_children": list(navigation.get("children", [])) if navigation else [],
             "evidence_refs": sorted(set(largest["predicted_evidence_refs"] + largest["observed_evidence_refs"])),
@@ -477,7 +507,17 @@ def write_gap_report_bundle(
     selected_rows = report["gap_table"]
     sources_value = document.get("source_bundles")
     if selected_rows:
-        if not isinstance(sources_value, list) or not sources_value:
+        if (
+            not isinstance(sources_value, list)
+            or not sources_value
+            or not all(
+                isinstance(source, Mapping)
+                and isinstance(source.get("path"), str)
+                and isinstance(source.get("manifest_sha256"), str)
+                and source.get("verification_passed") is True
+                for source in sources_value
+            )
+        ):
             raise GapReportError("selected-rows-require-locked-source-bundles")
         source_ids = {
             source.get("run_id")
@@ -490,7 +530,11 @@ def write_gap_report_bundle(
                     continue
                 refs = row[f"{side}_evidence_refs"]
                 if not refs or not all(
-                    any(ref.startswith(f"run://{run_id}") for run_id in source_ids)
+                    any(
+                        ref == f"run://{run_id}"
+                        or ref.startswith(f"run://{run_id}@sha256:")
+                        for run_id in source_ids
+                    )
                     for ref in refs
                 ):
                     raise GapReportError("selected-row-direct-source-ref-mismatch")

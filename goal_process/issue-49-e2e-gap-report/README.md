@@ -2,7 +2,7 @@
 
 权威 Run Bundle：
 
-`evidence/runs/issue49-20260814T0245Z-e2e-gap-report-v4`
+`evidence/runs/issue49-20260814T0315Z-e2e-gap-report-v5`
 
 报告严格消费 #48 的 Schedule Achievable Frontier 与 #47 的同边界 observed
 decomposition。两项来源都先通过公共 verifier，再以 Run ID、bundle kind、manifest
@@ -25,6 +25,6 @@ combined uncertainty 与 versioned materiality policy gate。
 
 ```bash
 uv run groundupscale verify-run \
-  goal_process/issue-49-e2e-gap-report/evidence/runs/issue49-20260814T0245Z-e2e-gap-report-v4 \
+  goal_process/issue-49-e2e-gap-report/evidence/runs/issue49-20260814T0315Z-e2e-gap-report-v5 \
   --json
 ```

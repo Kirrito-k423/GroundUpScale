@@ -47,6 +47,16 @@ def build_document() -> dict[str, object]:
     predicted = _load(PREDICTED_RUN / "comparison/model-e2e-frontier.json")
     observed = _load(OBSERVED_RUN / "observation/observed-decomposition.json")
     identity = observed["identity"]
+    issue30_run = (
+        ROOT / "goal_process/issue-30-ascend-transformer-demo/evidence/runs"
+        / "ascend-910b2-transformer-demo-20260811-v1"
+    )
+    issue30_contract = _load(issue30_run / "resolved/execution-contract.json")
+    issue30_benchmark = _load(issue30_run / "observation/raw/benchmark.json")
+    issue30_case = next(
+        case for case in issue30_benchmark["cases"]
+        if case["case_id"] == identity["benchmark_case"]
+    )
     report_identity = {
         "case": identity["benchmark_case"],
         "shape": identity["shape"],
@@ -59,6 +69,18 @@ def build_document() -> dict[str, object]:
         or predicted["hardware_cohort"] != report_identity["hardware_cohort"]
         or predicted["axes"]["observation"]["value_ns"]
         != observed["baseline_e2e_observation"]["median_ns"]
+        or predicted["axes"]["observation"]["value_ns"]
+        != issue30_case["latency"]["median_ns"]
+        or issue30_contract["shape"]["bindings"] != {
+            "B": 1, "D": 64, "H": 512, "I": 2048, "NH": 8, "S": 512
+        }
+        or report_identity["shape"] != [1, 512, 512]
+        or report_identity["candidate_id"]
+        != "ascend-two-layer-transformer-pytorch-eager-v1"
+        or issue30_contract["baseline_timing"]["completion_protocol"]
+        != report_identity["completion_boundary"].replace(
+            "end-npu-event", "end-event", 1
+        )
     ):
         raise RuntimeError("#47/#48 same-boundary identity mismatch")
     predicted_leaves = predicted["coverage"]["predicted_leaves"]
@@ -155,7 +177,7 @@ def build_document() -> dict[str, object]:
 if __name__ == "__main__":
     destination = write_gap_report_bundle(
         Path(__file__).parent / "evidence",
-        run_id="issue49-20260814T0245Z-e2e-gap-report-v4",
+        run_id="issue49-20260814T0315Z-e2e-gap-report-v5",
         document=build_document(),
     )
     print(destination)

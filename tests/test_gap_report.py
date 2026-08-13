@@ -88,10 +88,35 @@ def _input() -> dict[str, object]:
             "evidence_refs": ["run://observation"],
         },
         "source_bundles": [
-            {"run_id": "prediction"},
-            {"run_id": "observation"},
+            {
+                "run_id": "prediction", "bundle_kind": "fixture",
+                "path": "fixtures/prediction", "manifest_sha256": "a" * 64,
+                "verification_passed": True,
+            },
+            {
+                "run_id": "observation", "bundle_kind": "fixture",
+                "path": "fixtures/observation", "manifest_sha256": "b" * 64,
+                "verification_passed": True,
+            },
         ],
     }
+
+
+def _unavailable_input() -> dict[str, object]:
+    document = _input()
+    document.pop("source_bundles")
+    for side in ("predicted", "observed"):
+        document[side] = {  # type: ignore[index]
+            "identity": deepcopy(document["identity"]),
+            "status": "unavailable" if side == "observed" else "unknown",
+            "e2e_duration_ns": None,
+            "items": [],
+            "reason_code": f"{side}-missing",
+            "evidence_boundaries": [f"{side}-missing"],
+            "required_next_measurement": f"collect {side}",
+            "evidence_refs": [],
+        }
+    return document
 
 
 def test_compose_selects_each_side_independently_and_joins_exact_union() -> None:
@@ -142,7 +167,10 @@ def test_reconciliation_metrics_and_diagnosis_are_policy_gated() -> None:
     assert report["metrics"]["frontier_efficiency"] == pytest.approx(2000 / 2100)
     assert report["metrics"]["relative_prediction_error"] == pytest.approx(100 / 2100)
     assert report["diagnosis"]["triggered"] == []
-    assert report["drilldown"]["kind"] == "none"
+    assert report["drilldown"]["kind"] == "evidence-boundary"
+    assert report["drilldown"]["evidence_boundary"] == (
+        "diagnostic-classification-evidence-missing"
+    )
 
 
 def test_lower_bound_and_unavailable_side_fail_closed_without_fake_scores() -> None:
@@ -186,10 +214,11 @@ def test_lower_bound_and_unavailable_side_fail_closed_without_fake_scores() -> N
 
 
 def test_bundle_is_immutable_replayable_and_tamper_detected(tmp_path: Path) -> None:
+    document = _unavailable_input()
     run = write_gap_report_bundle(
         tmp_path,
         run_id="issue49-test-gap-report-v1",
-        document=_input(),
+        document=document,
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -203,12 +232,12 @@ def test_bundle_is_immutable_replayable_and_tamper_detected(tmp_path: Path) -> N
         write_gap_report_bundle(
             tmp_path,
             run_id="issue49-test-gap-report-v1",
-            document=_input(),
+            document=document,
         )
 
     report_path = run / "comparison/e2e-gap-report.json"
     tampered = json.loads(report_path.read_text())
-    tampered["metrics"]["e2e_absolute_gap_ns"] += 1
+    tampered["metrics"]["e2e_absolute_gap_ns"] = 1
     report_path.write_text(json.dumps(tampered), encoding="utf-8")
     verification = verify_run_bundle(run)
     assert verification["passed"] is False
@@ -300,7 +329,7 @@ def test_published_authority_recursively_verifies_locked_sources() -> None:
     run = (
         root
         / "goal_process/issue-49-e2e-gap-report/evidence/runs"
-        / "issue49-20260814T0245Z-e2e-gap-report-v4"
+        / "issue49-20260814T0315Z-e2e-gap-report-v5"
     )
 
     verification = verify_run_bundle(run)
@@ -315,8 +344,9 @@ def test_published_authority_recursively_verifies_locked_sources() -> None:
 
 
 def test_module_cli_publishes_same_machine_and_human_projection(tmp_path: Path) -> None:
+    document = _unavailable_input()
     input_path = tmp_path / "input.json"
-    input_path.write_text(json.dumps(_input()), encoding="utf-8")
+    input_path.write_text(json.dumps(document), encoding="utf-8")
 
     subprocess.run(
         [

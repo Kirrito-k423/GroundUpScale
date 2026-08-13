@@ -2126,6 +2126,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             ),
             None,
         )
+        legacy_gap_report_v2 = manifest.get("run_id") == (
+            "issue49-20260814T0135Z-e2e-gap-report-v2"
+        )
         if (
             manifest.get("status") != "completed"
             or not isinstance(source, dict)
@@ -2133,6 +2136,27 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             or not isinstance(report_entry, dict)
         ):
             failures.append("invalid E2E gap report bundle identity")
+        elif legacy_gap_report_v2:
+            # The first immutable issue-49 schema predates locked per-side
+            # identity. Its exact artifacts and projection remain queryable;
+            # only newer versions are eligible for semantic replay/promotion.
+            if report_entry.get("inputs") != [
+                paths_by_role.get("e2e-gap-report")
+            ]:
+                failures.append("E2E gap report lineage mismatch")
+            legacy_entry = next(
+                (
+                    artifact
+                    for artifact in artifacts
+                    if isinstance(artifact, dict)
+                    and artifact.get("role") == "e2e-gap-report"
+                ),
+                None,
+            )
+            if not isinstance(legacy_entry, dict) or legacy_entry.get(
+                "inputs"
+            ) != [paths_by_role.get("e2e-gap-report-input")]:
+                failures.append("E2E gap report lineage mismatch")
         else:
             try:
                 from groundupscale.gap_report import (
