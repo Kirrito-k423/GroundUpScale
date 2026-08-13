@@ -12,6 +12,8 @@ from pathlib import Path
 from statistics import median
 from typing import Iterable
 
+import torch
+
 from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.ir.cost import CostOperation, OperatorPhase
 from groundupscale.run_bundle import (
@@ -31,6 +33,26 @@ PHASE_GRAPH_SCHEMA = "groundupscale.dev/operator-phase-graph/v1alpha1"
 DIAGNOSTIC_SCHEMA = "groundupscale.dev/compound-operator-diagnostic/v1alpha1"
 MEASUREMENT_PRODUCER = "groundupscale-rmsnorm-phase-measurement-v1"
 FRONTIER_PRODUCER = "groundupscale-rmsnorm-frontier-v1"
+
+
+def rmsnorm_memory_pattern_probe(
+    resource: str,
+    rows: torch.Tensor,
+    squared: torch.Tensor,
+    weight: torch.Tensor,
+):
+    """Build a probe whose tensor shape matches one RMSNorm memory resource."""
+    if resource == "memory.elementwise-read-write.fp32":
+        return lambda: rows.clone()
+    if resource == "memory.row-reduction.fp32":
+        return lambda: squared.sum(dim=-1, keepdim=True)
+    if resource == "memory.row-scalar-read-write.fp32":
+        row_scalars = rows[:, 0].contiguous()
+        row_scalar_output = torch.empty_like(row_scalars)
+        return lambda: row_scalar_output.copy_(row_scalars)
+    if resource == "memory.broadcast-read-write.fp32":
+        return lambda: rows * weight
+    raise ValueError(f"unsupported memory capability profile: {resource}")
 
 
 def _json_bytes(value: object) -> bytes:
@@ -665,4 +687,5 @@ class RmsNormOperatorFrontierBundleWriter:
 __all__ = [
     "RmsNormOperatorFrontierBundleWriter",
     "RmsNormPhaseMeasurementBundleWriter",
+    "rmsnorm_memory_pattern_probe",
 ]

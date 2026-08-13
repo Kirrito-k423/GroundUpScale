@@ -41,6 +41,9 @@ No scope creep was found. The seven phase identities matched ADR 0037.
   capability-profile references to bundle-local, resource-identified profile
   sections. The verifier recomputes each median summary from its raw samples,
   validates resource semantics, then recomputes the phase-local maximum.
+  The collector maps elementwise, row-reduction, row-scalar and broadcast
+  resources to distinct probes; notably row-scalar uses exactly one value per
+  row, matching the graph's 2,048-byte read/write demand for 512 rows.
 - The public verifier recursively verifies each source Run Manifest, cohort,
   phase, lane, candidate, observation and digest. It binds the holdout
   observation byte-for-byte to qualification evidence, both source records to

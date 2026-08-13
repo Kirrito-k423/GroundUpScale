@@ -6,10 +6,12 @@ from math import sqrt
 from pathlib import Path
 
 import pytest
+import torch
 
 from groundupscale.ascend_rmsnorm_frontier import (
     RmsNormOperatorFrontierBundleWriter,
     RmsNormPhaseMeasurementBundleWriter,
+    rmsnorm_memory_pattern_probe,
 )
 from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.pipeline import compile_analysis_plan
@@ -644,6 +646,29 @@ def test_verifier_recomputes_constraint_summaries_from_profile_samples(
     assert "invalid operator phase measurement composition" in verification[
         "failures"
     ]
+
+
+def test_row_scalar_memory_probe_uses_one_value_per_row() -> None:
+    rows = torch.arange(24, dtype=torch.float32).reshape(4, 6)
+    probe = rmsnorm_memory_pattern_probe(
+        "memory.row-scalar-read-write.fp32",
+        rows,
+        rows * rows,
+        torch.ones(6),
+    )
+
+    result = probe()
+
+    assert result.shape == (4,)
+    assert result.tolist() == rows[:, 0].tolist()
+
+
+def test_unknown_memory_resource_fails_closed() -> None:
+    rows = torch.ones((4, 6))
+    with pytest.raises(ValueError, match="unsupported memory capability profile"):
+        rmsnorm_memory_pattern_probe(
+            "memory.unrelated.fp32", rows, rows, torch.ones(6)
+        )
 
 
 @pytest.mark.parametrize(

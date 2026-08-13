@@ -16,6 +16,7 @@ import torch
 from groundupscale.ascend_rmsnorm_frontier import (
     RmsNormOperatorFrontierBundleWriter,
     RmsNormPhaseMeasurementBundleWriter,
+    rmsnorm_memory_pattern_probe,
 )
 from groundupscale.pipeline import compile_analysis_plan
 from groundupscale.run_bundle import verify_run_bundle
@@ -74,24 +75,6 @@ def _measure(call) -> list[float]:
         torch.npu.synchronize()
         samples.append(float(start.elapsed_time(end) * 1_000_000 / INNER))
     return samples
-
-
-def _memory_pattern_callable(
-    resource: str,
-    rows: torch.Tensor,
-    squared: torch.Tensor,
-    weight: torch.Tensor,
-):
-    probes = {
-        "memory.elementwise-read-write.fp32": lambda: rows.clone(),
-        "memory.row-reduction.fp32": lambda: squared.sum(dim=-1, keepdim=True),
-        "memory.row-scalar-read-write.fp32": lambda: rows + rows.new_tensor(0.0),
-        "memory.broadcast-read-write.fp32": lambda: rows * weight,
-    }
-    try:
-        return probes[resource]
-    except KeyError as error:
-        raise RuntimeError(f"unsupported memory capability profile: {resource}") from error
 
 
 def main() -> int:
@@ -175,7 +158,7 @@ def main() -> int:
             if (q3 - q1) / median > 0.10:
                 raise RuntimeError(f"{phase.phase_name}/{lane}: timing dispersion")
             rows = x.reshape(-1, x.shape[-1])
-            memory_pattern_call = _memory_pattern_callable(
+            memory_pattern_call = rmsnorm_memory_pattern_probe(
                 phase.memory_capability_resource,
                 rows,
                 rows * rows,
