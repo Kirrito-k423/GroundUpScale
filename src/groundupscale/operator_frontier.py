@@ -835,6 +835,7 @@ class _Observation:
     repetitions: int
     inner_iterations: int
     process_identity: tuple[int, str]
+    host_lock: dict[str, object] | None
 
     @property
     def evidence_ref(self) -> str:
@@ -935,6 +936,7 @@ def _observation(path: str | Path) -> _Observation:
     environment, _ = _artifact(root, manifest, "environment")
     preflight, _ = _artifact(root, manifest, "measurement-preflight")
     timing_plan, _ = _artifact(root, manifest, "timing-plan")
+    collection, _ = _artifact(root, manifest, "measurement-collection")
 
     try:
         operator_shape = semantics_from_case(case)
@@ -1061,6 +1063,22 @@ def _observation(path: str | Path) -> _Observation:
         if key != "shape"
     }
     normalized_shape = operator_shape.normalized_shape
+    host_lock = collection.get("npu_host_lock")
+    if operator_shape.operation in {"Add", "Mul", "SiLU"} and (
+        not isinstance(host_lock, dict)
+        or host_lock.get("schema")
+        != "groundupscale.dev/npu-host-lock-metadata/v1alpha1"
+        or host_lock.get("status") != "held-during-collection"
+        or host_lock.get("hardware_cohort") != manifest["hardware_cohort"]
+        or host_lock.get("device_visibility") != "0"
+        or not str(host_lock.get("owner", "")).startswith("issue=45 ")
+        or host_lock.get("lock_path")
+        != "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock"
+    ):
+        raise OperatorFrontierQualificationError(
+            f"{root}: missing authoritative Ascend host lock identity",
+            reason_code="source-host-lock-identity-invalid",
+        )
     return _Observation(
         root=root,
         manifest_sha256=_sha256(manifest_path),
@@ -1117,6 +1135,7 @@ def _observation(path: str | Path) -> _Observation:
             int(session["process_id"]),
             str(session["process_started_at"]),
         ),
+        host_lock=(dict(host_lock) if isinstance(host_lock, dict) else None),
     )
 
 
@@ -1440,6 +1459,7 @@ def _source_record(
             "process_id": observation.process_identity[0],
             "process_started_at": observation.process_identity[1],
         },
+        "npu_host_lock": observation.host_lock,
         "evidence_ref": observation.evidence_ref,
     }
 
@@ -1591,7 +1611,7 @@ def _write_exact_distribution_bundle(
     )
     if scope.get("sequence_distribution_mode") != "exact-only" or not exact_identities_match:
         raise OperatorFrontierQualificationError(
-            "qualification policy does not cover ragged sequence identities",
+            "qualification policy does not cover exact operator Shape identities",
             reason_code="qualification-policy-scope-mismatch",
         )
     expected_scope = {
@@ -1606,7 +1626,7 @@ def _write_exact_distribution_bundle(
     }
     if any(scope.get(key) != value for key, value in expected_scope.items()):
         raise OperatorFrontierQualificationError(
-            "qualification policy does not cover ragged sequence domain",
+            "qualification policy does not cover exact operator Shape domain",
             reason_code="qualification-policy-scope-mismatch",
         )
     candidate_ids = cast(list[str], expected_scope["candidate_ids"])
@@ -1621,7 +1641,7 @@ def _write_exact_distribution_bundle(
         )
     ):
         raise OperatorFrontierQualificationError(
-            "ragged exact-only qualification requires one complete candidate "
+            "exact-only qualification requires one complete candidate "
             "until a candidate-family boundary policy is qualified",
             reason_code="candidate-coverage-policy-failed",
         )
@@ -1714,12 +1734,22 @@ def _write_exact_distribution_bundle(
             "sources": sorted(item.manifest_sha256 for item in observations),
         }
     )
+    coordinate_axis = (
+        "sequence_distribution_index"
+        if first.operator_shape.operation == "FlashAttentionForward"
+        else "operator_shape_index"
+    )
+    exact_regime = (
+        "ragged-sequence-vector-exact-anchor"
+        if first.operator_shape.operation == "FlashAttentionForward"
+        else "operator-shape-exact-anchor"
+    )
     domain = {
         **first.operator_shape.domain_facets,
         "sequence_distribution": "exact-only",
         "alignment_regime": "minimum-64-byte",
         "alignment_validated": True,
-        "working_set_regime": "ragged-sequence-vector-exact-anchor",
+        "working_set_regime": exact_regime,
         "working_set_validated": True,
         "kernel_dispatch_regime": first.candidate_family,
         "kernel_dispatch_validated": True,
@@ -1752,7 +1782,7 @@ def _write_exact_distribution_bundle(
             "domain": domain,
             "candidate_family": first.candidate_family,
             "coordinate": {
-                "axis": "sequence_distribution_index",
+                "axis": coordinate_axis,
                 "transform": "identity",
                 "transform_version": "v1",
             },
@@ -1842,6 +1872,8 @@ def _write_exact_distribution_bundle(
                 "surface_version": surface["version"],
                 "shape": shape,
                 "domain": surface["domain"],
+                "cohort_id": cohort_id,
+                "candidate_family": first.candidate_family,
             }
             for index, shape in enumerate(query_shapes, start=1)
         ]
@@ -1878,7 +1910,7 @@ def _write_exact_distribution_bundle(
                 "anchor_id": anchor_id,
                 "anchor_version": f"v-{evidence_digest[:16]}",
                 "shape": {
-                    "sequence_distribution_index": len(anchors) + 1
+                    coordinate_axis: len(anchors) + 1
                 },
                 "operator_shape_identity": identity,
                 "normalized_operator_shape": semantics.normalized_shape,
@@ -1923,7 +1955,7 @@ def _write_exact_distribution_bundle(
             ),
         },
         "coordinate": {
-            "axis": "sequence_distribution_index",
+            "axis": coordinate_axis,
             "transform": "identity",
             "transform_version": "v1",
         },
@@ -1934,7 +1966,7 @@ def _write_exact_distribution_bundle(
                 "cell_id": f"{first.operator_shape.operation.casefold()}-exact-{index}",
                 "anchor_ids": [anchor["anchor_id"], anchor["anchor_id"]],
                 "status": "retained",
-                "regime_id": "ragged-exact-anchor",
+                "regime_id": exact_regime,
                 "confirmation_shape": anchor["shape"],
                 "confirmation_observed_rate": anchor["effective_rate"],
                 "confirmation_evidence_refs": [anchor["evidence_ref"]],
@@ -1992,6 +2024,8 @@ def _write_exact_distribution_bundle(
             "surface_version": surface["version"],
             "shape": shape,
             "domain": domain,
+            "cohort_id": cohort_id,
+            "candidate_family": first.candidate_family,
         }
         for index, shape in enumerate(query_shapes, start=1)
     ]
@@ -3083,7 +3117,7 @@ class OperatorFrontierBundleWriter:
         ):
             if confirmations:
                 raise OperatorFrontierQualificationError(
-                    "ragged exact-only qualification does not interpolate",
+                    "exact-only qualification does not interpolate",
                     reason_code="unsupported-sequence-distribution-interpolation",
                 )
             return _write_exact_distribution_bundle(

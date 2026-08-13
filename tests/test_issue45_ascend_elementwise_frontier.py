@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import json
 from hashlib import sha256
+import fcntl
 import subprocess
 import os
 import yaml
@@ -21,6 +22,7 @@ from groundupscale.measurement_adapters.ascend_npu import (
 from groundupscale.measurement_run import MeasurementRunBundleWriter
 from groundupscale.run_bundle import verify_run_bundle
 from groundupscale.operator_frontier import OperatorFrontierBundleWriter
+from groundupscale.operator_frontier import OperatorFrontierQualificationError
 from groundupscale.diagnostics import diagnose_run_bundle
 
 
@@ -280,6 +282,11 @@ def test_adapter_publishes_elementwise_candidate_input_and_lock_identity(
     monkeypatch.setenv("GROUNDUPSCALE_ISSUE", "45")
     monkeypatch.setenv("ASCEND_RT_VISIBLE_DEVICES", "0")
     monkeypatch.setenv("GROUNDUPSCALE_NPU_LOCK_OWNER_FILE", str(owner_file))
+    lock_file = tmp_path / "ascend.lock"
+    lock_fd = os.open(lock_file, os.O_RDWR | os.O_CREAT)
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)
+    monkeypatch.setenv("GROUNDUPSCALE_NPU_LOCK_FD", str(lock_fd))
+    monkeypatch.setenv("GROUNDUPSCALE_NPU_LOCK_PATH", str(lock_file))
     timing_plan = {
         "warmup_iterations": 20,
         "repetitions": 100,
@@ -292,7 +299,10 @@ def test_adapter_publishes_elementwise_candidate_input_and_lock_identity(
         },
     }
 
-    collection = adapter.collect(case, timing_plan)
+    try:
+        collection = adapter.collect(case, timing_plan)
+    finally:
+        os.close(lock_fd)
 
     candidate = collection["candidate_identity"]
     assert candidate["operation"] == "Mul"
@@ -306,7 +316,9 @@ def test_adapter_publishes_elementwise_candidate_input_and_lock_identity(
     assert collection["npu_host_lock"] == {
         "schema": "groundupscale.dev/npu-host-lock-metadata/v1alpha1",
         "status": "held-during-collection",
-        "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+        "lock_path": str(lock_file),
+        "lock_fd": lock_fd,
+        "lock_validation": "inherited-fd-inode-and-exclusive-conflict",
         "owner": "issue=45 pid=42 host=test started=2026-08-13T00:00:00Z",
         "collection_finished_at": collection["npu_host_lock"][
             "collection_finished_at"
@@ -314,6 +326,20 @@ def test_adapter_publishes_elementwise_candidate_input_and_lock_identity(
         "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
         "device_visibility": "0",
     }
+
+
+def test_adapter_rejects_owner_file_without_inherited_locked_fd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner_file = tmp_path / "ascend.owner"
+    owner_file.write_text("issue=45 pid=42 host=test started=now\n")
+    monkeypatch.setenv("GROUNDUPSCALE_ISSUE", "45")
+    monkeypatch.setenv("GROUNDUPSCALE_NPU_LOCK_OWNER_FILE", str(owner_file))
+    monkeypatch.delenv("GROUNDUPSCALE_NPU_LOCK_FD", raising=False)
+
+    from groundupscale.measurement_adapters.ascend_npu import _host_lock_metadata
+
+    assert _host_lock_metadata() is None
 
 
 def _rewrite_environment_session(run: Path, process_id: int) -> None:
@@ -400,10 +426,51 @@ def _elementwise_measurement_run(
         system_probe=_complete_system_probe,
     )
     run = MeasurementRunBundleWriter(adapter).run(root, case=case, run_id=run_id)
+    _inject_authoritative_host_lock(run)
     _rewrite_environment_session(run, process_id)
     verification = verify_run_bundle(run)
     assert verification["passed"] is True, verification["failures"]
     return run
+
+
+def _inject_authoritative_host_lock(run: Path) -> None:
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    artifact = next(
+        item for item in manifest["artifacts"]
+        if item["role"] == "measurement-collection"
+    )
+    collection_path = run / artifact["path"]
+    collection = json.loads(collection_path.read_text())
+    collection["npu_host_lock"] = {
+        "schema": "groundupscale.dev/npu-host-lock-metadata/v1alpha1",
+        "status": "held-during-collection",
+        "lock_path": (
+            "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock"
+        ),
+        "owner": "issue=45 pid=1 host=test started=2026-08-13T00:00:00Z",
+        "collection_finished_at": "2026-08-13T00:01:00Z",
+        "hardware_cohort": manifest["hardware_cohort"],
+        "device_visibility": "0",
+    }
+    collection_path.write_text(json.dumps(collection, indent=2, sort_keys=True) + "\n")
+    artifact["sha256"] = sha256(collection_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+
+def _remove_host_lock_metadata(run: Path) -> None:
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    artifact = next(
+        item for item in manifest["artifacts"]
+        if item["role"] == "measurement-collection"
+    )
+    collection_path = run / artifact["path"]
+    collection = json.loads(collection_path.read_text())
+    collection.pop("npu_host_lock", None)
+    collection_path.write_text(json.dumps(collection, indent=2, sort_keys=True) + "\n")
+    artifact["sha256"] = sha256(collection_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
 
 def test_elementwise_measurement_run_bundle_replays_through_public_verifier(
@@ -518,12 +585,85 @@ def test_elementwise_frontier_qualifies_exact_domain_and_fails_closed_elsewhere(
     qualification = json.loads((run / "frontier/qualification.json").read_text())
     assert qualification["status"] == "qualified"
     assert qualification["surface"]["domain"]["operand_kind"] == "tensor-tensor"
+    assert qualification["surface"]["coordinate"]["axis"] == "operator_shape_index"
+    assert qualification["anchors"][0]["shape"] == {"operator_shape_index": 1}
+    assert qualification["surface"]["cells"][0]["regime_id"] == (
+        "operator-shape-exact-anchor"
+    )
     result = diagnose_run_bundle(run)
     exact, mismatch = result["capability_surface_queries"]
     assert exact["status"] == "exact_anchor"
     assert exact["latency"]["value_ns"] == pytest.approx(10_012)
     assert mismatch["status"] == "unknown"
     assert mismatch["reason_code"] == "unsupported_sequence_distribution_interpolation"
+
+
+@pytest.mark.parametrize(
+    ("query_override", "reason_code"),
+    [
+        ({"domain": {"dtype": "float16"}}, "query-domain-mismatch"),
+        ({"cohort_id": "other-cohort"}, "query-hardware-cohort-mismatch"),
+        ({"candidate_family": "other-family"}, "query-candidate-family-mismatch"),
+    ],
+)
+def test_elementwise_exact_surface_rejects_full_identity_mismatch(
+    tmp_path: Path,
+    query_override: dict[str, object],
+    reason_code: str,
+) -> None:
+    measurements = tmp_path / "measurements"
+    search = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-identity-search-{session}",
+            operation="Add",
+            shape=[1, 512, 512],
+            operand_kind="tensor-tensor",
+            median_ns=10_000 + session,
+            process_id=session,
+        )
+        for session in (1, 2, 3)
+    ]
+    holdout = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-identity-holdout-{session}",
+            operation="Add",
+            shape=[1, 512, 512],
+            operand_kind="tensor-tensor",
+            median_ns=10_010 + session,
+            process_id=session + 3,
+        )
+        for session in (1, 2, 3)
+    ]
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="issue45-add-identity-v1",
+        qualification_policy=_exact_elementwise_policy(
+            operation="Add",
+            shape=[1, 512, 512],
+            operand_kind="tensor-tensor",
+        ),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=[],
+        query_sizes=[],
+        query_shapes=({"result": [1, 512, 512]},),
+    )
+    diagnostic = json.loads((run / "diagnostic/evidence.json").read_text())
+    query = diagnostic["surface_queries"][0]
+    if "domain" in query_override:
+        query["domain"] = {**query["domain"], **query_override["domain"]}
+    else:
+        query.update(query_override)
+    from groundupscale.diagnostics import _query_capability_surface
+
+    diagnosed = _query_capability_surface(
+        query, diagnostic["capability_surfaces"][0]
+    )
+
+    assert diagnosed["status"] == "unknown"
+    assert diagnosed["reason_code"] == reason_code
 
 
 def test_elementwise_frontier_publishes_structured_unknown_when_sessions_are_unstable(
@@ -645,6 +785,57 @@ def test_elementwise_frontier_publishes_structured_unknown_for_quarantined_sourc
     assert query["reason_code"] == "exact-shape-source-observation-invalid"
 
 
+def test_elementwise_frontier_rejects_source_without_authoritative_host_lock(
+    tmp_path: Path,
+) -> None:
+    measurements = tmp_path / "measurements"
+    search = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-lock-search-{session}",
+            operation="Add",
+            shape=[1, 512, 512],
+            operand_kind="tensor-tensor",
+            median_ns=10_000 + session,
+            process_id=session,
+        )
+        for session in (1, 2, 3)
+    ]
+    holdout = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-lock-holdout-{session}",
+            operation="Add",
+            shape=[1, 512, 512],
+            operand_kind="tensor-tensor",
+            median_ns=10_010 + session,
+            process_id=session + 3,
+        )
+        for session in (1, 2, 3)
+    ]
+    _remove_host_lock_metadata(search[0])
+    assert verify_run_bundle(search[0])["passed"] is True
+
+    with pytest.raises(
+        OperatorFrontierQualificationError,
+        match="authoritative Ascend host lock",
+    ):
+        OperatorFrontierBundleWriter().run(
+            tmp_path / "frontier",
+            run_id="issue45-add-missing-lock-v1",
+            qualification_policy=_exact_elementwise_policy(
+                operation="Add",
+                shape=[1, 512, 512],
+                operand_kind="tensor-tensor",
+            ),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=[],
+            query_sizes=[],
+            query_shapes=({"result": [1, 512, 512]},),
+        )
+
+
 def test_collection_plan_covers_all_five_demo_domains_and_uses_issue_scoped_ids(
     tmp_path: Path,
 ) -> None:
@@ -735,3 +926,129 @@ def test_inventory_preserves_all_indexed_elementwise_stable_paths() -> None:
     assert len(declared) == 12
     assert any("layer_0" in path for path in declared)
     assert any("layer_1" in path for path in declared)
+
+
+def test_two_layer_elementwise_frontiers_bind_stable_paths_into_schedule(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).parents[1]
+    inventory_path = (
+        root
+        / "goal_process/issue-45-ascend-elementwise-frontier/elementwise-stable-paths.yaml"
+    )
+    inventory = yaml.safe_load(inventory_path.read_text())
+    inventory["hardware_cohort"] = "ascend-npu-febd831c8d07e06f"
+    inventory_path = tmp_path / "elementwise-stable-paths.yaml"
+    inventory_path.write_text(yaml.safe_dump(inventory, sort_keys=False))
+    measurements = tmp_path / "measurements"
+    frontiers: dict[str, Path] = {}
+    for domain_id, domain in inventory["domains"].items():
+        search = [
+            _elementwise_measurement_run(
+                measurements,
+                run_id=f"issue45-{domain_id}-schedule-search-{session}",
+                operation=domain["operation"],
+                shape=domain["result_shape"],
+                operand_kind=domain["operand_kind"],
+                median_ns=10_000 + session,
+                process_id=session,
+            )
+            for session in (1, 2, 3)
+        ]
+        holdout = [
+            _elementwise_measurement_run(
+                measurements,
+                run_id=f"issue45-{domain_id}-schedule-holdout-{session}",
+                operation=domain["operation"],
+                shape=domain["result_shape"],
+                operand_kind=domain["operand_kind"],
+                median_ns=10_010 + session,
+                process_id=session + 3,
+            )
+            for session in (1, 2, 3)
+        ]
+        frontiers[domain_id] = OperatorFrontierBundleWriter().run(
+            tmp_path / "frontiers",
+            run_id=f"issue45-{domain_id}-schedule-v1",
+            qualification_policy=_exact_elementwise_policy(
+                operation=domain["operation"],
+                shape=domain["result_shape"],
+                operand_kind=domain["operand_kind"],
+            ),
+            search_runs=search,
+            holdout_runs=holdout,
+            confirmation_runs=[],
+            query_sizes=[],
+            query_shapes=({"result": domain["result_shape"]},),
+        )
+
+    from groundupscale.backends.ascend_910b2 import (
+        compose_elementwise_frontier_schedule,
+    )
+
+    result = compose_elementwise_frontier_schedule(
+        inventory_path, frontiers
+    )
+
+    assert result["status"] == "qualified"
+    assert result["schedule"]["kind"] == "serialized"
+    assert result["schedule"]["selected_duration_ns"] == pytest.approx(
+        12 * 10_012
+    )
+    assert len(result["leaves"]) == 12
+    assert len({leaf["stable_path"] for leaf in result["leaves"]}) == 12
+    assert all(leaf["status"] == "exact-anchor" for leaf in result["leaves"])
+    assert all(leaf["provisional_estimate_ns"] is None for leaf in result["leaves"])
+    assert any("layer_0" in leaf["stable_path"] for leaf in result["leaves"])
+    assert any("layer_1" in leaf["stable_path"] for leaf in result["leaves"])
+
+    silu = inventory["domains"]["silu-mlp-gate"]
+    unstable_search = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-silu-unknown-search-{session}",
+            operation="SiLU",
+            shape=silu["result_shape"],
+            operand_kind=silu["operand_kind"],
+            median_ns=median_ns,
+            process_id=10 + session,
+        )
+        for session, median_ns in enumerate((10_000, 10_100, 13_000), start=1)
+    ]
+    unstable_holdout = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-silu-unknown-holdout-{session}",
+            operation="SiLU",
+            shape=silu["result_shape"],
+            operand_kind=silu["operand_kind"],
+            median_ns=10_200 + session,
+            process_id=13 + session,
+        )
+        for session in (1, 2, 3)
+    ]
+    frontiers["silu-mlp-gate"] = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontiers",
+        run_id="issue45-silu-schedule-unknown-v1",
+        qualification_policy=_exact_elementwise_policy(
+            operation="SiLU",
+            shape=silu["result_shape"],
+            operand_kind=silu["operand_kind"],
+        ),
+        search_runs=unstable_search,
+        holdout_runs=unstable_holdout,
+        confirmation_runs=[],
+        query_sizes=[],
+        query_shapes=({"result": silu["result_shape"]},),
+    )
+
+    incomplete = compose_elementwise_frontier_schedule(inventory_path, frontiers)
+
+    assert incomplete["status"] == "unknown"
+    assert incomplete["schedule"]["selected_duration_ns"] is None
+    silu_leaves = [leaf for leaf in incomplete["leaves"] if leaf["domain_id"] == "silu-mlp-gate"]
+    assert {leaf["status"] for leaf in silu_leaves} == {"unknown"}
+    assert {leaf["reason_code"] for leaf in silu_leaves} == {
+        "exact-shape-session-repeatability-failed"
+    }
+    assert all(leaf["duration_ns"] is None for leaf in silu_leaves)

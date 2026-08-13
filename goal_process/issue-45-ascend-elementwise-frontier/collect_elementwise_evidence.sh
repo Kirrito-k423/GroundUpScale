@@ -11,6 +11,8 @@ owner_file=${GROUNDUPSCALE_NPU_LOCK_OWNER_FILE:-/home/t00906153/.groundupscale/l
 export ASCEND_RT_VISIBLE_DEVICES=0
 export GROUNDUPSCALE_ISSUE=45
 export GROUNDUPSCALE_HARDWARE_COHORT=ascend-npu-23b93a89d5fecc79
+export GROUNDUPSCALE_NPU_LOCK_FD=${GROUNDUPSCALE_NPU_LOCK_FD:-9}
+export GROUNDUPSCALE_NPU_LOCK_PATH=${GROUNDUPSCALE_NPU_LOCK_PATH:-/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock}
 export PYTHONPATH=${workspace}/src
 
 mkdir -p "${metadata_dir}"

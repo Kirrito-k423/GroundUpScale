@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import fcntl
 import json
 import math
 import os
@@ -295,19 +296,54 @@ def _timing_summary(samples: list[int]) -> dict[str, float | int]:
 
 
 def _host_lock_metadata() -> dict[str, object] | None:
+    lock_path = Path(
+        os.environ.get(
+            "GROUNDUPSCALE_NPU_LOCK_PATH",
+            "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+        )
+    )
     owner_path = Path(
         os.environ.get(
             "GROUNDUPSCALE_NPU_LOCK_OWNER_FILE",
             "/home/t00906153/.groundupscale/locks/ascend-910b2-host.owner",
         )
     )
-    if os.environ.get("GROUNDUPSCALE_ISSUE") != "45" or not owner_path.is_file():
+    lock_fd_value = os.environ.get("GROUNDUPSCALE_NPU_LOCK_FD")
+    if (
+        os.environ.get("GROUNDUPSCALE_ISSUE") != "45"
+        or not owner_path.is_file()
+        or lock_fd_value is None
+    ):
+        return None
+    try:
+        lock_fd = int(lock_fd_value)
+        inherited = os.fstat(lock_fd)
+        target = lock_path.stat()
+        if (inherited.st_dev, inherited.st_ino) != (target.st_dev, target.st_ino):
+            return None
+        probe_fd = os.open(lock_path, os.O_RDWR)
+        try:
+            try:
+                fcntl.flock(probe_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                pass
+            else:
+                fcntl.flock(probe_fd, fcntl.LOCK_UN)
+                return None
+        finally:
+            os.close(probe_fd)
+    except (OSError, ValueError):
+        return None
+    owner = owner_path.read_text(encoding="utf-8").strip()
+    if not owner.startswith("issue=45 "):
         return None
     return {
         "schema": "groundupscale.dev/npu-host-lock-metadata/v1alpha1",
         "status": "held-during-collection",
-        "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
-        "owner": owner_path.read_text(encoding="utf-8").strip(),
+        "lock_path": str(lock_path),
+        "lock_fd": lock_fd,
+        "lock_validation": "inherited-fd-inode-and-exclusive-conflict",
+        "owner": owner,
         "collection_finished_at": datetime.now(UTC).isoformat(),
         "hardware_cohort": os.environ.get(
             "GROUNDUPSCALE_HARDWARE_COHORT",

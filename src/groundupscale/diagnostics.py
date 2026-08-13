@@ -7909,6 +7909,19 @@ def _query_capability_surface(
         isinstance(surface_domain, dict)
         and surface_domain.get("sequence_distribution") == "exact-only"
     ):
+        query_domain = query.get("domain")
+        if not isinstance(query_domain, dict) or query_domain != surface_domain:
+            return _unknown_surface_query(
+                query, surface, "query-domain-mismatch"
+            )
+        if query.get("cohort_id") != surface.get("cohort_id"):
+            return _unknown_surface_query(
+                query, surface, "query-hardware-cohort-mismatch"
+            )
+        if query.get("candidate_family") != surface.get("candidate_family"):
+            return _unknown_surface_query(
+                query, surface, "query-candidate-family-mismatch"
+            )
         try:
             query_semantics = semantics_from_surface_query(
                 surface, query.get("shape")

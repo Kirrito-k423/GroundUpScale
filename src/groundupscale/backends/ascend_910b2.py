@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 from math import prod
+from pathlib import Path
+from typing import Mapping
+
+import json
+import yaml
 
 from groundupscale.backends.apple_m4_cpu import (
     _evidence,
@@ -32,11 +37,113 @@ from groundupscale.schemas.v1alpha1 import (
     NpuHardwareCapabilities,
 )
 from groundupscale.specs import AnalysisBundle
+from groundupscale.scheduling import BoundEvent, compose_schedule_bound
 
 
 BACKEND_ID = "huawei.ascend.910b2.resource-envelope"
 BACKEND_VERSION = "v1alpha1"
 PREDICTION_SCHEMA = "groundupscale.dev/hardware-backend-prediction/v1alpha1"
+
+
+def compose_elementwise_frontier_schedule(
+    inventory_path: str | Path,
+    frontier_runs: Mapping[str, str | Path],
+) -> dict[str, object]:
+    """Bind exact elementwise Frontiers to indexed Stable Paths fail closed."""
+
+    inventory = yaml.safe_load(Path(inventory_path).read_text(encoding="utf-8"))
+    from groundupscale.run_bundle import verify_run_bundle
+
+    cohort = inventory.get("hardware_cohort")
+    leaves: list[dict[str, object]] = []
+    events: list[BoundEvent] = []
+    for domain_id, domain in inventory["domains"].items():
+        run = Path(frontier_runs[domain_id]).resolve()
+        verification = verify_run_bundle(run)
+        if verification.get("passed") is not True:
+            raise ValueError(f"{domain_id}: invalid operator Frontier Run Bundle")
+        qualification = json.loads(
+            (run / "frontier/qualification.json").read_text(encoding="utf-8")
+        )
+        surface = qualification.get("surface", {})
+        expected_domain = {
+            "semantic_operation": domain["operation"],
+            "dtype": domain["dtype"],
+            "layout": domain["layout"],
+            "operand_kind": domain["operand_kind"],
+            "sequence_distribution": "exact-only",
+        }
+        anchors = qualification.get("anchors", [])
+        exact_anchor = anchors[0] if len(anchors) == 1 else None
+        qualified = bool(
+            qualification.get("status") == "qualified"
+            and qualification.get("hardware_cohort") == cohort
+            and surface.get("cohort_id") == cohort
+            and all(
+                surface.get("domain", {}).get(key) == value
+                for key, value in expected_domain.items()
+            )
+            and isinstance(exact_anchor, dict)
+            and exact_anchor.get("normalized_operator_shape", {}).get("result")
+            == domain["result_shape"]
+            and exact_anchor.get("candidate_family") == surface.get("candidate_family")
+        )
+        for stable_path in domain["stable_paths"]:
+            latency = float(exact_anchor["latency_ns"]) if qualified else None
+            leaf = {
+                "stable_path": stable_path,
+                "domain_id": domain_id,
+                "status": "exact-anchor" if qualified else "unknown",
+                "duration_ns": latency,
+                "standard_uncertainty_ns": (
+                    float(exact_anchor["standard_uncertainty_latency_ns"])
+                    if qualified
+                    else None
+                ),
+                "reason_code": (
+                    None
+                    if qualified
+                    else qualification.get(
+                        "reason_code", "exact-elementwise-frontier-identity-mismatch"
+                    )
+                ),
+                "provisional_estimate_ns": None,
+                "evidence_ref": str(run / "frontier/qualification.json"),
+            }
+            leaves.append(leaf)
+            if latency is not None:
+                events.append(
+                    BoundEvent(
+                        event_id=stable_path,
+                        predecessor_ids=(events[-1].event_id,) if events else (),
+                        local_duration_ns=latency,
+                    )
+                )
+    complete = len(events) == len(leaves)
+    composition = (
+        compose_schedule_bound(tuple(events), schedule="serialized")
+        if complete
+        else None
+    )
+    return {
+        "schema": "groundupscale.dev/elementwise-frontier-schedule/v1alpha1",
+        "status": "qualified" if complete else "unknown",
+        "hardware_cohort": cohort,
+        "leaves": leaves,
+        "schedule": (
+            {
+                "kind": "serialized",
+                "selected_duration_ns": composition.selected_duration_ns,
+                "critical_path_duration_ns": composition.critical_path_duration_ns,
+            }
+            if composition is not None
+            else {
+                "kind": "serialized",
+                "selected_duration_ns": None,
+                "critical_path_duration_ns": None,
+            }
+        ),
+    }
 
 
 def _profile_snapshots(
