@@ -935,7 +935,7 @@ def _run_explain(args: argparse.Namespace) -> int:
             "axes": result["axes"],
             "comparison": result["comparison"],
             "missing_evidence": result["missing_evidence"],
-            "report": str(run / "reports/model-e2e-frontier.txt"),
+            "report": str(run / "reports/report.html"),
         }
         if args.as_json:
             print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))

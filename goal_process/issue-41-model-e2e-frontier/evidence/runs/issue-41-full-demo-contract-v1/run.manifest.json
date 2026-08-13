@@ -7,7 +7,7 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "model-e2e-frontier-input",
       "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
-      "sha256": "6375d62fb1228d2cace1a61a527a0494f9f8eef328b2a72ce93f23da637bfec4"
+      "sha256": "3586b6c7b40a2d10bddb4cc452ca314438018696462893637aafe7fdce64d9e2"
     },
     {
       "inputs": [
@@ -18,18 +18,18 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "prediction-observation-comparison",
       "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
-      "sha256": "6d4b25eb548390a0b98b950854e56534d5e86bb7c96e432fb0e7ed5035090245"
+      "sha256": "c4449e17e51732d1415082e061a39180d3338d9e738e9d5bade7371b79c38d9c"
     },
     {
       "inputs": [
         "prediction-observation-comparison"
       ],
-      "media_type": "text/plain",
-      "path": "reports/model-e2e-frontier.txt",
+      "media_type": "text/html",
+      "path": "reports/report.html",
       "produced_by": "groundupscale@0.1.0",
       "role": "html-report",
       "schema": "groundupscale.dev/model-e2e-frontier-report/v1alpha1",
-      "sha256": "bfa5e59a6de96d940f142be3f04d86fd64be699809f6072169af2cba9f9c28fa"
+      "sha256": "657a4243d9c45753d5afc6dadc347ebcab9df519054ab312ca306b2179537977"
     }
   ],
   "bundle_kind": "model-e2e-frontier",

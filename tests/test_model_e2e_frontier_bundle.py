@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from hashlib import sha256
 import json
+from math import inf, nan
 from pathlib import Path
 import subprocess
 
@@ -32,6 +33,13 @@ def _candidate(
         "operation_class": operation_class,
         "duration_ns": duration_ns,
         "standard_uncertainty_ns": 1,
+        "resource_claims": [
+            {
+                "resource_id": "synthetic.device",
+                "duration_ns": duration_ns,
+                "evidence_refs": [f"fixture://issue-41/{candidate_id}/resource"],
+            }
+        ],
         "evidence_refs": [f"fixture://issue-41/{candidate_id}"],
     }
 
@@ -95,6 +103,40 @@ def _document() -> dict[str, object]:
         for module in model.modules()
         if isinstance(module, SemanticLeaf)
     ]
+    for leaf in leaves:
+        leaf["mandatory_operation_classes"] = [
+            requirement["operation_class"]
+            for requirement in leaf["requirements"]
+        ]
+    schedule_effects = [
+        {
+            "effect_id": "device-dispatch",
+            "operation_class": "schedule.device-dispatch",
+            "required_evidence": "same-boundary device dispatch candidate",
+            "candidate": _candidate(
+                "schedule-device-dispatch",
+                "schedule.device-dispatch",
+                500,
+                "schedule/device-dispatch",
+            ),
+        },
+        {
+            "effect_id": "device-synchronization",
+            "operation_class": "schedule.device-synchronization",
+            "required_evidence": "same-boundary synchronization candidate",
+            "candidate": _candidate(
+                "schedule-device-synchronization",
+                "schedule.device-synchronization",
+                700,
+                "schedule/device-synchronization",
+            ),
+        },
+    ]
+    ordered_candidate_ids = [
+        requirement["candidate"]["candidate_id"]
+        for leaf in leaves
+        for requirement in leaf["requirements"]
+    ] + [effect["candidate"]["candidate_id"] for effect in schedule_effects]
     return {
         "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
         "evidence": {
@@ -114,29 +156,20 @@ def _document() -> dict[str, object]:
             "policy_id": "fixture://issue-41/serialized-unfused",
             "version": "1",
             "kind": "serialized-unfused",
-            "mandatory_effects": [
+            "mandatory_effect_ids": [
+                "device-dispatch",
+                "device-synchronization",
+            ],
+            "mandatory_effects": schedule_effects,
+            "dependencies": [
                 {
-                    "effect_id": "device-dispatch",
-                    "operation_class": "schedule.device-dispatch",
-                    "required_evidence": "same-boundary device dispatch candidate",
-                    "candidate": _candidate(
-                        "schedule-device-dispatch",
-                        "schedule.device-dispatch",
-                        500,
-                        "schedule/device-dispatch",
-                    ),
-                },
-                {
-                    "effect_id": "device-synchronization",
-                    "operation_class": "schedule.device-synchronization",
-                    "required_evidence": "same-boundary synchronization candidate",
-                    "candidate": _candidate(
-                        "schedule-device-synchronization",
-                        "schedule.device-synchronization",
-                        700,
-                        "schedule/device-synchronization",
-                    ),
-                },
+                    "source": source,
+                    "target": target,
+                    "evidence_refs": ["fixture://issue-41/serialized-order"],
+                }
+                for source, target in zip(
+                    ordered_candidate_ids, ordered_candidate_ids[1:]
+                )
             ],
             "evidence_refs": ["fixture://issue-41/schedule-policy"],
         },
@@ -190,9 +223,19 @@ def test_complete_two_layer_bundle_publishes_one_numeric_model_result(
     assert result["schedule"]["serialized_unfused_duration_ns"] == result[
         "schedule"
     ]["selected_feasible_duration_ns"]
-    assert result["schedule"]["ideal_dag_duration_ns"] <= result["schedule"][
+    assert result["schedule"]["critical_path_duration_ns"] == result["schedule"][
         "selected_feasible_duration_ns"
     ]
+    assert result["schedule"]["shared_resource_duration_ns"] == result["schedule"][
+        "selected_feasible_duration_ns"
+    ]
+    assert result["schedule"]["ideal_dag_duration_ns"] == result["schedule"][
+        "selected_feasible_duration_ns"
+    ]
+    assert len(result["schedule"]["explicit_dependencies"]) == (
+        len(result["schedule"]["physical_events"]) - 1
+    )
+    assert all(event["resource_claims"] for event in result["schedule"]["physical_events"])
     assert "Resource Physical Floor" in published["human_report"]
     assert "Operator Achievable Frontier" in published["human_report"]
     assert "Schedule Achievable Frontier" in published["human_report"]
@@ -286,6 +329,82 @@ def test_missing_schedule_effect_does_not_overwrite_operator_frontier(
     assert result["comparison"]["relative_prediction_error"] is None
 
 
+def test_missing_elementwise_candidate_publishes_structured_unknown(
+    tmp_path: Path,
+) -> None:
+    document = _document()
+    elementwise = next(
+        leaf
+        for leaf in document["model"]["semantic_leaves"]
+        if leaf["operation_class"] == "Add"
+    )
+    del elementwise["requirements"][0]["candidate"]
+
+    run = write_model_e2e_frontier_bundle(
+        document, tmp_path, run_id="issue-41-missing-elementwise"
+    )
+    result = load_model_e2e_frontier_report(run)["machine_result"]
+
+    assert result["status"] == "unknown"
+    assert result["axes"]["schedule_achievable_frontier"]["status"] == "unknown"
+    assert result["comparison"]["relative_prediction_error"] is None
+    assert result["missing_evidence"] == [
+        {
+            "stable_path": elementwise["stable_path"],
+            "operation_class": "operator.add.fp32",
+            "required_evidence": "exact candidate for operator.add.fp32",
+        }
+    ]
+
+
+def test_removing_mandatory_requirement_or_effect_fails_closed(tmp_path: Path) -> None:
+    missing_requirement = _document()
+    missing_requirement["model"]["semantic_leaves"][0]["requirements"].pop()
+    with pytest.raises(ValueError, match="mandatory-operation-class-mismatch"):
+        write_model_e2e_frontier_bundle(
+            missing_requirement, tmp_path, run_id="issue-41-missing-requirement"
+        )
+
+    missing_effect = _document()
+    missing_effect["schedule"]["mandatory_effects"].pop()
+    with pytest.raises(ValueError, match="mandatory-schedule-effect-mismatch"):
+        write_model_e2e_frontier_bundle(
+            missing_effect, tmp_path, run_id="issue-41-missing-effect-section"
+        )
+
+
+def test_unknown_observation_prevents_complete_result_without_overwriting_schedule(
+    tmp_path: Path,
+) -> None:
+    document = _document()
+    document["axes"]["observation"] = {
+        "status": "unknown",
+        "reason_code": "baseline-observation-missing",
+    }
+    run = write_model_e2e_frontier_bundle(
+        document, tmp_path, run_id="issue-41-observation-unknown"
+    )
+    result = load_model_e2e_frontier_report(run)["machine_result"]
+
+    assert result["status"] == "unknown"
+    assert result["axes"]["schedule_achievable_frontier"]["status"] == "known"
+    assert result["axes"]["observation"]["status"] == "unknown"
+    assert result["comparison"]["relative_prediction_error"] is None
+
+
+@pytest.mark.parametrize("value", [0, nan, inf])
+def test_invalid_known_observation_fails_closed(
+    tmp_path: Path, value: float
+) -> None:
+    document = _document()
+    document["axes"]["observation"]["value_ns"] = value
+
+    with pytest.raises(ValueError, match="invalid-observation-axis"):
+        write_model_e2e_frontier_bundle(
+            document, tmp_path, run_id="issue-41-invalid-observation"
+        )
+
+
 def test_candidate_cannot_cross_a_stable_path_boundary(tmp_path: Path) -> None:
     document = _document()
     source = document["model"]["semantic_leaves"][0]
@@ -299,6 +418,18 @@ def test_candidate_cannot_cross_a_stable_path_boundary(tmp_path: Path) -> None:
     ):
         write_model_e2e_frontier_bundle(
             document, tmp_path, run_id="issue-41-stable-path-mismatch"
+        )
+
+
+def test_synthetic_contract_cannot_be_promotion_eligible(tmp_path: Path) -> None:
+    document = _document()
+    document["evidence"]["promotion_eligible"] = True
+
+    with pytest.raises(
+        ValueError, match="synthetic-evidence-cannot-be-promotion-eligible"
+    ):
+        write_model_e2e_frontier_bundle(
+            document, tmp_path, run_id="issue-41-invalid-promotion"
         )
 
 

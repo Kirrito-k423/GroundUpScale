@@ -33,6 +33,9 @@ uv run groundupscale explain \
   --json
 ```
 
+人类报告位于 `reports/report.html`；manifest 中的 `html-report` role、`.html`
+路径与 `text/html` media type 保持一致。
+
 `verify-run` 不只检查 artifact SHA-256。它从锁定的
 `model-e2e-frontier-input` 重新派生机器结果和人类报告，因此删除 mandatory section、
 破坏 Stable Path、隐藏 unknown 或只重算本地 artifact hash 仍会 fail closed。

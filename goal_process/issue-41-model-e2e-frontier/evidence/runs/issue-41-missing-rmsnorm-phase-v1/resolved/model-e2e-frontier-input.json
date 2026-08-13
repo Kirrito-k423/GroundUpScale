@@ -33,6 +33,15 @@
     ],
     "semantic_leaves": [
       {
+        "mandatory_operation_classes": [
+          "elementwise.square.fp32",
+          "reduction.sum.fp32",
+          "elementwise.mean-scale.fp32",
+          "elementwise.epsilon-add.fp32",
+          "transcendental.rsqrt.fp32",
+          "elementwise.input-scale.fp32",
+          "elementwise.weight-scale.fp32"
+        ],
         "operation_class": "RMSNorm",
         "requirements": [
           {
@@ -43,6 +52,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0"
               ],
               "operation_class": "elementwise.square.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -57,6 +75,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -71,6 +98,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2"
               ],
               "operation_class": "elementwise.mean-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -85,6 +121,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3"
               ],
               "operation_class": "elementwise.epsilon-add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -103,6 +148,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5"
               ],
               "operation_class": "elementwise.input-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 105,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -117,6 +171,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6"
               ],
               "operation_class": "elementwise.weight-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 106,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -127,6 +190,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/input_norm"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -137,6 +203,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_proj",
               "standard_uncertainty_ns": 1
             },
@@ -147,6 +222,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -157,6 +235,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_proj",
               "standard_uncertainty_ns": 1
             },
@@ -167,6 +254,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -177,6 +267,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_proj",
               "standard_uncertainty_ns": 1
             },
@@ -187,6 +286,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -197,6 +299,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_view",
               "standard_uncertainty_ns": 1
             },
@@ -207,6 +318,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -217,6 +331,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -227,6 +350,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/q_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -237,6 +363,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_view",
               "standard_uncertainty_ns": 1
             },
@@ -247,6 +382,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -257,6 +395,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -267,6 +414,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -277,6 +427,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_key_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -287,6 +446,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/k_key_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -297,6 +459,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/qk_matmul",
               "standard_uncertainty_ns": 1
             },
@@ -307,6 +478,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/qk_matmul"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.mul.fp32"
+        ],
         "operation_class": "Mul",
         "requirements": [
           {
@@ -317,6 +491,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0"
               ],
               "operation_class": "operator.mul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/scale",
               "standard_uncertainty_ns": 1
             },
@@ -327,6 +510,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/scale"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -337,6 +523,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/causal_mask",
               "standard_uncertainty_ns": 1
             },
@@ -347,6 +542,13 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/causal_mask"
       },
       {
+        "mandatory_operation_classes": [
+          "reduction.max.fp32",
+          "elementwise.subtract.fp32",
+          "transcendental.exp.fp32",
+          "reduction.sum.fp32",
+          "elementwise.normalize.fp32"
+        ],
         "operation_class": "Softmax",
         "requirements": [
           {
@@ -357,6 +559,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0"
               ],
               "operation_class": "reduction.max.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -371,6 +582,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1"
               ],
               "operation_class": "elementwise.subtract.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -385,6 +605,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2"
               ],
               "operation_class": "transcendental.exp.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -399,6 +628,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -413,6 +651,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4"
               ],
               "operation_class": "elementwise.normalize.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 104,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -423,6 +670,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/softmax"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -433,6 +683,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_view",
               "standard_uncertainty_ns": 1
             },
@@ -443,6 +702,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -453,6 +715,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -463,6 +734,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/v_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -473,6 +747,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_matmul",
               "standard_uncertainty_ns": 1
             },
@@ -483,6 +766,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_matmul"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -493,6 +779,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_view",
               "standard_uncertainty_ns": 1
             },
@@ -503,6 +798,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/context_view"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -513,6 +811,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/out_proj",
               "standard_uncertainty_ns": 1
             },
@@ -523,6 +830,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/attention/out_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -533,6 +843,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_1",
               "standard_uncertainty_ns": 1
             },
@@ -543,6 +862,15 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_1"
       },
       {
+        "mandatory_operation_classes": [
+          "elementwise.square.fp32",
+          "reduction.sum.fp32",
+          "elementwise.mean-scale.fp32",
+          "elementwise.epsilon-add.fp32",
+          "transcendental.rsqrt.fp32",
+          "elementwise.input-scale.fp32",
+          "elementwise.weight-scale.fp32"
+        ],
         "operation_class": "RMSNorm",
         "requirements": [
           {
@@ -553,6 +881,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0"
               ],
               "operation_class": "elementwise.square.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -567,6 +904,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -581,6 +927,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2"
               ],
               "operation_class": "elementwise.mean-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -595,6 +950,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3"
               ],
               "operation_class": "elementwise.epsilon-add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -609,6 +973,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4"
               ],
               "operation_class": "transcendental.rsqrt.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 104,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -623,6 +996,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5"
               ],
               "operation_class": "elementwise.input-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 105,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -637,6 +1019,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6"
               ],
               "operation_class": "elementwise.weight-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 106,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -647,6 +1038,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/post_norm"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -657,6 +1051,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_proj",
               "standard_uncertainty_ns": 1
             },
@@ -667,6 +1070,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -677,6 +1083,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/up_proj",
               "standard_uncertainty_ns": 1
             },
@@ -687,6 +1102,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/up_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.silu.fp32"
+        ],
         "operation_class": "SiLU",
         "requirements": [
           {
@@ -697,6 +1115,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0"
               ],
               "operation_class": "operator.silu.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/silu",
               "standard_uncertainty_ns": 1
             },
@@ -707,6 +1134,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/silu"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.mul.fp32"
+        ],
         "operation_class": "Mul",
         "requirements": [
           {
@@ -717,6 +1147,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0"
               ],
               "operation_class": "operator.mul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_mul",
               "standard_uncertainty_ns": 1
             },
@@ -727,6 +1166,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/gate_mul"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -737,6 +1179,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/down_proj",
               "standard_uncertainty_ns": 1
             },
@@ -747,6 +1198,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/mlp/down_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -757,6 +1211,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_2",
               "standard_uncertainty_ns": 1
             },
@@ -767,6 +1230,15 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_0/residual_2"
       },
       {
+        "mandatory_operation_classes": [
+          "elementwise.square.fp32",
+          "reduction.sum.fp32",
+          "elementwise.mean-scale.fp32",
+          "elementwise.epsilon-add.fp32",
+          "transcendental.rsqrt.fp32",
+          "elementwise.input-scale.fp32",
+          "elementwise.weight-scale.fp32"
+        ],
         "operation_class": "RMSNorm",
         "requirements": [
           {
@@ -777,6 +1249,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0"
               ],
               "operation_class": "elementwise.square.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -791,6 +1272,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -805,6 +1295,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2"
               ],
               "operation_class": "elementwise.mean-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -819,6 +1318,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3"
               ],
               "operation_class": "elementwise.epsilon-add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -833,6 +1341,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4"
               ],
               "operation_class": "transcendental.rsqrt.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 104,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -847,6 +1364,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5"
               ],
               "operation_class": "elementwise.input-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 105,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -861,6 +1387,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6"
               ],
               "operation_class": "elementwise.weight-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 106,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm",
               "standard_uncertainty_ns": 1
             },
@@ -871,6 +1406,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/input_norm"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -881,6 +1419,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_proj",
               "standard_uncertainty_ns": 1
             },
@@ -891,6 +1438,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -901,6 +1451,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_proj",
               "standard_uncertainty_ns": 1
             },
@@ -911,6 +1470,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -921,6 +1483,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_proj",
               "standard_uncertainty_ns": 1
             },
@@ -931,6 +1502,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -941,6 +1515,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_view",
               "standard_uncertainty_ns": 1
             },
@@ -951,6 +1534,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -961,6 +1547,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -971,6 +1566,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/q_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -981,6 +1579,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_view",
               "standard_uncertainty_ns": 1
             },
@@ -991,6 +1598,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -1001,6 +1611,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -1011,6 +1630,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -1021,6 +1643,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_key_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -1031,6 +1662,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/k_key_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1041,6 +1675,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/qk_matmul",
               "standard_uncertainty_ns": 1
             },
@@ -1051,6 +1694,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/qk_matmul"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.mul.fp32"
+        ],
         "operation_class": "Mul",
         "requirements": [
           {
@@ -1061,6 +1707,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0"
               ],
               "operation_class": "operator.mul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/scale",
               "standard_uncertainty_ns": 1
             },
@@ -1071,6 +1726,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/scale"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -1081,6 +1739,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/causal_mask",
               "standard_uncertainty_ns": 1
             },
@@ -1091,6 +1758,13 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/causal_mask"
       },
       {
+        "mandatory_operation_classes": [
+          "reduction.max.fp32",
+          "elementwise.subtract.fp32",
+          "transcendental.exp.fp32",
+          "reduction.sum.fp32",
+          "elementwise.normalize.fp32"
+        ],
         "operation_class": "Softmax",
         "requirements": [
           {
@@ -1101,6 +1775,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0"
               ],
               "operation_class": "reduction.max.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -1115,6 +1798,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1"
               ],
               "operation_class": "elementwise.subtract.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -1129,6 +1821,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2"
               ],
               "operation_class": "transcendental.exp.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -1143,6 +1844,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -1157,6 +1867,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4"
               ],
               "operation_class": "elementwise.normalize.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 104,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax",
               "standard_uncertainty_ns": 1
             },
@@ -1167,6 +1886,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/softmax"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -1177,6 +1899,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_view",
               "standard_uncertainty_ns": 1
             },
@@ -1187,6 +1918,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_view"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "Transpose",
         "requirements": [
           {
@@ -1197,6 +1931,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_transpose",
               "standard_uncertainty_ns": 1
             },
@@ -1207,6 +1950,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/v_transpose"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1217,6 +1963,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_matmul",
               "standard_uncertainty_ns": 1
             },
@@ -1227,6 +1982,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_matmul"
       },
       {
+        "mandatory_operation_classes": [
+          "alias-preserving.view"
+        ],
         "operation_class": "View",
         "requirements": [
           {
@@ -1237,6 +1995,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0"
               ],
               "operation_class": "alias-preserving.view",
+              "resource_claims": [
+                {
+                  "duration_ns": 0,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_view",
               "standard_uncertainty_ns": 1
             },
@@ -1247,6 +2014,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/context_view"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1257,6 +2027,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/out_proj",
               "standard_uncertainty_ns": 1
             },
@@ -1267,6 +2046,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/attention/out_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -1277,6 +2059,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/residual_1",
               "standard_uncertainty_ns": 1
             },
@@ -1287,6 +2078,15 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/residual_1"
       },
       {
+        "mandatory_operation_classes": [
+          "elementwise.square.fp32",
+          "reduction.sum.fp32",
+          "elementwise.mean-scale.fp32",
+          "elementwise.epsilon-add.fp32",
+          "transcendental.rsqrt.fp32",
+          "elementwise.input-scale.fp32",
+          "elementwise.weight-scale.fp32"
+        ],
         "operation_class": "RMSNorm",
         "requirements": [
           {
@@ -1297,6 +2097,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0"
               ],
               "operation_class": "elementwise.square.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1311,6 +2120,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1"
               ],
               "operation_class": "reduction.sum.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 101,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1325,6 +2143,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2"
               ],
               "operation_class": "elementwise.mean-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 102,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1339,6 +2166,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3"
               ],
               "operation_class": "elementwise.epsilon-add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 103,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1353,6 +2189,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4"
               ],
               "operation_class": "transcendental.rsqrt.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 104,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1367,6 +2212,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5"
               ],
               "operation_class": "elementwise.input-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 105,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1381,6 +2235,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6"
               ],
               "operation_class": "elementwise.weight-scale.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 106,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm",
               "standard_uncertainty_ns": 1
             },
@@ -1391,6 +2254,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/post_norm"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1401,6 +2267,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_proj",
               "standard_uncertainty_ns": 1
             },
@@ -1411,6 +2286,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1421,6 +2299,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/up_proj",
               "standard_uncertainty_ns": 1
             },
@@ -1431,6 +2318,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/up_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.silu.fp32"
+        ],
         "operation_class": "SiLU",
         "requirements": [
           {
@@ -1441,6 +2331,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0"
               ],
               "operation_class": "operator.silu.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/silu",
               "standard_uncertainty_ns": 1
             },
@@ -1451,6 +2350,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/silu"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.mul.fp32"
+        ],
         "operation_class": "Mul",
         "requirements": [
           {
@@ -1461,6 +2363,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0"
               ],
               "operation_class": "operator.mul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_mul",
               "standard_uncertainty_ns": 1
             },
@@ -1471,6 +2382,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/gate_mul"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.matmul.fp32"
+        ],
         "operation_class": "MatMul",
         "requirements": [
           {
@@ -1481,6 +2395,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0"
               ],
               "operation_class": "operator.matmul.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/down_proj",
               "standard_uncertainty_ns": 1
             },
@@ -1491,6 +2414,9 @@
         "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/mlp/down_proj"
       },
       {
+        "mandatory_operation_classes": [
+          "operator.add.fp32"
+        ],
         "operation_class": "Add",
         "requirements": [
           {
@@ -1501,6 +2427,15 @@
                 "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0"
               ],
               "operation_class": "operator.add.fp32",
+              "resource_claims": [
+                {
+                  "duration_ns": 100,
+                  "evidence_refs": [
+                    "fixture://issue-41/candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0/resource"
+                  ],
+                  "resource_id": "synthetic.device"
+                }
+              ],
               "stable_path": "semantic/workload/transformer/prefill/model/transformer/layer_1/residual_2",
               "standard_uncertainty_ns": 1
             },
@@ -1513,10 +2448,611 @@
     ]
   },
   "schedule": {
+    "dependencies": [
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-5",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-input_norm-phase-6",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-q_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-k_key_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-qk_matmul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-scale-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-causal_mask-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-softmax-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-v_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_matmul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-context_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-attention-out_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_1-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-5",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-post_norm-phase-6",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-up_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-silu-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-gate_mul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-mlp-down_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_0-residual_2-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-5",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-input_norm-phase-6",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-q_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-k_key_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-qk_matmul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-scale-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-causal_mask-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-softmax-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-v_transpose-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_matmul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-context_view-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-attention-out_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_1-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-1",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-2",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-3",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-4",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-5",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-post_norm-phase-6",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-up_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-silu-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-gate_mul-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-mlp-down_proj-phase-0",
+        "target": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "candidate-semantic-workload-transformer-prefill-model-transformer-layer_1-residual_2-phase-0",
+        "target": "schedule-device-dispatch"
+      },
+      {
+        "evidence_refs": [
+          "fixture://issue-41/serialized-order"
+        ],
+        "source": "schedule-device-dispatch",
+        "target": "schedule-device-synchronization"
+      }
+    ],
     "evidence_refs": [
       "fixture://issue-41/schedule-policy"
     ],
     "kind": "serialized-unfused",
+    "mandatory_effect_ids": [
+      "device-dispatch",
+      "device-synchronization"
+    ],
     "mandatory_effects": [
       {
         "candidate": {
@@ -1526,6 +3062,15 @@
             "fixture://issue-41/schedule-device-dispatch"
           ],
           "operation_class": "schedule.device-dispatch",
+          "resource_claims": [
+            {
+              "duration_ns": 500,
+              "evidence_refs": [
+                "fixture://issue-41/schedule-device-dispatch/resource"
+              ],
+              "resource_id": "synthetic.device"
+            }
+          ],
           "stable_path": "schedule/device-dispatch",
           "standard_uncertainty_ns": 1
         },
@@ -1541,6 +3086,15 @@
             "fixture://issue-41/schedule-device-synchronization"
           ],
           "operation_class": "schedule.device-synchronization",
+          "resource_claims": [
+            {
+              "duration_ns": 700,
+              "evidence_refs": [
+                "fixture://issue-41/schedule-device-synchronization/resource"
+              ],
+              "resource_id": "synthetic.device"
+            }
+          ],
           "stable_path": "schedule/device-synchronization",
           "standard_uncertainty_ns": 1
         },

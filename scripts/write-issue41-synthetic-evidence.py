@@ -30,6 +30,13 @@ def _candidate(
         "operation_class": operation_class,
         "duration_ns": duration_ns,
         "standard_uncertainty_ns": 1,
+        "resource_claims": [
+            {
+                "resource_id": "synthetic.device",
+                "duration_ns": duration_ns,
+                "evidence_refs": [f"fixture://issue-41/{candidate_id}/resource"],
+            }
+        ],
         "evidence_refs": [f"fixture://issue-41/{candidate_id}"],
     }
 
@@ -95,6 +102,40 @@ def document() -> dict[str, object]:
         for module in model.modules()
         if isinstance(module, SemanticLeaf)
     ]
+    for leaf in leaves:
+        leaf["mandatory_operation_classes"] = [
+            requirement["operation_class"]
+            for requirement in leaf["requirements"]
+        ]
+    schedule_effects = [
+        {
+            "effect_id": "device-dispatch",
+            "operation_class": "schedule.device-dispatch",
+            "required_evidence": "same-boundary device dispatch candidate",
+            "candidate": _candidate(
+                "schedule-device-dispatch",
+                "schedule.device-dispatch",
+                500,
+                "schedule/device-dispatch",
+            ),
+        },
+        {
+            "effect_id": "device-synchronization",
+            "operation_class": "schedule.device-synchronization",
+            "required_evidence": "same-boundary synchronization candidate",
+            "candidate": _candidate(
+                "schedule-device-synchronization",
+                "schedule.device-synchronization",
+                700,
+                "schedule/device-synchronization",
+            ),
+        },
+    ]
+    ordered_candidate_ids = [
+        requirement["candidate"]["candidate_id"]
+        for leaf in leaves
+        for requirement in leaf["requirements"]
+    ] + [effect["candidate"]["candidate_id"] for effect in schedule_effects]
     return {
         "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
         "evidence": {
@@ -114,29 +155,20 @@ def document() -> dict[str, object]:
             "policy_id": "fixture://issue-41/serialized-unfused",
             "version": "1",
             "kind": "serialized-unfused",
-            "mandatory_effects": [
+            "mandatory_effect_ids": [
+                "device-dispatch",
+                "device-synchronization",
+            ],
+            "mandatory_effects": schedule_effects,
+            "dependencies": [
                 {
-                    "effect_id": "device-dispatch",
-                    "operation_class": "schedule.device-dispatch",
-                    "required_evidence": "same-boundary device dispatch candidate",
-                    "candidate": _candidate(
-                        "schedule-device-dispatch",
-                        "schedule.device-dispatch",
-                        500,
-                        "schedule/device-dispatch",
-                    ),
-                },
-                {
-                    "effect_id": "device-synchronization",
-                    "operation_class": "schedule.device-synchronization",
-                    "required_evidence": "same-boundary synchronization candidate",
-                    "candidate": _candidate(
-                        "schedule-device-synchronization",
-                        "schedule.device-synchronization",
-                        700,
-                        "schedule/device-synchronization",
-                    ),
-                },
+                    "source": source,
+                    "target": target,
+                    "evidence_refs": ["fixture://issue-41/serialized-order"],
+                }
+                for source, target in zip(
+                    ordered_candidate_ids, ordered_candidate_ids[1:]
+                )
             ],
             "evidence_refs": ["fixture://issue-41/schedule-policy"],
         },
