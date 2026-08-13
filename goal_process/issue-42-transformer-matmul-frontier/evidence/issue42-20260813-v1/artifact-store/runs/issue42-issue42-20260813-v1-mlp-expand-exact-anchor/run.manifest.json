@@ -1,0 +1,57 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/exact-anchor.json",
+      "produced_by": "groundupscale-transformer-matmul-exact-anchor-v1",
+      "role": "transformer-matmul-exact-anchor",
+      "schema": "groundupscale.dev/transformer-matmul-exact-anchor/v1alpha1",
+      "sha256": "3525f49b3a2ef1e073246a285f1c68f278182c5303cddaaf616bd0f752f405d2"
+    }
+  ],
+  "bundle_kind": "transformer-matmul-exact-anchor",
+  "created_at": "2026-08-13T12:23:23.587979+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue42-issue42-20260813-v1-mlp-expand-exact-anchor",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": {
+    "holdout": [
+      {
+        "manifest_sha256": "34a080dbf9360cef0bb61b4ea8fd541f1925d4c58cb36731bcf9a7727f2a8222",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-holdout-01",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-holdout-01"
+      },
+      {
+        "manifest_sha256": "1266f9398a7f10f7ebd876acb123991aa83ed737a5a7735297f557a5ca5f11f0",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-holdout-02",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-holdout-02"
+      },
+      {
+        "manifest_sha256": "87339f185a8b0dc7df3b6c44e27c9d421513e4fabd58da92b757a2a8e474e7ad",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-holdout-03",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-holdout-03"
+      }
+    ],
+    "search": [
+      {
+        "manifest_sha256": "3515ec5aef49b25b8246054f92a192f1eb9e0b4600b98a81859b024ee9a3ab28",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-search-01",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-search-01"
+      },
+      {
+        "manifest_sha256": "acc167a0ec8b8bdadf4736d4bf50197742e284272dd78d176d69861b7527a73d",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-search-02",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-search-02"
+      },
+      {
+        "manifest_sha256": "9c9543c45de879dbf563bf8b904d892015348c1fdf2069c41bcf604af4ae1a7a",
+        "path": "../issue42-issue42-20260813-v1-mlp-expand-search-03",
+        "run_id": "issue42-issue42-20260813-v1-mlp-expand-search-03"
+      }
+    ]
+  },
+  "status": "unknown"
+}

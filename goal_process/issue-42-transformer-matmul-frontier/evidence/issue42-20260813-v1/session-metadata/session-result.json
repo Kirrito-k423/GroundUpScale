@@ -1,0 +1,102 @@
+{
+  "device_visibility": "0",
+  "domain_results": {
+    "attention-context": {
+      "additional_rounds_allowed": false,
+      "completed_holdout_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-holdout-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-holdout-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-holdout-03"
+      ],
+      "completed_search_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-search-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-search-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-context-search-03"
+      ],
+      "error": "search and holdout repeatability policy failed",
+      "error_type": "ValueError",
+      "reason_code": "bounded-domain-collection-or-qualification-failed",
+      "status": "unknown"
+    },
+    "attention-qk": {
+      "anchor_run": "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-exact-anchor",
+      "holdout_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-holdout-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-holdout-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-holdout-03"
+      ],
+      "search_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-search-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-search-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-attention-qk-search-03"
+      ],
+      "status": "qualified"
+    },
+    "mlp-contract": {
+      "additional_rounds_allowed": false,
+      "completed_holdout_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-holdout-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-holdout-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-holdout-03"
+      ],
+      "completed_search_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-search-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-search-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-contract-search-03"
+      ],
+      "error": "search and holdout repeatability policy failed",
+      "error_type": "ValueError",
+      "reason_code": "bounded-domain-collection-or-qualification-failed",
+      "status": "unknown"
+    },
+    "mlp-expand": {
+      "additional_rounds_allowed": false,
+      "completed_holdout_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-holdout-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-holdout-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-holdout-03"
+      ],
+      "completed_search_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-search-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-search-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-mlp-expand-search-03"
+      ],
+      "error": "search and holdout repeatability policy failed",
+      "error_type": "ValueError",
+      "reason_code": "bounded-domain-collection-or-qualification-failed",
+      "status": "unknown"
+    },
+    "projection": {
+      "additional_rounds_allowed": false,
+      "completed_holdout_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-holdout-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-holdout-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-holdout-03"
+      ],
+      "completed_search_runs": [
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-search-01",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-search-02",
+        "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-projection-search-03"
+      ],
+      "error": "search and holdout repeatability policy failed",
+      "error_type": "ValueError",
+      "reason_code": "bounded-domain-collection-or-qualification-failed",
+      "status": "unknown"
+    }
+  },
+  "ended_at": "2026-08-13T12:17:54.379379+00:00",
+  "frontier_run": "/home/t00906153/GroundUpScale-issue-42/goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-transformer-matmul-frontier",
+  "frontier_verification": {
+    "artifact_count": 2,
+    "failures": [],
+    "passed": true,
+    "run_id": "issue42-issue42-20260813-v1-transformer-matmul-frontier",
+    "schema": "groundupscale.dev/run-verification/v1alpha1"
+  },
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "issue": 42,
+  "lock_owner_start": "lock-owner-start.txt",
+  "schema": "groundupscale.dev/issue42-locked-session/v1alpha1",
+  "session_id": "issue42-20260813-v1",
+  "started_at": "2026-08-13T12:08:18.561131+00:00"
+}

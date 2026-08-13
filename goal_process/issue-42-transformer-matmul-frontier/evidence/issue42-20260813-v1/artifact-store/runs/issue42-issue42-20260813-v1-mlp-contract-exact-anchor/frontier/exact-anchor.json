@@ -1,0 +1,127 @@
+{
+  "candidate_digest": "c0579ccd105e6647bb350e6e08152685d80ab40ca55e9817162bacf0d438639d",
+  "candidate_family": "pytorch-ascend-matmul",
+  "candidate_id": "torch.matmul",
+  "declared_work_flop": 1073741824.0,
+  "domain_identity": {
+    "batch_transpose_contract": {
+      "left_batch_shape": [
+        1
+      ],
+      "left_layout": "contiguous",
+      "left_transposed": false,
+      "result_batch_shape": [
+        1
+      ],
+      "result_layout": "contiguous",
+      "right_batch_shape": [],
+      "right_layout": "contiguous",
+      "right_transposed": false
+    },
+    "candidate_family": "pytorch-ascend-matmul",
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "layout": {
+      "operands": [
+        "contiguous",
+        "contiguous"
+      ],
+      "result": "contiguous"
+    },
+    "operand_contracts": [
+      {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          512,
+          2048
+        ]
+      },
+      {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          2048,
+          512
+        ]
+      }
+    ],
+    "result_contract": {
+      "dtype": "float32",
+      "layout": "contiguous",
+      "shape": [
+        1,
+        512,
+        512
+      ]
+    },
+    "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+    "semantic_operation": "MatMul"
+  },
+  "domain_identity_digest": "ab19429430ad193c9f6c1cd47384a1a5f87d893225d4e136aa4f8b91d05e9681",
+  "estimator": "median(independent-holdout-session-medians)",
+  "evidence_id": "issue42-issue42-20260813-v1-mlp-contract-exact-anchor",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "holdout_run_ids": [
+    "issue42-issue42-20260813-v1-mlp-contract-holdout-01",
+    "issue42-issue42-20260813-v1-mlp-contract-holdout-02",
+    "issue42-issue42-20260813-v1-mlp-contract-holdout-03"
+  ],
+  "latency_ns": null,
+  "reason_codes": [
+    "independent-holdout-repeatability-failed"
+  ],
+  "repeatability": {
+    "holdout_relative_range": 0.17526559243633405,
+    "maximum_relative_range": 0.1,
+    "search_holdout_relative_gap": 0.009437638726511802,
+    "search_relative_range": 0.08092436112346481
+  },
+  "response_target": "latency",
+  "schema": "groundupscale.dev/transformer-matmul-exact-anchor/v1alpha1",
+  "search_run_ids": [
+    "issue42-issue42-20260813-v1-mlp-contract-search-01",
+    "issue42-issue42-20260813-v1-mlp-contract-search-02",
+    "issue42-issue42-20260813-v1-mlp-contract-search-03"
+  ],
+  "session_evidence": {
+    "holdout": [
+      {
+        "manifest_sha256": "8c6535e5ec8905bf222eb3e329fba1d179d5526d3ab352f5ea3d531ddc261270",
+        "median_ns": 31513.0,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-01"
+      },
+      {
+        "manifest_sha256": "600d26f348b037b3191a016328787a05632a827f2a7d821c7ca881e9ca1739f6",
+        "median_ns": 26341.0,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-02"
+      },
+      {
+        "manifest_sha256": "df668e9e8a8f5ca125dafe94e75f67fa7f7c580cb74d1c66eb58fe5a9aa05bba",
+        "median_ns": 29509.5,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-holdout-03"
+      }
+    ],
+    "search": [
+      {
+        "manifest_sha256": "321a1e7150d82f8c905f500485343659ffe1ee008292ee6627a797a0b26b97eb",
+        "median_ns": 29231.0,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-01"
+      },
+      {
+        "manifest_sha256": "69b90a7248e708eadb084c60e86997c7100b2cb4f1ddb91de59203069205277e",
+        "median_ns": 29057.5,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-02"
+      },
+      {
+        "manifest_sha256": "ec5b713a5a58ebb30ac7d86efbc14e87c996b2c9686a99ab74ea94117eb51932",
+        "median_ns": 31423.0,
+        "run_id": "issue42-issue42-20260813-v1-mlp-contract-search-03"
+      }
+    ]
+  },
+  "standard_uncertainty_ns": null,
+  "status": "unknown"
+}

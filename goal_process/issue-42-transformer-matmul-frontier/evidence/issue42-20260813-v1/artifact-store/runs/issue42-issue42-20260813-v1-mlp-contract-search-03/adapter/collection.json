@@ -1,0 +1,469 @@
+{
+  "candidate_identity": {
+    "build_identity": {
+      "extension": "torch_npu",
+      "extension_version": "2.7.1",
+      "framework": "torch",
+      "framework_version": "2.7.1+cpu",
+      "operator_entrypoint": "torch.matmul"
+    },
+    "candidate_device": "npu:0",
+    "candidate_digest": "c0579ccd105e6647bb350e6e08152685d80ab40ca55e9817162bacf0d438639d",
+    "candidate_family": "pytorch-ascend-matmul",
+    "candidate_id": "torch.matmul",
+    "compilation_parameters": {
+      "compiler": "pytorch-eager",
+      "graph_compilation": false
+    },
+    "cpu_fallback": false,
+    "dtype": "float32",
+    "evidence_ref": "artifact://observation/candidate.json",
+    "execution_mode": "pytorch-eager",
+    "layout": {
+      "operands": [
+        "contiguous",
+        "contiguous"
+      ],
+      "result": "contiguous"
+    },
+    "minimum_alignment_bytes": 512,
+    "operation": "MatMul",
+    "operator_shape_identity": "operator-shape://MatMul/8e09adfc219a007b144cb8259520e85b3467126bcdeacbbaabf703959724193d",
+    "runtime_device_name": "Ascend910B2",
+    "runtime_identity": {
+      "candidate_device": "npu:0",
+      "logical_device": "npu:0",
+      "runtime_device_name": "Ascend910B2"
+    },
+    "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+    "semantic_domain": {
+      "dtype": "float32",
+      "layout": {
+        "operands": [
+          "contiguous",
+          "contiguous"
+        ],
+        "result": "contiguous"
+      },
+      "semantic_operation": "MatMul"
+    },
+    "shape": {
+      "left": [
+        1,
+        512,
+        2048
+      ],
+      "result": [
+        1,
+        512,
+        512
+      ],
+      "right": [
+        2048,
+        512
+      ]
+    },
+    "transformer_matmul_domain": {
+      "declared_work_flop": 1073741824.0,
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [],
+          "right_layout": "contiguous",
+          "right_transposed": false
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "contiguous"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              512,
+              2048
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              2048,
+              512
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "identity_digest": "ab19429430ad193c9f6c1cd47384a1a5f87d893225d4e136aa4f8b91d05e9681"
+    },
+    "tuning_parameters": {}
+  },
+  "completion_boundary": {
+    "absolute_timestamps_subtracted": false,
+    "closed": true,
+    "device_event_id": "per-sample-torch-npu-event-pair",
+    "kind": "device-event-stream-completion",
+    "protocol": "end-event-synchronize-plus-device-synchronize",
+    "schema": "groundupscale.dev/completion-boundary/v1alpha1",
+    "stream_id": "default-npu-stream",
+    "stream_synchronized": true
+  },
+  "correctness": {
+    "atol": 0.001,
+    "finite": true,
+    "max_absolute_error": 0.00018650063421432606,
+    "max_relative_error": 0.38752643246896895,
+    "oracle": "cpu-float64-matmul",
+    "rtol": 0.001,
+    "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+    "shape_exact": true,
+    "status": "passed",
+    "target_output_sha256": "b8c9d4c7a04d2a9bf5740ecbcaa4d76012010ac64085d9ffdc61eacff6c9f0c0"
+  },
+  "device": "ascend-npu",
+  "evidence_ref": "artifact://adapter/collection.json",
+  "execution_contract": {
+    "candidate": "torch.matmul",
+    "completion_protocol": {
+      "kind": "device-event-stream-completion",
+      "protocol": "end-event-synchronize-plus-device-synchronize"
+    },
+    "dtype": "float32",
+    "inner_iterations": 100,
+    "layout": {
+      "operands": [
+        "contiguous",
+        "contiguous"
+      ],
+      "result": "contiguous"
+    },
+    "logical_device": "npu:0",
+    "operation": "MatMul",
+    "repetitions": 100,
+    "sample_exclusion": "none-preserve-all-raw-samples",
+    "schema": "groundupscale.dev/execution-contract/v1alpha1",
+    "shape": {
+      "left": [
+        1,
+        512,
+        2048
+      ],
+      "result": [
+        1,
+        512,
+        512
+      ],
+      "right": [
+        2048,
+        512
+      ]
+    },
+    "timer": {
+      "kind": "device-event",
+      "source": "torch.npu.Event.elapsed_time",
+      "unit": "nanoseconds"
+    },
+    "transformer_matmul_domain": {
+      "declared_work_flop": 1073741824.0,
+      "identity": {
+        "batch_transpose_contract": {
+          "left_batch_shape": [
+            1
+          ],
+          "left_layout": "contiguous",
+          "left_transposed": false,
+          "result_batch_shape": [
+            1
+          ],
+          "result_layout": "contiguous",
+          "right_batch_shape": [],
+          "right_layout": "contiguous",
+          "right_transposed": false
+        },
+        "candidate_family": "pytorch-ascend-matmul",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "layout": {
+          "operands": [
+            "contiguous",
+            "contiguous"
+          ],
+          "result": "contiguous"
+        },
+        "operand_contracts": [
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              1,
+              512,
+              2048
+            ]
+          },
+          {
+            "dtype": "float32",
+            "layout": "contiguous",
+            "shape": [
+              2048,
+              512
+            ]
+          }
+        ],
+        "result_contract": {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ]
+        },
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "semantic_operation": "MatMul"
+      },
+      "identity_digest": "ab19429430ad193c9f6c1cd47384a1a5f87d893225d4e136aa4f8b91d05e9681"
+    },
+    "warmup_iterations": 100
+  },
+  "input_corpus": {
+    "dtype": "float32",
+    "initialization": "cpu-torch-randn-fixed-seed",
+    "layout": {
+      "operands": [
+        "contiguous",
+        "contiguous"
+      ],
+      "result": "contiguous"
+    },
+    "left_sha256": "4b750e6e701a6d8e70f6ab025d350b3ecdd546cf4cdb2e12d9c58eb2f637e62b",
+    "left_shape": [
+      1,
+      512,
+      2048
+    ],
+    "right_sha256": "1cf9241426271248eb47c614cebb6cf36c2d088544f9b21f521468f4d2462691",
+    "right_shape": [
+      2048,
+      512
+    ],
+    "schema": "groundupscale.dev/input-corpus/v1alpha1",
+    "seed": 20260813
+  },
+  "instrumentation_profile": {
+    "accepted_overhead": {
+      "correctness_oracle": "outside-timed-region",
+      "diagnostic_profiler": "disabled",
+      "event_pair": "accepted-primary-timer-overhead",
+      "memory_queries": "outside-timed-region",
+      "rule": "only candidate executions lie between timing events"
+    },
+    "collectors": [
+      "torch.npu.Event.elapsed_time",
+      "torch.npu.memory_*",
+      "cpu-float64-correctness-oracle"
+    ],
+    "diagnostic_profiling": {
+      "status": "not_requested"
+    },
+    "evidence_ref": "artifact://resolved/instrumentation-profile.json",
+    "intrusion": "minimally-instrumented",
+    "lane": "baseline-timing",
+    "metadata": {
+      "fields": [
+        "shape",
+        "dtype",
+        "layout",
+        "seed",
+        "warmup_iterations",
+        "repetitions",
+        "inner_iterations",
+        "timer_source",
+        "timer_resolution_ns"
+      ],
+      "policy": "allowlisted-exact-shape-contract"
+    },
+    "profile_id": "ascend-npu-baseline-timing-v1",
+    "schema": "groundupscale.dev/instrumentation-profile/v1alpha1",
+    "status": "active",
+    "synchronization": {
+      "before_sample": "device-synchronize",
+      "completion": "end-event-synchronize-plus-device-synchronize",
+      "per_module_synchronization": false
+    }
+  },
+  "logical_device": "npu:0",
+  "memory": {
+    "allocated_bytes_after": 11536896,
+    "allocated_bytes_before": 0,
+    "maximum_allocated_bytes": 13635072,
+    "reserved_bytes_after": 20971520,
+    "schema": "groundupscale.dev/memory-observation/v1alpha1"
+  },
+  "operation": "collect",
+  "raw_timing": {
+    "sample_derivation": "device-event-elapsed-ns / inner_iterations",
+    "samples": [
+      31920,
+      31309,
+      31023,
+      31260,
+      31317,
+      31505,
+      31640,
+      31567,
+      31945,
+      31807,
+      31880,
+      31148,
+      31034,
+      31529,
+      31773,
+      31447,
+      31585,
+      31369,
+      31326,
+      31184,
+      31830,
+      31666,
+      31737,
+      31440,
+      31523,
+      31374,
+      31509,
+      31289,
+      31294,
+      31259,
+      31289,
+      31639,
+      31404,
+      31526,
+      31450,
+      31874,
+      31520,
+      31981,
+      31282,
+      31592,
+      31393,
+      31406,
+      31266,
+      31278,
+      31131,
+      31246,
+      31300,
+      31405,
+      31449,
+      32043,
+      31657,
+      31829,
+      31549,
+      31544,
+      31483,
+      31484,
+      31396,
+      31875,
+      31486,
+      31522,
+      31269,
+      31446,
+      31057,
+      31363,
+      31390,
+      31667,
+      31141,
+      31546,
+      31813,
+      31112,
+      31106,
+      31737,
+      31137,
+      31759,
+      31380,
+      31867,
+      31058,
+      31310,
+      31648,
+      30871,
+      31374,
+      31533,
+      32041,
+      32095,
+      31984,
+      31344,
+      31231,
+      31189,
+      31238,
+      31074,
+      31221,
+      31333,
+      31324,
+      31129,
+      30601,
+      31251,
+      31191,
+      31578,
+      31651,
+      31650
+    ],
+    "schema": "groundupscale.dev/raw-timing-observation/v1alpha1",
+    "summary": {
+      "count": 100,
+      "iqr": 373.75,
+      "iqr_fraction_of_median": 0.011894153963657193,
+      "mad_fraction_of_median": 0.005298666581803137,
+      "maximum": 32095,
+      "median": 31423.0,
+      "median_absolute_deviation": 166.5,
+      "minimum": 30601,
+      "p10": 31130.800000000003,
+      "p90": 31867.7,
+      "q1": 31268.25,
+      "q3": 31642.0
+    },
+    "timer_resolution_ns": 1.0,
+    "timer_source": "torch.npu.Event.elapsed_time",
+    "unit": "nanoseconds"
+  },
+  "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
+  "status": "completed",
+  "timing_quality": {
+    "excluded_samples": 0,
+    "maximum_iqr_fraction_of_median": 0.1,
+    "maximum_timer_resolution_fraction_of_median": 0.01,
+    "observed_iqr_fraction_of_median": 0.011894153963657193,
+    "policy_id": "issue28-session-dispersion-v1",
+    "reason_codes": [],
+    "schema": "groundupscale.dev/timing-quality/v1alpha1",
+    "status": "passed",
+    "timer_resolution_fraction_of_median": 3.182382331413296e-05,
+    "timer_resolution_ns": 1.0
+  }
+}

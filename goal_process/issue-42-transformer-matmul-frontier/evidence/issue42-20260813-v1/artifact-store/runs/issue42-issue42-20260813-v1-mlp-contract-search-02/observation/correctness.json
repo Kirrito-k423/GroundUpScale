@@ -1,0 +1,12 @@
+{
+  "atol": 0.001,
+  "finite": true,
+  "max_absolute_error": 0.00018650063421432606,
+  "max_relative_error": 0.38752643246896895,
+  "oracle": "cpu-float64-matmul",
+  "rtol": 0.001,
+  "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+  "shape_exact": true,
+  "status": "passed",
+  "target_output_sha256": "b8c9d4c7a04d2a9bf5740ecbcaa4d76012010ac64085d9ffdc61eacff6c9f0c0"
+}

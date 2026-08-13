@@ -1,0 +1,64 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/matmul-domains.json",
+      "produced_by": "groundupscale-transformer-matmul-frontier-v1",
+      "role": "matmul-domain-inventory",
+      "schema": "groundupscale.dev/matmul-domain-inventory/v1alpha1",
+      "sha256": "866b4403a78b063c22052bee0e4c498f242983b270d84db916bf720256b297fb"
+    },
+    {
+      "inputs": [
+        "matmul-domain-inventory"
+      ],
+      "media_type": "application/json",
+      "path": "frontier/qualification.json",
+      "produced_by": "groundupscale-transformer-matmul-frontier-v1",
+      "role": "transformer-matmul-frontier-qualification",
+      "schema": "groundupscale.dev/transformer-matmul-frontier-qualification/v1alpha1",
+      "sha256": "d58d0db13127629087a07642b5d06185364f0b237607050658d6615fee5070be"
+    }
+  ],
+  "bundle_kind": "transformer-matmul-frontier",
+  "created_at": "2026-08-13T12:24:41.174913+00:00",
+  "device": "ascend-npu",
+  "frontier_runs": [
+    {
+      "manifest_sha256": "5fe8f3d7234ee30e8ed22e3471ae6d022b22af5514bc28addb45985af6a5655a",
+      "path": "../issue42-issue42-20260813-v1-attention-context-exact-anchor",
+      "run_id": "issue42-issue42-20260813-v1-attention-context-exact-anchor"
+    },
+    {
+      "manifest_sha256": "3d74c548d01d965140ee9fe1da8837ad47d4fcfdb2bcb6d41f8b2e64a9686b9e",
+      "path": "../issue42-issue42-20260813-v1-attention-qk-exact-anchor",
+      "run_id": "issue42-issue42-20260813-v1-attention-qk-exact-anchor"
+    },
+    {
+      "manifest_sha256": "ab91ab8056e18ae1ed885ab45b0b6e80e8a82f27f4883240a4c5d547653d853b",
+      "path": "../issue42-issue42-20260813-v1-mlp-contract-exact-anchor",
+      "run_id": "issue42-issue42-20260813-v1-mlp-contract-exact-anchor"
+    },
+    {
+      "manifest_sha256": "03edd91609dacb1969788410eed3b919c628e1fd899d706416a0c89a89750b6d",
+      "path": "../issue42-issue42-20260813-v1-mlp-expand-exact-anchor",
+      "run_id": "issue42-issue42-20260813-v1-mlp-expand-exact-anchor"
+    },
+    {
+      "manifest_sha256": "b3d1cd7e0a8e6a1c8d2997f71eec72f183be753568aadafbbeb08f387ec308c4",
+      "path": "../issue42-issue42-20260813-v1-projection-exact-anchor",
+      "run_id": "issue42-issue42-20260813-v1-projection-exact-anchor"
+    }
+  ],
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue42-issue42-20260813-v1-transformer-matmul-frontier-final",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_transformer_run": {
+    "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+    "path": "../../../../../../issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+    "run_id": "ascend-910b2-transformer-demo-20260811-v1"
+  },
+  "status": "unknown"
+}

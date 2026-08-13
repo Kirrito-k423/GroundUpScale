@@ -1,0 +1,148 @@
+{
+  "build_identity": {
+    "extension": "torch_npu",
+    "extension_version": "2.7.1",
+    "framework": "torch",
+    "framework_version": "2.7.1+cpu",
+    "operator_entrypoint": "torch.matmul then transpose(1, 2).contiguous"
+  },
+  "candidate_device": "npu:0",
+  "candidate_digest": "93c64a2a4c0d120afce8c7627f9e5f9ab2d3b15846e6374df040f6b654fdc1f9",
+  "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+  "candidate_id": "torch.matmul.transpose-1-2-contiguous",
+  "compilation_parameters": {
+    "compiler": "pytorch-eager",
+    "graph_compilation": false
+  },
+  "cpu_fallback": false,
+  "dtype": "float32",
+  "evidence_ref": "artifact://observation/candidate.json",
+  "execution_mode": "pytorch-eager",
+  "layout": {
+    "operands": [
+      "contiguous",
+      "transposed"
+    ],
+    "result": "contiguous"
+  },
+  "minimum_alignment_bytes": 512,
+  "operation": "MatMul",
+  "operator_shape_identity": "operator-shape://MatMul/89fdc5698c03f2c3570f3346093beb599b827f2805b62dcb12d3df4d62d2ca65",
+  "runtime_device_name": "Ascend910B2",
+  "runtime_identity": {
+    "candidate_device": "npu:0",
+    "logical_device": "npu:0",
+    "runtime_device_name": "Ascend910B2"
+  },
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+  "semantic_domain": {
+    "dtype": "float32",
+    "layout": {
+      "operands": [
+        "contiguous",
+        "transposed"
+      ],
+      "result": "contiguous"
+    },
+    "semantic_operation": "MatMul"
+  },
+  "shape": {
+    "left": [
+      1,
+      8,
+      512,
+      512
+    ],
+    "result": [
+      1,
+      512,
+      8,
+      64
+    ],
+    "right": [
+      1,
+      8,
+      512,
+      64
+    ]
+  },
+  "transformer_matmul_domain": {
+    "declared_work_flop": 268435456.0,
+    "identity": {
+      "batch_transpose_contract": {
+        "left_batch_shape": [
+          1,
+          8
+        ],
+        "left_layout": "contiguous",
+        "left_transposed": false,
+        "result_batch_shape": [
+          1,
+          512
+        ],
+        "result_layout": "contiguous",
+        "right_batch_shape": [
+          1,
+          8
+        ],
+        "right_layout": "transposed",
+        "right_transposed": true
+      },
+      "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "layout": {
+        "operands": [
+          "contiguous",
+          "transposed"
+        ],
+        "result": "contiguous"
+      },
+      "operand_contracts": [
+        {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            8,
+            512,
+            512
+          ]
+        },
+        {
+          "dtype": "float32",
+          "layout": "transposed",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ]
+        }
+      ],
+      "result_contract": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_operation": "MatMul"
+    },
+    "identity_digest": "47731416960c5e5b85271504f873ba927059c59785f79035570ce6a2e8941193"
+  },
+  "tuning_parameters": {
+    "materialize_contiguous": true,
+    "result_permutation": [
+      0,
+      2,
+      1,
+      3
+    ]
+  }
+}

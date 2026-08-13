@@ -1,0 +1,24 @@
+{
+  "dtype": "float32",
+  "initialization": "cpu-torch-randn-fixed-seed",
+  "layout": {
+    "operands": [
+      "contiguous",
+      "contiguous"
+    ],
+    "result": "contiguous"
+  },
+  "left_sha256": "4b750e6e701a6d8e70f6ab025d350b3ecdd546cf4cdb2e12d9c58eb2f637e62b",
+  "left_shape": [
+    1,
+    512,
+    2048
+  ],
+  "right_sha256": "1cf9241426271248eb47c614cebb6cf36c2d088544f9b21f521468f4d2462691",
+  "right_shape": [
+    2048,
+    512
+  ],
+  "schema": "groundupscale.dev/input-corpus/v1alpha1",
+  "seed": 20260813
+}

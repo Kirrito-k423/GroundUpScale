@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from hashlib import sha256
-from math import isfinite
+from math import isfinite, prod
 from typing import Any
 
 
@@ -46,16 +46,44 @@ def _matmul_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
     if (
         not isinstance(left, list)
         or not isinstance(right, list)
-        or len(left) != 2
-        or len(right) != 2
+        or len(left) < 2
+        or len(right) < 2
         or not all(_positive_integer(value) for value in (*left, *right))
-        or left[1] != right[0]
+        or left[-1] != right[-2]
     ):
         raise UnsupportedOperatorShape(
             "MatMul requires positive integer M/N/K and compatible operands"
         )
-    m, k, n = int(left[0]), int(left[1]), int(right[1])
+    m, k, n = int(left[-2]), int(left[-1]), int(right[-1])
+    left_batch = [int(value) for value in left[:-2]]
+    right_batch = [int(value) for value in right[:-2]]
+    try:
+        reversed_batch = []
+        for left_dimension, right_dimension in zip(
+            reversed([1] * (len(right_batch) - len(left_batch)) + left_batch),
+            reversed([1] * (len(left_batch) - len(right_batch)) + right_batch),
+            strict=True,
+        ):
+            if left_dimension != right_dimension and 1 not in {
+                left_dimension,
+                right_dimension,
+            }:
+                raise ValueError
+            reversed_batch.append(max(left_dimension, right_dimension))
+        batch = list(reversed(reversed_batch))
+    except ValueError as error:
+        raise UnsupportedOperatorShape(
+            "MatMul requires broadcast-compatible batch dimensions"
+        ) from error
     normalized = {"m": m, "n": n, "k": k}
+    if batch:
+        normalized.update(
+            {
+                "left_batch_shape": left_batch,
+                "right_batch_shape": right_batch,
+                "batch_shape": batch,
+            }
+        )
     return OperatorShapeSemantics(
         operation="MatMul",
         normalized_shape=normalized,
@@ -74,7 +102,7 @@ def _matmul_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
             "fixed_k": k,
             "work_unit": "FLOP",
         },
-        declared_work=float(2 * m * n * k),
+        declared_work=float(2 * prod(batch) * m * n * k),
     )
 
 

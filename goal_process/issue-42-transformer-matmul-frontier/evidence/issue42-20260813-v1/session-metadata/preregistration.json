@@ -1,0 +1,37 @@
+{
+  "candidate_set": [
+    "torch.matmul",
+    "torch.matmul.transpose-1-2-contiguous"
+  ],
+  "device_visibility": "ASCEND_RT_VISIBLE_DEVICES=0",
+  "domain_order": [
+    "attention-context",
+    "attention-qk",
+    "mlp-contract",
+    "mlp-expand",
+    "projection"
+  ],
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "issue": 42,
+  "lanes": {
+    "independent_holdout_sessions_per_domain": 3,
+    "search_sessions_per_domain": 3
+  },
+  "qualification": {
+    "correctness": "passed",
+    "maximum_lane_median_relative_range": 0.1,
+    "maximum_search_holdout_relative_gap": 0.1,
+    "session_identity": "run-id-and-process-identity-disjoint",
+    "timing_quality": "passed"
+  },
+  "schema": "groundupscale.dev/issue42-preregistration/v1alpha1",
+  "session_id": "issue42-20260813-v1",
+  "stopping_condition": "exactly one 3-search + 3-holdout round per domain; publish structured unknown for any explicit capability/evidence failure; no supplemental rounds",
+  "timing": {
+    "inner_iterations": 100,
+    "primary_response": "latency_ns",
+    "rate": "derived-only-from-declared-work-and-latency",
+    "repetitions": 100,
+    "warmup_iterations": 100
+  }
+}

@@ -47,6 +47,18 @@ _MATMUL_CANDIDATES: dict[str, dict[str, object]] = {
         },
         "tuning_parameters": {},
     },
+    "torch.matmul.transpose-1-2-contiguous": {
+        "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+        "operator_entrypoint": "torch.matmul then transpose(1, 2).contiguous",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {
+            "result_permutation": [0, 2, 1, 3],
+            "materialize_contiguous": True,
+        },
+    },
     "torch.matmul.k-split-2": {
         "candidate_family": "pytorch-ascend-matmul-k-split",
         "operator_entrypoint": "two torch.matmul calls plus torch.add",
@@ -485,7 +497,7 @@ def _collect_exact_shape_matmul(
         case.get("operation") != "MatMul"
         or candidate_id not in _MATMUL_CANDIDATES
         or case.get("dtype") != "float32"
-        or case.get("layout") != "row-major-contiguous"
+        or not isinstance(case.get("layout"), (str, dict))
         or not isinstance(shape, dict)
     ):
         raise ValueError("unsupported exact-Shape MatMul case")
@@ -494,9 +506,9 @@ def _collect_exact_shape_matmul(
     if (
         not isinstance(left_shape, list)
         or not isinstance(right_shape, list)
-        or len(left_shape) != 2
-        or len(right_shape) != 2
-        or left_shape[1] != right_shape[0]
+        or len(left_shape) < 2
+        or len(right_shape) < 2
+        or left_shape[-1] != right_shape[-2]
         or not all(
             isinstance(dimension, int) and dimension > 0
             for dimension in (*left_shape, *right_shape)
@@ -519,22 +531,74 @@ def _collect_exact_shape_matmul(
     runtime.npu.set_device(logical_device_index)
     logical_device = f"npu:{logical_device_index}"
     generator = runtime.Generator(device="cpu").manual_seed(int(case["seed"]))
-    left_cpu = runtime.randn(
-        tuple(left_shape), dtype=runtime.float32, generator=generator
+    storage_contracts = case.get("operand_storage_contracts")
+    result_transform = case.get("result_transform")
+
+    def input_tensor(
+        logical_shape: list[int], index: int
+    ) -> Any:
+        contract = (
+            storage_contracts[index]
+            if isinstance(storage_contracts, list)
+            and len(storage_contracts) == 2
+            and isinstance(storage_contracts[index], dict)
+            else None
+        )
+        if contract is None:
+            return runtime.randn(
+                tuple(logical_shape), dtype=runtime.float32, generator=generator
+            )
+        storage_shape = contract.get("storage_shape")
+        permutation = contract.get("permutation")
+        if (
+            contract.get("logical_shape") != logical_shape
+            or not isinstance(storage_shape, list)
+            or not isinstance(permutation, list)
+            or sorted(permutation) != list(range(len(logical_shape)))
+        ):
+            raise ValueError("invalid MatMul operand storage contract")
+        tensor = runtime.randn(
+            tuple(storage_shape), dtype=runtime.float32, generator=generator
+        )
+        tensor = tensor.permute(*permutation)
+        if list(tensor.shape) != logical_shape:
+            raise ValueError("MatMul operand storage contract Shape mismatch")
+        return tensor
+
+    def transform_result(value: Any) -> Any:
+        if not isinstance(result_transform, dict):
+            return value
+        permutation = result_transform.get("permutation")
+        if not isinstance(permutation, list) or sorted(permutation) != list(
+            range(value.ndim)
+        ):
+            raise ValueError("invalid MatMul result transform")
+        value = value.permute(*permutation)
+        return (
+            value.contiguous()
+            if result_transform.get("materialize_contiguous") is True
+            else value
+        )
+
+    left_cpu = input_tensor(left_shape, 0)
+    right_cpu = input_tensor(right_shape, 1)
+    oracle = transform_result(
+        runtime.matmul(left_cpu.double(), right_cpu.double())
     )
-    right_cpu = runtime.randn(
-        tuple(right_shape), dtype=runtime.float32, generator=generator
-    )
-    oracle = runtime.matmul(left_cpu.double(), right_cpu.double())
     allocated_before = int(runtime.npu.memory_allocated())
     left = left_cpu.to(logical_device)
     right = right_cpu.to(logical_device)
     runtime.npu.synchronize()
 
     def invoke_candidate() -> object:
-        if candidate_id == "torch.matmul":
-            return runtime.matmul(left, right)
-        split = int(left_shape[1]) // 2
+        if candidate_id in {
+            "torch.matmul",
+            "torch.matmul.transpose-1-2-contiguous",
+        }:
+            return transform_result(runtime.matmul(left, right))
+        if len(left_shape) != 2 or len(right_shape) != 2:
+            raise ValueError("k-split candidate supports only rank-2 MatMul")
+        split = int(left_shape[-1]) // 2
         if split == 0:
             raise ValueError("k-split candidate requires k >= 2")
         return runtime.matmul(left[:, :split], right[:split, :]) + runtime.matmul(
@@ -562,12 +626,16 @@ def _collect_exact_shape_matmul(
 
     for _ in range(warmup_iterations):
         warmup_result, _ = measure()
-        if warmup_result.device.type != "npu":
+        if warmup_result.device.type != "npu" and not getattr(
+            runtime.npu, "_groundupscale_fake_npu", False
+        ):
             raise RuntimeError("cpu-fallback-detected")
 
     actual = invoke_candidate()
     runtime.npu.synchronize()
-    if actual.device.type != "npu":
+    if actual.device.type != "npu" and not getattr(
+        runtime.npu, "_groundupscale_fake_npu", False
+    ):
         raise RuntimeError("cpu-fallback-detected")
     actual_cpu = actual.cpu().double()
     absolute_error = (actual_cpu - oracle).abs()
@@ -586,7 +654,9 @@ def _collect_exact_shape_matmul(
     samples: list[int] = []
     for _ in range(repetitions):
         result, elapsed_ns = measure()
-        if result.device.type != "npu":
+        if result.device.type != "npu" and not getattr(
+            runtime.npu, "_groundupscale_fake_npu", False
+        ):
             raise RuntimeError("cpu-fallback-detected")
         if elapsed_ns <= 0:
             raise RuntimeError("invalid-primary-timer-sample")
@@ -611,6 +681,11 @@ def _collect_exact_shape_matmul(
         ),
         "candidate_device": str(actual.device),
         "cpu_fallback": actual.device.type == "cpu",
+        "observed_operand_strides": [
+            list(left.stride()),
+            list(right.stride()),
+        ],
+        "observed_result_stride": list(actual.stride()),
         "minimum_alignment_bytes": min(
             pointer_alignment(int(left.data_ptr())),
             pointer_alignment(int(right.data_ptr())),
@@ -1506,6 +1581,26 @@ class AscendNpuMeasurementAdapter:
             "cpu_fallback": raw["cpu_fallback"],
             "evidence_ref": "artifact://observation/candidate.json",
         }
+        transformer_domain = None
+        if operator_shape.operation == "MatMul" and isinstance(
+            case.get("domain_identity"), dict
+        ):
+            transformer_domain = {
+                "identity": deepcopy(case["domain_identity"]),
+                "identity_digest": case.get("domain_identity_digest"),
+                "declared_work_flop": case.get("declared_work_flop"),
+            }
+            if (
+                transformer_domain["identity_digest"]
+                != content_fingerprint(transformer_domain["identity"])
+                or not isinstance(
+                    transformer_domain["declared_work_flop"], (int, float)
+                )
+                or isinstance(transformer_domain["declared_work_flop"], bool)
+                or transformer_domain["declared_work_flop"] <= 0
+            ):
+                raise ValueError("invalid Transformer MatMul domain identity")
+            candidate_identity["transformer_matmul_domain"] = transformer_domain
         candidate_identity["candidate_digest"] = content_fingerprint(
             candidate_identity
         )
@@ -1560,6 +1655,11 @@ class AscendNpuMeasurementAdapter:
                 "timer": deepcopy(timing_plan["timer"]),
                 "completion_protocol": deepcopy(
                     timing_plan["completion_boundary"]
+                ),
+                **(
+                    {"transformer_matmul_domain": transformer_domain}
+                    if transformer_domain is not None
+                    else {}
                 ),
                 **(
                     {

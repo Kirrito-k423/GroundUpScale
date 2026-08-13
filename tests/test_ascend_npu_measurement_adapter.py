@@ -846,6 +846,146 @@ def test_collection_records_distinct_k_split_candidate_identity() -> None:
     assert digest == content_fingerprint(candidate)
 
 
+def test_real_collector_executes_batched_transposed_matmul_contract_on_cpu_fake_npu(
+    monkeypatch,
+) -> None:
+    import torch
+
+    from groundupscale.measurement_adapters.ascend_npu import (
+        _collect_exact_shape_matmul,
+    )
+
+    class FakeEvent:
+        def __init__(self, *, enable_timing: bool) -> None:
+            self.enable_timing = enable_timing
+
+        def record(self) -> None:
+            pass
+
+        def synchronize(self) -> None:
+            pass
+
+        def elapsed_time(self, other: object) -> float:
+            return 1.0
+
+    class FakeNpu:
+        _groundupscale_fake_npu = True
+        Event = FakeEvent
+
+        @staticmethod
+        def set_device(index: int) -> None:
+            assert index == 0
+
+        @staticmethod
+        def synchronize() -> None:
+            pass
+
+        @staticmethod
+        def memory_allocated() -> int:
+            return 1
+
+        memory_reserved = memory_allocated
+        max_memory_allocated = memory_allocated
+
+        @staticmethod
+        def get_device_name(index: int) -> str:
+            return "FakeAscend910B2"
+
+    monkeypatch.setattr(torch, "npu", FakeNpu(), raising=False)
+    original_to = torch.Tensor.to
+
+    def cpu_for_fake_npu(self, *args, **kwargs):
+        if args and args[0] == "npu:0":
+            return self
+        return original_to(self, *args, **kwargs)
+
+    monkeypatch.setattr(torch.Tensor, "to", cpu_for_fake_npu)
+    case = {
+        "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha2",
+        "operation": "MatMul",
+        "shape": {
+            "left": [1, 2, 4, 4],
+            "right": [1, 2, 4, 2],
+            "result": [1, 4, 2, 2],
+        },
+        "dtype": "float32",
+        "layout": {
+            "operands": ["contiguous", "transposed"],
+            "result": "contiguous",
+        },
+        "operand_storage_contracts": [
+            {
+                "logical_shape": [1, 2, 4, 4],
+                "storage_shape": [1, 2, 4, 4],
+                "storage_stride": [32, 16, 4, 1],
+                "permutation": [0, 1, 2, 3],
+                "layout": "contiguous",
+            },
+            {
+                "logical_shape": [1, 2, 4, 2],
+                "storage_shape": [1, 2, 2, 4],
+                "storage_stride": [16, 8, 4, 1],
+                "permutation": [0, 1, 3, 2],
+                "layout": "transposed",
+            },
+        ],
+        "result_transform": {
+            "permutation": [0, 2, 1, 3],
+            "materialize_contiguous": True,
+        },
+        "candidate": "torch.matmul.transpose-1-2-contiguous",
+        "seed": 42,
+    }
+
+    raw = _collect_exact_shape_matmul(
+        torch,
+        0,
+        case,
+        {"warmup_iterations": 1, "repetitions": 2, "inner_iterations": 1},
+    )
+
+    assert raw["correctness"]["status"] == "passed"
+    assert raw["correctness"]["shape_exact"] is True
+    assert raw["raw_samples_ns"] == [1_000_000, 1_000_000]
+    assert raw["observed_operand_strides"] == [[32, 16, 4, 1], [16, 8, 1, 4]]
+    assert raw["observed_result_stride"] == [16, 4, 2, 1]
+
+
+def test_adapter_packages_full_transformer_domain_identity_in_measurement_bundle() -> None:
+    from groundupscale.ir import content_fingerprint
+    from groundupscale.measurement_adapters.ascend_npu import (
+        AscendNpuMeasurementAdapter,
+    )
+
+    case = _exact_shape_case()
+    case["domain_identity"] = {
+        "semantic_operation": "MatMul",
+        "operand_contracts": [{"shape": [2, 3]}, {"shape": [3, 4]}],
+        "result_contract": {"shape": [2, 4]},
+        "candidate_family": "pytorch-ascend-matmul",
+        "execution_mode": "pytorch-eager",
+        "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    }
+    case["domain_identity_digest"] = content_fingerprint(case["domain_identity"])
+    case["declared_work_flop"] = 48.0
+    adapter = AscendNpuMeasurementAdapter(
+        runtime_loader=_available_runtime,
+        collection_executor=_raw_hardware_collection,
+    )
+
+    collection = adapter.collect(case, dict(adapter.build_timing_plan(case)))
+
+    assert collection["candidate_identity"]["transformer_matmul_domain"] == {
+        "identity": case["domain_identity"],
+        "identity_digest": case["domain_identity_digest"],
+        "declared_work_flop": 48.0,
+    }
+    assert collection["execution_contract"]["transformer_matmul_domain"] == (
+        collection["candidate_identity"]["transformer_matmul_domain"]
+    )
+
+
 def test_inner_iteration_averaging_does_not_claim_subnanosecond_samples() -> None:
     from groundupscale.measurement_adapters.ascend_npu import (
         AscendNpuMeasurementAdapter,

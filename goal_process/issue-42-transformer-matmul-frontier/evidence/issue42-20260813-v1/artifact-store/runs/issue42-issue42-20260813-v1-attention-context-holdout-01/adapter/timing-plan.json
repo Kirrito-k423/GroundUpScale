@@ -1,0 +1,191 @@
+{
+  "case": {
+    "candidate": "torch.matmul.transpose-1-2-contiguous",
+    "declared_work_flop": 268435456.0,
+    "domain_identity": {
+      "batch_transpose_contract": {
+        "left_batch_shape": [
+          1,
+          8
+        ],
+        "left_layout": "contiguous",
+        "left_transposed": false,
+        "result_batch_shape": [
+          1,
+          512
+        ],
+        "result_layout": "contiguous",
+        "right_batch_shape": [
+          1,
+          8
+        ],
+        "right_layout": "transposed",
+        "right_transposed": true
+      },
+      "candidate_family": "pytorch-ascend-matmul-transpose-contiguous",
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "layout": {
+        "operands": [
+          "contiguous",
+          "transposed"
+        ],
+        "result": "contiguous"
+      },
+      "operand_contracts": [
+        {
+          "dtype": "float32",
+          "layout": "contiguous",
+          "shape": [
+            1,
+            8,
+            512,
+            512
+          ]
+        },
+        {
+          "dtype": "float32",
+          "layout": "transposed",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ]
+        }
+      ],
+      "result_contract": {
+        "dtype": "float32",
+        "layout": "contiguous",
+        "shape": [
+          1,
+          512,
+          8,
+          64
+        ]
+      },
+      "runtime_dispatch_regime": "torch-npu-pytorch-eager",
+      "semantic_operation": "MatMul"
+    },
+    "domain_identity_digest": "47731416960c5e5b85271504f873ba927059c59785f79035570ce6a2e8941193",
+    "dtype": "float32",
+    "inner_iterations": 100,
+    "layout": {
+      "operands": [
+        "contiguous",
+        "transposed"
+      ],
+      "result": "contiguous"
+    },
+    "operand_storage_contracts": [
+      {
+        "layout": "contiguous",
+        "logical_shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "permutation": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "storage_shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "storage_stride": [
+          2097152,
+          262144,
+          512,
+          1
+        ]
+      },
+      {
+        "layout": "transposed",
+        "logical_shape": [
+          1,
+          8,
+          512,
+          64
+        ],
+        "permutation": [
+          0,
+          2,
+          1,
+          3
+        ],
+        "storage_shape": [
+          1,
+          512,
+          8,
+          64
+        ],
+        "storage_stride": [
+          262144,
+          512,
+          64,
+          1
+        ]
+      }
+    ],
+    "operation": "MatMul",
+    "repetitions": 100,
+    "result_transform": {
+      "materialize_contiguous": true,
+      "permutation": [
+        0,
+        2,
+        1,
+        3
+      ]
+    },
+    "schema": "groundupscale.dev/exact-shape-matmul-case/v1alpha2",
+    "seed": 20260813,
+    "shape": {
+      "left": [
+        1,
+        8,
+        512,
+        512
+      ],
+      "result": [
+        1,
+        512,
+        8,
+        64
+      ],
+      "right": [
+        1,
+        8,
+        512,
+        64
+      ]
+    },
+    "warmup_iterations": 100
+  },
+  "completion_boundary": {
+    "kind": "device-event-stream-completion",
+    "protocol": "end-event-synchronize-plus-device-synchronize"
+  },
+  "device": "ascend-npu",
+  "evidence_ref": "artifact://adapter/timing-plan.json",
+  "inner_iterations": 100,
+  "logical_device": "npu:0",
+  "operation": "build_timing_plan",
+  "repetitions": 100,
+  "sample_exclusion": "none-preserve-all-raw-samples",
+  "schema": "groundupscale.dev/timing-plan/v1alpha1",
+  "status": "ready",
+  "timer": {
+    "kind": "device-event",
+    "source": "torch.npu.Event.elapsed_time",
+    "unit": "nanoseconds"
+  },
+  "warmup_iterations": 100
+}

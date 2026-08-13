@@ -108,6 +108,9 @@ TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES = frozenset(
         "transformer-matmul-frontier-qualification",
     }
 )
+TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES = frozenset(
+    {"transformer-matmul-exact-anchor"}
+)
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
@@ -1520,6 +1523,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     transformer_matmul_frontier = (
         manifest.get("bundle_kind") == "transformer-matmul-frontier"
     )
+    transformer_matmul_exact_anchor = (
+        manifest.get("bundle_kind") == "transformer-matmul-exact-anchor"
+    )
     structured_bundle = (
         exact_shape
         or floor_comparison
@@ -1527,6 +1533,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or operator_frontier
         or model_e2e_frontier
         or transformer_matmul_frontier
+        or transformer_matmul_exact_anchor
     )
     completed_measurement = exact_shape and manifest.get("status") == "completed"
     role_counts: dict[object, int] = {}
@@ -1537,6 +1544,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 role_counts[role] = role_counts.get(role, 0) + 1
         if model_e2e_frontier:
             required_roles = MODEL_E2E_FRONTIER_REQUIRED_ROLES
+        elif transformer_matmul_exact_anchor:
+            required_roles = TRANSFORMER_MATMUL_EXACT_ANCHOR_REQUIRED_ROLES
         elif transformer_matmul_frontier:
             required_roles = TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
         elif operator_frontier:
@@ -1993,14 +2002,23 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         qualification = documents_by_role.get(
             "transformer-matmul-frontier-qualification"
         )
+        identity_matches = (
+            isinstance(inventory, dict)
+            and isinstance(qualification, dict)
+            and manifest.get("status") == qualification.get("status")
+            and manifest.get("hardware_cohort")
+            == qualification.get("hardware_cohort")
+            == inventory.get("source_hardware_cohort")
+        )
+        if not identity_matches:
+            failures.append("Transformer MatMul Frontier identity mismatch")
         try:
             from groundupscale.transformer_matmul_frontier import (
                 verify_transformer_matmul_frontier_derivation,
             )
 
             derivation_matches = (
-                isinstance(inventory, dict)
-                and isinstance(qualification, dict)
+                identity_matches
                 and verify_transformer_matmul_frontier_derivation(
                     root, manifest, inventory, qualification
                 )
@@ -2009,6 +2027,34 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             derivation_matches = False
         if not derivation_matches:
             failures.append("Transformer MatMul Frontier derivation mismatch")
+
+    if transformer_matmul_exact_anchor:
+        anchor = documents_by_role.get("transformer-matmul-exact-anchor")
+        identity_matches = (
+            isinstance(anchor, dict)
+            and manifest.get("status") == anchor.get("status")
+            and anchor.get("status") in {"qualified", "unknown"}
+            and manifest.get("device") == "ascend-npu"
+            and manifest.get("hardware_cohort")
+            == anchor.get("hardware_cohort")
+        )
+        if not identity_matches:
+            failures.append("Transformer MatMul exact Anchor identity mismatch")
+        try:
+            from groundupscale.transformer_matmul_frontier import (
+                verify_transformer_matmul_exact_anchor_derivation,
+            )
+
+            derivation_matches = (
+                identity_matches
+                and verify_transformer_matmul_exact_anchor_derivation(
+                    root, manifest, anchor
+                )
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            derivation_matches = False
+        if not derivation_matches:
+            failures.append("Transformer MatMul exact Anchor derivation mismatch")
 
     if floor_comparison:
         comparison = documents_by_role.get(
