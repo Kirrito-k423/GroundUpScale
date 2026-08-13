@@ -24,7 +24,8 @@ def _input() -> dict[str, object]:
             "status": "known",
             "duration_ns": 200 - index * 5,
             "standard_uncertainty_ns": 2,
-            "evidence_refs": [f"run://prediction/p{index}"],
+            "evidence_refs": [f"run://prediction@sha256:{'a' * 64}#p{index}"],
+            "accounting_interval": [index * 10, index * 10 + 10],
         }
         for index in range(12)
     ]
@@ -34,7 +35,8 @@ def _input() -> dict[str, object]:
             "operation_class": "MatMul",
             "duration_ns": 100 + index * 10,
             "standard_uncertainty_ns": 3,
-            "evidence_refs": [f"run://observation/o{index}"],
+            "evidence_refs": [f"run://observation@sha256:{'b' * 64}#o{index}"],
+            "accounting_interval": [index * 10, index * 10 + 10],
         }
         for index in range(12)
     ]
@@ -70,7 +72,7 @@ def _input() -> dict[str, object]:
             "items": predicted,
             "unattributed_ns": 20,
             "overlap_ns": 90,
-            "evidence_refs": ["run://prediction"],
+            "evidence_refs": [f"run://prediction@sha256:{'a' * 64}"],
         },
         "observed": {
             "identity": {
@@ -85,7 +87,7 @@ def _input() -> dict[str, object]:
             "unattributed_ns": 280,
             "overlap_ns": 40,
             "accounting": "interval-union",
-            "evidence_refs": ["run://observation"],
+            "evidence_refs": [f"run://observation@sha256:{'b' * 64}"],
         },
         "source_bundles": [
             {
@@ -141,8 +143,8 @@ def test_compose_selects_each_side_independently_and_joins_exact_union() -> None
     assert edge["observed_time_ns"] == 210
     assert edge["absolute_gap_ns"] == 65
     assert edge["ratio"] == pytest.approx(210 / 145)
-    assert edge["predicted_evidence_refs"] == ["run://prediction/p11"]
-    assert edge["observed_evidence_refs"] == ["run://observation/o11"]
+    assert edge["predicted_evidence_refs"] == [f"run://prediction@sha256:{'a' * 64}#p11"]
+    assert edge["observed_evidence_refs"] == [f"run://observation@sha256:{'b' * 64}#o11"]
 
 
 def test_reconciliation_metrics_and_diagnosis_are_policy_gated() -> None:
@@ -253,6 +255,7 @@ def test_rejects_inclusive_parent_mixed_with_descendant_as_additive_item() -> No
             "status": "known",
             "duration_ns": 2000,
             "inclusive": True,
+            "accounting_interval": [120, 130],
             "evidence_refs": ["run://prediction/parent"],
         }
     )
@@ -295,20 +298,28 @@ def test_side_identity_exclusivity_scope_drilldown_and_evidence_classification()
         compose_gap_report(document)
 
     document = _input()
+    document["predicted"]["items"][0]["accounting_interval"] = [5, 15]  # type: ignore[index]
+    with pytest.raises(GapReportError, match="non-mutually-exclusive-items"):
+        compose_gap_report(document)
+
+    document = _input()
     document["scopes"] = [
         {
             "stable_path": "semantic/model",
             "kind": "inclusive-navigation",
             "children": [f"semantic/model/leaf_{index:02d}" for index in range(12)],
             "children_accounting": "non-overlapping",
-            "evidence_refs": ["run://prediction"],
+            "evidence_refs": [f"run://prediction@sha256:{'a' * 64}"],
         }
     ]
     document["diagnostic_evidence"] = {
         "semantic/model/leaf_11": {
             "classification": "implementation-headroom",
             "reason_code": "qualified-frontier-vs-observed-candidate",
-            "evidence_refs": ["run://prediction/p11", "run://observation/o11"],
+            "evidence_refs": [
+                f"run://prediction@sha256:{'a' * 64}#p11",
+                f"run://observation@sha256:{'b' * 64}#o11",
+            ],
         }
     }
     report = compose_gap_report(document)
@@ -320,7 +331,8 @@ def test_side_identity_exclusivity_scope_drilldown_and_evidence_classification()
     )
     assert classified["classification"] == "implementation-headroom"
     assert classified["classification_evidence_refs"] == [
-        "run://prediction/p11", "run://observation/o11"
+        f"run://prediction@sha256:{'a' * 64}#p11",
+        f"run://observation@sha256:{'b' * 64}#o11",
     ]
 
 
@@ -329,7 +341,7 @@ def test_published_authority_recursively_verifies_locked_sources() -> None:
     run = (
         root
         / "goal_process/issue-49-e2e-gap-report/evidence/runs"
-        / "issue49-20260814T0315Z-e2e-gap-report-v5"
+        / "issue49-20260814T0345Z-e2e-gap-report-v6"
     )
 
     verification = verify_run_bundle(run)

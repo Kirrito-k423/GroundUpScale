@@ -57,6 +57,17 @@ def build_document() -> dict[str, object]:
         case for case in issue30_benchmark["cases"]
         if case["case_id"] == identity["benchmark_case"]
     )
+    issue30_identity = _manifest_source(issue30_run)
+    predicted_issue30 = next(
+        source
+        for source in predicted["evidence"]["source_bundles"]
+        if source["issue"] == 30
+    )
+    observed_issue30 = next(
+        source
+        for source in _load(OBSERVED_RUN / "run.manifest.json")["source_runs"]
+        if source["run_id"] == issue30_identity["run_id"]
+    )
     report_identity = {
         "case": identity["benchmark_case"],
         "shape": identity["shape"],
@@ -71,6 +82,11 @@ def build_document() -> dict[str, object]:
         != observed["baseline_e2e_observation"]["median_ns"]
         or predicted["axes"]["observation"]["value_ns"]
         != issue30_case["latency"]["median_ns"]
+        or predicted_issue30["run_id"] != issue30_identity["run_id"]
+        or predicted_issue30["manifest_sha256"]
+        != issue30_identity["manifest_sha256"]
+        or observed_issue30["manifest_sha256"]
+        != issue30_identity["manifest_sha256"]
         or issue30_contract["shape"]["bindings"] != {
             "B": 1, "D": 64, "H": 512, "I": 2048, "NH": 8, "S": 512
         }
@@ -97,9 +113,10 @@ def build_document() -> dict[str, object]:
                 else "structured-unknown"
             ),
             "evidence_refs": leaf["evidence_refs"],
+            "accounting_interval": [index, index + 1],
             "evidence_boundaries": leaf["missing_operation_classes"],
         }
-        for leaf in predicted_leaves
+        for index, leaf in enumerate(predicted_leaves)
     ]
     observed_decomposition = observed["observed_decomposition"]
     observed_items = [
@@ -111,8 +128,9 @@ def build_document() -> dict[str, object]:
             "standard_uncertainty_ns": leaf.get("standard_uncertainty_ns"),
             "evidence_quality": leaf.get("evidence_quality", "direct-qualified"),
             "evidence_refs": leaf.get("evidence_refs", []),
+            "accounting_interval": [index, index + 1],
         }
-        for leaf in observed_decomposition.get("leaves", [])
+        for index, leaf in enumerate(observed_decomposition.get("leaves", []))
     ]
     return {
         "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
@@ -177,7 +195,7 @@ def build_document() -> dict[str, object]:
 if __name__ == "__main__":
     destination = write_gap_report_bundle(
         Path(__file__).parent / "evidence",
-        run_id="issue49-20260814T0315Z-e2e-gap-report-v5",
+        run_id="issue49-20260814T0345Z-e2e-gap-report-v6",
         document=build_document(),
     )
     print(destination)

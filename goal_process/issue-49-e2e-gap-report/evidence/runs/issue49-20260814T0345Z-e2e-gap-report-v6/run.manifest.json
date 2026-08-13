@@ -1,0 +1,59 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/e2e-gap-report-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "e2e-gap-report-input",
+      "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
+      "sha256": "2b13002db82a7c36e4101186f98967b1b87b53d00de5b191dbd408283a4aab3f"
+    },
+    {
+      "inputs": [
+        "resolved/e2e-gap-report-input.json"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/e2e-gap-report.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "e2e-gap-report",
+      "schema": "groundupscale.dev/e2e-gap-report/v1alpha1",
+      "sha256": "fd575e0c460f5d6ae77caa2abef595f9dea60598baaf0d9c1e825c2542bab238"
+    },
+    {
+      "inputs": [
+        "comparison/e2e-gap-report.json"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/e2e-gap-report-html/v1alpha1",
+      "sha256": "36fdc7a22cfafd7065577e582a11948204fa44eb3e786e78c0f8f9f71659b2c4"
+    }
+  ],
+  "bundle_kind": "e2e-gap-report",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "producer": "groundupscale@0.1.0",
+  "run_id": "issue49-20260814T0345Z-e2e-gap-report-v6",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_bundles": [
+    {
+      "bundle_kind": "model-e2e-frontier",
+      "evidence_ref": "run://issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "manifest_sha256": "dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "path": "goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "schedule-effect-frontier",
+      "evidence_ref": "run://issue47-ascend-observed-decomposition-20260813-v1",
+      "manifest_sha256": "8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "path": "goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1",
+      "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+      "verification_passed": true
+    }
+  ],
+  "status": "completed"
+}

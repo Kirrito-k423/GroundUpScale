@@ -90,6 +90,17 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
             "exclusive-parent",
         }:
             raise GapReportError("invalid-mutually-exclusive-accounting-kind")
+        if accounting_kind == "exclusive-parent" and not descendants:
+            raise GapReportError("exclusive-parent-requires-descendants")
+        interval = item.get("accounting_interval")
+        if (
+            not isinstance(interval, list)
+            or len(interval) != 2
+            or not all(isinstance(endpoint, (int, float)) for endpoint in interval)
+            or interval[0] < 0
+            or interval[1] <= interval[0]
+        ):
+            raise GapReportError("missing-mutual-exclusivity-proof")
         status = item.get("status", "known")
         duration = item.get("duration_ns")
         if status == "known":
@@ -116,6 +127,7 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "accounting_id": accounting_id,
                 "accounting_kind": accounting_kind,
                 "descendants": list(descendants),
+                "accounting_interval": list(interval),
                 **(
                     {"evidence_boundaries": list(item["evidence_boundaries"])}
                     if isinstance(item.get("evidence_boundaries"), list)
@@ -130,6 +142,12 @@ def _items(side: Mapping[str, Any]) -> list[dict[str, Any]]:
             and known_paths.intersection(item["descendants"])
         ):
             raise GapReportError("exclusive-parent-and-descendant-double-count")
+    intervals = sorted(
+        (item["accounting_interval"], item["stable_path"]) for item in items
+    )
+    for (left, _), (right, _) in zip(intervals, intervals[1:]):
+        if left[1] > right[0]:
+            raise GapReportError("non-mutually-exclusive-items")
     return items
 
 
@@ -519,8 +537,8 @@ def write_gap_report_bundle(
             )
         ):
             raise GapReportError("selected-rows-require-locked-source-bundles")
-        source_ids = {
-            source.get("run_id")
+        source_digests = {
+            source.get("run_id"): source.get("manifest_sha256")
             for source in sources_value
             if isinstance(source, Mapping)
         }
@@ -531,9 +549,11 @@ def write_gap_report_bundle(
                 refs = row[f"{side}_evidence_refs"]
                 if not refs or not all(
                     any(
-                        ref == f"run://{run_id}"
-                        or ref.startswith(f"run://{run_id}@sha256:")
-                        for run_id in source_ids
+                        ref == f"run://{run_id}@sha256:{digest}"
+                        or ref.startswith(
+                            f"run://{run_id}@sha256:{digest}#"
+                        )
+                        for run_id, digest in source_digests.items()
                     )
                     for ref in refs
                 ):
