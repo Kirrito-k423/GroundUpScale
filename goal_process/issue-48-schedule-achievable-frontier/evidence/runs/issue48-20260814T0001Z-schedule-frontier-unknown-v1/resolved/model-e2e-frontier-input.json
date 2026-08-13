@@ -69,6 +69,7 @@
       }
     ],
     "source_issue": "#48",
+    "source_repository_root": "/Users/Zhuanz/work/github/GroundUpScale-issue-48",
     "unpublished_source_boundaries": [
       {
         "issue": 45,
@@ -82,6 +83,11 @@
   },
   "model": {
     "expected_semantic_leaf_count": 52,
+    "frozen_model_ir": {
+      "path": "ir/model.ir.json",
+      "sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+      "source_run_id": "ascend-910b2-transformer-demo-20260811-v1"
+    },
     "model_id": "two-layer-transformer-prefill",
     "repeated_layer_indices": [
       0,
@@ -89,6 +95,8 @@
     ],
     "semantic_leaves": [
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/input_norm",
         "mandatory_operation_classes": [
           "operator.rmsnorm.phase-graph"
         ],
@@ -102,6 +110,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/q_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -115,6 +125,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/k_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -128,6 +140,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/v_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -141,6 +155,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/q_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -154,6 +170,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/q_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -167,6 +185,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/k_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -180,6 +200,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/k_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -193,6 +215,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/k_key_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -206,6 +230,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/qk_matmul",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -219,6 +245,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/scale",
         "mandatory_operation_classes": [
           "operator.mul.exact-domain"
         ],
@@ -232,6 +260,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/causal_mask",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -245,6 +275,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/softmax",
         "mandatory_operation_classes": [
           "operator.softmax.phase-graph"
         ],
@@ -252,12 +284,14 @@
         "requirements": [
           {
             "operation_class": "operator.softmax.phase-graph",
-            "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule"
+            "required_evidence": "issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)"
           }
         ],
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/v_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -271,6 +305,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/v_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -284,6 +320,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/context_matmul",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -297,6 +335,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/context_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -310,6 +350,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/attention/out_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -323,6 +365,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/out_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/residual_1",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -336,6 +380,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/post_norm",
         "mandatory_operation_classes": [
           "operator.rmsnorm.phase-graph"
         ],
@@ -349,6 +395,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/post_norm"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -362,6 +410,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/mlp/up_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -375,6 +425,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/up_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/mlp/silu",
         "mandatory_operation_classes": [
           "operator.silu.exact-domain"
         ],
@@ -388,6 +440,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/mlp/gate_mul",
         "mandatory_operation_classes": [
           "operator.mul.exact-domain"
         ],
@@ -401,6 +455,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/mlp/down_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -414,6 +470,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/down_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_0/residual_2",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -427,6 +485,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/input_norm",
         "mandatory_operation_classes": [
           "operator.rmsnorm.phase-graph"
         ],
@@ -440,6 +500,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/input_norm"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/q_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -453,6 +515,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/k_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -466,6 +530,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/v_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -479,6 +545,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/q_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -492,6 +560,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/q_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -505,6 +575,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/k_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -518,6 +590,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/k_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -531,6 +605,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/k_key_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -544,6 +620,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/qk_matmul",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -557,6 +635,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/scale",
         "mandatory_operation_classes": [
           "operator.mul.exact-domain"
         ],
@@ -570,6 +650,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/causal_mask",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -583,6 +665,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/softmax",
         "mandatory_operation_classes": [
           "operator.softmax.phase-graph"
         ],
@@ -590,12 +674,14 @@
         "requirements": [
           {
             "operation_class": "operator.softmax.phase-graph",
-            "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule"
+            "required_evidence": "issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)"
           }
         ],
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/v_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -609,6 +695,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/v_transpose",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -622,6 +710,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/context_matmul",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -635,6 +725,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_matmul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/context_view",
         "mandatory_operation_classes": [
           "layout.alias-or-materialization-audit"
         ],
@@ -648,6 +740,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/attention/out_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -661,6 +755,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/residual_1",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -674,6 +770,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/post_norm",
         "mandatory_operation_classes": [
           "operator.rmsnorm.phase-graph"
         ],
@@ -687,6 +785,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/post_norm"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -700,6 +800,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/mlp/up_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -713,6 +815,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/up_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/mlp/silu",
         "mandatory_operation_classes": [
           "operator.silu.exact-domain"
         ],
@@ -726,6 +830,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/mlp/gate_mul",
         "mandatory_operation_classes": [
           "operator.mul.exact-domain"
         ],
@@ -739,6 +845,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/mlp/down_proj",
         "mandatory_operation_classes": [
           "operator.matmul.exact-domain"
         ],
@@ -752,6 +860,8 @@
         "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/down_proj"
       },
       {
+        "frozen_model_ir_sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "frozen_model_path": "model/two-layer-transformer/transformer/layer_1/residual_2",
         "mandatory_operation_classes": [
           "operator.add.exact-domain"
         ],
@@ -772,6 +882,13 @@
       "issue://github/Kirrito-k423/GroundUpScale/48",
       "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1"
     ],
+    "execution_ir": {
+      "dependency_edges": [],
+      "physical_events": [],
+      "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+      "status": "unknown",
+      "unknown_reason": "mandatory leaves and effects lack selected physical events"
+    },
     "kind": "serialized-unfused",
     "mandatory_effect_ids": [
       "device-dispatch",

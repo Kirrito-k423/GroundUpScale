@@ -193,6 +193,12 @@ def _source_bundles(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
             or not isinstance(digest, str)
             or len(digest) != 64
             or any(char not in "0123456789abcdef" for char in digest)
+            or not isinstance(source.get("path"), str)
+            or not source.get("path")
+            or not isinstance(source.get("run_id"), str)
+            or not source.get("run_id")
+            or not isinstance(source.get("bundle_kind"), str)
+            or not source.get("bundle_kind")
             or source.get("verification_passed") is not True
         ):
             raise ModelE2EFrontierError("invalid-model-source-bundles")
@@ -221,6 +227,12 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
     source_bundles = _source_bundles(evidence)
     if classification == "evidence-qualified-composition" and not source_bundles:
         raise ModelE2EFrontierError("missing-model-source-bundles")
+    source_repository_root = evidence.get("source_repository_root")
+    if classification == "evidence-qualified-composition" and (
+        not isinstance(source_repository_root, str)
+        or not source_repository_root
+    ):
+        raise ModelE2EFrontierError("missing-model-source-repository-root")
     model = _mapping(document.get("model"), "invalid-model-coverage")
     expected_count = model.get("expected_semantic_leaf_count")
     repeated_indices = model.get("repeated_layer_indices")
@@ -432,6 +444,25 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
                 ),
             }
         )
+    execution_ir_value = _mapping(
+        schedule.get("execution_ir", {
+            "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+            "status": "known" if not missing else "unknown",
+            "physical_events": [],
+            "dependency_edges": explicit_dependencies,
+        }),
+        "invalid-model-schedule-execution-ir",
+    )
+    if (
+        execution_ir_value.get("schema")
+        != "groundupscale.dev/model-schedule-execution-ir/v1alpha1"
+        or execution_ir_value.get("status") not in {"known", "unknown"}
+        or not isinstance(execution_ir_value.get("physical_events"), list)
+        or not isinstance(execution_ir_value.get("dependency_edges"), list)
+        or execution_ir_value.get("dependency_edges") != dependencies_value
+    ):
+        raise ModelE2EFrontierError("invalid-model-schedule-execution-ir")
+    execution_ir = dict(execution_ir_value)
 
     rejected_value = schedule.get("rejected_optimizations", [])
     if not isinstance(rejected_value, list):
@@ -514,10 +545,12 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
                 "standard_uncertainty_ns"
             ],
             "resource_claims": candidate["resource_claims"],
-            "dependency_ids": sorted(
-                set(predecessor_by_id[candidate["candidate_id"]])
-                | set(successor_by_id[candidate["candidate_id"]])
-            ),
+            "dependencies": {
+                "predecessor_ids": predecessor_by_id[
+                    candidate["candidate_id"]
+                ],
+                "successor_ids": successor_by_id[candidate["candidate_id"]],
+            },
             "evidence_refs": candidate["evidence_refs"],
         }
         for candidate in resolved_candidates
@@ -641,6 +674,7 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             "promotion_eligible": evidence.get("promotion_eligible"),
             "evidence_refs": evidence_refs,
             "source_bundles": source_bundles,
+            "source_repository_root": source_repository_root,
         },
         "coverage": {
             "semantic_leaf_count": expected_count,
@@ -665,6 +699,7 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             "mandatory_effects": schedule_effects,
             "physical_events": physical_events,
             "explicit_dependencies": explicit_dependencies,
+            "execution_ir": execution_ir,
             "rejected_optimizations": rejected_optimizations,
             "references": {
                 "serialized_unfused": {
@@ -910,6 +945,7 @@ def write_model_e2e_frontier_bundle(
                 "producer": PRODUCER,
                 "source": "python://groundupscale.model_e2e_frontier",
             },
+            "source_runs": result["evidence"]["source_bundles"],
             "immutability": (
                 "writer refuses an existing run_id; artifact digests and "
                 "semantic replay are authoritative"

@@ -84,7 +84,7 @@ def _required_class(operation: str) -> str:
     }[operation]
 
 
-def _boundary(operation: str) -> str:
+def _boundary(operation: str, softmax_boundary: str) -> str:
     return {
         "MatMul": (
             "issue #42 v4 exact domain is structured unknown: one additional "
@@ -95,10 +95,7 @@ def _boundary(operation: str) -> str:
             "issue #43 v3 phase graph is structured unknown; collect the named "
             "missing phase evidence in the exact Hardware Cohort"
         ),
-        "Softmax": (
-            "issue #44 qualified bundle belongs to a different Hardware Cohort "
-            "and cannot be consumed by this schedule"
-        ),
+        "Softmax": softmax_boundary,
         "Add": (
             "issue #45 does not publish a repository-contained immutable source "
             "Run Bundle covering every Add execution domain"
@@ -122,7 +119,31 @@ def _boundary(operation: str) -> str:
     }[operation]
 
 
-def _semantic_leaves() -> list[dict[str, object]]:
+def _model_ir_leaves(model_ir: dict[str, Any]) -> list[tuple[str, str]]:
+    leaves: list[tuple[str, str]] = []
+
+    def visit(value: object) -> None:
+        if isinstance(value, dict):
+            operation = value.get("operation")
+            stable_path = value.get("stable_path")
+            if isinstance(operation, str) and isinstance(stable_path, str):
+                leaves.append((stable_path, operation))
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(model_ir)
+    return leaves
+
+
+def _semantic_leaves(
+    *,
+    model_ir: dict[str, Any],
+    model_ir_sha256: str,
+    softmax_boundary: str,
+) -> list[dict[str, object]]:
     config = ReferenceConfig(
         batch_size=1,
         sequence_length=512,
@@ -136,20 +157,44 @@ def _semantic_leaves() -> list[dict[str, object]]:
             "model/transformer"
         ),
     )
-    leaves: list[dict[str, object]] = []
+    reference_leaves: list[tuple[str, str]] = []
     for module in TwoLayerTransformer(config, seed=20260811).modules():
         if not isinstance(module, SemanticLeaf):
             continue
-        operation_class = _required_class(module.operation)
+        reference_leaves.append((module.stable_path, module.operation))
+    frozen_leaves = _model_ir_leaves(model_ir)
+    frozen_suffixes = [
+        (path.split("/transformer/", 1)[1], operation)
+        for path, operation in frozen_leaves
+    ]
+    reference_suffixes = [
+        (path.split("/transformer/", 1)[1], operation)
+        for path, operation in reference_leaves
+    ]
+    if frozen_suffixes != reference_suffixes or len(frozen_leaves) != 52:
+        raise ValueError("frozen #30 Model IR leaf identity mismatch")
+    leaves: list[dict[str, object]] = []
+    for module_path, operation in reference_leaves:
+        operation_class = _required_class(operation)
         leaves.append(
             {
-                "stable_path": module.stable_path,
-                "operation_class": module.operation,
+                "stable_path": module_path,
+                "operation_class": operation,
+                "frozen_model_path": next(
+                    path
+                    for path, frozen_operation in frozen_leaves
+                    if frozen_operation == operation
+                    and path.split("/transformer/", 1)[1]
+                    == module_path.split("/transformer/", 1)[1]
+                ),
+                "frozen_model_ir_sha256": model_ir_sha256,
                 "mandatory_operation_classes": [operation_class],
                 "requirements": [
                     {
                         "operation_class": operation_class,
-                        "required_evidence": _boundary(module.operation),
+                        "required_evidence": _boundary(
+                            operation, softmax_boundary
+                        ),
                     }
                 ],
             }
@@ -170,6 +215,29 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
         _source(root, 44, SOFTMAX_RUN),
     ]
     demo = root / DEMO_RUN
+    demo_manifest = _load(demo / "run.manifest.json")
+    model_artifact = next(
+        artifact
+        for artifact in demo_manifest["artifacts"]
+        if artifact.get("role") == "model-ir"
+    )
+    model_ir_path = demo / model_artifact["path"]
+    if sha256(model_ir_path.read_bytes()).hexdigest() != model_artifact["sha256"]:
+        raise ValueError("frozen #30 Model IR digest mismatch")
+    model_ir = _load(model_ir_path)
+    softmax_qualification = _load(
+        root / SOFTMAX_RUN / "frontier/qualification.json"
+    )
+    softmax_missing = softmax_qualification["surface"][
+        "operator_phase_graph"
+    ]["composition"]["missing_evidence"]
+    softmax_boundary = (
+        "issue #44 unknown-v2 requires real-chain operand evidence for "
+        + ", ".join(
+            f"{item['phase_name']} ({item['required_capability_class']})"
+            for item in softmax_missing
+        )
+    )
     comparison = _load(demo / "comparison/predicted-vs-observed.json")
     e2e = next(
         item
@@ -197,6 +265,7 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
                 for source in sources
             ],
             "source_bundles": sources,
+            "source_repository_root": str(root),
             "unpublished_source_boundaries": [
                 {
                     "issue": 45,
@@ -212,7 +281,16 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
             "model_id": "two-layer-transformer-prefill",
             "expected_semantic_leaf_count": 52,
             "repeated_layer_indices": [0, 1],
-            "semantic_leaves": _semantic_leaves(),
+            "frozen_model_ir": {
+                "path": model_artifact["path"],
+                "sha256": model_artifact["sha256"],
+                "source_run_id": demo_manifest["run_id"],
+            },
+            "semantic_leaves": _semantic_leaves(
+                model_ir=model_ir,
+                model_ir_sha256=model_artifact["sha256"],
+                softmax_boundary=softmax_boundary,
+            ),
         },
         "schedule": {
             "policy_id": "issue48-explicit-single-stream-v1",
@@ -231,6 +309,15 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
                 for effect in effects
             ],
             "dependencies": [],
+            "execution_ir": {
+                "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+                "status": "unknown",
+                "physical_events": [],
+                "dependency_edges": [],
+                "unknown_reason": (
+                    "mandatory leaves and effects lack selected physical events"
+                ),
+            },
             "rejected_optimizations": [
                 {
                     "kind": kind,

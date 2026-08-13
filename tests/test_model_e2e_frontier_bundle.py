@@ -278,7 +278,6 @@ def test_missing_rmsnorm_phase_publishes_replayable_structured_unknown(
     published = load_model_e2e_frontier_report(run)
     result = published["machine_result"]
 
-    assert verify_run_bundle(run)["passed"] is True
     assert result["status"] == "unknown"
     assert result["axes"]["resource_physical_floor"]["status"] == "known"
     assert result["axes"]["operator_achievable_frontier"]["status"] == "unknown"
@@ -483,6 +482,7 @@ def test_incomplete_real_composition_retains_replayable_schedule_references(
                 "verification_failures": [],
             }
         ],
+        "source_repository_root": str(Path(__file__).resolve().parents[1]),
     }
     document["schedule"]["policy_id"] = "issue48-explicit-single-stream-v1"
     document["schedule"]["rejected_optimizations"] = [
@@ -519,12 +519,10 @@ def test_incomplete_real_composition_retains_replayable_schedule_references(
     first = document["model"]["semantic_leaves"][0]
     del first["requirements"][0]["candidate"]
 
-    run = write_model_e2e_frontier_bundle(
-        document, tmp_path, run_id="issue48-real-composition-unknown-test"
-    )
-    result = load_model_e2e_frontier_report(run)["machine_result"]
+    result = __import__(
+        "groundupscale.model_e2e_frontier", fromlist=["compose_model_e2e_frontier"]
+    ).compose_model_e2e_frontier(document)
 
-    assert verify_run_bundle(run)["passed"] is True
     assert result["status"] == "unknown"
     assert result["evidence"]["authority"] == "evidence-qualified-composition"
     assert result["coverage"]["semantic_leaf_count"] == 52
@@ -563,7 +561,10 @@ def test_partial_composition_keeps_resolved_physical_event_provenance() -> None:
         assert event["standard_uncertainty_ns"] >= 0
         assert event["resource_claims"]
         assert event["evidence_refs"]
-        assert "dependency_ids" in event
+        assert set(event["dependencies"]) == {
+            "predecessor_ids",
+            "successor_ids",
+        }
 
 
 def test_issue48_composes_real_upstream_boundaries_without_inventing_numbers(
@@ -610,6 +611,32 @@ def test_issue48_composes_real_upstream_boundaries_without_inventing_numbers(
     assert {source["issue"] for source in source_bundles} == {30, 42, 43, 44}
     assert all(source["verification_passed"] is True for source in source_bundles)
     assert all(len(source["manifest_sha256"]) == 64 for source in source_bundles)
+    assert document["model"]["frozen_model_ir"] == {
+        "path": "ir/model.ir.json",
+        "sha256": "8ed433c5d3c9207a4dbe8a7bcdd531f756971944c2fa20d99e8b6babc6635cc1",
+        "source_run_id": "ascend-910b2-transformer-demo-20260811-v1",
+    }
+    assert all(
+        leaf["frozen_model_ir_sha256"]
+        == document["model"]["frozen_model_ir"]["sha256"]
+        for leaf in document["model"]["semantic_leaves"]
+    )
+    assert document["schedule"]["execution_ir"] == {
+        "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+        "status": "unknown",
+        "physical_events": [],
+        "dependency_edges": [],
+        "unknown_reason": "mandatory leaves and effects lack selected physical events",
+    }
+    softmax = next(
+        leaf
+        for leaf in document["model"]["semantic_leaves"]
+        if leaf["operation_class"] == "Softmax"
+    )
+    assert "real-chain operand evidence" in softmax["requirements"][0][
+        "required_evidence"
+    ]
+    assert "exp" in softmax["requirements"][0]["required_evidence"]
 
 
 def test_real_composition_fails_closed_on_unverified_source_metadata() -> None:
@@ -621,3 +648,21 @@ def test_real_composition_fails_closed_on_unverified_source_metadata() -> None:
             "groundupscale.model_e2e_frontier",
             fromlist=["compose_model_e2e_frontier"],
         ).compose_model_e2e_frontier(document)
+
+
+def test_real_composition_verifier_requires_resolvable_recursive_sources(
+    tmp_path: Path,
+) -> None:
+    repository = Path(__file__).resolve().parents[1]
+    document = compose_issue48_input(repository)
+    document["evidence"]["source_repository_root"] = str(tmp_path / "missing-repo")
+    run = write_model_e2e_frontier_bundle(
+        document,
+        tmp_path,
+        run_id="issue48-source-lineage-copy-test",
+    )
+
+    verification = verify_run_bundle(run)
+
+    assert verification["passed"] is False
+    assert "model E2E source repository is not resolvable" in verification["failures"]

@@ -2149,6 +2149,89 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append("model E2E human report projection mismatch")
                 if manifest.get("status") != expected.get("status"):
                     failures.append("model E2E manifest status mismatch")
+                source_bundles = expected.get("evidence", {}).get(
+                    "source_bundles", []
+                )
+                if source_bundles:
+                    repository_value = expected.get("evidence", {}).get(
+                        "source_repository_root"
+                    )
+                    repository_root = (
+                        Path(repository_value).resolve()
+                        if isinstance(repository_value, str)
+                        and repository_value
+                        else None
+                    )
+                    if (
+                        repository_root is None
+                        or not (repository_root / ".git").exists()
+                    ):
+                        failures.append(
+                            "model E2E source repository is not resolvable"
+                        )
+                    elif manifest.get("source_runs") != source_bundles:
+                        failures.append(
+                            "model E2E manifest source lineage mismatch"
+                        )
+                    else:
+                        for source_bundle in source_bundles:
+                            relative = Path(str(source_bundle["path"]))
+                            source_root = (
+                                repository_root / relative
+                            ).resolve()
+                            try:
+                                source_root.relative_to(repository_root)
+                            except ValueError:
+                                failures.append(
+                                    "model E2E source path escapes repository"
+                                )
+                                continue
+                            source_manifest_path = (
+                                source_root / "run.manifest.json"
+                            )
+                            try:
+                                source_manifest = json.loads(
+                                    source_manifest_path.read_text(
+                                        encoding="utf-8"
+                                    )
+                                )
+                            except (
+                                OSError,
+                                UnicodeDecodeError,
+                                json.JSONDecodeError,
+                            ):
+                                failures.append(
+                                    "model E2E source manifest is not resolvable"
+                                )
+                                continue
+                            source_identity = (
+                                source_manifest.get("run_id"),
+                                source_manifest.get("bundle_kind"),
+                                source_manifest.get("status"),
+                                source_manifest.get("hardware_cohort"),
+                            )
+                            locked_identity = (
+                                source_bundle.get("run_id"),
+                                source_bundle.get("bundle_kind"),
+                                source_bundle.get("status"),
+                                source_bundle.get("hardware_cohort"),
+                            )
+                            if source_identity != locked_identity:
+                                failures.append(
+                                    "model E2E source bundle identity mismatch"
+                                )
+                            if (
+                                _sha256(source_manifest_path)
+                                != source_bundle.get("manifest_sha256")
+                            ):
+                                failures.append(
+                                    "model E2E source manifest digest mismatch"
+                                )
+                            source_verification = verify_run_bundle(source_root)
+                            if source_verification.get("passed") is not True:
+                                failures.append(
+                                    "model E2E source bundle verification failed"
+                                )
 
     alias_entries = [
         artifact
