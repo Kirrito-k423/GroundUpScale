@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 from copy import deepcopy
-import os
 from pathlib import Path
+from unittest.mock import patch
 
 from groundupscale.observed_decomposition import timing_summary
 from groundupscale.run_bundle import (
+    SCHEDULE_EFFECT_TRUSTED_SOURCE_MANIFESTS,
     verify_run_bundle,
     write_schedule_effect_frontier_bundle,
 )
@@ -131,6 +133,16 @@ def _qualified_input() -> dict[str, object]:
                 },
             },
             "overhead_ablation": {
+                "source": {
+                    "run_id": "issue47-synthetic-ablation-source-v1",
+                    "expected_role": "diagnostic-evidence",
+                    "derivation": {"kind": "profiling-overhead-ablation"},
+                    "evidence_ref": (
+                        "run-bundle://issue47-synthetic-ablation-source-v1/"
+                        "ablation.json"
+                    ),
+                    "artifact_sha256": "3" * 64,
+                },
                 "status": "qualified",
                 "instrumentation_profile": "ascend-npu-profiler-device-timeline-v1",
                 "policy": {
@@ -168,15 +180,16 @@ def _source_runs(
     tmp_path: Path, destination: Path, document: dict[str, object]
 ) -> list[dict[str, str]]:
     sources = [
-        (
-            document["baseline_timing_lane"]["source"],
-        ),
-        (
-            document["diagnostic_profiling_lane"]["device_timeline"]["source"],
-        ),
+        document["baseline_timing_lane"]["source"],
+        document["diagnostic_profiling_lane"]["device_timeline"]["source"],
     ]
+    ablation_source = document["diagnostic_profiling_lane"][
+        "overhead_ablation"
+    ].get("source")
+    if isinstance(ablation_source, dict):
+        sources.append(ablation_source)
     result = []
-    for (source,) in sources:
+    for source in sources:
         role = source["expected_role"]
         source_root = tmp_path / "sources" / source["run_id"]
         source_root.mkdir(parents=True, exist_ok=True)
@@ -200,11 +213,28 @@ def _source_runs(
                     }
                 ]
             }
-        else:
+        elif role == "error-attribution":
             source_document = {
                 "e2e_trace_host_ns": document["diagnostic_profiling_lane"][
                     "instrumentation_timing"
-                ]["elapsed_ns"]
+                ]["elapsed_ns"],
+                "device_timeline": {
+                    key: value
+                    for key, value in document["diagnostic_profiling_lane"][
+                        "device_timeline"
+                    ].items()
+                    if key != "source"
+                },
+            }
+        else:
+            source_document = {
+                "overhead_ablation": {
+                    key: value
+                    for key, value in document["diagnostic_profiling_lane"][
+                        "overhead_ablation"
+                    ].items()
+                    if key != "source"
+                }
             }
         _write_json(artifact_path, source_document)
         source["artifact_sha256"] = hashlib.sha256(
@@ -251,6 +281,18 @@ def _write_bundle(
     )
 
 
+def _verify_bundle(run: Path) -> dict[str, object]:
+    manifest = json.loads((run / "run.manifest.json").read_text(encoding="utf-8"))
+    anchors = {
+        source["run_id"]: source["manifest_sha256"]
+        for source in manifest.get("source_runs", [])
+    }
+    with patch.dict(
+        SCHEDULE_EFFECT_TRUSTED_SOURCE_MANIFESTS, anchors, clear=True
+    ):
+        return verify_run_bundle(run)
+
+
 def test_qualified_pair_publishes_replayable_observed_decomposition(
     tmp_path: Path,
 ) -> None:
@@ -260,7 +302,7 @@ def test_qualified_pair_publishes_replayable_observed_decomposition(
         document=_qualified_input(),
     )
 
-    verification = verify_run_bundle(run)
+    verification = _verify_bundle(run)
     assert verification["passed"] is True, verification["failures"]
 
     manifest = json.loads(
@@ -336,7 +378,7 @@ def test_failed_ablation_preserves_baseline_and_marks_decomposition_unavailable(
         document=document,
     )
 
-    verification = verify_run_bundle(run)
+    verification = _verify_bundle(run)
     assert verification["passed"] is True, verification["failures"]
     result = json.loads(
         (run / "observation/observed-decomposition.json").read_text(
@@ -389,7 +431,7 @@ def test_missing_ablation_and_device_timeline_publish_structured_unknown(
         source_runs=source_runs,
     )
 
-    assert verify_run_bundle(run)["passed"] is True
+    assert _verify_bundle(run)["passed"] is True
     result = json.loads(
         (run / "observation/observed-decomposition.json").read_text(
             encoding="utf-8"
@@ -426,7 +468,7 @@ def test_resigned_decomposition_or_pairing_tamper_fails_public_verifier(
         if artifact["role"] == "observed-decomposition"
     )["sha256"] = _write_json(decomposition_path, decomposition)
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(decomposition_tampered)
+    verification = _verify_bundle(decomposition_tampered)
     assert verification["passed"] is False
     assert "observed decomposition derivation mismatch" in verification["failures"]
 
@@ -445,7 +487,7 @@ def test_resigned_decomposition_or_pairing_tamper_fails_public_verifier(
         if artifact["role"] == "schedule-effect-input"
     )["sha256"] = _write_json(input_path, schedule_input)
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(pairing_tampered)
+    verification = _verify_bundle(pairing_tampered)
     assert verification["passed"] is False
     assert "observed decomposition replay failed" in verification["failures"]
 
@@ -543,7 +585,7 @@ def test_malformed_manifest_and_lane_fail_closed_without_exception(
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["artifacts"][0].pop("path")
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(malformed_artifact)
+    verification = _verify_bundle(malformed_artifact)
     assert verification["passed"] is False
     assert "invalid artifact entry" in verification["failures"]
 
@@ -560,7 +602,7 @@ def test_malformed_manifest_and_lane_fail_closed_without_exception(
         if artifact["role"] == "schedule-effect-input"
     )["sha256"] = _write_json(input_path, schedule_input)
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(malformed_lane)
+    verification = _verify_bundle(malformed_lane)
     assert verification["passed"] is False
     assert "invalid schedule effect measurement lanes" in verification["failures"]
 
@@ -600,7 +642,7 @@ def test_fully_resigned_source_digest_forgery_fails_verifier(
         if artifact["role"] in updates:
             artifact["sha256"] = updates[artifact["role"]]
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(tampered)
+    verification = _verify_bundle(tampered)
     assert verification["passed"] is False
     assert "schedule effect source lineage mismatch" in verification["failures"]
 
@@ -645,9 +687,66 @@ def test_fully_resigned_lane_tamper_with_real_source_digest_fails_verifier(
         if artifact["role"] in updates:
             artifact["sha256"] = updates[artifact["role"]]
     _write_json(manifest_path, manifest)
-    verification = verify_run_bundle(tampered)
+    verification = _verify_bundle(tampered)
     assert verification["passed"] is False
     assert "schedule effect source derivation mismatch" in verification["failures"]
+
+
+def test_fully_resigned_qualified_detail_tamper_fails_source_replay(
+    tmp_path: Path,
+) -> None:
+    for boundary in ("device-timeline", "overhead-ablation"):
+        source = _write_bundle(
+            tmp_path / boundary,
+            run_id=f"issue47-{boundary}-source-replay-v1",
+            document=_qualified_input(),
+        )
+        tampered = source.parent / f"{boundary}-tampered"
+        shutil.copytree(source, tampered)
+        input_path = tampered / "schedule/effects.input.json"
+        schedule_input = json.loads(input_path.read_text(encoding="utf-8"))
+        diagnostic_lane = schedule_input["diagnostic_profiling_lane"]
+        if boundary == "device-timeline":
+            diagnostic_lane["device_timeline"]["intervals"][0][
+                "ended_ns"
+            ] += 1
+        else:
+            diagnostic_lane["overhead_ablation"]["holdout"][
+                "diagnostic_raw_samples_ns"
+            ][0] += 1
+
+        diagnostic_path = tampered / "observation/diagnostic-profiling.json"
+        diagnostic = {
+            "schema": (
+                "groundupscale.dev/diagnostic-profiling-observation/v1alpha1"
+            ),
+            **diagnostic_lane,
+        }
+        from groundupscale.observed_decomposition import (
+            compose_observed_decomposition,
+        )
+
+        result_path = tampered / "observation/observed-decomposition.json"
+        result = compose_observed_decomposition(schedule_input)
+        manifest_path = tampered / "run.manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        updates = {
+            "schedule-effect-input": _write_json(input_path, schedule_input),
+            "diagnostic-profiling-observation": _write_json(
+                diagnostic_path, diagnostic
+            ),
+            "observed-decomposition": _write_json(result_path, result),
+        }
+        for artifact in manifest["artifacts"]:
+            if artifact["role"] in updates:
+                artifact["sha256"] = updates[artifact["role"]]
+        _write_json(manifest_path, manifest)
+
+        verification = _verify_bundle(tampered)
+        assert verification["passed"] is False
+        assert "schedule effect source derivation mismatch" in verification[
+            "failures"
+        ]
 
 
 def test_fully_resigned_derivation_selector_tamper_fails_verifier(
@@ -704,8 +803,76 @@ def test_fully_resigned_derivation_selector_tamper_fails_verifier(
             if artifact["role"] in updates:
                 artifact["sha256"] = updates[artifact["role"]]
         _write_json(manifest_path, manifest)
-        verification = verify_run_bundle(tampered)
+        verification = _verify_bundle(tampered)
         assert verification["passed"] is False
         assert "schedule effect source derivation mismatch" in verification[
             "failures"
         ]
+
+
+def test_source_and_target_full_resign_cannot_replace_trusted_anchor(
+    tmp_path: Path,
+) -> None:
+    document = _qualified_input()
+    source = _write_bundle(
+        tmp_path,
+        run_id="issue47-trusted-anchor-source-v1",
+        document=document,
+    )
+    manifest_path = source / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    frozen_anchors = {
+        item["run_id"]: item["manifest_sha256"]
+        for item in manifest["source_runs"]
+    }
+    source_record = manifest["source_runs"][0]
+    source_root = (source / source_record["path"]).resolve()
+    source_manifest_path = source_root / "run.manifest.json"
+    source_manifest = json.loads(
+        source_manifest_path.read_text(encoding="utf-8")
+    )
+    source_artifact = source_manifest["artifacts"][0]
+    source_artifact_path = source_root / source_artifact["path"]
+    source_document = json.loads(source_artifact_path.read_text(encoding="utf-8"))
+    source_document["cases"][0]["latency"]["samples_ns"][0] += 1
+    source_artifact["sha256"] = _write_json(source_artifact_path, source_document)
+    _write_json(source_manifest_path, source_manifest)
+    source_record["manifest_sha256"] = hashlib.sha256(
+        source_manifest_path.read_bytes()
+    ).hexdigest()
+
+    input_path = source / "schedule/effects.input.json"
+    schedule_input = json.loads(input_path.read_text(encoding="utf-8"))
+    schedule_input["baseline_timing_lane"]["raw_samples_ns"] = source_document[
+        "cases"
+    ][0]["latency"]["samples_ns"]
+    schedule_input["baseline_timing_lane"]["timing_summary"] = timing_summary(
+        schedule_input["baseline_timing_lane"]["raw_samples_ns"]
+    )
+    baseline_path = source / "observation/baseline-timing.json"
+    baseline = {
+        "schema": "groundupscale.dev/baseline-timing-observation/v1alpha1",
+        **schedule_input["baseline_timing_lane"],
+    }
+    from groundupscale.observed_decomposition import compose_observed_decomposition
+
+    result_path = source / "observation/observed-decomposition.json"
+    result = compose_observed_decomposition(schedule_input)
+    updates = {
+        "schedule-effect-input": _write_json(input_path, schedule_input),
+        "baseline-timing-observation": _write_json(baseline_path, baseline),
+        "observed-decomposition": _write_json(result_path, result),
+    }
+    for artifact in manifest["artifacts"]:
+        if artifact["role"] in updates:
+            artifact["sha256"] = updates[artifact["role"]]
+    _write_json(manifest_path, manifest)
+
+    with patch.dict(
+        SCHEDULE_EFFECT_TRUSTED_SOURCE_MANIFESTS, frozen_anchors, clear=True
+    ):
+        verification = verify_run_bundle(source)
+    assert verification["passed"] is False
+    assert "schedule effect trusted source anchor mismatch" in verification[
+        "failures"
+    ]

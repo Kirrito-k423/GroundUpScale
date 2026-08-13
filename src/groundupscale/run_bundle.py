@@ -192,6 +192,14 @@ TRANSFORMER_DEMO_FAILED_REQUIRED_ROLES = (
     TRANSFORMER_DEMO_BLOCKED_REQUIRED_ROLES | {"transfer-observation"}
 )
 TRANSFORMER_DEMO_PRODUCER = "groundupscale@0.1.0"
+SCHEDULE_EFFECT_TRUSTED_SOURCE_MANIFESTS = {
+    "ascend-910b2-transformer-demo-20260811-v1": (
+        "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1"
+    ),
+    "issue32-ascend-910b2-diagnostic-v1": (
+        "67e4250978b852d461cac801370d78ffaa50c121984143691c4e5139ea91e386"
+    ),
+}
 
 
 def _transformer_demo_producer_lineage() -> dict[str, object]:
@@ -2235,6 +2243,16 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         ):
             failures.append("invalid schedule effect Frontier bundle identity")
         else:
+            declared_source_runs = manifest.get("source_runs")
+            if not isinstance(declared_source_runs, list) or any(
+                not isinstance(source, dict)
+                or SCHEDULE_EFFECT_TRUSTED_SOURCE_MANIFESTS.get(
+                    str(source.get("run_id"))
+                )
+                != source.get("manifest_sha256")
+                for source in declared_source_runs
+            ):
+                failures.append("schedule effect trusted source anchor mismatch")
             baseline_lane = schedule_input.get("baseline_timing_lane")
             diagnostic_lane = schedule_input.get("diagnostic_profiling_lane")
             if not isinstance(baseline_lane, dict) or not isinstance(
@@ -2326,6 +2344,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ablation_value.get("source_boundary"), dict
             ):
                 source_values.append(ablation_value["source_boundary"])
+            elif isinstance(ablation_value, dict) and isinstance(
+                ablation_value.get("source"), dict
+            ):
+                source_values.append(ablation_value["source"])
             verified_sources = [
                 verified_source_artifact(source) for source in source_values
             ]
@@ -2387,10 +2409,50 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             diagnostic_derivation["field"]
                         ]
                     )
+                    timeline_derived = (
+                        not isinstance(diagnostic_lane.get("device_timeline"), dict)
+                        or {
+                            key: value
+                            for key, value in diagnostic_lane[
+                                "device_timeline"
+                            ].items()
+                            if key != "source"
+                        }
+                        == diagnostic_document["device_timeline"]
+                    )
+                    if (
+                        isinstance(ablation_value, dict)
+                        and ablation_value.get("status") == "qualified"
+                    ):
+                        ablation_source = ablation_value.get("source")
+                        ablation_derived = (
+                            isinstance(ablation_source, dict)
+                            and ablation_source.get("expected_role")
+                            == "diagnostic-evidence"
+                            and ablation_source.get("derivation")
+                            == {"kind": "profiling-overhead-ablation"}
+                            and {
+                                key: value
+                                for key, value in ablation_value.items()
+                                if key != "source"
+                            }
+                            == verified_sources[-1][1]["overhead_ablation"]
+                        )
+                    else:
+                        ablation_derived = True
                 except (KeyError, StopIteration, TypeError):
                     baseline_derived = False
                     diagnostic_derived = False
-                if not baseline_derived or not diagnostic_derived:
+                    timeline_derived = False
+                    ablation_derived = False
+                if not all(
+                    (
+                        baseline_derived,
+                        diagnostic_derived,
+                        timeline_derived,
+                        ablation_derived,
+                    )
+                ):
                     failures.append("schedule effect source derivation mismatch")
             try:
                 replay = compose_observed_decomposition(schedule_input)
