@@ -148,7 +148,14 @@ def _parser() -> argparse.ArgumentParser:
     measure_command.add_argument("--logical-device-index", type=int, default=0)
     measure_command.add_argument(
         "--operation",
-        choices=("MatMul", "FlashAttentionForward", "SoftmaxPhase"),
+        choices=(
+            "MatMul",
+            "FlashAttentionForward",
+            "SoftmaxPhase",
+            "Add",
+            "Mul",
+            "SiLU",
+        ),
         default="MatMul",
     )
     measure_command.add_argument("--m", type=int)
@@ -164,6 +171,11 @@ def _parser() -> argparse.ArgumentParser:
         choices=("max_reduce", "subtract", "exp", "sum_reduce", "normalize"),
     )
     measure_command.add_argument("--axis", type=int, default=-1)
+    measure_command.add_argument("--elementwise-shape")
+    measure_command.add_argument(
+        "--operand-kind",
+        choices=("tensor", "tensor-tensor", "tensor-broadcast", "tensor-scalar"),
+    )
     measure_command.add_argument("--dtype", default="float32")
     measure_command.add_argument("--layout", default="row-major-contiguous")
     measure_command.add_argument(
@@ -177,6 +189,9 @@ def _parser() -> argparse.ArgumentParser:
             "torch.exp",
             "torch.sum",
             "torch.div",
+            "torch.add",
+            "torch.mul",
+            "torch.nn.functional.silu",
         ),
         default="torch.matmul",
     )
@@ -861,7 +876,7 @@ def _run_measurement(
             "mode": "forward",
             **common,
         }
-    else:
+    elif args.operation == "SoftmaxPhase":
         try:
             shape = [int(value) for value in str(args.shape).split(",")]
         except (TypeError, ValueError):
@@ -896,6 +911,30 @@ def _run_measurement(
             "phase": args.phase,
             "shape": shape,
             "axis": args.axis,
+            **common,
+        }
+    else:
+        try:
+            result_shape = [
+                int(value) for value in str(args.elementwise_shape).split(",")
+            ]
+        except (TypeError, ValueError) as error:
+            raise SystemExit(
+                "elementwise measurement requires --elementwise-shape as "
+                "comma-separated positive dimensions"
+            ) from error
+        if not result_shape or any(value <= 0 for value in result_shape):
+            raise SystemExit(
+                "elementwise measurement requires --elementwise-shape as "
+                "comma-separated positive dimensions"
+            )
+        case = {
+            "schema": (
+                "groundupscale.dev/exact-shape-elementwise-case/v1alpha1"
+            ),
+            "operation": args.operation,
+            "shape": {"result": result_shape},
+            "operand_kind": args.operand_kind,
             **common,
         }
     adapter = measurement_adapter_factory(

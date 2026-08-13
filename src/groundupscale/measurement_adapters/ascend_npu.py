@@ -12,6 +12,7 @@ import statistics
 import subprocess
 from collections.abc import Callable, Mapping
 from copy import deepcopy
+from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
@@ -128,6 +129,35 @@ for _softmax_candidate in _SOFTMAX_PHASE_CANDIDATES.values():
     }
     _softmax_candidate["tuning_parameters"] = {}
 
+_ELEMENTWISE_CANDIDATES: dict[str, dict[str, object]] = {
+    "torch.add": {
+        "candidate_family": "pytorch-ascend-elementwise-add",
+        "operator_entrypoint": "torch.add",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {},
+    },
+    "torch.mul": {
+        "candidate_family": "pytorch-ascend-elementwise-mul",
+        "operator_entrypoint": "torch.mul",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {},
+    },
+    "torch.nn.functional.silu": {
+        "candidate_family": "pytorch-ascend-elementwise-silu",
+        "operator_entrypoint": "torch.nn.functional.silu",
+        "compilation_parameters": {
+            "compiler": "pytorch-eager",
+            "graph_compilation": False,
+        },
+        "tuning_parameters": {},
+    },
+}
 
 def _load_runtime() -> tuple[object, object]:
     torch = importlib.import_module("torch")
@@ -261,6 +291,29 @@ def _timing_summary(samples: list[int]) -> dict[str, float | int]:
         "iqr_fraction_of_median": (q3 - q1) / median,
         "median_absolute_deviation": median_absolute_deviation,
         "mad_fraction_of_median": median_absolute_deviation / median,
+    }
+
+
+def _host_lock_metadata() -> dict[str, object] | None:
+    owner_path = Path(
+        os.environ.get(
+            "GROUNDUPSCALE_NPU_LOCK_OWNER_FILE",
+            "/home/t00906153/.groundupscale/locks/ascend-910b2-host.owner",
+        )
+    )
+    if os.environ.get("GROUNDUPSCALE_ISSUE") != "45" or not owner_path.is_file():
+        return None
+    return {
+        "schema": "groundupscale.dev/npu-host-lock-metadata/v1alpha1",
+        "status": "held-during-collection",
+        "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+        "owner": owner_path.read_text(encoding="utf-8").strip(),
+        "collection_finished_at": datetime.now(UTC).isoformat(),
+        "hardware_cohort": os.environ.get(
+            "GROUNDUPSCALE_HARDWARE_COHORT",
+            "ascend-npu-23b93a89d5fecc79",
+        ),
+        "device_visibility": os.environ.get("ASCEND_RT_VISIBLE_DEVICES"),
     }
 
 
@@ -970,6 +1023,7 @@ def _collect_exact_shape_softmax_phase(
     ):
         raise ValueError("unsupported exact-Shape Softmax phase case")
     axis = int(case["axis"])
+
     warmup_iterations = timing_plan.get("warmup_iterations")
     repetitions = timing_plan.get("repetitions")
     inner_iterations = timing_plan.get("inner_iterations", 1)
@@ -1076,6 +1130,158 @@ def _collect_exact_shape_softmax_phase(
         "aggregate_samples_ns": aggregate_samples,
         "memory": {
             "allocated_bytes_before": 0,
+            "allocated_bytes_after": int(runtime.npu.memory_allocated()),
+            "reserved_bytes_after": int(runtime.npu.memory_reserved()),
+            "maximum_allocated_bytes": int(runtime.npu.max_memory_allocated()),
+        },
+        "device_event_id": "per-sample-torch-npu-event-pair",
+        "stream_id": "default-npu-stream",
+    }
+
+
+def _collect_exact_shape_elementwise(
+    torch: object,
+    logical_device_index: int,
+    case: dict[str, object],
+    timing_plan: dict[str, object],
+    *,
+    device: str | None = None,
+) -> dict[str, object]:
+    runtime: Any = torch
+    try:
+        operator_shape = semantics_from_case(case)
+    except UnsupportedOperatorShape as error:
+        raise ValueError(str(error)) from error
+    candidate_id = str(case.get("candidate"))
+    expected_candidate = {
+        "Add": "torch.add",
+        "Mul": "torch.mul",
+        "SiLU": "torch.nn.functional.silu",
+    }.get(operator_shape.operation)
+    if candidate_id != expected_candidate:
+        raise ValueError("unsupported exact-Shape elementwise candidate")
+    warmup_iterations = timing_plan.get("warmup_iterations")
+    repetitions = timing_plan.get("repetitions")
+    inner_iterations = timing_plan.get("inner_iterations", 1)
+    if (
+        not isinstance(warmup_iterations, int)
+        or warmup_iterations < 0
+        or not isinstance(repetitions, int)
+        or repetitions < 1
+        or not isinstance(inner_iterations, int)
+        or inner_iterations < 1
+    ):
+        raise ValueError("invalid timing plan iteration counts")
+
+    runtime.npu.set_device(logical_device_index)
+    logical_device = device or f"npu:{logical_device_index}"
+    generator = runtime.Generator(device="cpu").manual_seed(int(case["seed"]))
+    result_shape = tuple(operator_shape.normalized_shape["result"])
+    input_cpu = runtime.randn(
+        result_shape, dtype=runtime.float32, generator=generator
+    )
+    operand_kind = operator_shape.domain_facets["operand_kind"]
+    other_cpu = (
+        runtime.randn(result_shape, dtype=runtime.float32, generator=generator)
+        if operand_kind == "tensor-tensor"
+        else runtime.randn(
+            (1, 1, result_shape[-2], result_shape[-1]),
+            dtype=runtime.float32,
+            generator=generator,
+        )
+        if operand_kind == "tensor-broadcast"
+        else 0.125
+        if operand_kind == "tensor-scalar"
+        else None
+    )
+    allocated_before = int(runtime.npu.memory_allocated())
+    input_tensor = input_cpu.to(logical_device)
+    other = other_cpu.to(logical_device) if hasattr(other_cpu, "to") else other_cpu
+    runtime.npu.synchronize()
+
+    def invoke(left: object, right: object) -> object:
+        if operator_shape.operation == "Add":
+            return runtime.add(left, right)
+        if operator_shape.operation == "Mul":
+            return runtime.mul(left, right)
+        return runtime.nn.functional.silu(left)
+
+    oracle = invoke(input_cpu.double(), other_cpu.double() if hasattr(other_cpu, "double") else other_cpu)
+
+    def measure() -> tuple[Any, int]:
+        start = runtime.npu.Event(enable_timing=True)
+        end = runtime.npu.Event(enable_timing=True)
+        runtime.npu.synchronize()
+        start.record()
+        result = None
+        for _ in range(inner_iterations):
+            result = invoke(input_tensor, other)
+        end.record()
+        end.synchronize()
+        runtime.npu.synchronize()
+        assert result is not None
+        return result, round(
+            float(start.elapsed_time(end)) * 1_000_000 / inner_iterations
+        )
+
+    for _ in range(warmup_iterations):
+        warmup_result, _ = measure()
+        if device is None and warmup_result.device.type != "npu":
+            raise RuntimeError("cpu-fallback-detected")
+    actual = invoke(input_tensor, other)
+    runtime.npu.synchronize()
+    if device is None and actual.device.type != "npu":
+        raise RuntimeError("cpu-fallback-detected")
+    actual_cpu = actual.cpu().double()
+    absolute_error = (actual_cpu - oracle).abs()
+    relative_error = absolute_error / oracle.abs().clamp_min(1e-12)
+    finite = bool(runtime.isfinite(actual_cpu).all() and runtime.isfinite(oracle).all())
+    shape_exact = tuple(actual_cpu.shape) == tuple(oracle.shape)
+    atol = 1e-6
+    rtol = 1e-5
+    passed = bool(
+        finite
+        and shape_exact
+        and runtime.allclose(actual_cpu, oracle, atol=atol, rtol=rtol)
+    )
+    samples: list[int] = []
+    for _ in range(repetitions):
+        result, elapsed_ns = measure()
+        if device is None and result.device.type != "npu":
+            raise RuntimeError("cpu-fallback-detected")
+        if elapsed_ns <= 0:
+            raise RuntimeError("invalid-primary-timer-sample")
+        samples.append(elapsed_ns)
+
+    def tensor_digest(tensor: Any) -> str:
+        return sha256(tensor.contiguous().numpy().tobytes()).hexdigest()
+
+    def pointer_alignment(pointer: int) -> int:
+        return pointer & -pointer
+
+    return {
+        "runtime_device_name": str(runtime.npu.get_device_name(logical_device_index)),
+        "candidate_device": str(actual.device),
+        "cpu_fallback": False if device is not None else actual.device.type == "cpu",
+        "minimum_alignment_bytes": pointer_alignment(int(input_tensor.data_ptr())),
+        "input_sha256": tensor_digest(input_cpu),
+        "other_sha256": (
+            tensor_digest(other_cpu) if hasattr(other_cpu, "contiguous") else None
+        ),
+        "target_output_sha256": tensor_digest(actual_cpu),
+        "correctness": {
+            "status": "passed" if passed else "failed",
+            "oracle": "cpu-float64-elementwise",
+            "atol": atol,
+            "rtol": rtol,
+            "max_absolute_error": float(absolute_error.max().item()),
+            "max_relative_error": float(relative_error.max().item()),
+            "finite": finite,
+            "shape_exact": shape_exact,
+        },
+        "raw_samples_ns": samples,
+        "memory": {
+            "allocated_bytes_before": allocated_before,
             "allocated_bytes_after": int(runtime.npu.memory_allocated()),
             "reserved_bytes_after": int(runtime.npu.memory_reserved()),
             "maximum_allocated_bytes": int(runtime.npu.max_memory_allocated()),
@@ -1658,10 +1864,14 @@ class AscendNpuMeasurementAdapter:
         torch, torch_npu = self._runtime_loader()
         collection_executor = self._collection_executor
         if collection_executor is None:
+            operation = case.get("operation")
             collection_executor = {
                 "FlashAttentionForward": _collect_exact_shape_flash_attention,
                 "SoftmaxPhase": _collect_exact_shape_softmax_phase,
-            }.get(str(case.get("operation")), _collect_exact_shape_matmul)
+                "Add": _collect_exact_shape_elementwise,
+                "Mul": _collect_exact_shape_elementwise,
+                "SiLU": _collect_exact_shape_elementwise,
+            }.get(str(operation), _collect_exact_shape_matmul)
         raw = collection_executor(
             torch,
             self.logical_device_index,
@@ -1714,6 +1924,9 @@ class AscendNpuMeasurementAdapter:
             "MatMul": _MATMUL_CANDIDATES,
             "FlashAttentionForward": _FLASH_ATTENTION_CANDIDATES,
             "SoftmaxPhase": _SOFTMAX_PHASE_CANDIDATES,
+            "Add": _ELEMENTWISE_CANDIDATES,
+            "Mul": _ELEMENTWISE_CANDIDATES,
+            "SiLU": _ELEMENTWISE_CANDIDATES,
         }[operator_shape.operation]
         candidate_spec = candidate_specs.get(candidate_id)
         if candidate_spec is None:
@@ -1818,7 +2031,7 @@ class AscendNpuMeasurementAdapter:
                 ),
                 "sequence_shape_identity": operator_shape.shape_identity,
             }
-        else:
+        elif operator_shape.operation == "SoftmaxPhase":
             input_corpus = {
                 "schema": "groundupscale.dev/input-corpus/v1alpha1",
                 "seed": case["seed"],
@@ -1831,7 +2044,20 @@ class AscendNpuMeasurementAdapter:
                 "input_sha256": raw["input_sha256"],
                 "operator_shape_identity": operator_shape.shape_identity,
             }
-        return {
+        else:
+            input_corpus = {
+                "schema": "groundupscale.dev/input-corpus/v1alpha1",
+                "seed": case["seed"],
+                "initialization": "cpu-torch-randn-fixed-seed",
+                "shape": deepcopy(case["shape"]),
+                "operand_kind": case["operand_kind"],
+                "dtype": case["dtype"],
+                "layout": case["layout"],
+                "input_sha256": raw["input_sha256"],
+                "other_sha256": raw.get("other_sha256"),
+                "operator_shape_identity": operator_shape.shape_identity,
+            }
+        collection = {
             "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
             "operation": "collect",
             "status": "completed",
@@ -1969,6 +2195,10 @@ class AscendNpuMeasurementAdapter:
             },
             "evidence_ref": "artifact://adapter/collection.json",
         }
+        lock_metadata = _host_lock_metadata()
+        if lock_metadata is not None:
+            collection["npu_host_lock"] = lock_metadata
+        return collection
 
 
 __all__ = ["AscendNpuMeasurementAdapter"]

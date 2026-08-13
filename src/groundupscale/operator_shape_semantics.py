@@ -245,6 +245,57 @@ def _flash_attention_from_parts(
     )
 
 
+_ELEMENTWISE_OPERAND_KINDS = {
+    "Add": {"tensor-tensor", "tensor-broadcast"},
+    "Mul": {"tensor-tensor", "tensor-scalar"},
+    "SiLU": {"tensor"},
+}
+
+
+def _elementwise_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
+    operation = str(case.get("operation"))
+    shape = case.get("shape")
+    result = shape.get("result") if isinstance(shape, dict) else None
+    operand_kind = case.get("operand_kind")
+    if (
+        operation not in _ELEMENTWISE_OPERAND_KINDS
+        or case.get("dtype") != "float32"
+        or case.get("layout") != "contiguous"
+        or not isinstance(result, list)
+        or not result
+        or not all(_positive_integer(value) for value in result)
+        or operand_kind not in _ELEMENTWISE_OPERAND_KINDS[operation]
+    ):
+        raise UnsupportedOperatorShape(
+            "elementwise operations require a positive contiguous float32 "
+            "result Shape and an operation-specific operand kind"
+        )
+    normalized_result = [int(value) for value in result]
+    elements = prod(normalized_result)
+    normalized = {"result": normalized_result, "elements": elements}
+    operations_per_element = 5 if operation == "SiLU" else 1
+    return OperatorShapeSemantics(
+        operation=operation,
+        normalized_shape=normalized,
+        shape_identity=_identity(operation, normalized),
+        coordinate_axis="elements",
+        coordinate_value=elements,
+        domain_facets={
+            "semantic_operation": operation,
+            "dtype": case.get("dtype"),
+            "layout": case.get("layout"),
+            "operand_kind": operand_kind,
+        },
+        work_formula={
+            "kind": "elementwise-result-elements",
+            "version": "v1",
+            "operations_per_element": operations_per_element,
+            "work_unit": "FLOP",
+        },
+        declared_work=float(elements * operations_per_element),
+    )
+
+
 def semantics_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
     operation = case.get("operation")
     if operation == "MatMul":
@@ -267,6 +318,8 @@ def semantics_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
             dropout_probability=case.get("dropout_probability"),
             mode=case.get("mode"),
         )
+    if operation in _ELEMENTWISE_OPERAND_KINDS:
+        return _elementwise_from_case(case)
     raise UnsupportedOperatorShape(f"unsupported operation: {operation!r}")
 
 
@@ -350,5 +403,16 @@ def semantics_from_surface_query(
             mask=domain.get("mask"),
             dropout_probability=domain.get("dropout_probability"),
             mode=domain.get("mode"),
+        )
+    if operation in _ELEMENTWISE_OPERAND_KINDS:
+        result = query_shape.get("result")
+        return _elementwise_from_case(
+            {
+                "operation": operation,
+                "shape": {"result": result},
+                "operand_kind": domain.get("operand_kind"),
+                "dtype": domain.get("dtype"),
+                "layout": domain.get("layout"),
+            }
         )
     raise UnsupportedOperatorShape(f"unsupported operation: {operation!r}")

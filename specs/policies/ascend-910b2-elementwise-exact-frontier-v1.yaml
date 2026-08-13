@@ -1,0 +1,50 @@
+schema: groundupscale.dev/operator-frontier-qualification-policy/v1alpha1
+policy_id: ascend-910b2-elementwise-exact-frontier
+version: v1
+hardware_cohort: ascend-npu-23b93a89d5fecc79
+domains:
+  - domain_id: add-broadcast-mask
+    operation: Add
+    result_shape: [1, 8, 512, 512]
+    operand_kind: tensor-broadcast
+    candidate_id: torch.add
+  - domain_id: add-residual
+    operation: Add
+    result_shape: [1, 512, 512]
+    operand_kind: tensor-tensor
+    candidate_id: torch.add
+  - domain_id: mul-attention-scale
+    operation: Mul
+    result_shape: [1, 8, 512, 512]
+    operand_kind: tensor-scalar
+    candidate_id: torch.mul
+  - domain_id: mul-mlp-gate
+    operation: Mul
+    result_shape: [1, 512, 2048]
+    operand_kind: tensor-tensor
+    candidate_id: torch.mul
+  - domain_id: silu-mlp-gate
+    operation: SiLU
+    result_shape: [1, 512, 2048]
+    operand_kind: tensor
+    candidate_id: torch.nn.functional.silu
+common_scope:
+  dtype: float32
+  layout: contiguous
+  execution_mode: pytorch-eager
+  logical_device: npu:0
+  sequence_distribution_mode: exact-only
+minimum_search_sessions: 3
+minimum_holdout_sessions: 3
+minimum_confirmation_sessions: 3
+minimum_warmup_iterations: 20
+maximum_session_median_relative_range: 0.10
+minimum_candidate_coverage: C0_SINGLE
+holdout_candidate_scope: all-eligible-candidates
+uncertainty_combination: root-sum-of-squares
+target_coverage: 0.68
+sample_exclusion: none-preserve-all-raw-samples
+estimator: median(independent-holdout-session-medians)
+change_reason: qualify issue 45 exact Add, Mul, and SiLU execution domains
+revalidation: on cohort, Shape, dtype, layout, operand, candidate, runtime, evidence, or policy change
+evidence_ref: issue://github/Kirrito-k423/GroundUpScale/45

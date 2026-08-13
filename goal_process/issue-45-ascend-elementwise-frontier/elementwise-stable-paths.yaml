@@ -1,0 +1,52 @@
+schema: groundupscale.dev/elementwise-stable-path-inventory/v1alpha1
+source_run_bundle: goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1
+source_cost_ir_sha256: 1e2f1857d3ece1319644528491aea5e8eb17eb341df37091ec03d8c6ebd4c028
+hardware_cohort: ascend-npu-23b93a89d5fecc79
+domains:
+  add-broadcast-mask:
+    operation: Add
+    result_shape: [1, 8, 512, 512]
+    dtype: float32
+    layout: contiguous
+    operand_kind: tensor-broadcast
+    stable_paths:
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask
+  add-residual:
+    operation: Add
+    result_shape: [1, 512, 512]
+    dtype: float32
+    layout: contiguous
+    operand_kind: tensor-tensor
+    stable_paths:
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_1
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/residual_2
+  mul-attention-scale:
+    operation: Mul
+    result_shape: [1, 8, 512, 512]
+    dtype: float32
+    layout: contiguous
+    operand_kind: tensor-scalar
+    stable_paths:
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale
+  mul-mlp-gate:
+    operation: Mul
+    result_shape: [1, 512, 2048]
+    dtype: float32
+    layout: contiguous
+    operand_kind: tensor-tensor
+    stable_paths:
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul
+  silu-mlp-gate:
+    operation: SiLU
+    result_shape: [1, 512, 2048]
+    dtype: float32
+    layout: contiguous
+    operand_kind: tensor
+    stable_paths:
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu
+      - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu

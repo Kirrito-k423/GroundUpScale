@@ -1018,11 +1018,20 @@ def _observation(path: str | Path) -> _Observation:
             input_corpus.get("left_sha256"),
             input_corpus.get("right_sha256"),
         )
-    else:
+    elif operator_shape.operation == "FlashAttentionForward":
         identities = (
             input_corpus.get("q_sha256"),
             input_corpus.get("k_sha256"),
             input_corpus.get("v_sha256"),
+        )
+    else:
+        identities = tuple(
+            identity
+            for identity in (
+                input_corpus.get("input_sha256"),
+                input_corpus.get("other_sha256"),
+            )
+            if identity is not None
         )
     if any(
         not isinstance(identity, str) or len(identity) != 64
@@ -1030,6 +1039,10 @@ def _observation(path: str | Path) -> _Observation:
     ) or (
         operator_shape.operation == "FlashAttentionForward"
         and input_corpus.get("sequence_shape_identity")
+        != operator_shape.shape_identity
+    ) or (
+        operator_shape.operation in {"Add", "Mul", "SiLU"}
+        and input_corpus.get("operator_shape_identity")
         != operator_shape.shape_identity
     ):
         raise OperatorFrontierQualificationError(
@@ -1537,32 +1550,46 @@ def _write_exact_distribution_bundle(
     _require_independent_sessions(observations)
     cohort_id = _require_common_identity(observations)
     first = observations[0]
-    if first.operator_shape.operation != "FlashAttentionForward":
+    exact_shape_operations = {"FlashAttentionForward", "Add", "Mul", "SiLU"}
+    if first.operator_shape.operation not in exact_shape_operations:
         raise OperatorFrontierQualificationError(
-            "exact distribution qualification requires ragged TND evidence",
+            "exact-only qualification requires supported exact-Shape evidence",
             reason_code="unsupported-shape-regime",
         )
     scope = policy.document["scope"]
     assert isinstance(scope, dict)
     vectors = scope.get("sequence_vectors")
-    if (
-        scope.get("sequence_distribution_mode") != "exact-only"
-        or not isinstance(vectors, list)
-        or sorted(tuple(item) for item in vectors if isinstance(item, list))
-        != sorted(
+    result_shapes = scope.get("result_shapes")
+    exact_identities_match = (
+        isinstance(vectors, list)
+        and sorted(tuple(item) for item in vectors if isinstance(item, list))
+        == sorted(
             {
                 tuple(
                     cast(
                         list[int],
-                        item.operator_shape.normalized_shape[
-                            "sequence_lengths"
-                        ],
+                        item.operator_shape.normalized_shape["sequence_lengths"],
                     )
                 )
                 for item in observations
             }
         )
-    ):
+        if first.operator_shape.operation == "FlashAttentionForward"
+        else isinstance(result_shapes, list)
+        and sorted(tuple(item) for item in result_shapes if isinstance(item, list))
+        == sorted(
+            {
+                tuple(
+                    cast(
+                        list[int],
+                        item.operator_shape.normalized_shape["result"],
+                    )
+                )
+                for item in observations
+            }
+        )
+    )
+    if scope.get("sequence_distribution_mode") != "exact-only" or not exact_identities_match:
         raise OperatorFrontierQualificationError(
             "qualification policy does not cover ragged sequence identities",
             reason_code="qualification-policy-scope-mismatch",
@@ -1599,16 +1626,20 @@ def _write_exact_distribution_bundle(
             reason_code="candidate-coverage-policy-failed",
         )
     selected_candidate_id = candidate_ids[0]
-    if any(
-        item.correctness != "passed"
+    invalid_sources = [
+        {
+            "run_id": item.run_id,
+            "evidence_ref": item.evidence_ref,
+            "correctness": item.correctness,
+            "timing_quality": item.timing_quality,
+            "warmup_iterations": item.warmup_iterations,
+            "minimum_warmup_iterations": policy.minimum_warmup_iterations,
+        }
+        for item in observations
+        if item.correctness != "passed"
         or item.timing_quality != "passed"
         or item.warmup_iterations < policy.minimum_warmup_iterations
-        for item in observations
-    ):
-        raise OperatorFrontierQualificationError(
-            "ragged evidence failed qualification",
-            reason_code="independent-holdout-failed",
-        )
+    ]
     search_by_identity = {
         identity: [
             item
@@ -1644,6 +1675,25 @@ def _write_exact_distribution_bundle(
             "ragged evidence lacks independent exact-Shape sessions",
             reason_code="independent-holdout-failed",
         )
+    unstable = [
+        {
+            "operator_shape_identity": identity,
+            "lane": lane,
+            "session_medians_ns": [item.median_ns for item in records],
+            "session_median_relative_range": _relative_range(
+                [item.median_ns for item in records]
+            ),
+            "maximum_allowed": policy.maximum_session_median_relative_range,
+            "evidence_refs": [item.evidence_ref for item in records],
+        }
+        for identity in search_by_identity
+        for lane, records in (
+            ("search", search_by_identity[identity]),
+            ("holdout", holdout_by_identity[identity]),
+        )
+        if _relative_range([item.median_ns for item in records])
+        > policy.maximum_session_median_relative_range
+    ]
     runs_root = Path(artifact_store).resolve() / "runs"
     destination = runs_root / run_id
     if destination.exists():
@@ -1682,6 +1732,135 @@ def _write_exact_distribution_bundle(
         ),
         "execution_protocol_digest": first.execution_protocol_digest,
     }
+    gate_failures = [*invalid_sources, *unstable]
+    if gate_failures:
+        gate_reason = (
+            "exact-shape-source-observation-invalid"
+            if invalid_sources
+            else "exact-shape-session-repeatability-failed"
+        )
+        surface: dict[str, object] = {
+            "surface_id": (
+                f"surface://{cohort_id}/{first.operator_shape.operation.casefold()}/"
+                f"exact/{evidence_digest[:16]}"
+            ),
+            "version": f"v-{evidence_digest[:16]}",
+            "previous_version": None,
+            "qualification_status": "unknown",
+            "qualification_reason_code": gate_reason,
+            "cohort_id": cohort_id,
+            "domain": domain,
+            "candidate_family": first.candidate_family,
+            "coordinate": {
+                "axis": "sequence_distribution_index",
+                "transform": "identity",
+                "transform_version": "v1",
+            },
+            "work_formula": first.operator_shape.work_formula,
+            "anchors": [],
+            "cells": [],
+            "uncertainty_policy": {
+                "policy_id": (
+                    f"ascend-{first.operator_shape.operation.casefold()}-"
+                    "exact-uncertainty"
+                ),
+                "version": "v1",
+                "scope": "qualified exact operator Shapes only",
+                "change_reason": "independent exact-Shape holdout",
+                "revalidation": "on new independent sessions",
+                "combination": policy.document["uncertainty_combination"],
+                "target_coverage": policy.target_coverage,
+                "anchor_covariance": [],
+                "anchor_latency_covariance": [],
+                "response_model_standard_uncertainty_latency_ns": None,
+                "instrumentation_standard_uncertainty_latency_ns": (
+                    first.timer_resolution_ns
+                ),
+                "boundary_uncertainty": {
+                    "status": "unknown",
+                    "reason_code": gate_reason,
+                },
+                "calibration_evidence_refs": [
+                    item.evidence_ref for item in holdouts
+                ],
+            },
+            "evidence_refs": ["artifact://frontier/qualification.json"],
+        }
+        surface["input_digest"] = _canonical_digest(surface)
+        qualification: dict[str, object] = {
+            "schema": QUALIFICATION_SCHEMA,
+            "status": "unknown",
+            "reason_code": gate_reason,
+            "policy": {**policy.document, "input_digest": policy.digest},
+            "hardware_cohort": cohort_id,
+            "anchors": [],
+            "surface": surface,
+            "source_runs": source_records,
+            "qualification_gate_failures": gate_failures,
+            "minimum_next_evidence_boundary": (
+                {
+                    "kind": "replace-invalid-independent-sessions",
+                    "operation": first.operator_shape.operation,
+                    "invalid_run_ids": [
+                        item["run_id"] for item in invalid_sources
+                    ],
+                    "required_correctness": "passed",
+                    "required_timing_quality": "passed",
+                    "minimum_warmup_iterations": (
+                        policy.minimum_warmup_iterations
+                    ),
+                }
+                if invalid_sources
+                else {
+                    "kind": "repeat-independent-search-and-holdout-sessions",
+                    "operation": first.operator_shape.operation,
+                    "operator_shape_identities": sorted(search_by_identity),
+                    "maximum_session_median_relative_range": (
+                        policy.maximum_session_median_relative_range
+                    ),
+                }
+            ),
+            "stopping_decision": {
+                "status": "stopped",
+                "reason_code": gate_reason,
+                "next_action": (
+                    "replace invalid independent sessions under the locked "
+                    "execution domain"
+                    if invalid_sources
+                    else "repeat independent search and holdout sessions under "
+                    "the locked execution domain"
+                ),
+            },
+        }
+        queries = [
+            {
+                "query_id": (
+                    f"ascend-{first.operator_shape.operation.casefold()}-"
+                    f"exact-{index}"
+                ),
+                "surface_id": surface["surface_id"],
+                "surface_version": surface["version"],
+                "shape": shape,
+                "domain": surface["domain"],
+            }
+            for index, shape in enumerate(query_shapes, start=1)
+        ]
+        return _write_operator_frontier_documents(
+            runs_root,
+            destination,
+            run_id=run_id,
+            cohort_id=cohort_id,
+            source_records=source_records,
+            surface=surface,
+            qualification=qualification,
+            queries=queries,
+            analysis_plan=(
+                f"issue-45-ascend-"
+                f"{first.operator_shape.operation.casefold()}-exact"
+            ),
+            runtime_device_name=first.runtime_device_name,
+            logical_device=first.logical_device,
+        )
     anchors: list[dict[str, object]] = []
     anchor_latency_variances: list[float] = []
     for identity, search_records in sorted(search_by_identity.items()):
@@ -1692,7 +1871,8 @@ def _write_exact_distribution_bundle(
         rates = [semantics.declared_work / (value * 1e-9) for value in medians]
         standard_latency = float(stdev(medians))
         anchor_latency_variances.append(standard_latency**2)
-        anchor_id = f"ascend-flash-attention-ragged-{identity.rsplit('/', 1)[-1][:12]}"
+        operation_slug = semantics.operation.casefold()
+        anchor_id = f"ascend-{operation_slug}-exact-{identity.rsplit('/', 1)[-1][:12]}"
         anchors.append(
             {
                 "anchor_id": anchor_id,
@@ -1723,8 +1903,8 @@ def _write_exact_distribution_bundle(
         )
     surface: dict[str, object] = {
         "surface_id": (
-            f"surface://{cohort_id}/flash-attention/tnd-forward/"
-            f"ragged/{evidence_digest[:16]}"
+            f"surface://{cohort_id}/{first.operator_shape.operation.casefold()}/"
+            f"exact/{evidence_digest[:16]}"
         ),
         "version": f"v-{evidence_digest[:16]}",
         "previous_version": None,
@@ -1735,8 +1915,8 @@ def _write_exact_distribution_bundle(
         "anchor_lifecycle_policy": {
             "policy_id": "frontier-anchor-lifecycle",
             "version": "v2",
-            "scope": f"{cohort_id}-flash-attention-ragged-exact",
-            "change_reason": "issue-37 exact-only ragged TND identity",
+            "scope": f"{cohort_id}-{first.operator_shape.operation.casefold()}-exact",
+            "change_reason": "exact-only operator Shape identity",
             "revalidation": (
                 "on cohort, domain, candidate, vector, evidence, or policy "
                 "change"
@@ -1751,7 +1931,7 @@ def _write_exact_distribution_bundle(
         "anchors": anchors,
         "cells": [
             {
-                "cell_id": f"flash-attention-ragged-exact-{index}",
+                "cell_id": f"{first.operator_shape.operation.casefold()}-exact-{index}",
                 "anchor_ids": [anchor["anchor_id"], anchor["anchor_id"]],
                 "status": "retained",
                 "regime_id": "ragged-exact-anchor",
@@ -1763,9 +1943,9 @@ def _write_exact_distribution_bundle(
             for index, anchor in enumerate(anchors, start=1)
         ],
         "uncertainty_policy": {
-            "policy_id": "ascend-flash-attention-ragged-exact-uncertainty",
+            "policy_id": f"ascend-{first.operator_shape.operation.casefold()}-exact-uncertainty",
             "version": "v1",
-            "scope": "qualified exact sequence vectors only",
+            "scope": "qualified exact operator Shapes only",
             "change_reason": "independent exact-Shape holdout",
             "revalidation": "on cohort, vector, evidence, or policy change",
             "combination": policy.document["uncertainty_combination"],
@@ -1788,7 +1968,7 @@ def _write_exact_distribution_bundle(
             ),
             "boundary_uncertainty": {
                 "status": "not_applicable",
-                "reason_code": "exact-sequence-distribution-anchor-only",
+                "reason_code": "exact-operator-shape-anchor-only",
             },
             "calibration_evidence_refs": [item.evidence_ref for item in holdouts],
         },
@@ -1807,7 +1987,7 @@ def _write_exact_distribution_bundle(
     }
     queries = [
         {
-            "query_id": f"ascend-flash-attention-ragged-{index}",
+            "query_id": f"ascend-{first.operator_shape.operation.casefold()}-exact-{index}",
             "surface_id": surface["surface_id"],
             "surface_version": surface["version"],
             "shape": shape,
@@ -1824,7 +2004,7 @@ def _write_exact_distribution_bundle(
         surface=surface,
         qualification=qualification,
         queries=queries,
-        analysis_plan="issue-37-ascend-flash-attention-ragged-exact",
+        analysis_plan=f"issue-45-ascend-{first.operator_shape.operation.casefold()}-exact",
         runtime_device_name=first.runtime_device_name,
         logical_device=first.logical_device,
     )
