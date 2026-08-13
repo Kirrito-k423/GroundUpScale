@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "observation/phase-capability.json",
+      "produced_by": "groundupscale-rmsnorm-phase-measurement-v1",
+      "role": "operator-phase-capability-observation",
+      "schema": "groundupscale.dev/operator-phase-capability-observation/v1alpha1",
+      "sha256": "b2717e7e4ee48ce4b88c33cae9e5526965f3dcd47c7992031adf43cb204b9fe4"
+    }
+  ],
+  "bundle_kind": "operator-phase-measurement",
+  "compilation_fingerprint": "56fe9305e7b33c595d8edb707b5fdb963bacfe96acda524a5fec3cfcb77aed12",
+  "created_at": "2026-08-13T13:35:11.436631+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; digests are authoritative",
+  "lane": "search",
+  "operation": "RMSNorm",
+  "phase_id": "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1",
+  "phase_name": "square",
+  "producer_lineage": {
+    "producer": "groundupscale-rmsnorm-phase-measurement-v1"
+  },
+  "run_id": "issue43-20260813Tissue43npu01-square-search",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "status": "completed"
+}

@@ -1,0 +1,22 @@
+/home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/utils/_path_manager.py:66: UserWarning: Permission mismatch: The owner of /home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/lib/libop_plugin_atb.so does not match.
+  warnings.warn(f"Permission mismatch: The owner of {path} does not match.")
+2.7.1+cpu 2.7.1.post2 8.3.2 2.13.4
+.............                                                            [100%]
+=============================== warnings summary ===============================
+../super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/utils/_path_manager.py:66
+  /home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/utils/_path_manager.py:66: UserWarning: Permission mismatch: The owner of /home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/lib/libop_plugin_atb.so does not match.
+    warnings.warn(f"Permission mismatch: The owner of {path} does not match.")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+13 passed, 1 warning in 11.57s
+/home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/utils/_path_manager.py:66: UserWarning: Permission mismatch: The owner of /home/t00906153/super/work/fast-debug-verl/.conda-envs/verl-qwen3vl-npu/lib/python3.11/site-packages/torch_npu/lib/libop_plugin_atb.so does not match.
+  warnings.warn(f"Permission mismatch: The owner of {path} does not match.")
+{"acceptance": {"correctness": "torch_npu result matches CPU float32 oracle", "coverage": "7 phases x search+independent-holdout", "frontier": "public verify_run_bundle passes", "timing": "positive finite samples; IQR/median <= 0.10"}, "cohort": "ascend-npu-23b93a89d5fecc79", "inner_iterations": 20, "lanes": ["search", "independent-holdout"], "phases": ["square", "reduce_sum", "mean_scale", "epsilon_add", "rsqrt", "input_scale", "weight_scale"], "run_tag": "20260813Tissue43npu01", "samples": 20, "schema": "groundupscale.dev/issue43-collection-plan/v1alpha1", "visibility": "0", "warmup": 20}
+Traceback (most recent call last):
+  File "/home/t00906153/GroundUpScale-issue-43/goal_process/issue-43-ascend-rmsnorm-frontier/collect_issue43.py", line 199, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/t00906153/GroundUpScale-issue-43/goal_process/issue-43-ascend-rmsnorm-frontier/collect_issue43.py", line 158, in main
+    raise RuntimeError(f"{phase.phase_name}/{lane}: timing dispersion")
+RuntimeError: mean_scale/search: timing dispersion
+[ERROR] 2026-08-13-21:35:12 (PID:2861856, Device:0, RankID:-1) ERR99999 UNKNOWN applicaiton exception

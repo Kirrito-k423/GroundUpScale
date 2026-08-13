@@ -9,6 +9,7 @@ import pytest
 
 from groundupscale.ascend_rmsnorm_frontier import (
     RmsNormOperatorFrontierBundleWriter,
+    RmsNormPhaseMeasurementBundleWriter,
 )
 from groundupscale.ir import canonical_data, content_fingerprint
 from groundupscale.pipeline import compile_analysis_plan
@@ -52,41 +53,48 @@ def _execution_domain(operation) -> dict[str, object]:
     }
 
 
-def _phase_evidence(operation, *, missing: str | None = None):
+def _phase_sources(
+    root: Path,
+    operation,
+    *,
+    missing: str | None = None,
+    evidence_kind: str = "exact-operation-probe",
+):
     assert operation.phase_graph is not None
     domain = _execution_domain(operation)
-    evidence = []
+    sources = []
     for index, phase in enumerate(operation.phase_graph.phases, start=1):
         if phase.phase_name == missing:
             continue
-        body = {
-            "schema": "groundupscale.dev/operator-phase-capability/v1alpha1",
-            "phase_id": phase.phase_id,
-            "phase_name": phase.phase_name,
-            "operation_class": phase.operation_class,
-            "evidence_kind": "exact-operation-probe",
-            "execution_domain": domain,
-            "candidate": {
+        candidate = {
                 "candidate_id": f"ascend-rmsnorm-{phase.phase_name}-direct-v1",
                 "candidate_family": f"torch-npu.{phase.phase_name}",
                 "candidate_version": "v1",
-            },
-            "duration_ns": float(index * 1_000),
-            "standard_uncertainty_ns": float(index * 10),
-            "source": {
-                "run_id": f"issue43-{phase.phase_name}-holdout-001",
-                "run_manifest_sha256": sha256(
-                    f"issue43-{phase.phase_name}-holdout-001".encode()
-                ).hexdigest(),
-                "artifact_ref": "artifact://observation/raw/timing.json",
-                "correctness": "passed",
-                "stability": "passed",
-                "lane": "independent-holdout",
-            },
         }
-        body["input_digest"] = content_fingerprint(body)
-        evidence.append(body)
-    return evidence
+        for lane, ratio in (("search", 0.98), ("independent-holdout", 1.0)):
+            run_id = f"issue43-{phase.phase_name}-{lane}-001"
+            sources.append(
+                RmsNormPhaseMeasurementBundleWriter().run(
+                    root,
+                    run_id=run_id,
+                    phase=phase,
+                    execution_domain=domain,
+                    lane=lane,
+                    evidence_kind=evidence_kind,
+                    candidate=candidate,
+                    compute_or_exact_duration_ns=float(index * 1_000 * ratio),
+                    memory_pattern_floor_ns=float(index * 400),
+                    standard_uncertainty_ns=float(index * 10),
+                    raw_samples_ns=(index * 990, index * 1_000, index * 1_010),
+                    run_metadata={
+                        "lock_owner": "issue=43 pid=123",
+                        "started_at": "2026-08-13T00:00:00+00:00",
+                        "hardware_cohort": COHORT,
+                        "device_visibility": "0",
+                    },
+                )
+            )
+    return sources
 
 
 def _artifact(run: Path, role: str) -> dict[str, object]:
@@ -121,7 +129,7 @@ def _rehash_connected_qualification(run: Path) -> None:
     qualification_path = run / qualification_artifact["path"]
     qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
     qualification["source_evidence_digest"] = _canonical_digest(
-        qualification["phase_evidence"]
+        qualification["source_runs"]
     )
     qualification["input_digest"] = _canonical_digest(
         {
@@ -165,8 +173,13 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         run_id="issue43-rmsnorm-complete-fixture-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=_phase_evidence(operation),
+        source_runs=_phase_sources(tmp_path / "sources", operation),
     )
+
+    source = next(run / item["path"] for item in _artifact(run, "compound-operator-frontier-qualification")["source_runs"])
+    source_observation = _artifact(source.resolve(), "operator-phase-capability-observation")
+    assert source_observation["run_metadata"]["lock_owner"] == "issue=43 pid=123"
+    assert source_observation["run_metadata"]["finished_at"]
 
     assert verify_run_bundle(run) == {
         "schema": "groundupscale.dev/run-verification/v1alpha1",
@@ -184,8 +197,8 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         "standard_uncertainty_ns": pytest.approx(
             sqrt(sum((index * 10) ** 2 for index in range(1, 8)))
         ),
-        "composition_policy": "serialized-no-chunk",
-        "formula": "sum(phase.local_duration_ns)",
+        "composition_policy": "dependency-critical-path-no-chunk",
+        "formula": "max_path(sum(phase.local_duration_ns))",
     }
     schedule = qualification["selected_candidate"]["phase_schedule"]
     assert [phase["phase_name"] for phase in schedule["phases"]] == [
@@ -207,14 +220,15 @@ def test_complete_rmsnorm_phase_evidence_publishes_replayable_serial_frontier(
         [schedule["phases"][5]["phase_id"]],
     ]
     assert all(
-        phase["resource_composition"] == "exact-operation-duration"
+        phase["resource_composition"]
+        == "max(compute-or-exact,memory-pattern-floor)"
         for phase in schedule["phases"]
     )
     assert schedule["chunk_pipeline_contract_id"] is None
     assert schedule["overlap_evidence_refs"] == []
     assert qualification["execution_domain"] == _execution_domain(operation)
     assert qualification["source_evidence_digest"] == _canonical_digest(
-        qualification["phase_evidence"]
+        qualification["source_runs"]
     )
 
 
@@ -227,7 +241,7 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
         run_id="issue43-rmsnorm-missing-rsqrt-fixture-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=_phase_evidence(operation, missing="rsqrt"),
+        source_runs=_phase_sources(tmp_path / "sources", operation, missing="rsqrt"),
     )
 
     assert verify_run_bundle(run)["passed"] is True
@@ -237,8 +251,8 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
         "status": "unknown",
         "duration_ns": None,
         "standard_uncertainty_ns": None,
-        "composition_policy": "serialized-no-chunk",
-        "formula": "sum(phase.local_duration_ns)",
+        "composition_policy": "dependency-critical-path-no-chunk",
+        "formula": "max_path(sum(phase.local_duration_ns))",
     }
     assert qualification["missing_evidence"] == [
         {
@@ -250,8 +264,8 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
             "phase_name": "rsqrt",
             "operation_class": "transcendental.rsqrt.fp32",
             "required_evidence": (
-                "semantically matching capability class or exact operation probe "
-                "for the complete execution domain"
+                "verified search and independent-holdout Run Bundles for a "
+                "semantically matching capability class or exact operation probe"
             ),
         }
     ]
@@ -259,20 +273,22 @@ def test_missing_rsqrt_evidence_publishes_replayable_structured_unknown(
 
 def test_matmul_probe_cannot_qualify_rmsnorm_reduction_phase(tmp_path: Path) -> None:
     operation = _rmsnorm_operation()
-    evidence = _phase_evidence(operation)
-    reduce_sum = next(item for item in evidence if item["phase_name"] == "reduce_sum")
-    reduce_sum["operation_class"] = "matmul.fp32"
-    reduce_sum["input_digest"] = content_fingerprint(
-        {key: value for key, value in reduce_sum.items() if key != "input_digest"}
-    )
+    sources = _phase_sources(tmp_path / "sources", operation)
+    reduce_sum = next(path for path in sources if "reduce_sum-search" in path.name)
+    def mutate(document: dict[str, object]) -> None:
+        document["operation_class"] = "matmul.fp32"
+        document["input_digest"] = content_fingerprint(
+            {key: value for key, value in document.items() if key != "input_digest"}
+        )
+    _rewrite_artifact(reduce_sum, "operator-phase-capability-observation", mutate)
 
-    with pytest.raises(ValueError, match="phase evidence operation class mismatch"):
+    with pytest.raises(ValueError, match="source phase (Run Bundle failed verification|evidence identity or semantics mismatch)"):
         RmsNormOperatorFrontierBundleWriter().run(
             tmp_path,
             run_id="issue43-rmsnorm-matmul-substitution-v1",
             operation=operation,
             execution_domain=_execution_domain(operation),
-            phase_evidence=evidence,
+            source_runs=sources,
         )
 
 
@@ -289,32 +305,33 @@ def test_phase_evidence_domain_mismatch_fails_closed(
     tmp_path: Path, field: str, value: str
 ) -> None:
     operation = _rmsnorm_operation()
-    evidence = _phase_evidence(operation)
-    square = evidence[0]
-    evidence_domain = square["execution_domain"]
+    sources = _phase_sources(tmp_path / "sources", operation)
+    square = sources[0]
+    observation = _artifact(square, "operator-phase-capability-observation")
+    evidence_domain = observation["execution_domain"]
     assert isinstance(evidence_domain, dict)
-    square["execution_domain"] = {**evidence_domain, field: value}
-    square["input_digest"] = content_fingerprint(
-        {key: item for key, item in square.items() if key != "input_digest"}
-    )
+    def mutate(document: dict[str, object]) -> None:
+        document["execution_domain"] = {**evidence_domain, field: value}
+        document["input_digest"] = content_fingerprint(
+            {key: item for key, item in document.items() if key != "input_digest"}
+        )
+    _rewrite_artifact(square, "operator-phase-capability-observation", mutate)
 
-    with pytest.raises(ValueError, match="phase evidence execution domain mismatch"):
+    with pytest.raises(ValueError, match="source phase (Run Bundle failed verification|evidence identity or semantics mismatch)"):
         RmsNormOperatorFrontierBundleWriter().run(
             tmp_path,
             run_id=f"issue43-rmsnorm-domain-mismatch-{field}",
             operation=operation,
             execution_domain=_execution_domain(operation),
-            phase_evidence=evidence,
+            source_runs=sources,
         )
 
 
 def test_incomplete_bundle_names_every_missing_mandatory_phase(tmp_path: Path) -> None:
     operation = _rmsnorm_operation()
-    evidence = _phase_evidence(operation)
-    evidence = [
-        item
-        for item in evidence
-        if item["phase_name"] not in {"reduce_sum", "rsqrt"}
+    sources = _phase_sources(tmp_path / "sources", operation)
+    sources = [
+        item for item in sources if "reduce_sum" not in item.name and "rsqrt" not in item.name
     ]
 
     run = RmsNormOperatorFrontierBundleWriter().run(
@@ -322,7 +339,7 @@ def test_incomplete_bundle_names_every_missing_mandatory_phase(tmp_path: Path) -
         run_id="issue43-rmsnorm-two-missing-phases-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=evidence,
+        source_runs=sources,
     )
 
     qualification = _artifact(run, "compound-operator-frontier-qualification")
@@ -340,7 +357,7 @@ def test_verifier_rejects_rehashed_phase_duration_tamper(tmp_path: Path) -> None
         run_id="issue43-rmsnorm-rehashed-tamper-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=_phase_evidence(operation),
+        source_runs=_phase_sources(tmp_path / "sources", operation),
     )
 
     def mutate(document: dict[str, object]) -> None:
@@ -352,7 +369,7 @@ def test_verifier_rejects_rehashed_phase_duration_tamper(tmp_path: Path) -> None
 
     verification = verify_run_bundle(run)
     assert verification["passed"] is False
-    assert "compound operator Frontier source evidence digest mismatch" in verification[
+    assert "compound operator Frontier phase evidence mismatch" in verification[
         "failures"
     ]
 
@@ -366,14 +383,14 @@ def test_verifier_replays_phase_evidence_instead_of_trusting_rehashed_digests(
         run_id="issue43-rmsnorm-deep-rehash-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=_phase_evidence(operation),
+        source_runs=_phase_sources(tmp_path / "sources", operation),
     )
 
     def mutate(document: dict[str, object]) -> None:
         phase_evidence = document["phase_evidence"]
         assert isinstance(phase_evidence, list)
         evidence = phase_evidence[0]
-        evidence["duration_ns"] = 1.0
+        evidence["local_duration_ns"] = 1.0
         evidence["input_digest"] = content_fingerprint(
             {key: value for key, value in evidence.items() if key != "input_digest"}
         )
@@ -405,7 +422,7 @@ def test_verifier_rejects_rehashed_qualification_tampering(
         run_id=f"issue43-rmsnorm-rehashed-{tamper}-v1",
         operation=operation,
         execution_domain=_execution_domain(operation),
-        phase_evidence=_phase_evidence(operation),
+        source_runs=_phase_sources(tmp_path / "sources", operation),
     )
 
     if tamper == "dependency":

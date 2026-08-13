@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/phase-graph.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "operator-phase-graph",
+      "schema": "groundupscale.dev/operator-phase-graph/v1alpha1",
+      "sha256": "2c38db670efb0ec03ad065910becb79dd9950b513268a06f3a37263564091d51"
+    },
+    {
+      "inputs": [
+        "operator-phase-graph"
+      ],
+      "media_type": "application/json",
+      "path": "frontier/qualification.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "compound-operator-frontier-qualification",
+      "schema": "groundupscale.dev/compound-operator-frontier-qualification/v1alpha1",
+      "sha256": "81c1e4354dbdb3bfab4d79764aa79bd2facf0beff27cc28e3ae72218cee91d2f"
+    },
+    {
+      "inputs": [
+        "compound-operator-frontier-qualification"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/evidence.json",
+      "produced_by": "groundupscale-rmsnorm-frontier-v1",
+      "role": "compound-operator-diagnostic",
+      "schema": "groundupscale.dev/compound-operator-diagnostic/v1alpha1",
+      "sha256": "3cdd613387b8340b82be766657e92a1c2b8802d38ff1a6542f293fcf59a206a6"
+    }
+  ],
+  "bundle_kind": "compound-operator-frontier",
+  "compilation_fingerprint": "443d98034cea0770bea234e9119859831def7adb399b74b092d9d8b4cbfcc407",
+  "created_at": "2026-08-13T13:38:31.746141+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "operation": "RMSNorm",
+  "producer_lineage": {
+    "producer": "groundupscale-rmsnorm-frontier-v1"
+  },
+  "qualification_status": "unknown",
+  "run_id": "issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": [
+    {
+      "candidate": {
+        "candidate_family": "torch-npu.reduce_sum",
+        "candidate_id": "torch-npu-reduce_sum-eager-v1",
+        "candidate_version": "v1"
+      },
+      "lane": "search",
+      "manifest_sha256": "e48eba188bfde31f66b2477c80946831683cfba8ecacf62db36c4b2cb134adc0",
+      "path": "../issue43-20260813Tissue43npu01-reduce_sum-search",
+      "phase_id": "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499",
+      "run_id": "issue43-20260813Tissue43npu01-reduce_sum-search"
+    },
+    {
+      "candidate": {
+        "candidate_family": "torch-npu.square",
+        "candidate_id": "torch-npu-square-eager-v1",
+        "candidate_version": "v1"
+      },
+      "lane": "search",
+      "manifest_sha256": "6e147db4f12fa9dbd0a2cc98e8b504a07dd9195ad42230e711258478fbcf6ada",
+      "path": "../issue43-20260813Tissue43npu01-square-search",
+      "phase_id": "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1",
+      "run_id": "issue43-20260813Tissue43npu01-square-search"
+    }
+  ],
+  "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm",
+  "status": "completed"
+}

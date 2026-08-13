@@ -1,0 +1,82 @@
+{
+  "candidate": {
+    "candidate_family": "torch-npu.reduce_sum",
+    "candidate_id": "torch-npu-reduce_sum-eager-v1",
+    "candidate_version": "v1"
+  },
+  "compilation_fingerprint": "56fe9305e7b33c595d8edb707b5fdb963bacfe96acda524a5fec3cfcb77aed12",
+  "constraints": {
+    "exact_operation_duration_ns": 22788.500040769577,
+    "matching_compute_capability_duration_ns": null,
+    "memory_pattern_floor_ns": 22788.500040769577
+  },
+  "correctness": "passed",
+  "evidence_kind": "exact-operation-probe",
+  "execution_domain": {
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "layout": "row-major-contiguous",
+    "logical_device": "npu:0",
+    "operand_shapes": [
+      [
+        1,
+        512,
+        512
+      ],
+      [
+        512
+      ]
+    ],
+    "result_shapes": [
+      [
+        1,
+        512,
+        512
+      ]
+    ],
+    "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+  },
+  "input_digest": "c02234c858e3baa321fdb86b7726d00134f074f95ea4966d4a335e7f98bdf6b6",
+  "lane": "search",
+  "local_duration_ns": 22788.500040769577,
+  "operation_class": "reduction.sum.fp32",
+  "phase_id": "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499",
+  "phase_name": "reduce_sum",
+  "raw_samples_ns": [
+    22293.999791145325,
+    24245.99975347519,
+    23044.000566005707,
+    22930.000722408295,
+    23102.00035572052,
+    23972.000181674957,
+    23506.000638008118,
+    22808.000445365906,
+    23503.999412059784,
+    21592.000126838684,
+    21220.000088214874,
+    23581.99954032898,
+    22575.999796390533,
+    22545.99928855896,
+    22754.00012731552,
+    22768.99963617325,
+    21692.000329494476,
+    24131.999909877777,
+    22550.000250339508,
+    22011.999785900116
+  ],
+  "required_compute_capability": "compute.reduction.sum.fp32",
+  "required_memory_capability": "memory.row-reduction.fp32",
+  "resource_composition": "max(compute-or-exact,memory-pattern-floor)",
+  "run_metadata": {
+    "device_visibility": "0",
+    "finished_at": "2026-08-13T13:35:11.485077+00:00",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "issue": 43,
+    "lock_owner": "issue=43 pid=2858804 host=localhost.localdomain started=2026-08-13T21:34:34+08:00\n",
+    "started_at": "2026-08-13T13:35:11.068993+00:00"
+  },
+  "schema": "groundupscale.dev/operator-phase-capability-observation/v1alpha1",
+  "standard_uncertainty_ns": 834.0785010620635,
+  "timing_quality": "passed"
+}

@@ -1,0 +1,201 @@
+{
+  "cost_node_id": "cost-op:443d98034cea0770bea234e9119859831def7adb399b74b092d9d8b4cbfcc407",
+  "execution_domain": {
+    "dtype": "float32",
+    "execution_mode": "pytorch-eager",
+    "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+    "layout": "row-major-contiguous",
+    "logical_device": "npu:0",
+    "operand_shapes": [
+      [
+        1,
+        512,
+        512
+      ],
+      [
+        512
+      ]
+    ],
+    "result_shapes": [
+      [
+        1,
+        512,
+        512
+      ]
+    ],
+    "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+  },
+  "graph_id": "cost-phase-graph:2c812933483580ef4c1884dd1ffb709386c789edb2637b643df4f62de4c36c24",
+  "input_digest": "70c074c9a97ed94ea92865fe747f17b81274107226314c93159ae525f737465e",
+  "operation": "RMSNorm",
+  "output_phase_ids": [
+    "cost-phase:7f070b5b28cf71213936830262ca2138fb9606862724207f8ef1afbcd8929f19"
+  ],
+  "phases": [
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.elementwise.square.fp32",
+      "derivation_ids": [
+        "derivation:8e1ea2d2adeaef7db99ab8475eb43ff0b7f1e5d17b8490cca948586be6c6dab5"
+      ],
+      "input_roles": [
+        "input"
+      ],
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "memory_capability_resource": "memory.elementwise-read-write.fp32",
+      "minimum_flops": 262144,
+      "operation_class": "elementwise.square.fp32",
+      "output_roles": [
+        "squared"
+      ],
+      "phase_id": "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1",
+      "phase_name": "square",
+      "predecessor_phase_ids": []
+    },
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.reduction.sum.fp32",
+      "derivation_ids": [
+        "derivation:5835a2cad7e9f6298dfa716f962f77095873cac6a80ee154f862074255eded2f"
+      ],
+      "input_roles": [
+        "squared"
+      ],
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 2048,
+      "memory_capability_resource": "memory.row-reduction.fp32",
+      "minimum_flops": 261632,
+      "operation_class": "reduction.sum.fp32",
+      "output_roles": [
+        "row_sum"
+      ],
+      "phase_id": "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499",
+      "phase_name": "reduce_sum",
+      "predecessor_phase_ids": [
+        "cost-phase:d27e19018d88a362f5026ed5173cfcc95f63fbc5c9d20267e0db1db65e62eef1"
+      ]
+    },
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.scalar.divide.fp32",
+      "derivation_ids": [
+        "derivation:8ea11a55ef0266b958540d4bcaaaad08a3f5da6bc0adf459b640f7cacd5e6427"
+      ],
+      "input_roles": [
+        "row_sum"
+      ],
+      "logical_read_bytes": 2048,
+      "logical_write_bytes": 2048,
+      "memory_capability_resource": "memory.row-scalar-read-write.fp32",
+      "minimum_flops": 512,
+      "operation_class": "elementwise.divide.fp32",
+      "output_roles": [
+        "row_mean"
+      ],
+      "phase_id": "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847",
+      "phase_name": "mean_scale",
+      "predecessor_phase_ids": [
+        "cost-phase:2832fd333401d1a2158e1ccdd2ec77ec3548b9b1d75c674dddfffb5b4f21d499"
+      ]
+    },
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.scalar.add.fp32",
+      "derivation_ids": [
+        "derivation:34b279334831474dfcfc3069e9348afe538fc38176eaadbdd91e2fdca326e218"
+      ],
+      "input_roles": [
+        "row_mean"
+      ],
+      "logical_read_bytes": 2048,
+      "logical_write_bytes": 2048,
+      "memory_capability_resource": "memory.row-scalar-read-write.fp32",
+      "minimum_flops": 512,
+      "operation_class": "elementwise.add.fp32",
+      "output_roles": [
+        "stabilized_mean"
+      ],
+      "phase_id": "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4",
+      "phase_name": "epsilon_add",
+      "predecessor_phase_ids": [
+        "cost-phase:c8a16f4301b36dae60bbd31ac064a5fe12fdcd78c760432422c3ac3725f89847"
+      ]
+    },
+    {
+      "assumptions": [
+        "rsqrt counts as one equivalent FLOP"
+      ],
+      "compute_capability_resource": "compute.transcendental.rsqrt.fp32",
+      "derivation_ids": [
+        "derivation:da94a1dcfd066e3399d9e7aaa4bec5690fbf09f6b33a6123dcf82b63202282a3"
+      ],
+      "input_roles": [
+        "stabilized_mean"
+      ],
+      "logical_read_bytes": 2048,
+      "logical_write_bytes": 2048,
+      "memory_capability_resource": "memory.row-scalar-read-write.fp32",
+      "minimum_flops": 512,
+      "operation_class": "transcendental.rsqrt.fp32",
+      "output_roles": [
+        "reciprocal_rms"
+      ],
+      "phase_id": "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616",
+      "phase_name": "rsqrt",
+      "predecessor_phase_ids": [
+        "cost-phase:5da0403f535a52606c4c7f3dca0bb9adf5b4f9bc73da11ad36cd71893676daa4"
+      ]
+    },
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.elementwise.multiply.fp32",
+      "derivation_ids": [
+        "derivation:d090fca96b15f1962dbd25b166fae4b97d02bae0a416bc1f3aaafa823f5b2198"
+      ],
+      "input_roles": [
+        "input",
+        "reciprocal_rms"
+      ],
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "memory_capability_resource": "memory.broadcast-read-write.fp32",
+      "minimum_flops": 262144,
+      "operation_class": "elementwise.multiply.fp32",
+      "output_roles": [
+        "normalized"
+      ],
+      "phase_id": "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823",
+      "phase_name": "input_scale",
+      "predecessor_phase_ids": [
+        "cost-phase:6bbacfb17ec12b24db32a2bf02aadeb3d810a03b9c6b43255691d5eebc0a3616"
+      ]
+    },
+    {
+      "assumptions": [],
+      "compute_capability_resource": "compute.elementwise.multiply.fp32",
+      "derivation_ids": [
+        "derivation:f81eff7cde539bbbf33bc232403cf137ff9aa8b1aeba04380541865b919904a8"
+      ],
+      "input_roles": [
+        "normalized",
+        "weight"
+      ],
+      "logical_read_bytes": 1050624,
+      "logical_write_bytes": 1048576,
+      "memory_capability_resource": "memory.broadcast-read-write.fp32",
+      "minimum_flops": 262144,
+      "operation_class": "elementwise.multiply.fp32",
+      "output_roles": [
+        "output"
+      ],
+      "phase_id": "cost-phase:7f070b5b28cf71213936830262ca2138fb9606862724207f8ef1afbcd8929f19",
+      "phase_name": "weight_scale",
+      "predecessor_phase_ids": [
+        "cost-phase:7e44aa6a84c60c48ab2ba241e6a3f48209db3f2f7f364c9cf0476646903e8823"
+      ]
+    }
+  ],
+  "schema": "groundupscale.dev/operator-phase-graph/v1alpha1",
+  "stable_path": "cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+}

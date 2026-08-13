@@ -128,6 +128,9 @@ COMPOUND_OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
         "compound-operator-diagnostic",
     }
 )
+OPERATOR_PHASE_MEASUREMENT_REQUIRED_ROLES = frozenset(
+    {"operator-phase-capability-observation"}
+)
 EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
@@ -1549,6 +1552,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
     transformer_matmul_surface = (
         manifest.get("bundle_kind") == "transformer-matmul-surface"
     )
+    operator_phase_measurement = (
+        manifest.get("bundle_kind") == "operator-phase-measurement"
+    )
     structured_bundle = (
         exact_shape
         or floor_comparison
@@ -1559,6 +1565,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or transformer_matmul_exact_anchor
         or transformer_matmul_surface
         or compound_operator_frontier
+        or operator_phase_measurement
+        or operator_phase_measurement
     )
     supersedes = manifest.get("supersedes")
     enforce_supersession = (
@@ -1633,6 +1641,8 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 }
                 else TRANSFORMER_MATMUL_FRONTIER_REQUIRED_ROLES
             )
+        elif operator_phase_measurement:
+            required_roles = OPERATOR_PHASE_MEASUREMENT_REQUIRED_ROLES
         elif compound_operator_frontier:
             required_roles = COMPOUND_OPERATOR_FRONTIER_REQUIRED_ROLES
         elif operator_frontier:
@@ -2209,10 +2219,11 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         f"compound operator Frontier {label} digest mismatch"
                     )
             phase_evidence = qualification.get("phase_evidence")
+            source_runs = qualification.get("source_runs")
             if (
-                not isinstance(phase_evidence, list)
+                not isinstance(source_runs, list)
                 or qualification.get("source_evidence_digest")
-                != _canonical_digest(phase_evidence)
+                != _canonical_digest(source_runs)
             ):
                 failures.append(
                     "compound operator Frontier source evidence digest mismatch"
@@ -2301,13 +2312,11 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         for key, value in evidence.items()
                         if key != "input_digest"
                     }
-                    source = evidence.get("source")
-                    expected_ref = (
-                        f"run-bundle://{source.get('run_id')}#"
-                        f"{source.get('artifact_ref')}"
-                        if isinstance(source, dict)
-                        else None
-                    )
+                    constraints = evidence.get("constraints")
+                    exact = constraints.get("exact_operation_duration_ns") if isinstance(constraints, dict) else None
+                    matching = constraints.get("matching_compute_capability_duration_ns") if isinstance(constraints, dict) else None
+                    memory = constraints.get("memory_pattern_floor_ns") if isinstance(constraints, dict) else None
+                    compute_or_exact = exact if exact is not None else matching
                     if (
                         evidence.get("input_digest")
                         != content_fingerprint(evidence_body)
@@ -2316,11 +2325,19 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         or phase.get("operation_class")
                         != evidence.get("operation_class")
                         or phase.get("candidate") != evidence.get("candidate")
+                        or phase.get("constraints") != constraints
                         or phase.get("local_duration_ns")
-                        != evidence.get("duration_ns")
+                        != evidence.get("local_duration_ns")
                         or phase.get("standard_uncertainty_ns")
                         != evidence.get("standard_uncertainty_ns")
-                        or phase.get("evidence_ref") != expected_ref
+                        or not isinstance(compute_or_exact, (int, float))
+                        or not isinstance(memory, (int, float))
+                        or evidence.get("local_duration_ns")
+                        != max(float(compute_or_exact), float(memory))
+                        or phase.get("resource_composition")
+                        != "max(compute-or-exact,memory-pattern-floor)"
+                        or not isinstance(phase.get("evidence_refs"), list)
+                        or len(phase["evidence_refs"]) != 2
                     ):
                         phase_evidence_mismatch = True
                         break
@@ -2393,10 +2410,44 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 )
             )
             expected_duration = (
-                sum(float(value) for value in known_durations)
-                if complete
-                else None
+                None
             )
+            topological_order: list[str] = []
+            if complete:
+                completed: set[str] = set()
+                longest: dict[str, float] = {}
+                phase_durations = {
+                    str(phase["phase_id"]): float(phase["local_duration_ns"])
+                    for phase in scheduled_phases
+                }
+                while len(completed) < len(graph_by_phase):
+                    ready = sorted(
+                        phase_id
+                        for phase_id, phase in graph_by_phase.items()
+                        if phase_id not in completed
+                        and set(phase.get("predecessor_phase_ids", [])) <= completed
+                    )
+                    if not ready:
+                        break
+                    for phase_id in ready:
+                        predecessors = graph_by_phase[phase_id].get(
+                            "predecessor_phase_ids", []
+                        )
+                        longest[phase_id] = phase_durations[phase_id] + max(
+                            (longest[str(item)] for item in predecessors),
+                            default=0.0,
+                        )
+                        completed.add(phase_id)
+                        topological_order.append(phase_id)
+                predecessor_ids = {
+                    str(item)
+                    for phase in graph_by_phase.values()
+                    for item in phase.get("predecessor_phase_ids", [])
+                }
+                sinks = set(graph_by_phase) - predecessor_ids
+                declared_outputs = set(graph.get("output_phase_ids", []))
+                if len(completed) == len(graph_by_phase) and sinks == declared_outputs:
+                    expected_duration = max(longest[phase_id] for phase_id in sinks)
             expected_uncertainty = (
                 math.sqrt(
                     sum(float(value) ** 2 for value in known_uncertainties)
@@ -2410,9 +2461,13 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or graph_schedule_mismatch
                 or len(graph_phase_ids) != 7
                 or not isinstance(schedule, dict)
-                or schedule.get("policy") != "serialized-no-chunk"
+                or schedule.get("policy") != "dependency-critical-path-no-chunk"
                 or schedule.get("chunk_pipeline_contract_id") is not None
                 or schedule.get("overlap_evidence_refs") != []
+                or schedule.get("topological_phase_ids") != topological_order
+                or schedule.get("serialized_duration_ns")
+                != (sum(float(value) for value in known_durations) if complete else None)
+                or schedule.get("critical_path_duration_ns") != expected_duration
                 or schedule.get("selected_duration_ns") != expected_duration
                 or not isinstance(frontier, dict)
                 or frontier.get("status") != expected_status
@@ -2420,15 +2475,103 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 or frontier.get("standard_uncertainty_ns")
                 != expected_uncertainty
                 or frontier.get("composition_policy")
-                != "serialized-no-chunk"
+                != "dependency-critical-path-no-chunk"
                 or frontier.get("formula")
-                != "sum(phase.local_duration_ns)"
+                != "max_path(sum(phase.local_duration_ns))"
                 or qualification.get("status")
                 != ("qualified" if complete else "unknown")
             ):
                 failures.append(
                     "compound operator Frontier phase schedule mismatch"
                 )
+
+            if isinstance(source_runs, list):
+                seen_lanes: set[tuple[object, object]] = set()
+                for source in source_runs:
+                    if not isinstance(source, dict):
+                        failures.append("invalid compound operator Frontier source Run")
+                        continue
+                    source_id = source.get("run_id")
+                    source_path = source.get("path")
+                    key = (source.get("phase_id"), source.get("lane"))
+                    if (
+                        key in seen_lanes
+                        or source.get("lane") not in {"search", "independent-holdout"}
+                        or not isinstance(source_id, str)
+                        or not isinstance(source_path, str)
+                        or Path(source_path).is_absolute()
+                    ):
+                        failures.append("invalid compound operator Frontier source Run")
+                        continue
+                    seen_lanes.add(key)
+                    source_root = (root / source_path).resolve()
+                    source_manifest_path = source_root / "run.manifest.json"
+                    if (
+                        not source_manifest_path.is_file()
+                        or _sha256(source_manifest_path)
+                        != source.get("manifest_sha256")
+                        or verify_run_bundle(source_root).get("passed") is not True
+                    ):
+                        failures.append(
+                            f"compound operator Frontier source Run failed verification: {source_id}"
+                        )
+                        continue
+                    source_manifest = json.loads(
+                        source_manifest_path.read_text(encoding="utf-8")
+                    )
+                    if (
+                        source_manifest.get("run_id") != source_id
+                        or source_manifest.get("bundle_kind")
+                        != "operator-phase-measurement"
+                        or source_manifest.get("hardware_cohort")
+                        != manifest.get("hardware_cohort")
+                        or source_manifest.get("phase_id") != source.get("phase_id")
+                        or source_manifest.get("lane") != source.get("lane")
+                    ):
+                        failures.append(
+                            f"compound operator Frontier source Run identity mismatch: {source_id}"
+                        )
+
+    if operator_phase_measurement:
+        observation = documents_by_role.get(
+            "operator-phase-capability-observation"
+        )
+        if (
+            manifest.get("status") != "completed"
+            or manifest.get("device") != "ascend-npu"
+            or manifest.get("operation") != "RMSNorm"
+            or not isinstance(observation, dict)
+            or observation.get("phase_id") != manifest.get("phase_id")
+            or observation.get("phase_name") != manifest.get("phase_name")
+            or observation.get("lane") != manifest.get("lane")
+            or not isinstance(observation.get("execution_domain"), dict)
+            or observation["execution_domain"].get("hardware_cohort")
+            != manifest.get("hardware_cohort")
+            or observation.get("correctness") != "passed"
+            or observation.get("timing_quality") != "passed"
+        ):
+            failures.append("invalid operator phase measurement identity")
+        else:
+            body = {
+                key: value
+                for key, value in observation.items()
+                if key != "input_digest"
+            }
+            constraints = observation.get("constraints")
+            exact = constraints.get("exact_operation_duration_ns") if isinstance(constraints, dict) else None
+            matching = constraints.get("matching_compute_capability_duration_ns") if isinstance(constraints, dict) else None
+            memory = constraints.get("memory_pattern_floor_ns") if isinstance(constraints, dict) else None
+            compute_or_exact = exact if exact is not None else matching
+            if (
+                observation.get("input_digest") != content_fingerprint(body)
+                or not isinstance(compute_or_exact, (int, float))
+                or not isinstance(memory, (int, float))
+                or observation.get("local_duration_ns")
+                != max(float(compute_or_exact), float(memory))
+                or observation.get("resource_composition")
+                != "max(compute-or-exact,memory-pattern-floor)"
+            ):
+                failures.append("invalid operator phase measurement composition")
 
     if floor_comparison:
         comparison = documents_by_role.get(
