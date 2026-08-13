@@ -11,7 +11,8 @@ from groundupscale.model_e2e_frontier import write_model_e2e_frontier_bundle
 from groundupscale.run_bundle import verify_run_bundle
 
 
-DEFAULT_RUN_ID = "issue48-20260814T0001Z-schedule-frontier-unknown-v1"
+DEFAULT_RUN_ID = "issue48-20260814T0002Z-schedule-frontier-unknown-v2"
+SUPERSEDED_RUN_ID = "issue48-20260814T0001Z-schedule-frontier-unknown-v1"
 
 
 def main() -> int:
@@ -24,8 +25,19 @@ def main() -> int:
         repository
         / "goal_process/issue-48-schedule-achievable-frontier/evidence"
     )
+    superseded = artifact_store / "runs" / SUPERSEDED_RUN_ID
+    supersedes = None
+    if superseded.exists():
+        manifest_path = superseded / "run.manifest.json"
+        supersedes = {
+            "run_id": SUPERSEDED_RUN_ID,
+            "path": f"../{SUPERSEDED_RUN_ID}",
+            "manifest_sha256": __import__("hashlib").sha256(
+                manifest_path.read_bytes()
+            ).hexdigest(),
+        }
     run = write_model_e2e_frontier_bundle(
-        compose_issue48_input(repository),
+        compose_issue48_input(repository, supersedes=supersedes),
         artifact_store,
         run_id=args.run_id,
     )

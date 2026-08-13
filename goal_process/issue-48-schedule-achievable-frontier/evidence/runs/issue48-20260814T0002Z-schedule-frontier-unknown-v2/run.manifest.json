@@ -1,0 +1,91 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/model-e2e-frontier-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "model-e2e-frontier-input",
+      "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
+      "sha256": "87efd0f170fc8415a654923be8f7c34b8a2202a73557820902f60a27d66d40e4"
+    },
+    {
+      "inputs": [
+        "model-e2e-frontier-input"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/model-e2e-frontier.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "prediction-observation-comparison",
+      "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
+      "sha256": "e46646aeb7354afab7bf2e64125a3b35a5db533d7d70b977baeda30a8693de83"
+    },
+    {
+      "inputs": [
+        "prediction-observation-comparison"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/model-e2e-frontier-report/v1alpha1",
+      "sha256": "0723d87dabbfa4015f8808c791288d6ea7380ab03857aa62bf06a5d5a8199601"
+    }
+  ],
+  "bundle_kind": "model-e2e-frontier",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "immutability": "writer refuses an existing run_id; artifact digests and semantic replay are authoritative",
+  "producer_lineage": {
+    "producer": "groundupscale@0.1.0",
+    "source": "python://groundupscale.model_e2e_frontier"
+  },
+  "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": [
+    {
+      "bundle_kind": "transformer-demo",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "issue": 30,
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "path": "goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+      "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+      "status": "completed",
+      "verification_failures": [],
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "transformer-matmul-frontier",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "issue": 42,
+      "manifest_sha256": "6da36ef134dc011c6d7daedeb9c875b273241e2cca2498951d6d1f3c1f836ec7",
+      "path": "goal_process/issue-42-transformer-matmul-frontier/evidence/issue42-20260813-v1/artifact-store/runs/issue42-issue42-20260813-v1-transformer-matmul-frontier-v4",
+      "run_id": "issue42-issue42-20260813-v1-transformer-matmul-frontier-v4",
+      "status": "unknown",
+      "verification_failures": [],
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "compound-operator-frontier",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "issue": 43,
+      "manifest_sha256": "bf8355f3db6012aff3599b063958ba916422d24ae56262def885d2d783badeb2",
+      "path": "goal_process/issue-43-ascend-rmsnorm-frontier/evidence/runs/issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v3",
+      "run_id": "issue43-20260813Tissue43npu01-rmsnorm-frontier-unknown-v3",
+      "status": "completed",
+      "verification_failures": [],
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "operator-frontier",
+      "hardware_cohort": "ascend-npu-89022e60525d608f",
+      "issue": 44,
+      "manifest_sha256": "c1c045f104b5daaf1959d1f45ae48ebdf4b17615b53febb632e951b41915140e",
+      "path": "goal_process/issue-44-ascend-softmax-phase-frontier/evidence/runs/issue44-20260813T1945Z-softmax-frontier-unknown-v2",
+      "run_id": "issue44-20260813T1945Z-softmax-frontier-unknown-v2",
+      "status": "completed",
+      "verification_failures": [],
+      "verification_passed": true
+    }
+  ],
+  "status": "unknown"
+}

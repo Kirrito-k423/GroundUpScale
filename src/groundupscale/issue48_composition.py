@@ -204,7 +204,11 @@ def _semantic_leaves(
     return leaves
 
 
-def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
+def compose_issue48_input(
+    repository: str | Path,
+    *,
+    supersedes: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Build the real #48 model input without promoting incomplete evidence."""
 
     root = Path(repository).resolve()
@@ -253,7 +257,7 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
         "device-idle",
         "device-synchronization",
     )
-    return {
+    document: dict[str, Any] = {
         "schema": "groundupscale.dev/model-e2e-frontier-input/v1alpha1",
         "evidence": {
             "classification": "evidence-qualified-composition",
@@ -365,3 +369,6 @@ def compose_issue48_input(repository: str | Path) -> dict[str, Any]:
             ],
         },
     }
+    if supersedes is not None:
+        document["evidence"]["supersedes"] = dict(supersedes)
+    return document

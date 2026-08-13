@@ -639,8 +639,8 @@
     "stable_path_unique": true
   },
   "derivation": {
-    "input_sha256": "11a660b5cbfbc73924a2f80db39bd6411c727815b44dcbd7374a672dcf51698d",
-    "result_sha256": "b1e7fdc60d8596fb57c722a75583612ed59c46c05097bc4dd717fb4cee9d4b09",
+    "input_sha256": "87efd0f170fc8415a654923be8f7c34b8a2202a73557820902f60a27d66d40e4",
+    "result_sha256": "0bbd28bf4391f8ae813940e1faec0e1e4a1c4f827e298538fcb47b002a332141",
     "steps": [
       "validate-indexed-stable-path-coverage",
       "resolve-mandatory-operation-candidates",
@@ -705,7 +705,8 @@
         "verification_passed": true
       }
     ],
-    "source_issue": "#48"
+    "source_issue": "#48",
+    "source_repository_root": "/Users/Zhuanz/work/github/GroundUpScale-issue-48"
   },
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "missing_evidence": [
@@ -771,7 +772,7 @@
     },
     {
       "operation_class": "operator.softmax.phase-graph",
-      "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule",
+      "required_evidence": "issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
       "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
     },
     {
@@ -901,7 +902,7 @@
     },
     {
       "operation_class": "operator.softmax.phase-graph",
-      "required_evidence": "issue #44 qualified bundle belongs to a different Hardware Cohort and cannot be consumed by this schedule",
+      "required_evidence": "issue #44 unknown-v2 requires real-chain operand evidence for exp (compute.transcendental.exp.fp32), sum_reduce (compute.reduction.sum.fp32), normalize (compute.elementwise.divide.fp32)",
       "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
     },
     {
@@ -1004,6 +1005,13 @@
   "schedule": {
     "critical_path_duration_ns": null,
     "critical_path_event_ids": [],
+    "execution_ir": {
+      "dependency_edges": [],
+      "physical_events": [],
+      "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
+      "status": "unknown",
+      "unknown_reason": "mandatory leaves and effects lack selected physical events"
+    },
     "explicit_dependencies": [],
     "ideal_dag_duration_ns": null,
     "kind": "serialized-unfused",
