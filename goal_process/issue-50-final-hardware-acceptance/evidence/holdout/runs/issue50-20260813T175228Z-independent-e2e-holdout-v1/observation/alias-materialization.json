@@ -1,0 +1,1159 @@
+{
+  "decomposition": {
+    "alias_duration_ns": 0,
+    "materialization_duration_ns": 0,
+    "unknown_stable_paths": []
+  },
+  "evidence_version_id": "ac49d1c4db7823909ee2003f34a2a2597b51ffd95f27ee40fffb40581d733c62",
+  "execution_mode": "pytorch-eager",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "operations": [
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616975486464:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616975486464:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616975486464:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616975486464:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616977584640:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616977584640:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616977584640:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616977584640:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616977584640:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            64,
+            512
+          ],
+          "stride": [
+            262144,
+            64,
+            1,
+            512
+          ]
+        },
+        "output_storage_identity": "npu:0:20616977584640:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/k_key_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616981774336:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616981774336:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616981774336:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616981774336:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/v_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20617000650752:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20617000650752:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616975486464:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616975486464:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616975486464:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616975486464:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/q_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616981774336:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616981774336:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616981774336:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616981774336:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616981774336:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            64,
+            512
+          ],
+          "stride": [
+            262144,
+            64,
+            1,
+            512
+          ]
+        },
+        "output_storage_identity": "npu:0:20616981774336:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/k_key_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616982823424:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616982823424:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_view"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20616982823424:1048576",
+        "operation": "Transpose",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": false,
+          "layout": "strided",
+          "shape": [
+            1,
+            8,
+            512,
+            64
+          ],
+          "stride": [
+            262144,
+            64,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20616982823424:1048576",
+        "selected_candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "Transpose",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:transpose:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/v_transpose"
+    },
+    {
+      "alias_audit": {
+        "aliases_input_storage": true,
+        "candidate_selection_evidence": {
+          "evidence_ref": "correctness-observation://semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view",
+          "kind": "executed-runtime-leaf"
+        },
+        "input_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            8,
+            64
+          ],
+          "stride": [
+            262144,
+            512,
+            64,
+            1
+          ]
+        },
+        "input_storage_identity": "npu:0:20617011134976:1048576",
+        "operation": "View",
+        "output_contract": {
+          "device": "npu:0",
+          "dtype": "float32",
+          "is_contiguous": true,
+          "layout": "contiguous",
+          "shape": [
+            1,
+            512,
+            512
+          ],
+          "stride": [
+            262144,
+            512,
+            1
+          ]
+        },
+        "output_storage_identity": "npu:0:20617011134976:1048576",
+        "selected_candidate_id": "runtime-candidate:view:npu:0:eager",
+        "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+      },
+      "decision": "alias-preserving",
+      "dependency_edges": [],
+      "duration": {
+        "evidence_kind": "verified-alias-preserving-candidate",
+        "status": "known",
+        "value_ns": 0
+      },
+      "logical_read_bytes": 1048576,
+      "logical_write_bytes": 1048576,
+      "operation": "View",
+      "physical_event": null,
+      "resource_demand": {
+        "memory_read_bytes": 0,
+        "memory_write_bytes": 0,
+        "status": "known"
+      },
+      "selected_candidate": {
+        "candidate_id": "runtime-candidate:view:npu:0:eager",
+        "execution_mode": "pytorch-eager",
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79"
+      },
+      "stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/context_view"
+    }
+  ],
+  "schedule": {
+    "composition": {
+      "selected_duration_ns": 0,
+      "serialized_duration_ns": 0
+    },
+    "dependency_edges": [],
+    "physical_events": [],
+    "policy": "serialized-explicit-events"
+  },
+  "schema": "groundupscale.dev/alias-materialization-evidence/v1alpha1",
+  "status": "qualified"
+}

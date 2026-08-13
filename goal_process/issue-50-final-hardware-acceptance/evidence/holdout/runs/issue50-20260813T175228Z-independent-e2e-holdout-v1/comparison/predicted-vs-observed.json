@@ -1,0 +1,1049 @@
+{
+  "base_prediction": {
+    "hardware_backend_id": "huawei.ascend.910b2.resource-envelope",
+    "hardware_compilation_fingerprint": "1e15fc1074ce3f2c32c2e1b5a85bd046c43f23188b81a4f822a82f0a0720e901",
+    "prediction_complete": false,
+    "provisional_estimate_ns": null,
+    "provisional_evidence_tier": null
+  },
+  "comparison_fingerprint": "1f2d0d40d56648e948474e5d7e66e3ef6c083885f93c7e99795a4ae134de9f2e",
+  "latency_cases": [
+    {
+      "case_id": "matmul-layer1-qk",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.032704016528356784,
+        "kind": "benchmark-median",
+        "median_ns": 34873.399999999994,
+        "q1_ns": 34405.7045,
+        "q3_ns": 35546.20475,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 28675.15068791687
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 10485760,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 10485760,
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/qk_matmul"
+    },
+    {
+      "case_id": "matmul-layer0-gate-proj",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.03250524846516605,
+        "kind": "benchmark-median",
+        "median_ns": 40548.521,
+        "q1_ns": 39359.2045,
+        "q3_ns": 40677.24425,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 24661.811956100693
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 9437184,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 9437184,
+        "minimum_work_flops": 1073741824,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_proj"
+    },
+    {
+      "case_id": "matmul-layer0-qk",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.004402799330754478,
+        "kind": "benchmark-median",
+        "median_ns": 34295.34,
+        "q1_ns": 34186.84975,
+        "q3_ns": 34337.84525,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 29158.48042328783
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 10485760,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 10485760,
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/qk_matmul"
+    },
+    {
+      "case_id": "matmul-layer1-gate-proj",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.003324281053062121,
+        "kind": "benchmark-median",
+        "median_ns": 40142.740000000005,
+        "q1_ns": 40079.26975000001,
+        "q3_ns": 40212.715500000006,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 24911.104722796696
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 9437184,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 9437184,
+        "minimum_work_flops": 1073741824,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_proj"
+    },
+    {
+      "case_id": "matmul-layer0-context",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.022007525638223797,
+        "kind": "benchmark-median",
+        "median_ns": 62351.921,
+        "q1_ns": 61323.4335,
+        "q3_ns": 62695.645000000004,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 16037.998251890265
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 10485760,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 10485760,
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/context_matmul"
+    },
+    {
+      "case_id": "matmul-q-proj",
+      "comparison": {
+        "error_status": "not-evaluable-hardware-floor",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The numerical value is an algorithm-independent empirical hardware floor for the declared serialized-unfused schedule, not the current implementation duration. The distance is optimization headroom, not prediction error.",
+        "observed_minus_hardware_floor_ns": 25593.014625078078,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": 2.828266416384461,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.04632241474783124,
+        "kind": "benchmark-median",
+        "median_ns": 39591.529500000004,
+        "q1_ns": 38347.76,
+        "q3_ns": 40181.73525,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 25257.92796158582
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 1,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 3145728,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": 13998.514874921926,
+        "empirical_hardware_floor_ns": 13998.514874921926,
+        "empirical_memory_time_ns": 2234.1069166172174,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": 13998.514874921926,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": "compute.fp32",
+        "materialized_bytes": 3145728,
+        "minimum_work_flops": 268435456,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": 13998.514874921926,
+        "resource_limiting_resource": "compute.fp32",
+        "resource_physical_floor_ns": 13998.514874921926,
+        "schedule": "aggregate-resource-floor",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/q_proj"
+    },
+    {
+      "case_id": "rmsnorm-input",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.06879800261578102,
+        "kind": "benchmark-median",
+        "median_ns": 140824.558685446,
+        "q1_ns": 137920.6807511737,
+        "q3_ns": 147609.12910798122,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 7101.034147272981
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 2099200,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 2099200,
+        "minimum_work_flops": 1049600,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/input_norm"
+    },
+    {
+      "case_id": "softmax-attention",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "operator",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.01589126537681354,
+        "kind": "benchmark-median",
+        "median_ns": 37153.8695,
+        "q1_ns": 36724.44425,
+        "q3_ns": 37314.86625,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 26915.096959147148
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 0,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 16777216,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 16777216,
+        "minimum_work_flops": 10477568,
+        "operation_count": 1,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax"
+    },
+    {
+      "case_id": "transformer-layer",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "module",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.009087517874536299,
+        "kind": "benchmark-median",
+        "median_ns": 965060.0,
+        "q1_ns": 959310.0,
+        "q3_ns": 968080.0,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 1036.2050027977534
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 4,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 19927040,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 144707584,
+        "minimum_work_flops": 4855425024,
+        "operation_count": 26,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0"
+    },
+    {
+      "case_id": "two-layer-prefill",
+      "comparison": {
+        "error_status": "not-evaluable-phase-capabilities-incomplete",
+        "frontier_efficiency_status": "not-evaluable",
+        "interpretation": "The selected value is unavailable because at least one compound phase lacks exact capability evidence. The generic resource physical floor remains a non-adoptable reference.",
+        "observed_minus_hardware_floor_ns": null,
+        "observed_minus_operator_frontier_ns": null,
+        "observed_minus_provisional_ns": null,
+        "observed_to_hardware_floor_ratio": null,
+        "observed_to_operator_frontier_ratio": null,
+        "observed_to_provisional_ratio": null,
+        "operator_frontier_combined_uncertainty_ns": null,
+        "operator_frontier_comparison_reason_codes": [],
+        "operator_frontier_efficiency": null,
+        "operator_frontier_gap_status": "not-evaluable",
+        "operator_frontier_uncertainty_components_ns": {
+          "anchor_standard_uncertainty": null,
+          "current_observation_iqr_half_width": null,
+          "session_repeatability_budget": null,
+          "timer_resolution": null
+        },
+        "operator_frontier_uncertainty_policy": null,
+        "relative_prediction_error": null
+      },
+      "mode": "e2e",
+      "observed": {
+        "candidate_digest": null,
+        "environment_evidence_tier": "unverified",
+        "environment_reason_codes": [
+          "preflight-not-requested"
+        ],
+        "evidence_tier": "unverified",
+        "execution_contract_digest": null,
+        "frontier_observation_gate": {
+          "reason_codes": [],
+          "status": "not-evaluated"
+        },
+        "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+        "input_corpus_digest": null,
+        "iqr_over_median": 0.015006743644755037,
+        "kind": "benchmark-median",
+        "median_ns": 1757210.0,
+        "q1_ns": 1738955.0,
+        "q3_ns": 1765325.0,
+        "reason_codes": [
+          "preflight-not-requested"
+        ],
+        "throughput_per_second": 569.0839455728114
+      },
+      "predicted": {
+        "aggregation": "selected=sum(candidate selected durations); dependent compound phases are serial without an explicit chunk pipeline contract",
+        "assumptions": [
+          "FLOPs are CostIR minimum mathematical work, not implementation-added work.",
+          "Compulsory bytes count each MatMul input and output once.",
+          "P80 rates are cross-Shape robust achieved resource capacities.",
+          "The HBM copy rate counts one read and one write as effective device-memory traffic.",
+          "max(compute_time, memory_time) assumes compute and memory may overlap perfectly.",
+          "Dispatch, tiling, synchronization, contention, and framework overhead are excluded.",
+          "The complete uncalibrated implementation duration remains unknown."
+        ],
+        "candidate_count": 8,
+        "compound_phase_schedule": null,
+        "compound_provisional_phase_schedule": null,
+        "compulsory_bytes": 37756928,
+        "critical_path_hardware_floor_ns": null,
+        "empirical_compute_time_ns": null,
+        "empirical_hardware_floor_ns": null,
+        "empirical_memory_time_ns": null,
+        "full_duration_ns": null,
+        "ideal_dag_hardware_floor_ns": null,
+        "kind": "algorithm-independent-empirical-serialized-hardware-floor",
+        "limiting_resource": null,
+        "materialized_bytes": 289415168,
+        "minimum_work_flops": 9710850048,
+        "operation_count": 52,
+        "operator_achievable_frontier_ns": null,
+        "operator_frontier_anchor_ids": [],
+        "operator_frontier_candidate_digest": null,
+        "operator_frontier_execution_contract_digest": null,
+        "operator_frontier_hardware_cohort": null,
+        "operator_frontier_input_corpus_digest": null,
+        "operator_frontier_match_status": "not-configured",
+        "operator_frontier_reason_codes": [],
+        "operator_frontier_standard_uncertainty_ns": null,
+        "provisional_estimate_ns": null,
+        "provisional_evidence_tier": null,
+        "provisional_reason_codes": [],
+        "resource_hardware_floor_ns": null,
+        "resource_limiting_resource": null,
+        "resource_physical_floor_ns": null,
+        "schedule": "unknown",
+        "serialized_hardware_floor_ns": null,
+        "status": "partial-empirical-hardware-floor-exploratory"
+      },
+      "scope": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer"
+    }
+  ],
+  "latency_decomposition": {
+    "comparison_role": "diagnostic-comparison",
+    "joined": [],
+    "largest_discrepancy": null,
+    "observed": {
+      "all_items": [],
+      "available": false,
+      "mandatory": [],
+      "reason": "operation spans are not synchronous device durations: host-enqueue",
+      "selected": [],
+      "top10": []
+    },
+    "predicted": {
+      "all_items": [],
+      "available": false,
+      "mandatory": [],
+      "reason": "selected hardware floor is unavailable",
+      "selected": [],
+      "top10": []
+    },
+    "schema": "groundupscale.dev/latency-decomposition/v1alpha1",
+    "visibility_rule": {
+      "mandatory_share_of_e2e": 0.1,
+      "selection": "top-k union every item at or above the E2E share threshold",
+      "top_k": 10
+    }
+  },
+  "memory": {
+    "comparison": {
+      "absolute_error_bytes": 14680064,
+      "absolute_relative_error": 0.212096106048053,
+      "error_status": "evaluated",
+      "predicted_minus_observed_bytes": -14680064,
+      "predicted_to_observed_ratio": 0.7879038939519469
+    },
+    "observed": {
+      "exclusions": [
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "kernel-private workspace",
+        "framework/runtime code and Python RSS"
+      ],
+      "framework_peak_bytes": 69214208,
+      "kind": "weakref-live-unique-tensor-storage",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/out_proj"
+    },
+    "predicted": {
+      "exclusions": [
+        "kernel-private workspace",
+        "allocator reservation and fragmentation",
+        "driver allocations",
+        "framework/runtime code and Python object memory"
+      ],
+      "framework_peak_bytes": 54534144,
+      "kind": "semantic-live-set",
+      "peak_stable_path": "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale"
+    }
+  },
+  "schema": "groundupscale.dev/prediction-observation-comparison/v1alpha2",
+  "status": "partial-base-prediction",
+  "summary": {
+    "aligned_latency_cases": 1,
+    "evaluable_latency_errors": 0,
+    "evaluable_memory_errors": 1,
+    "provisional_latency_comparisons": 0,
+    "qualified_frontier_comparisons": 0
+  }
+}

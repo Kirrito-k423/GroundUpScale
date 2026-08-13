@@ -1909,6 +1909,9 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         manifest.get("bundle_kind") == "schedule-effect-frontier"
     )
     e2e_gap_report = manifest.get("bundle_kind") == "e2e-gap-report"
+    final_hardware_acceptance = (
+        manifest.get("bundle_kind") == "final-hardware-acceptance"
+    )
     compound_operator_frontier = (
         manifest.get("bundle_kind") == "compound-operator-frontier"
     )
@@ -1937,7 +1940,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
         or operator_phase_measurement
         or schedule_effect_frontier
         or e2e_gap_report
-        or operator_phase_measurement
+        or final_hardware_acceptance
     )
     supersedes = manifest.get("supersedes")
     enforce_supersession = (
@@ -1999,6 +2002,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 role_counts[role] = role_counts.get(role, 0) + 1
         if schedule_effect_frontier:
             required_roles = SCHEDULE_EFFECT_FRONTIER_REQUIRED_ROLES
+        elif final_hardware_acceptance:
+            required_roles = {
+                "final-hardware-acceptance-input",
+                "final-hardware-acceptance",
+                "html-report",
+            }
         elif e2e_gap_report:
             required_roles = {
                 "e2e-gap-report-input",
@@ -2183,6 +2192,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     paths_by_role.get("e2e-gap-report")
                 ]:
                     failures.append("E2E gap report lineage mismatch")
+
                 source_entry = next(
                     (
                         artifact
@@ -2248,6 +2258,80 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             or verify_run_bundle(source_root).get("passed") is not True
                         ):
                             failures.append("E2E gap report source lineage mismatch")
+
+    if final_hardware_acceptance:
+        source = documents_by_role.get("final-hardware-acceptance-input")
+        actual = documents_by_role.get("final-hardware-acceptance")
+        result_entry = next(
+            (item for item in artifacts if isinstance(item, dict) and item.get("role") == "final-hardware-acceptance"),
+            None,
+        )
+        report_entry = next(
+            (item for item in artifacts if isinstance(item, dict) and item.get("role") == "html-report"),
+            None,
+        )
+        if not all(isinstance(item, dict) for item in (source, actual, result_entry, report_entry)):
+            failures.append("invalid final hardware acceptance bundle identity")
+        else:
+            try:
+                from groundupscale.final_hardware_acceptance import (
+                    compose_final_acceptance,
+                    render_final_acceptance_html,
+                )
+
+                expected = compose_final_acceptance(source)
+                actual_report = (root / str(report_entry["path"])).read_text()
+            except (OSError, UnicodeDecodeError, ValueError) as error:
+                failures.append(f"invalid final hardware acceptance evidence: {error}")
+            else:
+                if actual != expected:
+                    failures.append("final hardware acceptance derivation mismatch")
+                if actual_report != render_final_acceptance_html(expected):
+                    failures.append("final hardware acceptance human projection mismatch")
+                if result_entry.get("inputs") != [paths_by_role.get("final-hardware-acceptance-input")] or report_entry.get("inputs") != [paths_by_role.get("final-hardware-acceptance")]:
+                    failures.append("final hardware acceptance lineage mismatch")
+                if manifest.get("hardware_cohort") != expected["identity"]["hardware_cohort"]:
+                    failures.append("final hardware acceptance cohort mismatch")
+                locked_sources = source.get("source_bundles")
+                if not isinstance(locked_sources, list) or manifest.get("source_bundles") != locked_sources:
+                    failures.append("final hardware acceptance source lineage mismatch")
+                elif locked_sources:
+                    repository_root = root
+                    while repository_root != repository_root.parent and not (
+                        repository_root / "pyproject.toml"
+                    ).is_file():
+                        repository_root = repository_root.parent
+                    for locked in locked_sources:
+                        if not isinstance(locked, dict):
+                            failures.append("final hardware acceptance source lineage mismatch")
+                            continue
+                        relative = locked.get("path")
+                        digest = locked.get("manifest_sha256")
+                        if (
+                            not isinstance(relative, str)
+                            or not relative
+                            or Path(relative).is_absolute()
+                            or not isinstance(digest, str)
+                            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                            or locked.get("verification_passed") is not True
+                        ):
+                            failures.append("final hardware acceptance source lineage mismatch")
+                            continue
+                        source_root = (repository_root / relative).resolve()
+                        try:
+                            source_root.relative_to(repository_root)
+                            source_manifest_path = source_root / "run.manifest.json"
+                            source_manifest = json.loads(source_manifest_path.read_text())
+                        except (ValueError, OSError, UnicodeDecodeError, json.JSONDecodeError):
+                            failures.append("final hardware acceptance source is not resolvable")
+                            continue
+                        if (
+                            _sha256(source_manifest_path) != digest
+                            or source_manifest.get("run_id") != locked.get("run_id")
+                            or source_manifest.get("bundle_kind") != locked.get("bundle_kind")
+                            or verify_run_bundle(source_root).get("passed") is not True
+                        ):
+                            failures.append("final hardware acceptance source lineage mismatch")
 
     if model_e2e_frontier:
         source = documents_by_role.get("model-e2e-frontier-input")

@@ -1,0 +1,15 @@
+{
+  "ascend_rt_visible_devices": "0",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "issue": 50,
+  "lock_path": "/home/t00906153/.groundupscale/locks/ascend-910b2-host.lock",
+  "logical_device": "npu:0",
+  "measurement_ended_at": "2026-08-14T01:53:44+08:00",
+  "measurement_started_at": "2026-08-14T01:52:42+08:00",
+  "owner": "issue=50 pid=3839132 host=localhost.localdomain started=2026-08-14T01:52:42+08:00",
+  "run_id": "issue50-20260813T175228Z-independent-e2e-holdout-v1",
+  "schema": "groundupscale.dev/ascend-host-lock-session/v1alpha1",
+  "whole_host_exclusive": true,
+  "wrapper_path": "/home/t00906153/.groundupscale/bin/with-ascend-lock",
+  "wrapper_sha256": "22d43618f1c616b2ff70570944c7447cd851aac98bfedb111b7912fc36b94787"
+}

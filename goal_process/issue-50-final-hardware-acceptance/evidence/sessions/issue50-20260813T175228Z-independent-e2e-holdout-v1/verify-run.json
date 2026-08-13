@@ -1,0 +1,7 @@
+{
+  "artifact_count": 24,
+  "failures": [],
+  "passed": true,
+  "run_id": "issue50-20260813T175228Z-independent-e2e-holdout-v1",
+  "schema": "groundupscale.dev/run-verification/v1alpha1"
+}
