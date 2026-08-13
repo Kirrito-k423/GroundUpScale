@@ -1,7 +1,0 @@
-{
-  "allocated_bytes_after": 64887808,
-  "allocated_bytes_before": 0,
-  "maximum_allocated_bytes": 167389184,
-  "reserved_bytes_after": 226492416,
-  "schema": "groundupscale.dev/memory-observation/v1alpha1"
-}

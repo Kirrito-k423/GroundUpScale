@@ -27,6 +27,47 @@ def main() -> int:
     )
     args = parser.parse_args()
     workspace = args.workspace.resolve()
+    committed_replay = workspace / (
+        "evidence/qualifications/"
+        "issue38-bounded-collection-stability-failed-v1"
+    )
+    if committed_replay.exists():
+        verification = verify_run_bundle(committed_replay)
+        qualification = json.loads(
+            (committed_replay / "frontier/qualification.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        diagnosis = diagnose_run_bundle(committed_replay)
+        print(
+            json.dumps(
+                {
+                    "run_bundle": str(committed_replay),
+                    "verification_passed": verification["passed"],
+                    "qualification_status": qualification["status"],
+                    "reason_code": qualification.get("reason_code"),
+                    "stopping_decision": qualification.get(
+                        "stopping_decision"
+                    ),
+                    "response_attempt": qualification["surface"].get(
+                        "response_attempt"
+                    ),
+                    "queries": [
+                        {
+                            "shape": item["query_shape"],
+                            "status": item["status"],
+                            "reason_code": item.get("reason_code"),
+                            "shape_regime": item.get("shape_regime"),
+                        }
+                        for item in diagnosis["capability_surface_queries"]
+                    ],
+                },
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0 if verification["passed"] else 1
     policy_path = workspace / (
         "specs/policies/"
         "ascend-910b2-flash-attention-bounded-sequence-sweep-v1.yaml"

@@ -1,6 +1,12 @@
 # Issue 36：有界 Ascend MatMul M-sweep
 
-本目录保存 ticket #36 的锁定采集计划、可恢复采集脚本和停止结论。实验固定
+本目录保存 ticket #36 的锁定采集计划、可恢复采集脚本和停止结论。完整源
+Run Bundle corpus 已迁移到由
+`evidence/datasets/issue36-ascend-operator-frontier-corpus-v1.yaml` 索引的
+content-addressed GitHub Release asset；仓库保留可离线验证和诊断回放的最小 unknown
+Frontier Run Bundle：
+`evidence/qualifications/issue36-bounded-collection-corpus-incomplete-v1`。
+实验固定
 Hardware Cohort `ascend-npu-23b93a89d5fecc79`、`N=512`、`K=512`、float32、
 row-major contiguous、`torch.matmul`、PyTorch eager、100 warmup、100 repetitions、
 100 inner iterations、baseline timing lane、固定 seed `20260812`，不选择性删除原始
@@ -48,3 +54,12 @@ bash goal_process/issue-36-ascend-matmul-m-sweep/collect_bounded_m_sweep.sh vali
 rejected Run Bundle。本票已经实现并测试了 qualified、rejected、unknown 三种 qualification
 的不可变写入、验证和诊断回放；完整 corpus 同时通过 Error Budget 与 Ramp/Steady 边界证据
 时发布 Surface，否则发布可回放 rejected，partial corpus 则稳定发布 structured unknown。
+
+离线验证与回放：
+
+```bash
+uv run groundupscale verify-run \
+  evidence/qualifications/issue36-bounded-collection-corpus-incomplete-v1 --json
+uv run groundupscale diagnose \
+  evidence/qualifications/issue36-bounded-collection-corpus-incomplete-v1 --json
+```

@@ -2101,6 +2101,20 @@ def _write_bounded_collection_bundle(
             "transform_version": "v1",
         },
         "work_formula": reference_shape.work_formula,
+        **(
+            {"theoretical_peak": policy.document["theoretical_peak"]}
+            if "theoretical_peak" in policy.document
+            else {}
+        ),
+        **(
+            {
+                "empirical_rate_envelope": policy.document[
+                    "empirical_rate_envelope"
+                ]
+            }
+            if "empirical_rate_envelope" in policy.document
+            else {}
+        ),
         "anchors": anchors,
         "cells": cells,
         "response_attempt": response_attempt,
@@ -2994,6 +3008,20 @@ class OperatorFrontierBundleWriter:
                     "version": "v1",
                     "work_unit": "FLOP",
                 }
+            ),
+            **(
+                {"theoretical_peak": policy.document["theoretical_peak"]}
+                if "theoretical_peak" in policy.document
+                else {}
+            ),
+            **(
+                {
+                    "empirical_rate_envelope": policy.document[
+                        "empirical_rate_envelope"
+                    ]
+                }
+                if "empirical_rate_envelope" in policy.document
+                else {}
             ),
             "anchors": anchors,
             "cells": [

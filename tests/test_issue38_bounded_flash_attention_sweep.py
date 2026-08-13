@@ -29,9 +29,7 @@ UNKNOWN_EVIDENCE = (
     "evidence/qualification-unknown.json"
 )
 PUBLISHED_BUNDLE = (
-    ROOT
-    / "goal_process/issue-38-ascend-flash-attention-sequence-sweep/"
-    "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v2"
+    ROOT / "evidence/qualifications/issue38-bounded-collection-stability-failed-v1"
 )
 
 
@@ -274,25 +272,14 @@ def test_qualification_publisher_can_start_without_external_pythonpath() -> None
     assert "--workspace" in completed.stdout
 
 
-def test_qualification_publisher_replays_existing_real_bundle() -> None:
-    completed = subprocess.run(
-        [
-            str(Path(os.sys.executable)),
-            str(PUBLISH_SCRIPT),
-            "--workspace",
-            str(ROOT),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-        env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
+def test_qualification_publisher_points_to_external_dataset_after_migration() -> None:
+    evidence = yaml.safe_load(UNKNOWN_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["content_addressed_evidence"]["dataset_manifest"] == (
+        "evidence/datasets/issue38-ascend-operator-frontier-corpus-v1.yaml"
     )
-
-    assert completed.returncode == 0, completed.stderr
-    summary = yaml.safe_load(completed.stdout)
-    assert summary["verification_passed"] is True
-    assert summary["qualification_status"] == "unknown"
-    assert summary["reason_code"] == "bounded-collection-stability-failed"
+    assert evidence["published_run_bundle"] == (
+        "evidence/qualifications/issue38-bounded-collection-stability-failed-v1"
+    )
 
 
 def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() -> None:

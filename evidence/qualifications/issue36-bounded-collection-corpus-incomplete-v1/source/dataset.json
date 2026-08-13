@@ -1,0 +1,593 @@
+{
+  "archive": {
+    "media_type": "application/gzip",
+    "sha256": "82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2",
+    "size_bytes": 1016664,
+    "uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz"
+  },
+  "dataset_digest": "44c5758842f7de3c274c71b47894c2ee8f40f98392e1e99289423a78a3edf31e",
+  "dataset_id": "issue36-ascend-operator-frontier-corpus-v1",
+  "issue": 36,
+  "members": [
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "0a454b23c52cc22c3fcc74244120a808ca29f7ec8099066bb4e1fb2f6d306e45",
+      "run_id": "issue36-main-m1-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "bccff17a1d5ac70a1793951a9aef3f0db2657f5b03037ed49f59103a86a03bdc",
+      "run_id": "issue36-main-m1-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "d712510df8d5e45a30ae644428392e4682da73648500678b420018db331451ad",
+      "run_id": "issue36-main-m1-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1024-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "549fd61d6035a8551eac0a4a6d987c48af5b4ecf4a2ba5b25d3fbb6126aae224",
+      "run_id": "issue36-main-m1024-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1024-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "09981e296284cf8622647fe9551ea4917eb2761050e030a427cb79eddb57dcf2",
+      "run_id": "issue36-main-m1024-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1024-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "6d2d4ec2f4aaa01d9de93c672c8b94b8ee02a168896b2e64ee68ec62612c3f04",
+      "run_id": "issue36-main-m1024-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m127-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "d53bb7b19b8af3f80cde8f86a3d6df09ee16585d8ac98e1d10e6c12a77a221a7",
+      "run_id": "issue36-main-m127-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m127-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "09ef99551984819da0a6790ad5f85dce7f58a3532ff3b39c71536c3b3adf4e5f",
+      "run_id": "issue36-main-m127-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m127-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "bcb6ad335cf433a4405456dd86879e67caa0ef4877fd4166a0597ddbb5573bf4",
+      "run_id": "issue36-main-m127-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m128-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "993a0ed7ecb47d51eac80ce30b711d56592de027d60a93d694628fc826fe304c",
+      "run_id": "issue36-main-m128-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m128-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "49f28b4b0e141f06c1ac1633d69d44f44fd4c2b2bc571871921fdac4423ed787",
+      "run_id": "issue36-main-m128-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m128-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "de566948f79b32ebda2573028208ac0156318436956966e4723d1f335db53094",
+      "run_id": "issue36-main-m128-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m129-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "8fe8e990f96aa79902f4357427261209ed0f4703ecb8fd24ea06dbc7a0195c4c",
+      "run_id": "issue36-main-m129-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m129-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "406089a5d2159a6c39e86ebc4421009a75b4e86d530d3428bbb5032fdf3021bb",
+      "run_id": "issue36-main-m129-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m129-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ea14a2ae9ade265b96bb738f8ba49e7f2161bf51caa4bbc48db4be60bb26905b",
+      "run_id": "issue36-main-m129-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1536-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "4d4810273ffe27829a8a25d6ae7bdf5e8633e74d73b4d63a618546a0a96c3da0",
+      "run_id": "issue36-main-m1536-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1536-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ea71a9169d84e9d7a1d63fe8f6be44f6ead86b20ac97e34d11de9c0e7c61ca39",
+      "run_id": "issue36-main-m1536-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m1536-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "28eb0ac612bee37aac056eb7b394233bfef55ca90acaa22f145b56b4f4cea8cb",
+      "run_id": "issue36-main-m1536-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m16-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "86d119df3684216812916dc805f2dfbad8a69793f613aae79b30b0e5f58617e0",
+      "run_id": "issue36-main-m16-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m16-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "a1a747f799234885815f30e2288acffd7e2ceabca0976cb4840af00eee67b736",
+      "run_id": "issue36-main-m16-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m16-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "defa60e070e36c4d144c1e60d5c231e719edef49613986195e69e80444e1d9c0",
+      "run_id": "issue36-main-m16-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m192-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "c41ec79322c94ffdb9d1abe45d3194c7575ecab4870d4c046c9237512b467275",
+      "run_id": "issue36-main-m192-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m192-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "c82edb5181a96253da3429060716f3ed70287f3fc0e74b0aa0d12a88bdd56fcc",
+      "run_id": "issue36-main-m192-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m192-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ecb8d4fe165a2ac4e503cc73f383645a85a8577bd4bdf753037bc137dcb522b3",
+      "run_id": "issue36-main-m192-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "fe8aa92056bc9b405136f185af2e95b5622cb701c602d4a09e5d8eaf16ba3536",
+      "run_id": "issue36-main-m2-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "a1c1a4ac7df863a8d2d7a808a9743a12c2da594384dcaaf59c3bb1287873b7b1",
+      "run_id": "issue36-main-m2-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "0bd8b804b4c8ca5759af776802f2d56ce8983a822cd8ed2d812f985daaf9da79",
+      "run_id": "issue36-main-m2-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2048-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "366ae991cf2468b29a213aa0a70bf5c5d68dfd6215edd6b15ce6e1f4829dcb86",
+      "run_id": "issue36-main-m2048-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2048-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "1b166d1f683d4ffa7ee116d6e2f7fb1ede8b8e2e8e6ad1a575ae0c3b679a44be",
+      "run_id": "issue36-main-m2048-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m2048-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "9aa0f929ebad3bb78bc5cda5daab7a182f18cd66badf1ce0f4f09d94beac8e3d",
+      "run_id": "issue36-main-m2048-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m255-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "072d990cb8fdc9dd90b6b6e3251fbfc126517fcdb2e8944ed867250614a36dda",
+      "run_id": "issue36-main-m255-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m255-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "52b983b5a5bd6a42e7279aea5ba02d66ab9e19704e3f0c37820ee16939ddaa74",
+      "run_id": "issue36-main-m255-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m255-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "0cbc8ce4894f7907d1e5e4eda8905c9bef8335007530d50e88f8796f86f39d97",
+      "run_id": "issue36-main-m255-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m256-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "54b32cd99c81cb3412c454e58bcf019104863807f9d3a063489eaebb1670403e",
+      "run_id": "issue36-main-m256-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m256-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "95fab3db626df828aa9b749df7cc2a54a5134f604ce70772ea6c5f34c902312b",
+      "run_id": "issue36-main-m256-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m256-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "eb1a871b22229a1b7cb16076ff98235877040927c3cc7d4acd1fa8bb061782d9",
+      "run_id": "issue36-main-m256-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m257-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "9dea46428ad7712a8aecb84b9bb4fd6d7073dc217fc72daecc495b59335ccd82",
+      "run_id": "issue36-main-m257-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m257-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "3946bbf7db7a80f3aebe0682fe879777b82b22d61e0819d5eb22e890c57d2904",
+      "run_id": "issue36-main-m257-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m257-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "bb0dd77bb065abc28d6577b0db5ec0ddc724d59a3073d077bf967a12e328f71a",
+      "run_id": "issue36-main-m257-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m32-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "391db670d3cf8a3020d022ffb5ca0378b4b8f8a87baa7f3727f95e0a78cff50b",
+      "run_id": "issue36-main-m32-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m32-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "886a4c9a3ac6f3ce31143bc5a7d3a6be3b2916d63bac15da245fc62b61263945",
+      "run_id": "issue36-main-m32-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m32-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ddae3b585249dd1cc2aa7bd40bf3512fc42c2c86f6e22b809e5252d0a77a6ae8",
+      "run_id": "issue36-main-m32-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m384-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "e1dc22e92f33ed3652e6f63302f8943d96be3fb9ce059829355e0984ae381ef4",
+      "run_id": "issue36-main-m384-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m384-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "f0f3a5eebde888a9f124a251eb11dfdd9efa6668de417dd949889eb3517bd179",
+      "run_id": "issue36-main-m384-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m384-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "d51716b028a7b3ed6540035ccce44ec3e0831828142100200c939170d8598489",
+      "run_id": "issue36-main-m384-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "a3363a8d5c2f510aa0bd6cd8f9e18f8ed5de5e151f90ca96de8e39fa3986cb3d",
+      "run_id": "issue36-main-m4-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "a1f9ee730db36a432aee0a0653cca845911ef6bf653d7cbf9bf311f04dd56156",
+      "run_id": "issue36-main-m4-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "cf7651097d1ca7bac82f2b121214d97a1b8b7d7923bf8b85e52f5beb5868f484",
+      "run_id": "issue36-main-m4-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4096-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "c33f039be38de6ec2e3d82ad26223d0af9a9c47b718bb70450a7db27269062d0",
+      "run_id": "issue36-main-m4096-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4096-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ecece4a687ce11b9c8ab395b14299f3e08f84ec11118d93386fb0cf152a21089",
+      "run_id": "issue36-main-m4096-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m4096-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "4245cc765f228899fa9bda5364c8f87879b9b197a9d2aeed6b2303c00bbc448b",
+      "run_id": "issue36-main-m4096-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m511-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "85289c14b45c86afd98fcc0a4781a3bd4359f9965c577917c065f93ea0267dc1",
+      "run_id": "issue36-main-m511-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m511-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "cc71fcc9ee006a7d9352972b592b25927d043a626e65424f0894d0df1113a857",
+      "run_id": "issue36-main-m511-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m511-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "6facd7380515740d8dd18618372b63915457a8abad852195c4579213e21dfb52",
+      "run_id": "issue36-main-m511-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m512-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "379c1bd9648dde8405cd30888d71f12971df479dc9b5382d2b1594aa48f2269b",
+      "run_id": "issue36-main-m512-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m512-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "cf3929b9ab3791f0926407d74db487ca6aa9229ed4b9555ac3dd13e2264124bd",
+      "run_id": "issue36-main-m512-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m512-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "2e58f2d3850d65a2604f63e6c0202d034dae28bd699de07d70edc1dc88a06359",
+      "run_id": "issue36-main-m512-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m513-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "1ca1f8d5c535d955df0d97d6bbb5e66888d96d97a108fdc4a658c7b2ab10c869",
+      "run_id": "issue36-main-m513-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m513-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "0feefd9554a7de126141f9b744f09282484bf47d2196a630210e2806445d2294",
+      "run_id": "issue36-main-m513-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m513-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "3a510c5012495af2cb096f03ce0b4650f08516cb4eeb0934eee12e225b50e015",
+      "run_id": "issue36-main-m513-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m64-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "01b36b4c0bb25f498b51647b5bab2445bd56d016fb378da5311f6d8f4bc763a4",
+      "run_id": "issue36-main-m64-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m64-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "00ceb97bf0c5776ac2ad10ff4da644e0ec181bfbe426dfbaeee8944716335f3c",
+      "run_id": "issue36-main-m64-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m64-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ba772378ba9e90932af1446798c3b61ea8c8ee42a1013f137c471b66d74efdd8",
+      "run_id": "issue36-main-m64-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m768-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "a79262ad3aa7e472466196f94fedcd576fdfe349bfe87db111ff8ddd39b8a29e",
+      "run_id": "issue36-main-m768-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m768-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "31b41c54453e8e95c283b6615e7e8901ec7087a4f1a66d05f16089d07b1cfb93",
+      "run_id": "issue36-main-m768-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m768-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "1e853657bfdf10cff6b39650ce52001290cc8559e5c649828a7231a51f78b325",
+      "run_id": "issue36-main-m768-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m8-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "afe75ec47a5a36bb160e8f07f3b46cec0efb9e07183fc17766fc03ff05592b6e",
+      "run_id": "issue36-main-m8-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m8-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "61eabcabfdaf9ab246c711f0f025d094904e4fd1b8875f2dc08cb4614fd41df5",
+      "run_id": "issue36-main-m8-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m8-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "e293773aa1272af0d17c4a7f8048c2c21384b99e5251de294935f676bdfd36ce",
+      "run_id": "issue36-main-m8-torch-matmul-03",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m96-torch-matmul-01/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "19e15405fe4bbf800a44906f0d56d9b3931e1b6cc069106bf05d11fdbc629fe2",
+      "run_id": "issue36-main-m96-torch-matmul-01",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m96-torch-matmul-02/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "ea67246e3f69440d05b1f0bfa7c1df90fc78c2b012caee01f70aa737099f1cbc",
+      "run_id": "issue36-main-m96-torch-matmul-02",
+      "status": "completed"
+    },
+    {
+      "artifact_uri": "https://github.com/Kirrito-k423/GroundUpScale/releases/download/evidence-issue34-v1/issue36-ascend-matmul-corpus-v1-sha256-82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2.tar.gz#runs/issue36-main-m96-torch-matmul-03/run.manifest.json",
+      "bundle_kind": "exact-shape-measurement",
+      "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+      "manifest_sha256": "4b5f419657a1a529ba85ed8a09e6a6c5fa112d56f607b19296be9de2295e858a",
+      "run_id": "issue36-main-m96-torch-matmul-03",
+      "status": "completed"
+    }
+  ],
+  "qualification_semantics": "source corpus only; not a qualified Ramp/Steady Surface",
+  "schema": "groundupscale.dev/evidence-dataset/v1alpha1",
+  "storage": "github-release-content-addressed-archive",
+  "version": "v1"
+}

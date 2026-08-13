@@ -68,9 +68,12 @@ third experimental round.
 - `evidence/qualification-unknown.json`: bounded stopping decision, confirmed
   inventory, failed stability gates, representative unknown queries, and exact
   replay commands.
-- `evidence/runs/`: all 234 immutable measurement Run Bundles and the final
-  self-contained `issue38-ascend-flash-attention-sequence-sweep-v2`
-  qualification Run Bundle. From the repository root, `python -m
-  groundupscale.cli verify-run <bundle> --json` passes without remote access.
+- `evidence/datasets/issue38-ascend-operator-frontier-corpus-v1.yaml`: immutable
+  member manifest digests and content-addressed GitHub Release URIs for the
+  externalized corpus. Large generated Run Bundles are not committed to Git.
+- `evidence/qualifications/issue38-bounded-collection-stability-failed-v1`:
+  minimal self-contained qualification and diagnostic replay Bundle. From the
+  repository root, `uv run groundupscale verify-run <bundle> --json` and
+  `uv run groundupscale diagnose <bundle> --json` pass without remote access.
 - `RMB-Cost.md`: cache-hit, cache-miss, and output token cost estimate.
 - `profilecodex-20260813-1303.md`: required >20-minute session latency profile.

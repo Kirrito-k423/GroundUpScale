@@ -7664,6 +7664,11 @@ def _query_setup_plus_throughput_cell(
         *calibration_refs,
         *cast(list[str], surface.get("evidence_refs", [])),
     ]
+    utilization = _operator_utilization_results(
+        surface,
+        semantics,
+        semantics.declared_work / (latency_ns * 1e-9),
+    )
     return {
         "query_id": query.get("query_id"),
         "status": "exact_anchor" if selected.exact_anchor else "modeled",
@@ -7701,6 +7706,7 @@ def _query_setup_plus_throughput_cell(
             "value": semantics.declared_work / (latency_ns * 1e-9),
             "unit": "FLOP/s",
         },
+        **utilization,
         "work_formula": work_formula,
         "response": {
             "target": response["target"],
@@ -7723,6 +7729,147 @@ def _query_setup_plus_throughput_cell(
             },
         },
         "evidence_refs": evidence_refs,
+    }
+
+
+def _qualified_rate_reference(
+    value: object,
+    *,
+    semantics: OperatorShapeSemantics,
+    surface: dict[str, Any],
+) -> tuple[float, str] | None:
+    if not isinstance(value, dict):
+        return None
+    rate = value.get("value")
+    evidence_ref = value.get("evidence_ref")
+    evidence_sha256 = value.get("evidence_sha256")
+    evidence = value.get("evidence")
+    surface_domain = surface.get("domain")
+    comparable_domain = (
+        {
+            "hardware_cohort": surface.get("cohort_id"),
+            "dtype": surface_domain.get("dtype"),
+            "execution_mode": surface_domain.get("execution_mode"),
+            "layout": surface_domain.get("layout"),
+            "numeric_mode": surface_domain.get("numeric_mode", "default"),
+        }
+        if isinstance(surface_domain, dict)
+        else None
+    )
+    if (
+        value.get("status") != "qualified"
+        or not _finite_number(rate)
+        or float(rate) <= 0
+        or value.get("unit") != "FLOP/s"
+        or value.get("semantic_operation") != semantics.operation
+        or value.get("work_formula_kind") != semantics.work_formula.get("kind")
+        or not _nonempty_string(evidence_ref)
+        or fullmatch(
+            r"artifact://[A-Za-z0-9][A-Za-z0-9._/-]*"
+            r"(?:#[A-Za-z0-9][A-Za-z0-9._-]*)?",
+            evidence_ref,
+        )
+        is None
+        or not isinstance(evidence_sha256, str)
+        or fullmatch(r"[0-9a-f]{64}", evidence_sha256) is None
+        or not isinstance(evidence, dict)
+        or evidence.get("schema")
+        != "groundupscale.dev/rate-reference-evidence/v1alpha1"
+        or evidence.get("source_kind")
+        not in {
+            "vendor-specification",
+            "reviewed-hardware-capability",
+            "deterministic-test-fixture",
+        }
+        or not _nonempty_string(evidence.get("source_uri"))
+        or evidence.get("semantic_operation") != value.get("semantic_operation")
+        or evidence.get("work_formula_kind") != value.get("work_formula_kind")
+        or evidence.get("value") != rate
+        or evidence.get("unit") != value.get("unit")
+        or comparable_domain is None
+        or any(
+            not _nonempty_string(expected)
+            or value.get(field) != expected
+            or evidence.get(field) != expected
+            for field, expected in comparable_domain.items()
+        )
+        or _canonical_digest(evidence) != evidence_sha256
+    ):
+        return None
+    return float(rate), cast(str, evidence_ref)
+
+
+def _operator_utilization_results(
+    surface: dict[str, Any],
+    semantics: OperatorShapeSemantics,
+    effective_rate: float,
+) -> dict[str, dict[str, object]]:
+    theoretical_value = surface.get("theoretical_peak")
+    theoretical = _qualified_rate_reference(
+        theoretical_value,
+        semantics=semantics,
+        surface=surface,
+    )
+    if theoretical is None:
+        theoretical_reason = (
+            "comparable-theoretical-peak-unavailable"
+            if theoretical_value is None
+            else "theoretical-peak-not-semantically-comparable"
+        )
+        mfu: dict[str, object] = {
+            "status": "unknown",
+            "reason_code": theoretical_reason,
+            "value": None,
+            "unit": "ratio",
+            "evidence_refs": [],
+        }
+    else:
+        peak, evidence_ref = theoretical
+        mfu = {
+            "status": "derived",
+            "reason_code": None,
+            "value": effective_rate / peak,
+            "unit": "ratio",
+            "evidence_refs": [evidence_ref],
+        }
+
+    empirical_value = surface.get("empirical_rate_envelope")
+    empirical = _qualified_rate_reference(
+        empirical_value,
+        semantics=semantics,
+        surface=surface,
+    )
+    if (
+        empirical is None
+        or not isinstance(empirical_value, dict)
+        or empirical_value.get("label") != "empirical-achieved-rate-envelope"
+    ):
+        empirical_reason = (
+            "empirical-rate-envelope-unavailable"
+            if empirical_value is None
+            else "empirical-rate-envelope-not-semantically-comparable"
+        )
+        envelope_utilization: dict[str, object] = {
+            "status": "unknown",
+            "reason_code": empirical_reason,
+            "value": None,
+            "unit": "ratio",
+            "label": "empirical-envelope-utilization-not-mfu",
+            "evidence_refs": [],
+        }
+    else:
+        envelope, evidence_ref = empirical
+        envelope_utilization = {
+            "status": "derived",
+            "reason_code": None,
+            "value": effective_rate / envelope,
+            "unit": "ratio",
+            "label": "empirical-envelope-utilization-not-mfu",
+            "evidence_refs": [evidence_ref],
+        }
+    return {
+        "mfu": mfu,
+        "empirical_envelope_utilization": envelope_utilization,
     }
 
 
@@ -7807,6 +7954,11 @@ def _query_capability_surface(
         effective_rate = query_semantics.declared_work / (
             float(latency_ns) * 1e-9
         )
+        utilization = _operator_utilization_results(
+            surface,
+            query_semantics,
+            effective_rate,
+        )
         components = {
             "anchor_standard_latency_ns": float(standard_latency),
             "response_model_standard_latency_ns": 0.0,
@@ -7870,6 +8022,7 @@ def _query_capability_surface(
             "latency": latency,
             "work_rate_latency": latency,
             "effective_rate": {"value": effective_rate, "unit": "FLOP/s"},
+            **utilization,
             "work_formula": surface["work_formula"],
             "response": {
                 "target": "latency",
@@ -9296,6 +9449,22 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             )
             winner_text = ""
         response = query.get("response")
+        mfu = query.get("mfu")
+        empirical_utilization = query.get("empirical_envelope_utilization")
+        mfu_text = (
+            f"MFU={float(mfu['value']):.9f}"
+            if isinstance(mfu, dict) and mfu.get("status") == "derived"
+            else f"MFU=unknown ({mfu.get('reason_code')})"
+            if isinstance(mfu, dict)
+            else "MFU=unknown (contract-unavailable)"
+        )
+        empirical_text = (
+            "empirical-envelope-utilization="
+            f"{float(empirical_utilization['value']):.9f}"
+            if isinstance(empirical_utilization, dict)
+            and empirical_utilization.get("status") == "derived"
+            else "empirical-envelope-utilization=unknown"
+        )
         shape_regime = query.get("shape_regime")
         if (
             isinstance(response, dict)
@@ -9328,6 +9497,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"work-formula={json.dumps(query.get('work_formula'), ensure_ascii=False, separators=(',', ':'), sort_keys=True)}; "
             f"declared-work={latency['declared_work']:.6f} {latency['work_unit']}; "
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
+            f"{mfu_text}; {empirical_text}; "
             f"latency={latency['value_ns']:.6f} ns; "
             f"cell={query['cell_id']}; "
             f"anchors={','.join(anchor['anchor_id'] for anchor in query['anchors'])}; "

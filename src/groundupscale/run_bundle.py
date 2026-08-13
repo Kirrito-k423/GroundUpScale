@@ -95,6 +95,7 @@ OPERATOR_FRONTIER_REQUIRED_ROLES = frozenset(
         "diagnostic-evidence",
     }
 )
+EVIDENCE_DATASET_SCHEMA = "groundupscale.dev/evidence-dataset/v1alpha1"
 
 TRANSFORMER_DEMO_COMPLETED_REQUIRED_ROLES = frozenset(
     {
@@ -1595,6 +1596,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             "operator-frontier-qualification"
         )
         diagnostic = documents_by_role.get("diagnostic-evidence")
+        source_dataset = documents_by_role.get("source-dataset-manifest")
         source_runs = manifest.get("source_runs")
         if (
             manifest.get("status") != "completed"
@@ -1750,17 +1752,126 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 )
             seen_source_ids: set[str] = set()
             seen_source_paths: set[Path] = set()
+            dataset_members = (
+                source_dataset.get("members")
+                if isinstance(source_dataset, dict)
+                and source_dataset.get("schema")
+                == EVIDENCE_DATASET_SCHEMA
+                else None
+            )
+            if isinstance(source_dataset, dict):
+                dataset_body = {
+                    key: value
+                    for key, value in source_dataset.items()
+                    if key != "dataset_digest"
+                }
+                archive = source_dataset.get("archive")
+                archive_uri = (
+                    archive.get("uri") if isinstance(archive, dict) else None
+                )
+                archive_sha256 = (
+                    archive.get("sha256")
+                    if isinstance(archive, dict)
+                    else None
+                )
+                if (
+                    source_dataset.get("dataset_digest")
+                    != _canonical_digest(dataset_body)
+                    or not isinstance(archive_uri, str)
+                    or not archive_uri.startswith("https://github.com/")
+                    or not isinstance(archive_sha256, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", archive_sha256) is None
+                    or archive_sha256 not in archive_uri
+                    or not isinstance(dataset_members, list)
+                    or not dataset_members
+                    or len(
+                        {
+                            member.get("run_id")
+                            for member in dataset_members
+                            if isinstance(member, dict)
+                        }
+                    )
+                    != len(dataset_members)
+                    or any(
+                        not isinstance(member, dict)
+                        or not isinstance(member.get("run_id"), str)
+                        or re.fullmatch(
+                            r"[0-9a-f]{64}",
+                            str(member.get("manifest_sha256")),
+                        )
+                        is None
+                        or not isinstance(member.get("artifact_uri"), str)
+                        or not member["artifact_uri"].startswith(
+                            f"{archive_uri}#"
+                        )
+                        for member in dataset_members
+                    )
+                ):
+                    failures.append("invalid content-addressed evidence dataset")
+                qualification_dataset = qualification.get("source_dataset")
+                dataset_artifact_ref = (
+                    f"artifact://{paths_by_role['source-dataset-manifest']}"
+                    if "source-dataset-manifest" in paths_by_role
+                    else None
+                )
+                if (
+                    not isinstance(qualification_dataset, dict)
+                    or qualification_dataset
+                    != {
+                        "evidence_ref": dataset_artifact_ref,
+                        "dataset_digest": source_dataset.get("dataset_digest"),
+                        "archive_sha256": archive_sha256,
+                    }
+                    or diagnostic.get("source_dataset_ref")
+                    != dataset_artifact_ref
+                ):
+                    failures.append(
+                        "operator Frontier source dataset identity mismatch"
+                    )
+            dataset_member_index = (
+                {
+                    member.get("run_id"): member
+                    for member in dataset_members
+                    if isinstance(member, dict)
+                    and isinstance(member.get("run_id"), str)
+                }
+                if isinstance(dataset_members, list)
+                else {}
+            )
             for source in source_runs:
                 if not isinstance(source, dict):
                     failures.append("invalid operator Frontier source Run")
                     continue
                 source_id = source.get("run_id")
                 relative_path = source.get("path")
+                artifact_uri = source.get("artifact_uri")
+                manifest_digest = source.get("manifest_sha256")
                 if (
                     not isinstance(source_id, str)
                     or not source_id
                     or source_id in seen_source_ids
-                    or not isinstance(relative_path, str)
+                    or not isinstance(manifest_digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", manifest_digest) is None
+                ):
+                    failures.append("invalid operator Frontier source Run")
+                    continue
+                seen_source_ids.add(source_id)
+                if artifact_uri is not None:
+                    member = dataset_member_index.get(source_id)
+                    if (
+                        relative_path is not None
+                        or not isinstance(artifact_uri, str)
+                        or not artifact_uri.startswith("https://github.com/")
+                        or not isinstance(member, dict)
+                        or member.get("manifest_sha256") != manifest_digest
+                        or member.get("artifact_uri") != artifact_uri
+                    ):
+                        failures.append(
+                            f"content-addressed source lineage mismatch: {source_id}"
+                        )
+                    continue
+                if (
+                    not isinstance(relative_path, str)
                     or not relative_path
                     or Path(relative_path).is_absolute()
                 ):
@@ -1771,7 +1882,6 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 if source_root in seen_source_paths:
                     failures.append("duplicate operator Frontier source Run path")
                     continue
-                seen_source_ids.add(source_id)
                 seen_source_paths.add(source_root)
                 if not source_manifest_path.is_file():
                     failures.append(

@@ -5,6 +5,12 @@
   "reason_code": "bounded-collection-corpus-incomplete",
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "collection_plan_ref": "specs/policies/ascend-910b2-matmul-bounded-m-sweep-v1.yaml",
+  "content_addressed_evidence": {
+    "dataset_manifest": "evidence/datasets/issue36-ascend-operator-frontier-corpus-v1.yaml",
+    "archive_sha256": "82b7bff189483f00a4dd62c24f13877fc1f4bec4f68f4174ba04be45f8f9b8c2",
+    "release": "https://github.com/Kirrito-k423/GroundUpScale/releases/tag/evidence-issue34-v1"
+  },
+  "published_run_bundle": "evidence/qualifications/issue36-bounded-collection-corpus-incomplete-v1",
   "main_sweep": {
     "status": "completed-one-session-per-shape",
     "shape_count": 24,

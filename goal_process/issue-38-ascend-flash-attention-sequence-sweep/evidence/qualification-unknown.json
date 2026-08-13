@@ -161,5 +161,10 @@
     "publish": "python goal_process/issue-38-ascend-flash-attention-sequence-sweep/publish_qualification.py --workspace /home/t00906153/GroundUpScale-issue38-20260813",
     "behavior": "existing immutable Run Bundles are verified and skipped before missing runs are collected"
   },
-  "published_run_bundle": "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v2"
+  "content_addressed_evidence": {
+    "dataset_manifest": "evidence/datasets/issue38-ascend-operator-frontier-corpus-v1.yaml",
+    "archive_sha256": "8e3b1e50dc342adb01e3227c24fef37ace2038bc8a839dbd95bceb5c6ce43bf5",
+    "release": "https://github.com/Kirrito-k423/GroundUpScale/releases/tag/evidence-issue34-v1"
+  },
+  "published_run_bundle": "evidence/qualifications/issue38-bounded-collection-stability-failed-v1"
 }

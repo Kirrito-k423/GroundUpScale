@@ -855,6 +855,266 @@ def test_fixed_nk_synthetic_evidence_qualifies_latency_response_surface(
     assert "asymptotic-rate=0.524288000 TFLOP/s" in human.stdout
 
 
+def test_latency_surface_reports_structured_unknown_mfu_without_theoretical_peak(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="fixed-nk-mfu-unknown-v1",
+        qualification_policy=_fixed_nk_policy(),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(320,),
+    )
+
+    query = diagnose_run_bundle(run)["capability_surface_queries"][0]
+    assert query["effective_rate"]["value"] > 0
+    assert query["mfu"] == {
+        "status": "unknown",
+        "reason_code": "comparable-theoretical-peak-unavailable",
+        "value": None,
+        "unit": "ratio",
+        "evidence_refs": [],
+    }
+    assert query["empirical_envelope_utilization"] == {
+        "status": "unknown",
+        "reason_code": "empirical-rate-envelope-unavailable",
+        "value": None,
+        "unit": "ratio",
+        "label": "empirical-envelope-utilization-not-mfu",
+        "evidence_refs": [],
+    }
+    report = render_diagnostic_report(diagnose_run_bundle(run))
+    assert "MFU=unknown (comparable-theoretical-peak-unavailable)" in report
+    assert "empirical-envelope-utilization=unknown" in report
+
+
+def test_latency_surface_derives_mfu_only_from_comparable_evidence_backed_peak(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    policy = _fixed_nk_policy()
+    theoretical_evidence = {
+        "schema": "groundupscale.dev/rate-reference-evidence/v1alpha1",
+        "source_kind": "deterministic-test-fixture",
+        "source_uri": "test://issue34/comparable-matmul-theoretical-peak",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+    }
+    empirical_evidence = {
+        "schema": "groundupscale.dev/rate-reference-evidence/v1alpha1",
+        "source_kind": "deterministic-test-fixture",
+        "source_uri": "test://issue34/matmul-empirical-envelope",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "value": 786_432_000_000.0,
+        "unit": "FLOP/s",
+    }
+    policy["theoretical_peak"] = {
+        "status": "qualified",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "evidence_ref": "artifact://frontier/qualification.json#theoretical-peak",
+        "evidence": theoretical_evidence,
+        "evidence_sha256": sha256(
+            json.dumps(
+                theoretical_evidence,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    policy["empirical_rate_envelope"] = {
+        "status": "qualified",
+        "value": 786_432_000_000.0,
+        "unit": "FLOP/s",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "label": "empirical-achieved-rate-envelope",
+        "evidence_ref": "artifact://frontier/qualification.json#empirical-envelope",
+        "evidence": empirical_evidence,
+        "evidence_sha256": sha256(
+            json.dumps(
+                empirical_evidence,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="fixed-nk-mfu-derived-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(320,),
+    )
+
+    query = diagnose_run_bundle(run)["capability_surface_queries"][0]
+    effective_rate = query["effective_rate"]["value"]
+    assert query["mfu"]["status"] == "derived"
+    assert query["mfu"]["value"] == pytest.approx(
+        effective_rate / 1_048_576_000_000.0
+    )
+    assert query["mfu"]["evidence_refs"] == [
+        "artifact://frontier/qualification.json#theoretical-peak"
+    ]
+    assert query["empirical_envelope_utilization"]["status"] == "derived"
+    assert query["empirical_envelope_utilization"]["label"] == (
+        "empirical-envelope-utilization-not-mfu"
+    )
+    assert query["empirical_envelope_utilization"]["value"] == pytest.approx(
+        effective_rate / 786_432_000_000.0
+    )
+    report = render_diagnostic_report(diagnose_run_bundle(run))
+    assert "MFU=" in report
+    assert "empirical-envelope-utilization=" in report
+
+
+def test_rehashed_or_semantically_mismatched_peak_evidence_fails_closed(
+    tmp_path: Path,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    policy = _fixed_nk_policy()
+    evidence = {
+        "schema": "groundupscale.dev/rate-reference-evidence/v1alpha1",
+        "source_kind": "deterministic-test-fixture",
+        "source_uri": "test://issue34/incomparable-flash-attention-peak",
+        "semantic_operation": "FlashAttentionForward",
+        "work_formula_kind": "flash-attention-tnd-forward-qk-pv",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+    }
+    policy["theoretical_peak"] = {
+        "status": "qualified",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "evidence_ref": "artifact://frontier/qualification.json#theoretical-peak",
+        "evidence": evidence,
+        "evidence_sha256": sha256(
+            json.dumps(
+                evidence,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="fixed-nk-mfu-incomparable-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(320,),
+    )
+
+    query = diagnose_run_bundle(run)["capability_surface_queries"][0]
+    assert query["effective_rate"]["value"] > 0
+    assert query["mfu"]["status"] == "unknown"
+    assert query["mfu"]["reason_code"] == (
+        "theoretical-peak-not-semantically-comparable"
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "incomparable_value"),
+    (("hardware_cohort", "other-accelerator-cohort"), ("dtype", "float16")),
+)
+def test_cross_hardware_or_precision_peak_evidence_fails_closed(
+    tmp_path: Path,
+    field: str,
+    incomparable_value: str,
+) -> None:
+    search, holdout, confirmation = _fixed_nk_inputs(tmp_path)
+    policy = _fixed_nk_policy()
+    evidence = {
+        "schema": "groundupscale.dev/rate-reference-evidence/v1alpha1",
+        "source_kind": "deterministic-test-fixture",
+        "source_uri": "test://issue34/incomparable-domain-peak",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+    }
+    evidence[field] = incomparable_value
+    policy["theoretical_peak"] = {
+        "status": "qualified",
+        "value": 1_048_576_000_000.0,
+        "unit": "FLOP/s",
+        "semantic_operation": "MatMul",
+        "work_formula_kind": "matmul-2mnk-fixed-nk",
+        "hardware_cohort": "ascend-npu-febd831c8d07e06f",
+        "dtype": "float32",
+        "execution_mode": "pytorch-eager",
+        "layout": "row-major-contiguous",
+        "numeric_mode": "default",
+        "evidence_ref": "artifact://frontier/qualification.json#theoretical-peak",
+        "evidence": evidence,
+        "evidence_sha256": sha256(
+            json.dumps(
+                evidence,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    run = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id=f"fixed-nk-mfu-incomparable-{field}-v1",
+        qualification_policy=policy,
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=confirmation,
+        query_sizes=(320,),
+    )
+
+    query = diagnose_run_bundle(run)["capability_surface_queries"][0]
+    assert query["effective_rate"]["value"] > 0
+    assert query["mfu"]["status"] == "unknown"
+    assert query["mfu"]["reason_code"] == (
+        "theoretical-peak-not-semantically-comparable"
+    )
+
+
 def test_fixed_nk_qualification_enforces_bounded_collection_plan(
     tmp_path: Path,
 ) -> None:
