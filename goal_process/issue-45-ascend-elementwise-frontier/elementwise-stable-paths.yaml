@@ -9,6 +9,9 @@ domains:
     dtype: float32
     layout: contiguous
     operand_kind: tensor-broadcast
+    candidate_id: torch.add
+    candidate_family: pytorch-ascend-elementwise-add
+    execution_mode: pytorch-eager
     stable_paths:
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/causal_mask
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/causal_mask
@@ -18,6 +21,9 @@ domains:
     dtype: float32
     layout: contiguous
     operand_kind: tensor-tensor
+    candidate_id: torch.add
+    candidate_family: pytorch-ascend-elementwise-add
+    execution_mode: pytorch-eager
     stable_paths:
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_1
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/residual_2
@@ -29,6 +35,9 @@ domains:
     dtype: float32
     layout: contiguous
     operand_kind: tensor-scalar
+    candidate_id: torch.mul
+    candidate_family: pytorch-ascend-elementwise-mul
+    execution_mode: pytorch-eager
     stable_paths:
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/scale
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/scale
@@ -38,6 +47,9 @@ domains:
     dtype: float32
     layout: contiguous
     operand_kind: tensor-tensor
+    candidate_id: torch.mul
+    candidate_family: pytorch-ascend-elementwise-mul
+    execution_mode: pytorch-eager
     stable_paths:
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/gate_mul
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/gate_mul
@@ -47,6 +59,9 @@ domains:
     dtype: float32
     layout: contiguous
     operand_kind: tensor
+    candidate_id: torch.nn.functional.silu
+    candidate_family: pytorch-ascend-elementwise-silu
+    execution_mode: pytorch-eager
     stable_paths:
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/mlp/silu
       - cost/semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/mlp/silu

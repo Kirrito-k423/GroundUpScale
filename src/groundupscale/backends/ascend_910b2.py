@@ -37,7 +37,6 @@ from groundupscale.schemas.v1alpha1 import (
     NpuHardwareCapabilities,
 )
 from groundupscale.specs import AnalysisBundle
-from groundupscale.scheduling import BoundEvent, compose_schedule_bound
 
 
 BACKEND_ID = "huawei.ascend.910b2.resource-envelope"
@@ -45,18 +44,22 @@ BACKEND_VERSION = "v1alpha1"
 PREDICTION_SCHEMA = "groundupscale.dev/hardware-backend-prediction/v1alpha1"
 
 
-def compose_elementwise_frontier_schedule(
+def bind_elementwise_operator_frontiers(
     inventory_path: str | Path,
     frontier_runs: Mapping[str, str | Path],
 ) -> dict[str, object]:
-    """Bind exact elementwise Frontiers to indexed Stable Paths fail closed."""
+    """Bind exact elementwise Frontiers to indexed Stable Paths fail closed.
+
+    This backend seam deliberately does not schedule or aggregate durations.
+    Execution planners consume these local candidate bindings with Cost/Execution
+    IR dependency edges and resource claims.
+    """
 
     inventory = yaml.safe_load(Path(inventory_path).read_text(encoding="utf-8"))
     from groundupscale.run_bundle import verify_run_bundle
 
     cohort = inventory.get("hardware_cohort")
     leaves: list[dict[str, object]] = []
-    events: list[BoundEvent] = []
     for domain_id, domain in inventory["domains"].items():
         run = Path(frontier_runs[domain_id]).resolve()
         verification = verify_run_bundle(run)
@@ -87,6 +90,11 @@ def compose_elementwise_frontier_schedule(
             and exact_anchor.get("normalized_operator_shape", {}).get("result")
             == domain["result_shape"]
             and exact_anchor.get("candidate_family") == surface.get("candidate_family")
+            and exact_anchor.get("candidate_id") == domain["candidate_id"]
+            and exact_anchor.get("candidate_family") == domain["candidate_family"]
+            and surface.get("candidate_family") == domain["candidate_family"]
+            and surface.get("domain", {}).get("execution_mode")
+            == domain["execution_mode"]
         )
         for stable_path in domain["stable_paths"]:
             latency = float(exact_anchor["latency_ns"]) if qualified else None
@@ -107,42 +115,25 @@ def compose_elementwise_frontier_schedule(
                         "reason_code", "exact-elementwise-frontier-identity-mismatch"
                     )
                 ),
+                "minimum_next_evidence_boundary": (
+                    None
+                    if qualified
+                    else qualification.get("minimum_next_evidence_boundary")
+                ),
                 "provisional_estimate_ns": None,
                 "evidence_ref": str(run / "frontier/qualification.json"),
             }
             leaves.append(leaf)
-            if latency is not None:
-                events.append(
-                    BoundEvent(
-                        event_id=stable_path,
-                        predecessor_ids=(events[-1].event_id,) if events else (),
-                        local_duration_ns=latency,
-                    )
-                )
-    complete = len(events) == len(leaves)
-    composition = (
-        compose_schedule_bound(tuple(events), schedule="serialized")
-        if complete
-        else None
-    )
+    complete = all(leaf["status"] == "exact-anchor" for leaf in leaves)
     return {
-        "schema": "groundupscale.dev/elementwise-frontier-schedule/v1alpha1",
+        "schema": "groundupscale.dev/elementwise-frontier-bindings/v1alpha1",
         "status": "qualified" if complete else "unknown",
         "hardware_cohort": cohort,
         "leaves": leaves,
-        "schedule": (
-            {
-                "kind": "serialized",
-                "selected_duration_ns": composition.selected_duration_ns,
-                "critical_path_duration_ns": composition.critical_path_duration_ns,
-            }
-            if composition is not None
-            else {
-                "kind": "serialized",
-                "selected_duration_ns": None,
-                "critical_path_duration_ns": None,
-            }
-        ),
+        "aggregation": {
+            "status": "not-performed",
+            "reason_code": "execution-planner-requires-ir-dependencies-and-resource-claims",
+        },
     }
 
 

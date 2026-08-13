@@ -983,18 +983,20 @@ def test_two_layer_elementwise_frontiers_bind_stable_paths_into_schedule(
         )
 
     from groundupscale.backends.ascend_910b2 import (
-        compose_elementwise_frontier_schedule,
+        bind_elementwise_operator_frontiers,
     )
 
-    result = compose_elementwise_frontier_schedule(
+    result = bind_elementwise_operator_frontiers(
         inventory_path, frontiers
     )
 
     assert result["status"] == "qualified"
-    assert result["schedule"]["kind"] == "serialized"
-    assert result["schedule"]["selected_duration_ns"] == pytest.approx(
-        12 * 10_012
-    )
+    assert result["aggregation"] == {
+        "status": "not-performed",
+        "reason_code": (
+            "execution-planner-requires-ir-dependencies-and-resource-claims"
+        ),
+    }
     assert len(result["leaves"]) == 12
     assert len({leaf["stable_path"] for leaf in result["leaves"]}) == 12
     assert all(leaf["status"] == "exact-anchor" for leaf in result["leaves"])
@@ -1042,13 +1044,99 @@ def test_two_layer_elementwise_frontiers_bind_stable_paths_into_schedule(
         query_shapes=({"result": silu["result_shape"]},),
     )
 
-    incomplete = compose_elementwise_frontier_schedule(inventory_path, frontiers)
+    incomplete = bind_elementwise_operator_frontiers(inventory_path, frontiers)
 
     assert incomplete["status"] == "unknown"
-    assert incomplete["schedule"]["selected_duration_ns"] is None
     silu_leaves = [leaf for leaf in incomplete["leaves"] if leaf["domain_id"] == "silu-mlp-gate"]
     assert {leaf["status"] for leaf in silu_leaves} == {"unknown"}
     assert {leaf["reason_code"] for leaf in silu_leaves} == {
         "exact-shape-session-repeatability-failed"
     }
     assert all(leaf["duration_ns"] is None for leaf in silu_leaves)
+    assert all(
+        leaf["minimum_next_evidence_boundary"]["kind"]
+        == "repeat-independent-search-and-holdout-sessions"
+        for leaf in silu_leaves
+    )
+
+
+@pytest.mark.parametrize(
+    ("inventory_field", "wrong_value"),
+    [
+        ("candidate_id", "torch.wrong"),
+        ("candidate_family", "wrong-family"),
+        ("execution_mode", "wrong-mode"),
+    ],
+)
+def test_elementwise_frontier_binding_rejects_candidate_execution_mismatch(
+    tmp_path: Path,
+    inventory_field: str,
+    wrong_value: str,
+) -> None:
+    root = Path(__file__).parents[1]
+    inventory = yaml.safe_load(
+        (
+            root
+            / "goal_process/issue-45-ascend-elementwise-frontier/elementwise-stable-paths.yaml"
+        ).read_text()
+    )
+    inventory["hardware_cohort"] = "ascend-npu-febd831c8d07e06f"
+    domain = inventory["domains"]["add-residual"]
+    measurements = tmp_path / "measurements"
+    search = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-binding-search-{session}",
+            operation="Add",
+            shape=domain["result_shape"],
+            operand_kind=domain["operand_kind"],
+            median_ns=10_000 + session,
+            process_id=session,
+        )
+        for session in (1, 2, 3)
+    ]
+    holdout = [
+        _elementwise_measurement_run(
+            measurements,
+            run_id=f"issue45-add-binding-holdout-{session}",
+            operation="Add",
+            shape=domain["result_shape"],
+            operand_kind=domain["operand_kind"],
+            median_ns=10_010 + session,
+            process_id=session + 3,
+        )
+        for session in (1, 2, 3)
+    ]
+    frontier = OperatorFrontierBundleWriter().run(
+        tmp_path / "frontiers",
+        run_id="issue45-add-binding-v1",
+        qualification_policy=_exact_elementwise_policy(
+            operation="Add",
+            shape=domain["result_shape"],
+            operand_kind=domain["operand_kind"],
+        ),
+        search_runs=search,
+        holdout_runs=holdout,
+        confirmation_runs=[],
+        query_sizes=[],
+        query_shapes=({"result": domain["result_shape"]},),
+    )
+    inventory["domains"] = {"add-residual": domain}
+    domain[inventory_field] = wrong_value
+    inventory_path = tmp_path / "inventory.yaml"
+    inventory_path.write_text(yaml.safe_dump(inventory, sort_keys=False))
+
+    from groundupscale.backends.ascend_910b2 import (
+        bind_elementwise_operator_frontiers,
+    )
+
+    result = bind_elementwise_operator_frontiers(
+        inventory_path, {"add-residual": frontier}
+    )
+
+    assert result["status"] == "unknown"
+    assert all(leaf["duration_ns"] is None for leaf in result["leaves"])
+    assert all(
+        leaf["reason_code"] == "exact-elementwise-frontier-identity-mismatch"
+        for leaf in result["leaves"]
+    )
