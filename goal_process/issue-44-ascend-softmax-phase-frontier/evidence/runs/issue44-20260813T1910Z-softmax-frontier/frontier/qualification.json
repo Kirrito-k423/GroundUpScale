@@ -1,0 +1,279 @@
+{
+  "anchors": [
+    {
+      "anchor_id": "softmax-exact-phase-chain",
+      "latency_ns": 84807.0,
+      "standard_uncertainty_latency_ns": 10257.441639929795,
+      "status": "ACTIVE"
+    }
+  ],
+  "hardware_cohort": "ascend-npu-89022e60525d608f",
+  "policy": {
+    "change_reason": "Qualify the exact Softmax domain used by the two-layer Transformer demo.",
+    "composition_rule": "serialized-critical-path-sum",
+    "input_digest": "1fd0c090da77b2140e2dce9f03c9968f5111715ad6c3ea8917b9afaef0f156c8",
+    "minimum_holdout_sessions_per_phase": 1,
+    "minimum_search_sessions_per_phase": 1,
+    "policy_id": "ascend-910b2-transformer-softmax-phase-frontier",
+    "revalidation": "Re-run on graph, execution domain, candidate, Hardware Cohort, or evidence change.",
+    "schema": "groundupscale.dev/softmax-phase-qualification-policy/v1alpha1",
+    "uncertainty_combination": "root-sum-of-squares",
+    "version": "v1"
+  },
+  "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
+  "source_runs": [
+    {
+      "lane": "search",
+      "manifest_sha256": "65f7db7d0b8d762bd66f9e01f6f85fd12b288f76924be1c1ac297bb7aa9828cd",
+      "path": "../issue44-20260813T1910Z-max_reduce-search",
+      "phase": "max_reduce",
+      "run_id": "issue44-20260813T1910Z-max_reduce-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "42dd7a1004309672f42ce8e7ef5d8d7747f4f90537fe720b11be98bf8d4df36f",
+      "path": "../issue44-20260813T1910Z-max_reduce-holdout",
+      "phase": "max_reduce",
+      "run_id": "issue44-20260813T1910Z-max_reduce-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "87d19ebf8058adf70248d2315b2e3895e99cc75e6dba8764b527e8726b2af38c",
+      "path": "../issue44-20260813T1910Z-subtract-search",
+      "phase": "subtract",
+      "run_id": "issue44-20260813T1910Z-subtract-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "196748d01d508ae414d414f492eedd0b54e45b260f0cfa4102ffa789b2e36a3d",
+      "path": "../issue44-20260813T1910Z-subtract-holdout",
+      "phase": "subtract",
+      "run_id": "issue44-20260813T1910Z-subtract-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "f2a2cdb1e4408b1e687c5d2297fa2221b0465220742504107ca64ba1203676e5",
+      "path": "../issue44-20260813T1910Z-exp-search",
+      "phase": "exp",
+      "run_id": "issue44-20260813T1910Z-exp-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "b14bad53362f009001ddbe4579d3ce6b3a51ef7d968fd9a617a1c69429040e39",
+      "path": "../issue44-20260813T1910Z-exp-holdout",
+      "phase": "exp",
+      "run_id": "issue44-20260813T1910Z-exp-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "67163f7b599fa89300cf71a9bbaa3ac692861521b78af6bb82f141e3b19ef24d",
+      "path": "../issue44-20260813T1910Z-sum_reduce-search",
+      "phase": "sum_reduce",
+      "run_id": "issue44-20260813T1910Z-sum_reduce-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "c7dc79d99aeb5f87e084068c1352b5cdb1678ba9f3e8adb9597db15bd5b65f6e",
+      "path": "../issue44-20260813T1910Z-sum_reduce-holdout",
+      "phase": "sum_reduce",
+      "run_id": "issue44-20260813T1910Z-sum_reduce-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "7d533c056c4a5bfbb59cd7de5489cac83097ace8dfae1bb966f96795003233ea",
+      "path": "../issue44-20260813T1910Z-normalize-search",
+      "phase": "normalize",
+      "run_id": "issue44-20260813T1910Z-normalize-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "4f98dc94c76e5fb6b71b8950e3152203fe6c1fe729b5b3119ea37e9791a14304",
+      "path": "../issue44-20260813T1910Z-normalize-holdout",
+      "phase": "normalize",
+      "run_id": "issue44-20260813T1910Z-normalize-holdout"
+    }
+  ],
+  "status": "qualified",
+  "surface": {
+    "anchors": [
+      {
+        "anchor_id": "softmax-exact-phase-chain",
+        "latency_ns": 84807.0,
+        "standard_uncertainty_latency_ns": 10257.441639929795,
+        "status": "ACTIVE"
+      }
+    ],
+    "cells": [
+      {
+        "cell_id": "softmax-exact-domain",
+        "status": "retained"
+      }
+    ],
+    "cohort_id": "ascend-npu-89022e60525d608f",
+    "coordinate": {
+      "axis": "exact-shape",
+      "transform": "identity",
+      "transform_version": "v1"
+    },
+    "domain": {
+      "axis": -1,
+      "dtype": "float32",
+      "execution_mode": "pytorch-eager",
+      "layout": "contiguous",
+      "logical_device": "npu:0",
+      "semantic_operation": "Softmax",
+      "shape": [
+        1,
+        8,
+        512,
+        512
+      ]
+    },
+    "input_digest": "be45d9c7f0264269e5beefe074fe7fe9c071b84318046123c401a1dbbd458843",
+    "operator_phase_graph": {
+      "chunk_pipeline_contract": null,
+      "composition": {
+        "missing_evidence": [],
+        "operator_frontier_ns": 84807.0,
+        "rule": "serialized-critical-path-sum",
+        "standard_uncertainty_ns": 10257.441639929795,
+        "status": "qualified"
+      },
+      "fusion_contract": null,
+      "graph_id": "softmax-max-subtract-exp-sum-normalize-v1",
+      "phases": [
+        {
+          "candidate": {
+            "candidate_digest": "df496a49caf4b05c159b7e8e43efdee829b9bb31e1e69066bf27dab72445ea42",
+            "candidate_family": "pytorch-ascend-reduction-max",
+            "candidate_id": "torch.amax"
+          },
+          "local_composition": "exact-operation-probe",
+          "phase_id": "softmax-phase:max_reduce",
+          "phase_name": "max_reduce",
+          "predecessor_phase_ids": [],
+          "required_capability_class": "compute.reduction.max.fp32",
+          "selected_duration_ns": 18798.5,
+          "source_digests": [
+            "65f7db7d0b8d762bd66f9e01f6f85fd12b288f76924be1c1ac297bb7aa9828cd",
+            "42dd7a1004309672f42ce8e7ef5d8d7747f4f90537fe720b11be98bf8d4df36f"
+          ],
+          "source_run_ids": [
+            "issue44-20260813T1910Z-max_reduce-search",
+            "issue44-20260813T1910Z-max_reduce-holdout"
+          ],
+          "standard_uncertainty_ns": 2218.4105884368855
+        },
+        {
+          "candidate": {
+            "candidate_digest": "cc79d05e234ef5f4db757a6b759cee49912c93f85932594190fcd96e4150760b",
+            "candidate_family": "pytorch-ascend-elementwise-subtract",
+            "candidate_id": "torch.sub"
+          },
+          "local_composition": "exact-operation-probe",
+          "phase_id": "softmax-phase:subtract",
+          "phase_name": "subtract",
+          "predecessor_phase_ids": [
+            "softmax-phase:max_reduce"
+          ],
+          "required_capability_class": "compute.elementwise.subtract.fp32",
+          "selected_duration_ns": 16557.0,
+          "source_digests": [
+            "87d19ebf8058adf70248d2315b2e3895e99cc75e6dba8764b527e8726b2af38c",
+            "196748d01d508ae414d414f492eedd0b54e45b260f0cfa4102ffa789b2e36a3d"
+          ],
+          "source_run_ids": [
+            "issue44-20260813T1910Z-subtract-search",
+            "issue44-20260813T1910Z-subtract-holdout"
+          ],
+          "standard_uncertainty_ns": 6914.460464523212
+        },
+        {
+          "candidate": {
+            "candidate_digest": "f067811e2534e3024f0ab21eb93331f339852347e7e188d0654ae35ff85c21cf",
+            "candidate_family": "pytorch-ascend-transcendental-exp",
+            "candidate_id": "torch.exp"
+          },
+          "local_composition": "exact-operation-probe",
+          "phase_id": "softmax-phase:exp",
+          "phase_name": "exp",
+          "predecessor_phase_ids": [
+            "softmax-phase:subtract"
+          ],
+          "required_capability_class": "compute.transcendental.exp.fp32",
+          "selected_duration_ns": 15280.5,
+          "source_digests": [
+            "f2a2cdb1e4408b1e687c5d2297fa2221b0465220742504107ca64ba1203676e5",
+            "b14bad53362f009001ddbe4579d3ce6b3a51ef7d968fd9a617a1c69429040e39"
+          ],
+          "source_run_ids": [
+            "issue44-20260813T1910Z-exp-search",
+            "issue44-20260813T1910Z-exp-holdout"
+          ],
+          "standard_uncertainty_ns": 1205.3696323141091
+        },
+        {
+          "candidate": {
+            "candidate_digest": "0dc41e009b5e6a869050b20b54d4cbf6606df7dbf3de35f20f14ea00745b4850",
+            "candidate_family": "pytorch-ascend-reduction-sum",
+            "candidate_id": "torch.sum"
+          },
+          "local_composition": "exact-operation-probe",
+          "phase_id": "softmax-phase:sum_reduce",
+          "phase_name": "sum_reduce",
+          "predecessor_phase_ids": [
+            "softmax-phase:exp"
+          ],
+          "required_capability_class": "compute.reduction.sum.fp32",
+          "selected_duration_ns": 19595.5,
+          "source_digests": [
+            "67163f7b599fa89300cf71a9bbaa3ac692861521b78af6bb82f141e3b19ef24d",
+            "c7dc79d99aeb5f87e084068c1352b5cdb1678ba9f3e8adb9597db15bd5b65f6e"
+          ],
+          "source_run_ids": [
+            "issue44-20260813T1910Z-sum_reduce-search",
+            "issue44-20260813T1910Z-sum_reduce-holdout"
+          ],
+          "standard_uncertainty_ns": 1280.6949154914516
+        },
+        {
+          "candidate": {
+            "candidate_digest": "cec961dac8ae54a61be6efb590d9076c056398551542e26690c42ab5dae93338",
+            "candidate_family": "pytorch-ascend-elementwise-divide",
+            "candidate_id": "torch.div"
+          },
+          "local_composition": "exact-operation-probe",
+          "phase_id": "softmax-phase:normalize",
+          "phase_name": "normalize",
+          "predecessor_phase_ids": [
+            "softmax-phase:sum_reduce"
+          ],
+          "required_capability_class": "compute.elementwise.divide.fp32",
+          "selected_duration_ns": 14575.5,
+          "source_digests": [
+            "7d533c056c4a5bfbb59cd7de5489cac83097ace8dfae1bb966f96795003233ea",
+            "4f98dc94c76e5fb6b71b8950e3152203fe6c1fe729b5b3119ea37e9791a14304"
+          ],
+          "source_run_ids": [
+            "issue44-20260813T1910Z-normalize-search",
+            "issue44-20260813T1910Z-normalize-holdout"
+          ],
+          "standard_uncertainty_ns": 7027.866285377911
+        }
+      ],
+      "stable_paths": [
+        "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_0/attention/softmax",
+        "semantic/workload/transformer-prefill/request/model-prefill/model/transformer/layer_1/attention/softmax"
+      ]
+    },
+    "qualification_status": "qualified",
+    "source_demo": {
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+      "semantic_ir_path": "ir/semantic.ir.json",
+      "semantic_ir_sha256": "f079edcf266fa421dc9ac920a3d94f2db0c1efe4c77c52da6150b446b2d1df75"
+    },
+    "surface_id": "ascend-910b2-softmax-exact-phase-frontier",
+    "version": "v1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "axis": -1,
+  "dtype": "float32",
+  "initialization": "cpu-torch-randn-fixed-seed",
+  "input_sha256": "4d56d6eb8e02009ccfdbdf8e0a340b883ba93fd01bc4649e27877b516c089780",
+  "layout": "contiguous",
+  "operator_shape_identity": "operator-shape://SoftmaxPhase/c526d5ee24aa45b2173d537e491c458f992ce2cd52536f4b408d99cb1dea6460",
+  "phase": "subtract",
+  "schema": "groundupscale.dev/input-corpus/v1alpha1",
+  "seed": 20260813,
+  "shape": [
+    1,
+    8,
+    512,
+    512
+  ]
+}

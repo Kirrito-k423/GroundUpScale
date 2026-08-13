@@ -88,6 +88,46 @@ _FLASH_ATTENTION_CANDIDATES: dict[str, dict[str, object]] = {
     }
 }
 
+_SOFTMAX_PHASE_CANDIDATES: dict[str, dict[str, object]] = {
+    "torch.amax": {
+        "phase": "max_reduce",
+        "candidate_family": "pytorch-ascend-reduction-max",
+        "operator_entrypoint": "torch.amax",
+        "capability_class": "compute.reduction.max.fp32",
+    },
+    "torch.sub": {
+        "phase": "subtract",
+        "candidate_family": "pytorch-ascend-elementwise-subtract",
+        "operator_entrypoint": "torch.sub",
+        "capability_class": "compute.elementwise.subtract.fp32",
+    },
+    "torch.exp": {
+        "phase": "exp",
+        "candidate_family": "pytorch-ascend-transcendental-exp",
+        "operator_entrypoint": "torch.exp",
+        "capability_class": "compute.transcendental.exp.fp32",
+    },
+    "torch.sum": {
+        "phase": "sum_reduce",
+        "candidate_family": "pytorch-ascend-reduction-sum",
+        "operator_entrypoint": "torch.sum",
+        "capability_class": "compute.reduction.sum.fp32",
+    },
+    "torch.div": {
+        "phase": "normalize",
+        "candidate_family": "pytorch-ascend-elementwise-divide",
+        "operator_entrypoint": "torch.div",
+        "capability_class": "compute.elementwise.divide.fp32",
+    },
+}
+
+for _softmax_candidate in _SOFTMAX_PHASE_CANDIDATES.values():
+    _softmax_candidate["compilation_parameters"] = {
+        "compiler": "pytorch-eager",
+        "graph_compilation": False,
+    }
+    _softmax_candidate["tuning_parameters"] = {}
+
 
 def _load_runtime() -> tuple[object, object]:
     torch = importlib.import_module("torch")
@@ -906,6 +946,140 @@ def _collect_exact_shape_flash_attention(
     }
 
 
+def _collect_exact_shape_softmax_phase(
+    torch: object,
+    logical_device_index: int,
+    case: dict[str, object],
+    timing_plan: dict[str, object],
+) -> dict[str, object]:
+    runtime: Any = torch
+    shape = case.get("shape")
+    phase = case.get("phase")
+    candidate_id = case.get("candidate")
+    candidate = _SOFTMAX_PHASE_CANDIDATES.get(str(candidate_id))
+    if (
+        case.get("operation") != "SoftmaxPhase"
+        or candidate is None
+        or candidate["phase"] != phase
+        or case.get("dtype") != "float32"
+        or case.get("layout") != "contiguous"
+        or not isinstance(shape, list)
+        or not shape
+        or not all(isinstance(value, int) and value > 0 for value in shape)
+        or not isinstance(case.get("axis"), int)
+    ):
+        raise ValueError("unsupported exact-Shape Softmax phase case")
+    axis = int(case["axis"])
+    warmup_iterations = timing_plan.get("warmup_iterations")
+    repetitions = timing_plan.get("repetitions")
+    inner_iterations = timing_plan.get("inner_iterations", 1)
+    if (
+        not isinstance(warmup_iterations, int)
+        or warmup_iterations < 0
+        or not isinstance(repetitions, int)
+        or repetitions < 1
+        or not isinstance(inner_iterations, int)
+        or inner_iterations < 1
+    ):
+        raise ValueError("invalid timing plan iteration counts")
+
+    runtime.npu.set_device(logical_device_index)
+    logical_device = f"npu:{logical_device_index}"
+    generator = runtime.Generator(device="cpu").manual_seed(int(case["seed"]))
+    input_cpu = runtime.randn(tuple(shape), dtype=runtime.float32, generator=generator)
+    input_tensor = input_cpu.to(logical_device)
+    reduction_cpu = input_cpu.amax(dim=axis, keepdim=True)
+    positive_cpu = input_cpu.abs().add(1.0)
+    denominator_cpu = positive_cpu.sum(dim=axis, keepdim=True)
+    runtime.npu.synchronize()
+
+    if phase == "max_reduce":
+        candidate_input = input_tensor
+        oracle = reduction_cpu
+        invoke_candidate = lambda: runtime.amax(candidate_input, dim=axis, keepdim=True)
+    elif phase == "subtract":
+        candidate_input = input_tensor
+        reduction = reduction_cpu.to(logical_device)
+        oracle = input_cpu - reduction_cpu
+        invoke_candidate = lambda: runtime.sub(candidate_input, reduction)
+    elif phase == "exp":
+        candidate_input = input_tensor.clamp(min=-10.0, max=10.0)
+        oracle = input_cpu.clamp(min=-10.0, max=10.0).exp()
+        invoke_candidate = lambda: runtime.exp(candidate_input)
+    elif phase == "sum_reduce":
+        candidate_input = positive_cpu.to(logical_device)
+        oracle = denominator_cpu
+        invoke_candidate = lambda: runtime.sum(candidate_input, dim=axis, keepdim=True)
+    else:
+        candidate_input = positive_cpu.to(logical_device)
+        denominator = denominator_cpu.to(logical_device)
+        oracle = positive_cpu / denominator_cpu
+        invoke_candidate = lambda: runtime.div(candidate_input, denominator)
+
+    def measure() -> tuple[object, int]:
+        start = runtime.npu.Event(enable_timing=True)
+        end = runtime.npu.Event(enable_timing=True)
+        runtime.npu.synchronize()
+        start.record()
+        result = None
+        for _ in range(inner_iterations):
+            result = invoke_candidate()
+        end.record()
+        end.synchronize()
+        runtime.npu.synchronize()
+        assert result is not None
+        return result, round(float(start.elapsed_time(end)) * 1_000_000 / inner_iterations)
+
+    for _ in range(warmup_iterations):
+        warmup, _ = measure()
+        if warmup.device.type != "npu":
+            raise RuntimeError("cpu-fallback-detected")
+    actual = invoke_candidate()
+    runtime.npu.synchronize()
+    actual_cpu = actual.cpu()
+    absolute_error = (actual_cpu - oracle).abs()
+    relative_error = absolute_error / oracle.abs().clamp_min(1e-12)
+    passed = bool(
+        runtime.isfinite(actual_cpu).all()
+        and tuple(actual_cpu.shape) == tuple(oracle.shape)
+        and runtime.allclose(actual_cpu, oracle, atol=1e-5, rtol=1e-5)
+    )
+    samples = []
+    for _ in range(repetitions):
+        result, elapsed_ns = measure()
+        if result.device.type != "npu" or elapsed_ns <= 0:
+            raise RuntimeError("invalid-primary-timer-sample")
+        samples.append(elapsed_ns)
+
+    return {
+        "runtime_device_name": str(runtime.npu.get_device_name(logical_device_index)),
+        "candidate_device": str(actual.device),
+        "cpu_fallback": actual.device.type == "cpu",
+        "minimum_alignment_bytes": int(candidate_input.data_ptr()) & -int(candidate_input.data_ptr()),
+        "input_sha256": sha256(input_cpu.contiguous().numpy().tobytes()).hexdigest(),
+        "target_output_sha256": sha256(actual_cpu.contiguous().numpy().tobytes()).hexdigest(),
+        "correctness": {
+            "status": "passed" if passed else "failed",
+            "oracle": "cpu-float32-exact-softmax-phase",
+            "atol": 1e-5,
+            "rtol": 1e-5,
+            "max_absolute_error": float(absolute_error.max().item()),
+            "max_relative_error": float(relative_error.max().item()),
+            "finite": bool(runtime.isfinite(actual_cpu).all()),
+            "shape_exact": tuple(actual_cpu.shape) == tuple(oracle.shape),
+        },
+        "raw_samples_ns": samples,
+        "memory": {
+            "allocated_bytes_before": 0,
+            "allocated_bytes_after": int(runtime.npu.memory_allocated()),
+            "reserved_bytes_after": int(runtime.npu.memory_reserved()),
+            "maximum_allocated_bytes": int(runtime.npu.max_memory_allocated()),
+        },
+        "device_event_id": "per-sample-torch-npu-event-pair",
+        "stream_id": "default-npu-stream",
+    }
+
+
 class AscendNpuMeasurementAdapter:
     def __init__(
         self,
@@ -1479,11 +1653,10 @@ class AscendNpuMeasurementAdapter:
         torch, torch_npu = self._runtime_loader()
         collection_executor = self._collection_executor
         if collection_executor is None:
-            collection_executor = (
-                _collect_exact_shape_flash_attention
-                if case.get("operation") == "FlashAttentionForward"
-                else _collect_exact_shape_matmul
-            )
+            collection_executor = {
+                "FlashAttentionForward": _collect_exact_shape_flash_attention,
+                "SoftmaxPhase": _collect_exact_shape_softmax_phase,
+            }.get(str(case.get("operation")), _collect_exact_shape_matmul)
         raw = collection_executor(
             torch,
             self.logical_device_index,
@@ -1532,11 +1705,11 @@ class AscendNpuMeasurementAdapter:
         except UnsupportedOperatorShape as error:
             raise ValueError(str(error)) from error
         candidate_id = str(case["candidate"])
-        candidate_specs = (
-            _MATMUL_CANDIDATES
-            if operator_shape.operation == "MatMul"
-            else _FLASH_ATTENTION_CANDIDATES
-        )
+        candidate_specs = {
+            "MatMul": _MATMUL_CANDIDATES,
+            "FlashAttentionForward": _FLASH_ATTENTION_CANDIDATES,
+            "SoftmaxPhase": _SOFTMAX_PHASE_CANDIDATES,
+        }[operator_shape.operation]
         candidate_spec = candidate_specs.get(candidate_id)
         if candidate_spec is None:
             raise ValueError(
@@ -1575,6 +1748,14 @@ class AscendNpuMeasurementAdapter:
             ),
             "tuning_parameters": deepcopy(
                 candidate_spec["tuning_parameters"]
+            ),
+            **(
+                {
+                    "phase": case["phase"],
+                    "capability_class": candidate_spec["capability_class"],
+                }
+                if operator_shape.operation == "SoftmaxPhase"
+                else {}
             ),
             "runtime_device_name": raw["runtime_device_name"],
             "candidate_device": raw["candidate_device"],
@@ -1616,7 +1797,7 @@ class AscendNpuMeasurementAdapter:
                 "left_sha256": raw["left_sha256"],
                 "right_sha256": raw["right_sha256"],
             }
-        else:
+        elif operator_shape.operation == "FlashAttentionForward":
             input_corpus = {
                 "schema": "groundupscale.dev/input-corpus/v1alpha1",
                 "seed": case["seed"],
@@ -1631,6 +1812,19 @@ class AscendNpuMeasurementAdapter:
                     operator_shape.normalized_shape["sequence_lengths"]
                 ),
                 "sequence_shape_identity": operator_shape.shape_identity,
+            }
+        else:
+            input_corpus = {
+                "schema": "groundupscale.dev/input-corpus/v1alpha1",
+                "seed": case["seed"],
+                "initialization": "cpu-torch-randn-fixed-seed",
+                "shape": deepcopy(case["shape"]),
+                "axis": case["axis"],
+                "phase": case["phase"],
+                "dtype": case["dtype"],
+                "layout": case["layout"],
+                "input_sha256": raw["input_sha256"],
+                "operator_shape_identity": operator_shape.shape_identity,
             }
         return {
             "schema": "groundupscale.dev/exact-shape-collection/v1alpha1",
@@ -1647,6 +1841,12 @@ class AscendNpuMeasurementAdapter:
                 "dtype": case["dtype"],
                 "layout": case["layout"],
                 "candidate": case["candidate"],
+                "execution_mode": "pytorch-eager",
+                **(
+                    {"phase": case["phase"], "axis": case["axis"]}
+                    if operator_shape.operation == "SoftmaxPhase"
+                    else {}
+                ),
                 "logical_device": f"npu:{self.logical_device_index}",
                 "warmup_iterations": timing_plan["warmup_iterations"],
                 "repetitions": timing_plan["repetitions"],

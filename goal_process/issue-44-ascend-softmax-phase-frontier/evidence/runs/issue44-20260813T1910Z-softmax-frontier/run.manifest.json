@@ -1,0 +1,109 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "frontier/qualification.json",
+      "produced_by": "groundupscale-operator-frontier-v1",
+      "role": "operator-frontier-qualification",
+      "schema": "groundupscale.dev/operator-frontier-qualification/v1alpha1",
+      "sha256": "51ddab7ea5cf56f5218e1b67e363ee2447dca593a463d8d21fde7a7b4ea8b22b"
+    },
+    {
+      "inputs": [
+        "operator-frontier-qualification"
+      ],
+      "media_type": "application/json",
+      "path": "diagnostic/evidence.json",
+      "produced_by": "groundupscale-operator-frontier-v1",
+      "role": "diagnostic-evidence",
+      "schema": "groundupscale.dev/diagnostic-evidence/v1alpha1",
+      "sha256": "e230aa4e1f05379264176427710ac5cfedfde930aeaae1296d0a3e5f88281f58"
+    }
+  ],
+  "bundle_kind": "operator-frontier",
+  "created_at": "2026-08-13T11:04:24.738486+00:00",
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-89022e60525d608f",
+  "immutability": "writer refuses an existing run_id; source and artifact digests are authoritative",
+  "run_id": "issue44-20260813T1910Z-softmax-frontier",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_runs": [
+    {
+      "lane": "search",
+      "manifest_sha256": "65f7db7d0b8d762bd66f9e01f6f85fd12b288f76924be1c1ac297bb7aa9828cd",
+      "path": "../issue44-20260813T1910Z-max_reduce-search",
+      "phase": "max_reduce",
+      "run_id": "issue44-20260813T1910Z-max_reduce-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "42dd7a1004309672f42ce8e7ef5d8d7747f4f90537fe720b11be98bf8d4df36f",
+      "path": "../issue44-20260813T1910Z-max_reduce-holdout",
+      "phase": "max_reduce",
+      "run_id": "issue44-20260813T1910Z-max_reduce-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "87d19ebf8058adf70248d2315b2e3895e99cc75e6dba8764b527e8726b2af38c",
+      "path": "../issue44-20260813T1910Z-subtract-search",
+      "phase": "subtract",
+      "run_id": "issue44-20260813T1910Z-subtract-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "196748d01d508ae414d414f492eedd0b54e45b260f0cfa4102ffa789b2e36a3d",
+      "path": "../issue44-20260813T1910Z-subtract-holdout",
+      "phase": "subtract",
+      "run_id": "issue44-20260813T1910Z-subtract-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "f2a2cdb1e4408b1e687c5d2297fa2221b0465220742504107ca64ba1203676e5",
+      "path": "../issue44-20260813T1910Z-exp-search",
+      "phase": "exp",
+      "run_id": "issue44-20260813T1910Z-exp-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "b14bad53362f009001ddbe4579d3ce6b3a51ef7d968fd9a617a1c69429040e39",
+      "path": "../issue44-20260813T1910Z-exp-holdout",
+      "phase": "exp",
+      "run_id": "issue44-20260813T1910Z-exp-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "67163f7b599fa89300cf71a9bbaa3ac692861521b78af6bb82f141e3b19ef24d",
+      "path": "../issue44-20260813T1910Z-sum_reduce-search",
+      "phase": "sum_reduce",
+      "run_id": "issue44-20260813T1910Z-sum_reduce-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "c7dc79d99aeb5f87e084068c1352b5cdb1678ba9f3e8adb9597db15bd5b65f6e",
+      "path": "../issue44-20260813T1910Z-sum_reduce-holdout",
+      "phase": "sum_reduce",
+      "run_id": "issue44-20260813T1910Z-sum_reduce-holdout"
+    },
+    {
+      "lane": "search",
+      "manifest_sha256": "7d533c056c4a5bfbb59cd7de5489cac83097ace8dfae1bb966f96795003233ea",
+      "path": "../issue44-20260813T1910Z-normalize-search",
+      "phase": "normalize",
+      "run_id": "issue44-20260813T1910Z-normalize-search"
+    },
+    {
+      "lane": "holdout",
+      "manifest_sha256": "4f98dc94c76e5fb6b71b8950e3152203fe6c1fe729b5b3119ea37e9791a14304",
+      "path": "../issue44-20260813T1910Z-normalize-holdout",
+      "phase": "normalize",
+      "run_id": "issue44-20260813T1910Z-normalize-holdout"
+    }
+  ],
+  "status": "completed",
+  "surface": {
+    "input_digest": "be45d9c7f0264269e5beefe074fe7fe9c071b84318046123c401a1dbbd458843",
+    "surface_id": "ascend-910b2-softmax-exact-phase-frontier",
+    "version": "v1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "atol": 1e-05,
+  "finite": true,
+  "max_absolute_error": 0.0,
+  "max_relative_error": 0.0,
+  "oracle": "cpu-float32-exact-softmax-phase",
+  "rtol": 1e-05,
+  "schema": "groundupscale.dev/correctness-observation/v1alpha1",
+  "shape_exact": true,
+  "status": "passed",
+  "target_output_sha256": "c94b6e42e6cdb91d9aede26c2de22a7df1567aee1d335094717e2af88fffbb5d"
+}

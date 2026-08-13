@@ -1,0 +1,54 @@
+{
+  "build_identity": {
+    "extension": "torch_npu",
+    "extension_version": "2.7.1.post2",
+    "framework": "torch",
+    "framework_version": "2.7.1+cpu",
+    "operator_entrypoint": "torch.amax"
+  },
+  "candidate_device": "npu:0",
+  "candidate_digest": "df496a49caf4b05c159b7e8e43efdee829b9bb31e1e69066bf27dab72445ea42",
+  "candidate_family": "pytorch-ascend-reduction-max",
+  "candidate_id": "torch.amax",
+  "capability_class": "compute.reduction.max.fp32",
+  "compilation_parameters": {
+    "compiler": "pytorch-eager",
+    "graph_compilation": false
+  },
+  "cpu_fallback": false,
+  "dtype": "float32",
+  "evidence_ref": "artifact://observation/candidate.json",
+  "execution_mode": "pytorch-eager",
+  "layout": "contiguous",
+  "minimum_alignment_bytes": 2097152,
+  "operation": "SoftmaxPhase",
+  "operator_shape_identity": "operator-shape://SoftmaxPhase/5ced4412302be8729f4238d2ca644dce355c9ceb2ce559d68b040fdb3a70a1ce",
+  "phase": "max_reduce",
+  "runtime_device_name": "Ascend910B2",
+  "runtime_identity": {
+    "candidate_device": "npu:0",
+    "logical_device": "npu:0",
+    "runtime_device_name": "Ascend910B2"
+  },
+  "schema": "groundupscale.dev/candidate-identity/v1alpha1",
+  "semantic_domain": {
+    "axis": -1,
+    "dtype": "float32",
+    "layout": "contiguous",
+    "phase": "max_reduce",
+    "semantic_operation": "SoftmaxPhase",
+    "shape": [
+      1,
+      8,
+      512,
+      512
+    ]
+  },
+  "shape": [
+    1,
+    8,
+    512,
+    512
+  ],
+  "tuning_parameters": {}
+}

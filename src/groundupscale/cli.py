@@ -148,7 +148,7 @@ def _parser() -> argparse.ArgumentParser:
     measure_command.add_argument("--logical-device-index", type=int, default=0)
     measure_command.add_argument(
         "--operation",
-        choices=("MatMul", "FlashAttentionForward"),
+        choices=("MatMul", "FlashAttentionForward", "SoftmaxPhase"),
         default="MatMul",
     )
     measure_command.add_argument("--m", type=int)
@@ -158,6 +158,12 @@ def _parser() -> argparse.ArgumentParser:
     measure_command.add_argument("--sequence-length", type=int)
     measure_command.add_argument("--head-count", type=int)
     measure_command.add_argument("--head-dimension", type=int)
+    measure_command.add_argument("--shape")
+    measure_command.add_argument(
+        "--phase",
+        choices=("max_reduce", "subtract", "exp", "sum_reduce", "normalize"),
+    )
+    measure_command.add_argument("--axis", type=int, default=-1)
     measure_command.add_argument("--dtype", default="float32")
     measure_command.add_argument("--layout", default="row-major-contiguous")
     measure_command.add_argument(
@@ -166,6 +172,11 @@ def _parser() -> argparse.ArgumentParser:
             "torch.matmul",
             "torch.matmul.k-split-2",
             "torch_npu.npu_fusion_attention",
+            "torch.amax",
+            "torch.sub",
+            "torch.exp",
+            "torch.sum",
+            "torch.div",
         ),
         default="torch.matmul",
     )
@@ -818,7 +829,7 @@ def _run_measurement(
             },
             **common,
         }
-    else:
+    elif args.operation == "FlashAttentionForward":
         dimensions = (
             args.sequence_count,
             args.sequence_length,
@@ -848,6 +859,43 @@ def _run_measurement(
             "mask": "none",
             "dropout_probability": 0.0,
             "mode": "forward",
+            **common,
+        }
+    else:
+        try:
+            shape = [int(value) for value in str(args.shape).split(",")]
+        except (TypeError, ValueError):
+            raise SystemExit(
+                "SoftmaxPhase measurement requires --shape with comma-separated "
+                "positive dimensions"
+            ) from None
+        candidate_for_phase = {
+            "max_reduce": "torch.amax",
+            "subtract": "torch.sub",
+            "exp": "torch.exp",
+            "sum_reduce": "torch.sum",
+            "normalize": "torch.div",
+        }
+        if (
+            not shape
+            or any(value < 1 for value in shape)
+            or args.phase is None
+            or args.candidate != candidate_for_phase[args.phase]
+            or args.dtype != "float32"
+            or args.layout != "contiguous"
+        ):
+            raise SystemExit(
+                "SoftmaxPhase requires matching phase candidate, float32, "
+                "contiguous layout, and positive --shape"
+            )
+        case = {
+            "schema": (
+                "groundupscale.dev/exact-shape-softmax-phase-case/v1alpha1"
+            ),
+            "operation": "SoftmaxPhase",
+            "phase": args.phase,
+            "shape": shape,
+            "axis": args.axis,
             **common,
         }
     adapter = measurement_adapter_factory(

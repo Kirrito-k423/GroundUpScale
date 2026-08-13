@@ -1880,6 +1880,115 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append(
                         "operator Frontier Surface input digest mismatch"
                     )
+                phase_graph = surface.get("operator_phase_graph")
+                if isinstance(phase_graph, dict):
+                    phases = phase_graph.get("phases")
+                    composition = phase_graph.get("composition")
+                    expected_names = [
+                        "max_reduce",
+                        "subtract",
+                        "exp",
+                        "sum_reduce",
+                        "normalize",
+                    ]
+                    expected_capabilities = [
+                        "compute.reduction.max.fp32",
+                        "compute.elementwise.subtract.fp32",
+                        "compute.transcendental.exp.fp32",
+                        "compute.reduction.sum.fp32",
+                        "compute.elementwise.divide.fp32",
+                    ]
+                    source_ids = {
+                        item.get("run_id")
+                        for item in source_runs
+                        if isinstance(item, dict)
+                    }
+                    valid_phases = (
+                        isinstance(phases, list)
+                        and len(phases) == 5
+                        and all(isinstance(phase, dict) for phase in phases)
+                        and [phase.get("phase_name") for phase in phases]
+                        == expected_names
+                        and [
+                            phase.get("required_capability_class")
+                            for phase in phases
+                        ]
+                        == expected_capabilities
+                        and [phase.get("predecessor_phase_ids") for phase in phases]
+                        == [
+                            [],
+                            ["softmax-phase:max_reduce"],
+                            ["softmax-phase:subtract"],
+                            ["softmax-phase:exp"],
+                            ["softmax-phase:sum_reduce"],
+                        ]
+                        and all(
+                            phase.get("local_composition")
+                            == "exact-operation-probe"
+                            and isinstance(phase.get("candidate"), dict)
+                            and isinstance(
+                                phase["candidate"].get("candidate_digest"), str
+                            )
+                            and set(phase.get("source_run_ids", [])) <= source_ids
+                            and len(phase.get("source_run_ids", [])) >= 2
+                            and len(phase.get("source_digests", []))
+                            == len(phase.get("source_run_ids", []))
+                            for phase in phases
+                        )
+                    )
+                    if not isinstance(composition, dict) or composition.get(
+                        "rule"
+                    ) != "serialized-critical-path-sum":
+                        valid_phases = False
+                    if qualification.get("status") == "qualified":
+                        if valid_phases:
+                            expected_duration = sum(
+                                float(phase["selected_duration_ns"])
+                                for phase in phases
+                            )
+                            expected_uncertainty = math.sqrt(
+                                sum(
+                                    float(phase["standard_uncertainty_ns"]) ** 2
+                                    for phase in phases
+                                )
+                            )
+                            composition_matches = (
+                                composition.get("status") == "qualified"
+                                and composition.get("operator_frontier_ns")
+                                == expected_duration
+                                and composition.get("standard_uncertainty_ns")
+                                == expected_uncertainty
+                                and composition.get("missing_evidence") == []
+                                and phase_graph.get("fusion_contract") is None
+                                and phase_graph.get("chunk_pipeline_contract")
+                                is None
+                            )
+                        else:
+                            composition_matches = False
+                    else:
+                        missing = (
+                            composition.get("missing_evidence")
+                            if isinstance(composition, dict)
+                            else None
+                        )
+                        composition_matches = bool(
+                            isinstance(composition, dict)
+                            and composition.get("status") == "unknown"
+                            and composition.get("operator_frontier_ns") is None
+                            and composition.get("standard_uncertainty_ns") is None
+                            and isinstance(missing, list)
+                            and (
+                                missing
+                                or qualification.get("reason_code")
+                                == "mandatory-phase-domain-mismatch"
+                            )
+                        )
+                    if not valid_phases and qualification.get("status") == "unknown":
+                        valid_phases = phases == [] or isinstance(phases, list)
+                    if not valid_phases or not composition_matches:
+                        failures.append(
+                            "Softmax Operator Frontier composition mismatch"
+                        )
             policy = qualification.get("policy")
             if isinstance(policy, dict):
                 expected_policy_digest = policy.get("input_digest")

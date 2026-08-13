@@ -36,6 +36,23 @@ QUALIFICATION_POLICY_SCHEMA = (
 DIAGNOSTIC_EVIDENCE_SCHEMA = (
     "groundupscale.dev/diagnostic-evidence/v1alpha1"
 )
+SOFTMAX_PHASE_POLICY_SCHEMA = (
+    "groundupscale.dev/softmax-phase-qualification-policy/v1alpha1"
+)
+SOFTMAX_PHASE_ORDER = (
+    "max_reduce",
+    "subtract",
+    "exp",
+    "sum_reduce",
+    "normalize",
+)
+SOFTMAX_PHASE_CAPABILITIES = {
+    "max_reduce": "compute.reduction.max.fp32",
+    "subtract": "compute.elementwise.subtract.fp32",
+    "exp": "compute.transcendental.exp.fp32",
+    "sum_reduce": "compute.reduction.sum.fp32",
+    "normalize": "compute.elementwise.divide.fp32",
+}
 
 
 class OperatorFrontierQualificationError(ValueError):
@@ -44,6 +61,477 @@ class OperatorFrontierQualificationError(ValueError):
     def __init__(self, message: str, *, reason_code: str) -> None:
         super().__init__(message)
         self.reason_code = reason_code
+
+
+@dataclass(frozen=True)
+class _SoftmaxPhaseObservation:
+    root: Path
+    run_id: str
+    manifest_sha256: str
+    cohort_id: str
+    phase: str
+    shape: tuple[int, ...]
+    axis: int
+    dtype: str
+    layout: str
+    execution_mode: str
+    logical_device: str
+    candidate_id: str
+    candidate_family: str
+    candidate_digest: str
+    capability_class: str
+    median_ns: float
+    standard_uncertainty_ns: float
+    correctness: str
+    timing_quality: str
+    process_identity: tuple[int, str]
+
+    @property
+    def domain(self) -> dict[str, object]:
+        return {
+            "semantic_operation": "Softmax",
+            "shape": list(self.shape),
+            "axis": self.axis,
+            "dtype": self.dtype,
+            "layout": self.layout,
+            "execution_mode": self.execution_mode,
+            "logical_device": self.logical_device,
+        }
+
+
+class SoftmaxOperatorFrontierBundleWriter:
+    """Qualify the fixed-demo Softmax chain from exact phase evidence."""
+
+    def run(
+        self,
+        artifact_store: str | Path,
+        *,
+        run_id: str,
+        qualification_policy: dict[str, object],
+        phase_runs: dict[str, dict[str, Sequence[str | Path]]],
+        source_demo_bundle: str | Path,
+    ) -> Path:
+        if not RUN_ID_PATTERN.fullmatch(run_id):
+            raise ValueError(f"unsafe run_id: {run_id!r}")
+        minimum_search = qualification_policy.get(
+            "minimum_search_sessions_per_phase"
+        )
+        minimum_holdout = qualification_policy.get(
+            "minimum_holdout_sessions_per_phase"
+        )
+        if (
+            qualification_policy.get("schema") != SOFTMAX_PHASE_POLICY_SCHEMA
+            or qualification_policy.get("composition_rule")
+            != "serialized-critical-path-sum"
+            or qualification_policy.get("uncertainty_combination")
+            != "root-sum-of-squares"
+            or not isinstance(minimum_search, int)
+            or isinstance(minimum_search, bool)
+            or minimum_search < 1
+            or not isinstance(minimum_holdout, int)
+            or isinstance(minimum_holdout, bool)
+            or minimum_holdout < 1
+            or any(
+                not isinstance(qualification_policy.get(field), str)
+                or not str(qualification_policy[field]).strip()
+                for field in (
+                    "policy_id",
+                    "version",
+                    "change_reason",
+                    "revalidation",
+                )
+            )
+        ):
+            raise OperatorFrontierQualificationError(
+                "invalid Softmax phase qualification policy",
+                reason_code="invalid-qualification-policy",
+            )
+        source_demo_root = Path(source_demo_bundle).resolve()
+        demo_verification = verify_run_bundle(source_demo_root)
+        demo_manifest_path = source_demo_root / "run.manifest.json"
+        if demo_verification.get("passed") is not True:
+            raise OperatorFrontierQualificationError(
+                "source Transformer demo Run Bundle failed verification",
+                reason_code="source-demo-verification-failed",
+            )
+        demo_manifest = _load_json(demo_manifest_path)
+        semantic_ir_entry = next(
+            (
+                artifact
+                for artifact in cast(list[dict[str, object]], demo_manifest["artifacts"])
+                if artifact.get("role") == "semantic-ir"
+            ),
+            None,
+        )
+        if not isinstance(semantic_ir_entry, dict):
+            raise OperatorFrontierQualificationError(
+                "source Transformer demo has no locked Semantic IR",
+                reason_code="missing-source-demo-semantic-ir",
+            )
+        semantic_ir_path = source_demo_root / str(semantic_ir_entry["path"])
+        semantic_ir = _load_json(semantic_ir_path)
+        def semantic_items(value: object) -> Iterable[dict[str, object]]:
+            if isinstance(value, dict):
+                yield value
+                for child in value.values():
+                    yield from semantic_items(child)
+            elif isinstance(value, list):
+                for child in value:
+                    yield from semantic_items(child)
+
+        stable_path_values = tuple(
+            sorted(
+                str(item["stable_path"])
+                for item in semantic_items(semantic_ir.get("root"))
+                if item.get("operation") == "Softmax"
+                and isinstance(item.get("stable_path"), str)
+            )
+        )
+        if (
+            len(stable_path_values) != 2
+            or len(set(stable_path_values)) != len(stable_path_values)
+            or any(
+                not isinstance(path, str)
+                or not path.startswith("semantic/workload/")
+                or not any(f"/layer_{index}/" in path for index in (0, 1))
+                or not path.endswith("/attention/softmax")
+                for path in stable_path_values
+            )
+        ):
+            raise OperatorFrontierQualificationError(
+                "Softmax Frontier requires indexed Stable Paths",
+                reason_code="invalid-stable-path-domain",
+            )
+
+        records_by_phase: dict[
+            str, tuple[list[_SoftmaxPhaseObservation], list[_SoftmaxPhaseObservation]]
+        ] = {}
+        all_observations: list[_SoftmaxPhaseObservation] = []
+        missing_evidence: list[dict[str, str]] = []
+        source_records: list[dict[str, object]] = []
+        for phase in SOFTMAX_PHASE_ORDER:
+            lanes = phase_runs.get(phase, {})
+            searches = [
+                _softmax_phase_observation(path)
+                for path in lanes.get("search", ())
+            ]
+            holdouts = [
+                _softmax_phase_observation(path)
+                for path in lanes.get("holdout", ())
+            ]
+            if len(searches) < minimum_search or len(holdouts) < minimum_holdout:
+                missing_evidence.append(
+                    {
+                        "phase_name": phase,
+                        "required_capability_class": SOFTMAX_PHASE_CAPABILITIES[phase],
+                        "reason_code": "missing-mandatory-phase-evidence",
+                    }
+                )
+                continue
+            records_by_phase[phase] = (searches, holdouts)
+            all_observations.extend((*searches, *holdouts))
+            for lane, records in (("search", searches), ("holdout", holdouts)):
+                source_records.extend(
+                    {
+                        "run_id": item.run_id,
+                        "path": os.path.relpath(item.root, Path(artifact_store).resolve() / "runs" / run_id),
+                        "manifest_sha256": item.manifest_sha256,
+                        "lane": lane,
+                        "phase": phase,
+                    }
+                    for item in records
+                )
+
+        domain = all_observations[0].domain if all_observations else {
+            "semantic_operation": "Softmax",
+            "shape": None,
+            "axis": None,
+            "dtype": "float32",
+            "layout": "contiguous",
+            "execution_mode": "pytorch-eager",
+            "logical_device": "npu:0",
+        }
+        cohorts = {item.cohort_id for item in all_observations}
+        domain_mismatch = bool(
+            all_observations
+            and (
+                len(cohorts) != 1
+                or any(item.domain != domain for item in all_observations)
+                or len({item.process_identity for item in all_observations})
+                != len(all_observations)
+            )
+        )
+        phase_documents: list[dict[str, object]] = []
+        predecessor: str | None = None
+        if not missing_evidence and not domain_mismatch:
+            for phase in SOFTMAX_PHASE_ORDER:
+                searches, holdouts = records_by_phase[phase]
+                selected_duration = float(median([item.median_ns for item in holdouts]))
+                uncertainty = hypot(
+                    float(stdev([item.median_ns for item in searches]))
+                    if len(searches) > 1
+                    else searches[0].standard_uncertainty_ns,
+                    float(stdev([item.median_ns for item in holdouts]))
+                    if len(holdouts) > 1
+                    else holdouts[0].standard_uncertainty_ns,
+                )
+                selected = holdouts[0]
+                phase_id = f"softmax-phase:{phase}"
+                phase_documents.append(
+                    {
+                        "phase_id": phase_id,
+                        "phase_name": phase,
+                        "predecessor_phase_ids": [predecessor] if predecessor else [],
+                        "candidate": {
+                            "candidate_id": selected.candidate_id,
+                            "candidate_family": selected.candidate_family,
+                            "candidate_digest": selected.candidate_digest,
+                        },
+                        "required_capability_class": selected.capability_class,
+                        "local_composition": "exact-operation-probe",
+                        "selected_duration_ns": selected_duration,
+                        "standard_uncertainty_ns": uncertainty,
+                        "source_run_ids": [
+                            item.run_id for item in (*searches, *holdouts)
+                        ],
+                        "source_digests": [
+                            item.manifest_sha256 for item in (*searches, *holdouts)
+                        ],
+                    }
+                )
+                predecessor = phase_id
+            composition = {
+                "status": "qualified",
+                "rule": "serialized-critical-path-sum",
+                "operator_frontier_ns": sum(
+                    cast(float, phase["selected_duration_ns"])
+                    for phase in phase_documents
+                ),
+                "standard_uncertainty_ns": hypot(
+                    *(
+                        cast(float, phase["standard_uncertainty_ns"])
+                        for phase in phase_documents
+                    )
+                ),
+                "missing_evidence": [],
+            }
+            status = "qualified"
+            reason_code = None
+        else:
+            composition = {
+                "status": "unknown",
+                "rule": "serialized-critical-path-sum",
+                "operator_frontier_ns": None,
+                "standard_uncertainty_ns": None,
+                "missing_evidence": missing_evidence,
+            }
+            status = "unknown"
+            reason_code = (
+                "mandatory-phase-domain-mismatch"
+                if domain_mismatch
+                else "missing-mandatory-phase-evidence"
+            )
+
+        cohort_id = next(iter(cohorts)) if len(cohorts) == 1 else "unknown"
+        graph = {
+            "graph_id": "softmax-max-subtract-exp-sum-normalize-v1",
+            "stable_paths": list(stable_path_values),
+            "phases": phase_documents,
+            "composition": composition,
+            "fusion_contract": None,
+            "chunk_pipeline_contract": None,
+        }
+        surface: dict[str, object] = {
+            "surface_id": "ascend-910b2-softmax-exact-phase-frontier",
+            "version": str(qualification_policy["version"]),
+            "qualification_status": status,
+            "cohort_id": cohort_id,
+            "domain": domain,
+            "coordinate": {
+                "axis": "exact-shape",
+                "transform": "identity",
+                "transform_version": "v1",
+            },
+            "operator_phase_graph": graph,
+            "source_demo": {
+                "run_id": demo_manifest["run_id"],
+                "manifest_sha256": _sha256(demo_manifest_path),
+                "semantic_ir_sha256": semantic_ir_entry["sha256"],
+                "semantic_ir_path": semantic_ir_entry["path"],
+            },
+            "anchors": (
+                [
+                    {
+                        "anchor_id": "softmax-exact-phase-chain",
+                        "status": "ACTIVE",
+                        "latency_ns": composition["operator_frontier_ns"],
+                        "standard_uncertainty_latency_ns": composition[
+                            "standard_uncertainty_ns"
+                        ],
+                    }
+                ]
+                if status == "qualified"
+                else []
+            ),
+            "cells": (
+                [{"cell_id": "softmax-exact-domain", "status": "retained"}]
+                if status == "qualified"
+                else []
+            ),
+            **(
+                {"qualification_reason_code": reason_code}
+                if reason_code is not None
+                else {}
+            ),
+        }
+        surface["input_digest"] = _canonical_digest(surface)
+        policy_document = {
+            **qualification_policy,
+            "input_digest": _canonical_digest(qualification_policy),
+        }
+        qualification: dict[str, object] = {
+            "schema": QUALIFICATION_SCHEMA,
+            "status": status,
+            "policy": policy_document,
+            "hardware_cohort": cohort_id,
+            "surface": surface,
+            "anchors": surface["anchors"],
+            "source_runs": source_records,
+            **({"reason_code": reason_code} if reason_code is not None else {}),
+            **(
+                {"stopping_decision": {"status": "stopped", "reason_code": reason_code}}
+                if status == "unknown"
+                else {}
+            ),
+        }
+        inputs = {
+            "resolved_configuration": {
+                "analysis_plan": "ascend-npu-transformer-demo",
+                "qualification_policy": policy_document,
+            },
+            "resolved_ir": {
+                "semantic_operation": "Softmax",
+                "operator_phase_graph": graph,
+            },
+            "hardware": {
+                "device": "Ascend910B2",
+                "partition": domain["logical_device"],
+                "cohort_id": cohort_id,
+            },
+            "cohort_id": cohort_id,
+            "execution_domain": domain,
+        }
+        evidence = {
+            "capability_surfaces": [surface],
+            "surface_queries": [
+                {
+                    "query_id": f"softmax-{index}",
+                    "stable_path": path,
+                    "domain": domain,
+                    "status": status,
+                }
+                for index, path in enumerate(stable_path_values)
+            ],
+            "operator_frontier_qualification_ref": "artifact://frontier/qualification.json",
+        }
+        runs_root = Path(artifact_store).resolve() / "runs"
+        destination = runs_root / run_id
+        if destination.exists():
+            raise RunBundleExistsError(f"Run Bundle already exists: {destination}")
+        return _write_operator_frontier_documents(
+            runs_root,
+            destination,
+            run_id=run_id,
+            cohort_id=cohort_id,
+            source_records=source_records,
+            surface=surface,
+            qualification=qualification,
+            queries=cast(list[dict[str, object]], evidence["surface_queries"]),
+            analysis_plan="ascend-npu-transformer-demo",
+            runtime_device_name="Ascend910B2",
+            logical_device=str(domain["logical_device"]),
+        )
+
+
+def _softmax_phase_observation(path: str | Path) -> _SoftmaxPhaseObservation:
+    root = Path(path).resolve()
+    verification = verify_run_bundle(root)
+    if verification.get("passed") is not True:
+        raise OperatorFrontierQualificationError(
+            f"{root}: source Run Bundle failed verification",
+            reason_code="source-run-verification-failed",
+        )
+    manifest_path = root / "run.manifest.json"
+    manifest = _load_json(manifest_path)
+    case, _ = _artifact(root, manifest, "benchmark-case")
+    candidate, _ = _artifact(root, manifest, "candidate-identity")
+    correctness, _ = _artifact(root, manifest, "correctness-observation")
+    raw_timing, _ = _artifact(root, manifest, "raw-timing-observation")
+    execution, _ = _artifact(root, manifest, "execution-contract")
+    environment, _ = _artifact(root, manifest, "environment")
+    phase = case.get("phase")
+    shape = case.get("shape")
+    summary = raw_timing.get("summary")
+    samples = raw_timing.get("samples")
+    session = environment.get("measurement_session")
+    candidate_body = dict(candidate)
+    candidate_digest = candidate_body.pop("candidate_digest", None)
+    if (
+        manifest.get("bundle_kind") != "exact-shape-measurement"
+        or manifest.get("status") != "completed"
+        or manifest.get("device") != "ascend-npu"
+        or case.get("operation") != "SoftmaxPhase"
+        or phase not in SOFTMAX_PHASE_ORDER
+        or not isinstance(shape, list)
+        or not shape
+        or not all(isinstance(value, int) and value > 0 for value in shape)
+        or not isinstance(case.get("axis"), int)
+        or not isinstance(summary, dict)
+        or not isinstance(summary.get("median"), (int, float))
+        or not isinstance(samples, list)
+        or len(samples) < 2
+        or not all(isinstance(value, int) and value > 0 for value in samples)
+        or not isinstance(session, dict)
+        or not isinstance(session.get("process_id"), int)
+        or not isinstance(session.get("process_started_at"), str)
+        or not isinstance(candidate_digest, str)
+        or candidate_digest != content_fingerprint(candidate_body)
+        or candidate.get("phase") != phase
+        or candidate.get("capability_class")
+        != SOFTMAX_PHASE_CAPABILITIES[str(phase)]
+        or correctness.get("status") != "passed"
+        or not isinstance(manifest.get("observation_validity"), dict)
+        or manifest["observation_validity"].get("timing_quality") != "passed"
+    ):
+        raise OperatorFrontierQualificationError(
+            f"{root}: incomplete Softmax phase evidence",
+            reason_code="invalid-softmax-phase-evidence",
+        )
+    return _SoftmaxPhaseObservation(
+        root=root,
+        run_id=str(manifest["run_id"]),
+        manifest_sha256=_sha256(manifest_path),
+        cohort_id=str(manifest["hardware_cohort"]),
+        phase=str(phase),
+        shape=tuple(cast(list[int], shape)),
+        axis=int(case["axis"]),
+        dtype=str(case["dtype"]),
+        layout=str(case["layout"]),
+        execution_mode=str(execution["execution_mode"]),
+        logical_device=str(execution["logical_device"]),
+        candidate_id=str(candidate["candidate_id"]),
+        candidate_family=str(candidate["candidate_family"]),
+        candidate_digest=candidate_digest,
+        capability_class=str(candidate["capability_class"]),
+        median_ns=float(summary["median"]),
+        standard_uncertainty_ns=float(stdev(cast(list[int], samples))),
+        correctness=str(correctness["status"]),
+        timing_quality=str(manifest["observation_validity"]["timing_quality"]),
+        process_identity=(
+            int(session["process_id"]),
+            str(session["process_started_at"]),
+        ),
+    )
 
 
 @dataclass(frozen=True)

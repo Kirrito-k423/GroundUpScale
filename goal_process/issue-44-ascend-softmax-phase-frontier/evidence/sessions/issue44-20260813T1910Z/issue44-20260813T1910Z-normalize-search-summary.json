@@ -1,0 +1,10 @@
+{
+  "device": "ascend-npu",
+  "hardware_cohort": "ascend-npu-89022e60525d608f",
+  "reason_codes": [],
+  "run_bundle": "/home/t00906153/GroundUpScale-issue-44/goal_process/issue-44-ascend-softmax-phase-frontier/evidence/runs/issue44-20260813T1910Z-normalize-search",
+  "run_id": "issue44-20260813T1910Z-normalize-search",
+  "schema": "groundupscale.dev/measurement-run-summary/v1alpha1",
+  "status": "completed",
+  "verification_passed": true
+}

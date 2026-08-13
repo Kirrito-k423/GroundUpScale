@@ -1,0 +1,19 @@
+{
+  "axis": -1,
+  "candidate": "torch.sum",
+  "dtype": "float32",
+  "inner_iterations": 100,
+  "layout": "contiguous",
+  "operation": "SoftmaxPhase",
+  "phase": "sum_reduce",
+  "repetitions": 100,
+  "schema": "groundupscale.dev/exact-shape-softmax-phase-case/v1alpha1",
+  "seed": 20260813,
+  "shape": [
+    1,
+    8,
+    512,
+    512
+  ],
+  "warmup_iterations": 20
+}

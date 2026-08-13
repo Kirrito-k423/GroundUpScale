@@ -106,6 +106,65 @@ def _matmul_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
     )
 
 
+def _softmax_phase_from_case(
+    case: dict[str, object],
+) -> OperatorShapeSemantics:
+    shape = case.get("shape")
+    axis = case.get("axis")
+    phase = case.get("phase")
+    if (
+        not isinstance(shape, list)
+        or not shape
+        or not all(_positive_integer(value) for value in shape)
+        or not isinstance(axis, int)
+        or isinstance(axis, bool)
+        or not -len(shape) <= axis < len(shape)
+        or phase
+        not in {"max_reduce", "subtract", "exp", "sum_reduce", "normalize"}
+        or case.get("dtype") != "float32"
+        or case.get("layout") != "contiguous"
+    ):
+        raise UnsupportedOperatorShape(
+            "SoftmaxPhase requires a positive float32 contiguous Shape, valid "
+            "axis, and one mandatory Softmax phase"
+        )
+    normalized = {
+        "shape": [int(value) for value in shape],
+        "axis": axis,
+        "phase": phase,
+    }
+    element_count = 1
+    for value in shape:
+        element_count *= int(value)
+    reduction_count = element_count // int(shape[axis])
+    declared_work = (
+        element_count - reduction_count
+        if phase in {"max_reduce", "sum_reduce"}
+        else element_count
+    )
+    return OperatorShapeSemantics(
+        operation="SoftmaxPhase",
+        normalized_shape=normalized,
+        shape_identity=_identity("SoftmaxPhase", normalized),
+        coordinate_axis="exact-shape",
+        coordinate_value=None,
+        domain_facets={
+            "semantic_operation": "SoftmaxPhase",
+            "phase": phase,
+            "shape": normalized["shape"],
+            "axis": axis,
+            "dtype": "float32",
+            "layout": "contiguous",
+        },
+        work_formula={
+            "kind": "softmax-phase-exact-invocation",
+            "version": "v1",
+            "work_unit": "elementary-operation",
+        },
+        declared_work=float(declared_work),
+    )
+
+
 def _flash_attention_from_parts(
     *,
     sequence_lengths: object,
@@ -190,6 +249,8 @@ def semantics_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
     operation = case.get("operation")
     if operation == "MatMul":
         return _matmul_from_case(case)
+    if operation == "SoftmaxPhase":
+        return _softmax_phase_from_case(case)
     if operation == "FlashAttentionForward":
         shape = case.get("shape")
         if not isinstance(shape, dict):

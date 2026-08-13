@@ -1,0 +1,9 @@
+schema: groundupscale.dev/softmax-phase-qualification-policy/v1alpha1
+policy_id: ascend-910b2-transformer-softmax-phase-frontier
+version: v1
+composition_rule: serialized-critical-path-sum
+minimum_search_sessions_per_phase: 1
+minimum_holdout_sessions_per_phase: 1
+uncertainty_combination: root-sum-of-squares
+change_reason: Qualify the exact Softmax domain used by the two-layer Transformer demo.
+revalidation: Re-run on graph, execution domain, candidate, Hardware Cohort, or evidence change.
