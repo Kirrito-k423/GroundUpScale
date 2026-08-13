@@ -1207,6 +1207,7 @@ def _write_unknown_bounded_collection_bundle(
     plan = cast(dict[str, Any], policy.document["collection_plan"])
     first = observations[0]
     reference_shape = first.operator_shape
+    coordinate_axis = reference_shape.coordinate_axis
     operation = reference_shape.operation
     is_matmul = operation == "MatMul"
     main_key = (
@@ -1289,6 +1290,80 @@ def _write_unknown_bounded_collection_bundle(
             "source evidence does not meet the versioned warmup policy",
             reason_code="warmup-policy-failed",
         )
+    expected_shapes_by_lane = {
+        "main-sweep": main_shapes,
+        "holdout": holdout_shapes,
+        "independent-validation": validation_shapes,
+    }
+    observations_by_lane = {
+        "main-sweep": searches,
+        "holdout": holdouts,
+        "independent-validation": confirmations,
+    }
+    minimum_sessions_by_lane = {
+        "main-sweep": policy.minimum_search_sessions,
+        "holdout": policy.minimum_holdout_sessions,
+        "independent-validation": policy.minimum_confirmation_sessions,
+    }
+    qualification_gate_failures: list[dict[str, object]] = []
+    corpus_complete = True
+    for lane, expected_shapes in expected_shapes_by_lane.items():
+        lane_observations = observations_by_lane[lane]
+        grouped = {
+            shape: [
+                item
+                for item in lane_observations
+                if item.operator_shape.coordinate_value == shape
+            ]
+            for shape in expected_shapes
+        }
+        corpus_complete = corpus_complete and (
+            sorted(
+                {
+                    cast(int, item.operator_shape.coordinate_value)
+                    for item in lane_observations
+                }
+            )
+            == expected_shapes
+            and all(
+                len(records) >= minimum_sessions_by_lane[lane]
+                for records in grouped.values()
+            )
+            and all(
+                item.correctness == "passed"
+                and item.timing_quality == "passed"
+                for item in lane_observations
+            )
+        )
+        for shape, records in grouped.items():
+            if len(records) < 2:
+                continue
+            relative_range = _relative_range(
+                [item.median_ns for item in records]
+            )
+            if relative_range > policy.maximum_session_median_relative_range:
+                qualification_gate_failures.append(
+                    {
+                        "gate": "independent-session-stability",
+                        "lane": lane,
+                        "shape": {coordinate_axis: shape},
+                        "session_medians_ns": [
+                            item.median_ns for item in records
+                        ],
+                        "session_median_relative_range": relative_range,
+                        "maximum_allowed": (
+                            policy.maximum_session_median_relative_range
+                        ),
+                        "evidence_refs": [
+                            item.evidence_ref for item in records
+                        ],
+                    }
+                )
+    reason_code = (
+        "bounded-collection-stability-failed"
+        if corpus_complete and qualification_gate_failures
+        else "bounded-collection-corpus-incomplete"
+    )
     runs_root = Path(artifact_store).resolve() / "runs"
     destination = runs_root / run_id
     if destination.exists():
@@ -1312,6 +1387,8 @@ def _write_unknown_bounded_collection_bundle(
             "policy": policy.digest,
             "sources": sorted(item.manifest_sha256 for item in observations),
             "status": "unknown",
+            "reason_code": reason_code,
+            "qualification_gate_failures": qualification_gate_failures,
         }
     )
     operation_slug = (
@@ -1319,7 +1396,6 @@ def _write_unknown_bounded_collection_bundle(
         if is_matmul
         else "flash-attention/tnd-forward/equal-length"
     )
-    coordinate_axis = reference_shape.coordinate_axis
     domain = {
         **reference_shape.domain_facets,
         **(
@@ -1337,7 +1413,7 @@ def _write_unknown_bounded_collection_bundle(
         "version": f"v-{evidence_digest[:16]}",
         "previous_version": None,
         "qualification_status": "unknown",
-        "qualification_reason_code": "bounded-collection-corpus-incomplete",
+        "qualification_reason_code": reason_code,
         "cohort_id": cohort_id,
         "domain": domain,
         "candidate_family": first.candidate_family,
@@ -1356,7 +1432,7 @@ def _write_unknown_bounded_collection_bundle(
     qualification: dict[str, object] = {
         "schema": QUALIFICATION_SCHEMA,
         "status": "unknown",
-        "reason_code": "bounded-collection-corpus-incomplete",
+        "reason_code": reason_code,
         "policy": policy_document,
         "hardware_cohort": cohort_id,
         "collection_plan": plan,
@@ -1368,6 +1444,7 @@ def _write_unknown_bounded_collection_bundle(
             "additional_model_complexity_allowed": False,
         },
         "anchors": [],
+        "qualification_gate_failures": qualification_gate_failures,
         "surface": surface,
         "source_runs": source_records,
     }
@@ -2210,7 +2287,10 @@ class OperatorFrontierBundleWriter:
                     query_sizes=query_sizes,
                 )
             except OperatorFrontierQualificationError as error:
-                if error.reason_code != "bounded-collection-corpus-incomplete":
+                if error.reason_code not in {
+                    "bounded-collection-corpus-incomplete",
+                    "bounded-collection-stability-failed",
+                }:
                     raise
                 try:
                     return _write_unknown_bounded_collection_bundle(

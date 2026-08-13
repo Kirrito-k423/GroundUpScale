@@ -23,7 +23,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument(
-        "--run-id", default="issue38-ascend-flash-attention-sequence-sweep-v1"
+        "--run-id", default="issue38-ascend-flash-attention-sequence-sweep-v2"
     )
     args = parser.parse_args()
     workspace = args.workspace.resolve()

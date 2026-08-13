@@ -31,7 +31,7 @@ UNKNOWN_EVIDENCE = (
 PUBLISHED_BUNDLE = (
     ROOT
     / "goal_process/issue-38-ascend-flash-attention-sequence-sweep/"
-    "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v1"
+    "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v2"
 )
 
 
@@ -292,7 +292,7 @@ def test_qualification_publisher_replays_existing_real_bundle() -> None:
     summary = yaml.safe_load(completed.stdout)
     assert summary["verification_passed"] is True
     assert summary["qualification_status"] == "unknown"
-    assert summary["reason_code"] == "bounded-collection-corpus-incomplete"
+    assert summary["reason_code"] == "bounded-collection-stability-failed"
 
 
 def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() -> None:
@@ -300,7 +300,7 @@ def test_interrupted_real_collection_publishes_a_bounded_structured_unknown() ->
 
     assert evidence["issue"] == 38
     assert evidence["status"] == "unknown"
-    assert evidence["reason_code"] == "bounded-collection-corpus-incomplete"
+    assert evidence["reason_code"] == "bounded-collection-stability-failed"
     assert evidence["hardware_cohort"] == "ascend-npu-23b93a89d5fecc79"
     assert evidence["collection"]["main"]["verified_run_bundles"] == 99
     assert evidence["collection"]["holdout"]["verified_run_bundles"] == 99
@@ -335,4 +335,4 @@ def test_real_unknown_qualification_bundle_is_self_contained_and_verifiable() ->
     assert {
         query["reason_code"]
         for query in diagnosis["capability_surface_queries"]
-    } == {"bounded-collection-corpus-incomplete"}
+    } == {"bounded-collection-stability-failed"}

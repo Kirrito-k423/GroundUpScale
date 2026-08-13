@@ -2,7 +2,7 @@
   "schema": "groundupscale.dev/operator-frontier-qualification-unknown/v1alpha1",
   "issue": 38,
   "status": "unknown",
-  "reason_code": "bounded-collection-corpus-incomplete",
+  "reason_code": "bounded-collection-stability-failed",
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "machine": {
     "name": "A2-AK-225",
@@ -88,14 +88,14 @@
   },
   "qualification_gate_failures": [
     {
-      "lane": "main",
+      "lane": "holdout",
       "sequence_length": 8,
       "session_medians_ns": [160840, 182350, 164320],
       "session_median_relative_range": 0.1309031158714703,
       "maximum_allowed": 0.1
     },
     {
-      "lane": "main",
+      "lane": "holdout",
       "sequence_length": 255,
       "session_medians_ns": [167250, 164290, 185490],
       "session_median_relative_range": 0.12675635276532138,
@@ -135,25 +135,25 @@
       "shape": {"sequence_length": 128},
       "intended_role": "ramp",
       "status": "unknown",
-      "reason_code": "bounded-collection-corpus-incomplete"
+      "reason_code": "bounded-collection-stability-failed"
     },
     {
       "shape": {"sequence_length": 4096},
       "intended_role": "exact",
       "status": "unknown",
-      "reason_code": "bounded-collection-corpus-incomplete"
+      "reason_code": "bounded-collection-stability-failed"
     },
     {
       "shape": {"sequence_length": 6144},
       "intended_role": "steady",
       "status": "unknown",
-      "reason_code": "bounded-collection-corpus-incomplete"
+      "reason_code": "bounded-collection-stability-failed"
     },
     {
       "shape": {"sequence_length": 9000},
       "intended_role": "outside-domain",
       "status": "unknown",
-      "reason_code": "bounded-collection-corpus-incomplete"
+      "reason_code": "bounded-collection-stability-failed"
     }
   ],
   "replay": {
@@ -161,5 +161,5 @@
     "publish": "python goal_process/issue-38-ascend-flash-attention-sequence-sweep/publish_qualification.py --workspace /home/t00906153/GroundUpScale-issue38-20260813",
     "behavior": "existing immutable Run Bundles are verified and skipped before missing runs are collected"
   },
-  "published_run_bundle": "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v1"
+  "published_run_bundle": "evidence/runs/issue38-ascend-flash-attention-sequence-sweep-v2"
 }

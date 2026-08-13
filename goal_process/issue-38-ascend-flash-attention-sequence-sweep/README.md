@@ -6,7 +6,7 @@ qualification publisher, and the structured result for GitHub issue #38.
 ## Outcome
 
 The bounded run currently publishes `unknown` with reason
-`bounded-collection-corpus-incomplete`; it does not publish a Capability
+`bounded-collection-stability-failed`; it does not publish a Capability
 Surface or a global 4K Shape Regime Boundary.
 
 On Hardware Cohort `ascend-npu-23b93a89d5fecc79` (machine `A2-AK-225`, host
@@ -29,7 +29,7 @@ key exchange. After VPN recovery, the same process completed the remaining
 validation bundles on the same Hardware Cohort.
 
 The corpus still did not pass the 10% independent-session median-relative-range
-gate. Main S=8 and S=255, plus validation S=48, S=160 and S=640, ranged from
+gate. Holdout S=8 and S=255, plus validation S=48, S=160 and S=640, ranged from
 10.43% to 15.78%. All Run Bundles themselves passed correctness and timing
 quality; instability across independent sessions is what prevents promotion.
 The bounded experiment therefore publishes `unknown` and stops, without
@@ -69,7 +69,7 @@ third experimental round.
   inventory, failed stability gates, representative unknown queries, and exact
   replay commands.
 - `evidence/runs/`: all 234 immutable measurement Run Bundles and the final
-  self-contained `issue38-ascend-flash-attention-sequence-sweep-v1`
+  self-contained `issue38-ascend-flash-attention-sequence-sweep-v2`
   qualification Run Bundle. From the repository root, `python -m
   groundupscale.cli verify-run <bundle> --json` passes without remote access.
 - `RMB-Cost.md`: cache-hit, cache-miss, and output token cost estimate.

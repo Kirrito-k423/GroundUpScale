@@ -1,6 +1,6 @@
 # RMB Cost — GitHub Issue #38
 
-- Generated at: `2026-08-13T05:03:12Z`
+- Generated at: `2026-08-13T06:24:10Z`
 - Confidence: `estimate`
 - USD/CNY: `7.2`
 - Task: bounded real Ascend FlashAttention sequence sweep
@@ -10,11 +10,11 @@
 
 | Item | Tokens | M tokens |
 |---|---:|---:|
-| Input total | 50,645,476 | 50.645476 |
-| Cached input | 50,120,960 | 50.120960 |
-| Uncached input | 524,516 | 0.524516 |
-| Output | 65,744 | 0.065744 |
-| Reasoning output, included in output when provider reports it that way | 15,616 | 0.015616 |
+| Input total | 67,886,871 | 67.886871 |
+| Cached input | 67,164,928 | 67.164928 |
+| Uncached input | 721,943 | 0.721943 |
+| Output | 104,101 | 0.104101 |
+| Reasoning output, included in output when provider reports it that way | 23,099 | 0.023099 |
 
 ## Price Assumptions
 
@@ -27,8 +27,8 @@
 
 | Model | Input cache miss RMB | Input cache hit RMB | Output RMB | Total RMB | Total USD |
 |---|---:|---:|---:|---:|---:|
-| gpt-5.6-sol | 18.88 | 180.44 | 14.20 | 213.52 | 29.66 |
-| deepseek-v4-pro | 1.64 | 1.31 | 0.4118 | 3.36 | 0.4671 |
+| gpt-5.6-sol | 25.99 | 241.79 | 22.49 | 290.27 | 40.32 |
+| deepseek-v4-pro | 2.26 | 1.75 | 0.6521 | 4.67 | 0.6481 |
 
 ## Formula and boundaries
 
