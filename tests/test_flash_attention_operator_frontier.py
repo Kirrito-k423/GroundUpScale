@@ -294,6 +294,7 @@ def test_equal_length_tnd_flash_attention_qualifies_and_queries_public_surface(
     }
     assert queries[1024]["status"] == "exact_anchor"
     assert queries[1024]["latency"]["declared_work"] == 4_294_967_296
+    assert queries[1024]["work_formula"]["causal"] is False
     assert queries[1536]["status"] == "modeled"
     assert queries[1536]["shape_regime"]["classification"] == "ramp"
     assert queries[3800]["status"] == "unknown"
@@ -309,6 +310,8 @@ def test_equal_length_tnd_flash_attention_qualifies_and_queries_public_surface(
 
     report = render_diagnostic_report(result)
     assert "FlashAttentionForward" in report
+    assert "response=setup-plus-throughput/v1" in report
+    assert 'work-formula={"causal":false,"kind":"flash-attention-tnd-forward-qk-pv"' in report
     assert "Shape Regime=" in report
     assert "declared-work=" in report
     assert "evidence=" in report

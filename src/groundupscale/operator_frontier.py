@@ -158,9 +158,9 @@ class _Observation:
     run_id: str
     cohort_id: str
     operator_shape: OperatorShapeSemantics
-    m: int
-    n: int
-    k: int
+    m: int | None
+    n: int | None
+    k: int | None
     candidate_id: str
     candidate_family: str
     candidate_digest: str
@@ -409,9 +409,21 @@ def _observation(path: str | Path) -> _Observation:
         run_id=str(manifest["run_id"]),
         cohort_id=str(manifest["hardware_cohort"]),
         operator_shape=operator_shape,
-        m=int(normalized_shape.get("m", operator_shape.coordinate_value or 0)),
-        n=int(normalized_shape.get("n", 0)),
-        k=int(normalized_shape.get("k", 0)),
+        m=(
+            int(normalized_shape["m"])
+            if "m" in normalized_shape
+            else None
+        ),
+        n=(
+            int(normalized_shape["n"])
+            if "n" in normalized_shape
+            else None
+        ),
+        k=(
+            int(normalized_shape["k"])
+            if "k" in normalized_shape
+            else None
+        ),
         candidate_id=str(candidate["candidate_id"]),
         candidate_family=str(candidate["candidate_family"]),
         candidate_digest=candidate_digest,
@@ -894,7 +906,14 @@ def _write_exact_distribution_bundle(
         or sorted(tuple(item) for item in vectors if isinstance(item, list))
         != sorted(
             {
-                tuple(cast(list[int], item.operator_shape.normalized_shape["sequence_lengths"]))
+                tuple(
+                    cast(
+                        list[int],
+                        item.operator_shape.normalized_shape[
+                            "sequence_lengths"
+                        ],
+                    )
+                )
                 for item in observations
             }
         )
@@ -918,6 +937,23 @@ def _write_exact_distribution_bundle(
             "qualification policy does not cover ragged sequence domain",
             reason_code="qualification-policy-scope-mismatch",
         )
+    candidate_ids = cast(list[str], expected_scope["candidate_ids"])
+    if (
+        len(candidate_ids) != 1
+        or not _coverage_satisfies(
+            _coverage_level(
+                set(candidate_ids),
+                {item.candidate_family for item in observations},
+            ),
+            policy.minimum_candidate_coverage,
+        )
+    ):
+        raise OperatorFrontierQualificationError(
+            "ragged exact-only qualification requires one complete candidate "
+            "until a candidate-family boundary policy is qualified",
+            reason_code="candidate-coverage-policy-failed",
+        )
+    selected_candidate_id = candidate_ids[0]
     if any(
         item.correctness != "passed"
         or item.timing_quality != "passed"
@@ -930,19 +966,31 @@ def _write_exact_distribution_bundle(
         )
     search_by_identity = {
         identity: [
-            item for item in searches if item.operator_shape.shape_identity == identity
+            item
+            for item in searches
+            if item.operator_shape.shape_identity == identity
         ]
         for identity in {item.operator_shape.shape_identity for item in searches}
     }
     holdout_by_identity = {
         identity: [
-            item for item in holdouts if item.operator_shape.shape_identity == identity
+            item
+            for item in holdouts
+            if item.operator_shape.shape_identity == identity
         ]
         for identity in search_by_identity
     }
     if any(
         len(search_by_identity[identity]) < policy.minimum_search_sessions
         or len(holdout_by_identity[identity]) < policy.minimum_holdout_sessions
+        or {
+            item.candidate_id for item in search_by_identity[identity]
+        }
+        != {selected_candidate_id}
+        or {
+            item.candidate_id for item in holdout_by_identity[identity]
+        }
+        != {selected_candidate_id}
         or not _same_shape_input_and_contract(search_by_identity[identity])
         or not _same_shape_input_and_contract(holdout_by_identity[identity])
         for identity in search_by_identity
@@ -1029,7 +1077,10 @@ def _write_exact_distribution_bundle(
             }
         )
     surface: dict[str, object] = {
-        "surface_id": f"surface://{cohort_id}/flash-attention/tnd-forward/ragged/{evidence_digest[:16]}",
+        "surface_id": (
+            f"surface://{cohort_id}/flash-attention/tnd-forward/"
+            f"ragged/{evidence_digest[:16]}"
+        ),
         "version": f"v-{evidence_digest[:16]}",
         "previous_version": None,
         "qualification_status": "qualified",
@@ -1041,7 +1092,10 @@ def _write_exact_distribution_bundle(
             "version": "v2",
             "scope": f"{cohort_id}-flash-attention-ragged-exact",
             "change_reason": "issue-37 exact-only ragged TND identity",
-            "revalidation": "on cohort, domain, candidate, vector, evidence, or policy change",
+            "revalidation": (
+                "on cohort, domain, candidate, vector, evidence, or policy "
+                "change"
+            ),
         },
         "coordinate": {
             "axis": "sequence_distribution_index",
@@ -1075,11 +1129,18 @@ def _write_exact_distribution_bundle(
                 [0.0 for _ in anchors] for _ in anchors
             ],
             "anchor_latency_covariance": [
-                [variance if row == column else 0.0 for column, variance in enumerate(anchor_latency_variances)]
+                [
+                    variance if row == column else 0.0
+                    for column, variance in enumerate(
+                        anchor_latency_variances
+                    )
+                ]
                 for row in range(len(anchor_latency_variances))
             ],
             "response_model_standard_uncertainty_latency_ns": 0.0,
-            "instrumentation_standard_uncertainty_latency_ns": first.timer_resolution_ns,
+            "instrumentation_standard_uncertainty_latency_ns": (
+                first.timer_resolution_ns
+            ),
             "boundary_uncertainty": {
                 "status": "not_applicable",
                 "reason_code": "exact-sequence-distribution-anchor-only",

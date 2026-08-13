@@ -180,6 +180,7 @@ def semantics_from_case(case: dict[str, object]) -> OperatorShapeSemantics:
         )
     raise UnsupportedOperatorShape(f"unsupported operation: {operation!r}")
 
+
 def semantics_for_coordinate(
     reference: OperatorShapeSemantics, coordinate: int
 ) -> OperatorShapeSemantics:
@@ -229,8 +230,14 @@ def semantics_from_surface_query(
                 {
                     "operation": "MatMul",
                     "shape": {
-                        "left": [query_shape["m"], work_formula.get("fixed_k")],
-                        "right": [work_formula.get("fixed_k"), work_formula.get("fixed_n")],
+                        "left": [
+                            query_shape["m"],
+                            work_formula.get("fixed_k"),
+                        ],
+                        "right": [
+                            work_formula.get("fixed_k"),
+                            work_formula.get("fixed_n"),
+                        ],
                     },
                     "dtype": domain.get("dtype"),
                     "layout": domain.get("layout"),

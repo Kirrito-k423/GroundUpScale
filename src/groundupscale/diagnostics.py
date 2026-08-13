@@ -7676,6 +7676,7 @@ def _query_capability_surface(
             "latency": latency,
             "work_rate_latency": latency,
             "effective_rate": {"value": effective_rate, "unit": "FLOP/s"},
+            "work_formula": surface["work_formula"],
             "response": {
                 "target": "latency",
                 "kind": "exact-sequence-distribution-anchor",
@@ -9104,6 +9105,7 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             f"{winner_text}"
             f"{domain_policy_text}; "
             f"{response_text}"
+            f"work-formula={json.dumps(query.get('work_formula'), ensure_ascii=False, separators=(',', ':'), sort_keys=True)}; "
             f"declared-work={latency['declared_work']:.6f} {latency['work_unit']}; "
             f"rate={rate['value'] / 1_000_000_000_000:.9f} TFLOP/s; "
             f"latency={latency['value_ns']:.6f} ns; "
