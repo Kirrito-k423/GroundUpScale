@@ -74,6 +74,8 @@ No scope creep was found. The seven phase identities matched ADR 0037.
   verifier is still the required acceptance seam and existing bundle kinds stay
   regression-covered.
 
-First original-reviewer re-review found the source-observation binding,
-capability-reference and Compilation Fingerprint gaps above. Second
-original-reviewer re-review: pending.
+The original reviewers iterated on the source-observation binding,
+structured-unknown replay, capability-profile replay, Compilation Fingerprint,
+and row-scalar probe Shape gaps above. Final Spec and Standards re-reviews both
+PASS with no remaining must-fix. The Divergent Change extraction remains the
+sole non-blocking judgement call.
