@@ -469,6 +469,38 @@ def test_run_bundle_verifier_rejects_tampered_alias_materialization_summary(
     assert "unverified alias zero" in verification["failures"]
 
 
+def test_run_bundle_verifier_cross_checks_layout_prediction_authority(
+    tmp_path: Path,
+) -> None:
+    compiled = compile_analysis_plan(
+        REPOSITORY_ROOT, REPOSITORY_ROOT / "specs/plans/mac-cpu-prefill.yaml"
+    )
+    run = RunBundleWriter(compiled).run(
+        tmp_path,
+        run_id="layout-authority-tamper",
+        samples_override=4,
+        warmup_override=0,
+        windows_per_sample=1,
+        target_window_ns=1,
+    )
+    prediction_path = run / "prediction/metrics.json"
+    prediction = json.loads(prediction_path.read_text(encoding="utf-8"))
+    prediction["layout_execution"]["status"] = "unknown"
+    prediction_path.write_text(json.dumps(prediction), encoding="utf-8")
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = next(
+        item for item in manifest["artifacts"] if item["role"] == "prediction"
+    )
+    entry["sha256"] = sha256(prediction_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    verification = verify_run_bundle(run)
+
+    assert verification["passed"] is False
+    assert "layout execution authority mismatch" in verification["failures"]
+
+
 def test_required_environment_gate_rejects_before_publishing_a_run(
     tmp_path: Path,
 ) -> None:

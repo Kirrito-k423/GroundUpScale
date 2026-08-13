@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+from math import prod
 from typing import Any, Mapping, Sequence
 
 from groundupscale.ir import content_fingerprint
@@ -33,6 +35,15 @@ def _valid_tensor_contract(value: object) -> bool:
 
 def _nonempty_string(value: object) -> bool:
     return isinstance(value, str) and bool(value)
+
+
+def _tensor_bytes(contract: object) -> int | None:
+    if not _valid_tensor_contract(contract) or not isinstance(contract, Mapping):
+        return None
+    width = {"float32": 4, "bfloat16": 2, "float16": 2, "int64": 8}.get(
+        contract.get("dtype")
+    )
+    return width * prod(contract["shape"]) if width is not None else None
 
 
 def _valid_candidate_selection(
@@ -87,6 +98,10 @@ def build_alias_materialization_evidence(
             and _nonempty_string(audit.get("input_storage_identity"))
             and _nonempty_string(audit.get("output_storage_identity"))
             and _valid_candidate_selection(audit, candidate_id)
+            and _tensor_bytes(audit.get("input_contract"))
+            == expected.get("logical_read_bytes")
+            and _tensor_bytes(audit.get("output_contract"))
+            == expected.get("logical_write_bytes")
         )
         aliases = bool(
             audited
@@ -104,6 +119,7 @@ def build_alias_materialization_evidence(
             materializes
             and isinstance(duration, (int, float))
             and not isinstance(duration, bool)
+            and math.isfinite(duration)
             and duration >= 0
             and isinstance(evidence_refs, list)
             and evidence_refs
@@ -150,6 +166,8 @@ def build_alias_materialization_evidence(
             {
                 "stable_path": stable_path,
                 "operation": expected["operation"],
+                "logical_read_bytes": expected["logical_read_bytes"],
+                "logical_write_bytes": expected["logical_write_bytes"],
                 "selected_candidate": candidate,
                 "alias_audit": audit,
                 "decision": decision,
@@ -196,16 +214,35 @@ def build_alias_materialization_evidence(
                             "source": event_id,
                             "target": f"value:{stable_path}:output",
                         },
-                        {
-                            "kind": "execution-resource",
-                            "source": event_id,
-                            "target": "memory.interface",
-                        },
                     ]
                     if physical_event is not None
                     else []
                 ),
             }
+        )
+    physical_events = [
+        item["physical_event"]
+        for item in operations
+        if item["physical_event"] is not None
+    ]
+    schedule_edges = [
+        edge for item in operations for edge in item["dependency_edges"]
+    ]
+    for previous, current in zip(physical_events, physical_events[1:]):
+        schedule_edges.extend(
+            [
+                {
+                    "kind": "execution-order",
+                    "source": previous["event_id"],
+                    "target": current["event_id"],
+                },
+                {
+                    "kind": "execution-resource",
+                    "source": previous["event_id"],
+                    "target": current["event_id"],
+                    "resource_id": "memory.interface",
+                },
+            ]
         )
     document: dict[str, Any] = {
         "schema": SCHEMA,
@@ -219,14 +256,8 @@ def build_alias_materialization_evidence(
         "operations": operations,
         "schedule": {
             "policy": "serialized-explicit-events",
-            "physical_events": [
-                item["physical_event"]
-                for item in operations
-                if item["physical_event"] is not None
-            ],
-            "dependency_edges": [
-                edge for item in operations for edge in item["dependency_edges"]
-            ],
+            "physical_events": physical_events,
+            "dependency_edges": schedule_edges,
             "composition": {
                 "serialized_duration_ns": sum(
                     item["duration"]["value_ns"]
@@ -328,6 +359,26 @@ def verify_alias_materialization_evidence(
             ):
                 failures.append("unverified alias zero")
         elif decision == "materialization":
+            expected_read_bytes = _tensor_bytes(
+                audit.get("input_contract") if isinstance(audit, dict) else None
+            )
+            expected_write_bytes = _tensor_bytes(
+                audit.get("output_contract") if isinstance(audit, dict) else None
+            )
+            evidence_refs = (
+                duration.get("evidence_refs") if isinstance(duration, dict) else None
+            )
+            value_ns = duration.get("value_ns") if isinstance(duration, dict) else None
+            expected_event_id = (
+                "physical-event:"
+                + content_fingerprint(
+                    operation.get("stable_path"),
+                    candidate,
+                    audit,
+                    value_ns,
+                    evidence_refs,
+                )
+            )
             if (
                 not isinstance(audit, dict)
                 or not _valid_tensor_contract(audit.get("input_contract"))
@@ -338,9 +389,21 @@ def verify_alias_materialization_evidence(
                 == audit.get("output_storage_identity")
                 or not isinstance(demand, dict)
                 or demand.get("status") != "known"
+                or demand.get("memory_read_bytes") != expected_read_bytes
+                or demand.get("memory_write_bytes") != expected_write_bytes
+                or demand.get("memory_read_bytes") != operation.get("logical_read_bytes")
+                or demand.get("memory_write_bytes") != operation.get("logical_write_bytes")
                 or not isinstance(duration, dict)
                 or duration.get("status") != "known"
+                or not isinstance(value_ns, (int, float))
+                or isinstance(value_ns, bool)
+                or not math.isfinite(value_ns)
+                or value_ns < 0
+                or not isinstance(evidence_refs, list)
+                or not evidence_refs
+                or not all(_nonempty_string(reference) for reference in evidence_refs)
                 or not isinstance(event, dict)
+                or event.get("event_id") != expected_event_id
                 or event.get("duration_ns") != duration.get("value_ns")
                 or event.get("stable_path") != operation.get("stable_path")
                 or event.get("candidate_id") != candidate.get("candidate_id")
@@ -374,21 +437,12 @@ def verify_alias_materialization_evidence(
                         "source": event.get("event_id"),
                         "target": f"value:{operation.get('stable_path')}:output",
                     },
-                    {
-                        "kind": "execution-resource",
-                        "source": event.get("event_id"),
-                        "target": "memory.interface",
-                    },
                 ]
             ):
                 failures.append("invalid materialization event")
             else:
                 expected_events.append(event)
-                value_ns = duration.get("value_ns")
-                if not isinstance(value_ns, (int, float)) or isinstance(value_ns, bool):
-                    failures.append("invalid materialization event")
-                else:
-                    materialization_duration += value_ns
+                materialization_duration += value_ns
         elif decision == "unknown":
             unknown_paths.append(operation.get("stable_path"))
             if (
@@ -410,6 +464,23 @@ def verify_alias_materialization_evidence(
             else []
         )
     ]
+    for previous, current in zip(expected_events, expected_events[1:]):
+        if isinstance(previous, dict) and isinstance(current, dict):
+            expected_edges.extend(
+                [
+                    {
+                        "kind": "execution-order",
+                        "source": previous.get("event_id"),
+                        "target": current.get("event_id"),
+                    },
+                    {
+                        "kind": "execution-resource",
+                        "source": previous.get("event_id"),
+                        "target": current.get("event_id"),
+                        "resource_id": "memory.interface",
+                    },
+                ]
+            )
     if body.get("schedule") != {
         "policy": "serialized-explicit-events",
         "physical_events": expected_events,

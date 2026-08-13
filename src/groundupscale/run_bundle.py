@@ -707,11 +707,13 @@ class RunBundleWriter:
         *,
         execution_runtime: ExecutionRuntime | None = None,
         npu_evidence: NpuRunEvidence | None = None,
+        layout_candidate_evidence: dict[str, dict[str, object]] | None = None,
     ) -> None:
         self.compiled = compiled
         self.seed = seed
         self.execution_runtime = execution_runtime
         self.npu_evidence = npu_evidence
+        self.layout_candidate_evidence = layout_candidate_evidence or {}
 
     def run(
         self,
@@ -996,10 +998,16 @@ class RunBundleWriter:
             for operation in alias_operations:
                 stable_path = operation.stable_path.removeprefix("cost/")
                 audit = alias_audits_by_path.get(stable_path, {})
-                selected_candidates[stable_path] = audit.get(
+                candidate_id = audit.get(
                     "selected_candidate_id",
                     "runtime-candidate-unresolved:"
                     + content_fingerprint(stable_path, operation.operation, device),
+                )
+                supplied_evidence = self.layout_candidate_evidence.get(stable_path)
+                selected_candidates[stable_path] = (
+                    {"candidate_id": candidate_id, **supplied_evidence}
+                    if supplied_evidence is not None
+                    else candidate_id
                 )
             alias_materialization = build_alias_materialization_evidence(
                 alias_audits=(
@@ -2014,6 +2022,51 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             "failures"
                         ]
                     )
+                    prediction_document = documents_by_role.get("prediction")
+                    if prediction_document is None:
+                        prediction_entries = [
+                            artifact
+                            for artifact in artifacts
+                            if isinstance(artifact, dict)
+                            and artifact.get("role") == "prediction"
+                        ]
+                        if len(prediction_entries) == 1:
+                            prediction_path = (
+                                root / str(prediction_entries[0].get("path"))
+                            ).resolve()
+                            if prediction_path.is_file():
+                                try:
+                                    loaded_prediction = json.loads(
+                                        prediction_path.read_text(encoding="utf-8")
+                                    )
+                                except (
+                                    OSError,
+                                    UnicodeDecodeError,
+                                    json.JSONDecodeError,
+                                ):
+                                    loaded_prediction = None
+                                if isinstance(loaded_prediction, dict):
+                                    prediction_document = loaded_prediction
+                    layout_execution = (
+                        prediction_document.get("layout_execution")
+                        if isinstance(prediction_document, dict)
+                        else None
+                    )
+                    if layout_execution != {
+                        "status": alias_document.get("status"),
+                        "authoritative_artifact": str(alias_entries[0].get("path")),
+                        "evidence_version_id": alias_document.get(
+                            "evidence_version_id"
+                        ),
+                        "schedule": alias_document.get("schedule"),
+                        "decomposition": alias_document.get("decomposition"),
+                        "policy": (
+                            "View/Transpose candidate duration is unknown in the "
+                            "hardware backend until this runtime audit qualifies "
+                            "the selected candidate"
+                        ),
+                    }:
+                        failures.append("layout execution authority mismatch")
 
     if operator_frontier:
         qualification = documents_by_role.get(

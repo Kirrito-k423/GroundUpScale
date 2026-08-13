@@ -354,3 +354,136 @@ def test_verifier_rejects_materialization_claim_and_provenance_tampering() -> No
 
     assert verification["passed"] is False
     assert "invalid materialization event" in verification["failures"]
+
+
+def test_verifier_rejects_recomputed_materialization_identity_and_timing_attacks() -> None:
+    base = build_alias_materialization_evidence(
+        alias_audits=[
+            {
+                "stable_path": STABLE_PATH,
+                "operation": "Transpose",
+                "input_storage_identity": "storage:input",
+                "output_storage_identity": "storage:output",
+                "selected_candidate_id": "transpose-contiguous.npu.eager",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": "run://issue46-materialization/correctness",
+                },
+                "input_contract": _contract(
+                    shape=[1, 512, 8, 64], stride=[262144, 512, 64, 1]
+                ),
+                "output_contract": _contract(
+                    shape=[1, 8, 512, 64], stride=[262144, 32768, 64, 1]
+                ),
+            }
+        ],
+        expected_operations=[
+            {
+                "stable_path": STABLE_PATH,
+                "operation": "Transpose",
+                "logical_read_bytes": 1_048_576,
+                "logical_write_bytes": 1_048_576,
+            }
+        ],
+        selected_candidates={
+            STABLE_PATH: {
+                "candidate_id": "transpose-contiguous.npu.eager",
+                "duration_ns": 18_400,
+                "evidence_refs": ["run://issue46-materialization/timing"],
+            }
+        },
+        execution_mode="pytorch-eager",
+        hardware_cohort=COHORT,
+    )
+    for mutate in ("negative-duration", "empty-evidence", "forged-event-id"):
+        evidence = deepcopy(base)
+        operation = evidence["operations"][0]
+        event = operation["physical_event"]
+        if mutate == "negative-duration":
+            operation["duration"]["value_ns"] = -1
+            event["duration_ns"] = -1
+            evidence["schedule"]["composition"] = {
+                "serialized_duration_ns": -1,
+                "selected_duration_ns": -1,
+            }
+            evidence["decomposition"]["materialization_duration_ns"] = -1
+        elif mutate == "empty-evidence":
+            operation["duration"]["evidence_refs"] = []
+            event["provenance"] = {"evidence_refs": []}
+            event["resource_claims"][0]["provenance"] = {"evidence_refs": []}
+        else:
+            event["event_id"] = "physical-event:forged"
+            event["resource_claims"][0]["lifetime"] = {
+                "start": event["event_id"],
+                "end": event["event_id"],
+            }
+            for edge in operation["dependency_edges"]:
+                if edge["source"].startswith("physical-event:"):
+                    edge["source"] = event["event_id"]
+                if edge["target"].startswith("physical-event:"):
+                    edge["target"] = event["event_id"]
+            evidence["schedule"]["physical_events"] = [event]
+            evidence["schedule"]["dependency_edges"] = operation[
+                "dependency_edges"
+            ]
+        evidence["evidence_version_id"] = content_fingerprint(
+            {
+                key: value
+                for key, value in evidence.items()
+                if key != "evidence_version_id"
+            }
+        )
+
+        assert verify_alias_materialization_evidence(evidence)["passed"] is False
+
+
+def test_serialized_materializations_have_event_to_event_resource_order() -> None:
+    second_path = STABLE_PATH.replace("q_transpose", "k_transpose")
+    audits = []
+    expected = []
+    candidates = {}
+    for path in (STABLE_PATH, second_path):
+        audits.append(
+            {
+                "stable_path": path,
+                "operation": "Transpose",
+                "input_storage_identity": f"storage:{path}:input",
+                "output_storage_identity": f"storage:{path}:output",
+                "selected_candidate_id": f"candidate:{path}",
+                "candidate_selection_evidence": {
+                    "kind": "executed-runtime-leaf",
+                    "evidence_ref": f"correctness://{path}",
+                },
+                "input_contract": _contract(shape=[2, 3], stride=[3, 1]),
+                "output_contract": _contract(shape=[3, 2], stride=[2, 1]),
+            }
+        )
+        expected.append(
+            {
+                "stable_path": path,
+                "operation": "Transpose",
+                "logical_read_bytes": 24,
+                "logical_write_bytes": 24,
+            }
+        )
+        candidates[path] = {
+            "candidate_id": f"candidate:{path}",
+            "duration_ns": 10,
+            "evidence_refs": [f"timing://{path}"],
+        }
+    evidence = build_alias_materialization_evidence(
+        alias_audits=audits,
+        expected_operations=expected,
+        selected_candidates=candidates,
+        execution_mode="pytorch-eager",
+        hardware_cohort=COHORT,
+    )
+    first, second = evidence["schedule"]["physical_events"]
+
+    assert {
+        "kind": "execution-resource",
+        "source": first["event_id"],
+        "target": second["event_id"],
+        "resource_id": "memory.interface",
+    } in evidence["schedule"]["dependency_edges"]
+    assert verify_alias_materialization_evidence(evidence)["passed"] is True
