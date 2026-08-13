@@ -640,7 +640,7 @@
   },
   "derivation": {
     "input_sha256": "87efd0f170fc8415a654923be8f7c34b8a2202a73557820902f60a27d66d40e4",
-    "result_sha256": "0bbd28bf4391f8ae813940e1faec0e1e4a1c4f827e298538fcb47b002a332141",
+    "result_sha256": "72839a48fa129566ea737170b60e6a91b89a88d2979b856a55d2b73ac0fae4ba",
     "steps": [
       "validate-indexed-stable-path-coverage",
       "resolve-mandatory-operation-candidates",
@@ -706,7 +706,12 @@
       }
     ],
     "source_issue": "#48",
-    "source_repository_root": "/Users/Zhuanz/work/github/GroundUpScale-issue-48"
+    "source_repository_root": "/Users/Zhuanz/work/github/GroundUpScale-issue-48",
+    "supersedes": {
+      "manifest_sha256": "baf289e876eb873b03e6157a62ee2cacddc55731bc93ea97d59b22dd6baac757",
+      "path": "../issue48-20260814T0001Z-schedule-frontier-unknown-v1",
+      "run_id": "issue48-20260814T0001Z-schedule-frontier-unknown-v1"
+    }
   },
   "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
   "missing_evidence": [

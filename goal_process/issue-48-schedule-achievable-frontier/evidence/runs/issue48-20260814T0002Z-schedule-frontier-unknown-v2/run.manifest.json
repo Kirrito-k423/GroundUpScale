@@ -18,7 +18,7 @@
       "produced_by": "groundupscale@0.1.0",
       "role": "prediction-observation-comparison",
       "schema": "groundupscale.dev/model-e2e-frontier-result/v1alpha1",
-      "sha256": "e46646aeb7354afab7bf2e64125a3b35a5db533d7d70b977baeda30a8693de83"
+      "sha256": "1b72834418421b569dddb05b59bdcf513aaa3551f15015519c4a3410c9720be8"
     },
     {
       "inputs": [
@@ -87,5 +87,10 @@
       "verification_passed": true
     }
   ],
-  "status": "unknown"
+  "status": "unknown",
+  "supersedes": {
+    "manifest_sha256": "baf289e876eb873b03e6157a62ee2cacddc55731bc93ea97d59b22dd6baac757",
+    "path": "../issue48-20260814T0001Z-schedule-frontier-unknown-v1",
+    "run_id": "issue48-20260814T0001Z-schedule-frontier-unknown-v1"
+  }
 }

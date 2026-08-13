@@ -228,11 +228,11 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
     if classification == "evidence-qualified-composition" and not source_bundles:
         raise ModelE2EFrontierError("missing-model-source-bundles")
     source_repository_root = evidence.get("source_repository_root")
-    if classification == "evidence-qualified-composition" and (
+    if source_repository_root is not None and (
         not isinstance(source_repository_root, str)
         or not source_repository_root
     ):
-        raise ModelE2EFrontierError("missing-model-source-repository-root")
+        raise ModelE2EFrontierError("invalid-model-source-repository-root")
     model = _mapping(document.get("model"), "invalid-model-coverage")
     expected_count = model.get("expected_semantic_leaf_count")
     repeated_indices = model.get("repeated_layer_indices")
@@ -444,6 +444,7 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
                 ),
             }
         )
+    has_execution_ir = "execution_ir" in schedule
     execution_ir_value = _mapping(
         schedule.get("execution_ir", {
             "schema": "groundupscale.dev/model-schedule-execution-ir/v1alpha1",
@@ -656,6 +657,88 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             observation_axis,
         )
     )
+    evidence_result: dict[str, Any] = {
+        "classification": classification,
+        "authority": (
+            "synthetic-contract-only"
+            if classification == "deterministic-synthetic"
+            else "evidence-qualified-composition"
+        ),
+        "source_issue": evidence.get("source_issue"),
+        "promotion_eligible": evidence.get("promotion_eligible"),
+        "evidence_refs": evidence_refs,
+        "source_bundles": source_bundles,
+    }
+    if source_repository_root is not None:
+        evidence_result["source_repository_root"] = source_repository_root
+    if evidence.get("supersedes") is not None:
+        evidence_result["supersedes"] = evidence.get("supersedes")
+    schedule_result: dict[str, Any] = {
+        "policy_id": _nonempty(
+            schedule.get("policy_id"), "invalid-model-schedule"
+        ),
+        "version": _nonempty(
+            schedule.get("version"), "invalid-model-schedule"
+        ),
+        "kind": schedule["kind"],
+        "mandatory_effects": schedule_effects,
+        "physical_events": physical_events,
+        "explicit_dependencies": explicit_dependencies,
+        "rejected_optimizations": rejected_optimizations,
+        "references": {
+            "serialized_unfused": {
+                "status": "known" if schedule_composition else "unknown",
+                "duration_ns": (
+                    schedule_composition["serialized_unfused_duration_ns"]
+                    if schedule_composition else None
+                ),
+            },
+            "ideal_dag": {
+                "status": "known" if schedule_composition else "unknown",
+                "duration_ns": (
+                    schedule_composition["ideal_dag_duration_ns"]
+                    if schedule_composition else None
+                ),
+            },
+            "selected_feasible": {
+                "status": "known" if schedule_composition else "unknown",
+                "duration_ns": (
+                    schedule_composition["selected_feasible_duration_ns"]
+                    if schedule_composition else None
+                ),
+            },
+        },
+        "serialized_unfused_duration_ns": (
+            schedule_composition["serialized_unfused_duration_ns"]
+            if schedule_composition is not None else None
+        ),
+        "critical_path_duration_ns": (
+            schedule_composition["critical_path_duration_ns"]
+            if schedule_composition is not None else None
+        ),
+        "shared_resource_duration_ns": (
+            schedule_composition["shared_resource_duration_ns"]
+            if schedule_composition is not None else None
+        ),
+        "ideal_dag_duration_ns": (
+            schedule_composition["ideal_dag_duration_ns"]
+            if schedule_composition is not None else None
+        ),
+        "selected_feasible_duration_ns": (
+            schedule_composition["selected_feasible_duration_ns"]
+            if schedule_composition is not None else None
+        ),
+        "limiting_resource": (
+            schedule_composition["limiting_resource"]
+            if schedule_composition is not None else None
+        ),
+        "critical_path_event_ids": (
+            schedule_composition["critical_path_event_ids"]
+            if schedule_composition is not None else []
+        ),
+    }
+    if has_execution_ir:
+        schedule_result["execution_ir"] = execution_ir
     result: dict[str, Any] = {
         "schema": RESULT_SCHEMA,
         "status": "complete" if all_axes_known else "unknown",
@@ -663,19 +746,7 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
         "hardware_cohort": _nonempty(
             evidence.get("hardware_cohort"), "invalid-model-evidence"
         ),
-        "evidence": {
-            "classification": classification,
-            "authority": (
-                "synthetic-contract-only"
-                if classification == "deterministic-synthetic"
-                else "evidence-qualified-composition"
-            ),
-            "source_issue": evidence.get("source_issue"),
-            "promotion_eligible": evidence.get("promotion_eligible"),
-            "evidence_refs": evidence_refs,
-            "source_bundles": source_bundles,
-            "source_repository_root": source_repository_root,
-        },
+        "evidence": evidence_result,
         "coverage": {
             "semantic_leaf_count": expected_count,
             "repeated_layer_indices": list(repeated_indices),
@@ -688,81 +759,7 @@ def compose_model_e2e_frontier(document: Mapping[str, object]) -> dict[str, Any]
             "schedule_achievable_frontier": schedule_axis,
             "observation": observation_axis,
         },
-        "schedule": {
-            "policy_id": _nonempty(
-                schedule.get("policy_id"), "invalid-model-schedule"
-            ),
-            "version": _nonempty(
-                schedule.get("version"), "invalid-model-schedule"
-            ),
-            "kind": schedule["kind"],
-            "mandatory_effects": schedule_effects,
-            "physical_events": physical_events,
-            "explicit_dependencies": explicit_dependencies,
-            "execution_ir": execution_ir,
-            "rejected_optimizations": rejected_optimizations,
-            "references": {
-                "serialized_unfused": {
-                    "status": "known" if schedule_composition else "unknown",
-                    "duration_ns": (
-                        schedule_composition["serialized_unfused_duration_ns"]
-                        if schedule_composition
-                        else None
-                    ),
-                },
-                "ideal_dag": {
-                    "status": "known" if schedule_composition else "unknown",
-                    "duration_ns": (
-                        schedule_composition["ideal_dag_duration_ns"]
-                        if schedule_composition
-                        else None
-                    ),
-                },
-                "selected_feasible": {
-                    "status": "known" if schedule_composition else "unknown",
-                    "duration_ns": (
-                        schedule_composition["selected_feasible_duration_ns"]
-                        if schedule_composition
-                        else None
-                    ),
-                },
-            },
-            "serialized_unfused_duration_ns": (
-                schedule_composition["serialized_unfused_duration_ns"]
-                if schedule_composition is not None
-                else None
-            ),
-            "critical_path_duration_ns": (
-                schedule_composition["critical_path_duration_ns"]
-                if schedule_composition is not None
-                else None
-            ),
-            "shared_resource_duration_ns": (
-                schedule_composition["shared_resource_duration_ns"]
-                if schedule_composition is not None
-                else None
-            ),
-            "ideal_dag_duration_ns": (
-                schedule_composition["ideal_dag_duration_ns"]
-                if schedule_composition is not None
-                else None
-            ),
-            "selected_feasible_duration_ns": (
-                schedule_composition["selected_feasible_duration_ns"]
-                if schedule_composition is not None
-                else None
-            ),
-            "limiting_resource": (
-                schedule_composition["limiting_resource"]
-                if schedule_composition is not None
-                else None
-            ),
-            "critical_path_event_ids": (
-                schedule_composition["critical_path_event_ids"]
-                if schedule_composition is not None
-                else []
-            ),
-        },
+        "schedule": schedule_result,
         "uncertainty": {
             "policy_id": _nonempty(
                 uncertainty.get("policy_id"), "invalid-uncertainty"
@@ -952,6 +949,8 @@ def write_model_e2e_frontier_bundle(
             ),
             "artifacts": artifacts,
         }
+        if result["evidence"].get("supersedes") is not None:
+            manifest["supersedes"] = result["evidence"]["supersedes"]
         (temporary / "run.manifest.json").write_bytes(_json_bytes(manifest))
         temporary.rename(destination)
     except BaseException:

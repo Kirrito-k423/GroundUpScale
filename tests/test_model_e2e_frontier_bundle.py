@@ -666,3 +666,19 @@ def test_real_composition_verifier_requires_resolvable_recursive_sources(
 
     assert verification["passed"] is False
     assert "model E2E source repository is not resolvable" in verification["failures"]
+
+
+def test_historical_v1_and_v2_supersession_lineage_replay() -> None:
+    repository = Path(__file__).resolve().parents[1]
+    runs = repository / "goal_process/issue-48-schedule-achievable-frontier/evidence/runs"
+    v1 = runs / "issue48-20260814T0001Z-schedule-frontier-unknown-v1"
+    v2 = runs / "issue48-20260814T0002Z-schedule-frontier-unknown-v2"
+
+    assert verify_run_bundle(v1)["passed"] is True
+    assert verify_run_bundle(v2)["passed"] is True
+    manifest = json.loads((v2 / "run.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["supersedes"] == {
+        "run_id": v1.name,
+        "path": f"../{v1.name}",
+        "manifest_sha256": sha256((v1 / "run.manifest.json").read_bytes()).hexdigest(),
+    }

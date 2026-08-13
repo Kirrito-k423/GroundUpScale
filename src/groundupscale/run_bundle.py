@@ -2162,7 +2162,14 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                         and repository_value
                         else None
                     )
-                    if (
+                    legacy_source_contract = (
+                        repository_root is None
+                        and manifest.get("source_runs") is None
+                        and expected.get("evidence", {}).get("supersedes") is None
+                    )
+                    if legacy_source_contract:
+                        pass
+                    elif (
                         repository_root is None
                         or not (repository_root / ".git").exists()
                     ):
@@ -2232,6 +2239,59 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 failures.append(
                                     "model E2E source bundle verification failed"
                                 )
+                    supersedes = expected.get("evidence", {}).get("supersedes")
+                    if supersedes is not None:
+                        if manifest.get("supersedes") != supersedes:
+                            failures.append(
+                                "model E2E manifest supersession mismatch"
+                            )
+                        elif repository_root is None:
+                            failures.append(
+                                "model E2E superseded bundle is not resolvable"
+                            )
+                        else:
+                            superseded_root = (
+                                root / str(supersedes.get("path"))
+                            ).resolve()
+                            try:
+                                superseded_root.relative_to(repository_root)
+                            except ValueError:
+                                failures.append(
+                                    "model E2E superseded path escapes repository"
+                                )
+                            else:
+                                superseded_manifest_path = (
+                                    superseded_root / "run.manifest.json"
+                                )
+                                try:
+                                    superseded_manifest = json.loads(
+                                        superseded_manifest_path.read_text(
+                                            encoding="utf-8"
+                                        )
+                                    )
+                                except (
+                                    OSError,
+                                    UnicodeDecodeError,
+                                    json.JSONDecodeError,
+                                ):
+                                    failures.append(
+                                        "model E2E superseded bundle is not resolvable"
+                                    )
+                                else:
+                                    if (
+                                        superseded_manifest.get("run_id")
+                                        != supersedes.get("run_id")
+                                    ):
+                                        failures.append(
+                                            "model E2E superseded identity mismatch"
+                                        )
+                                    if (
+                                        _sha256(superseded_manifest_path)
+                                        != supersedes.get("manifest_sha256")
+                                    ):
+                                        failures.append(
+                                            "model E2E superseded digest mismatch"
+                                        )
 
     alias_entries = [
         artifact
