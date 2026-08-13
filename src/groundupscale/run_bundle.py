@@ -2104,13 +2104,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     if not demo_valid or not session_valid:
                         valid_phases = False
 
-                    if valid_phases and replay and (
-                        qualification.get("status") == "qualified"
-                        or all(
-                            set(replay.get(phase, {})) == {"search", "holdout"}
-                            for phase, _, _ in _SOFTMAX_PHASE_SPECS
-                        )
-                    ):
+                    if valid_phases and replay:
                         process_identities: set[tuple[object, object]] = set()
                         replay_domains: set[str] = set()
                         for phase_document, spec in zip(phases, _SOFTMAX_PHASE_SPECS):
@@ -2119,7 +2113,15 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                             search = lanes.get("search")
                             holdout = lanes.get("holdout")
                             if search is None or holdout is None:
-                                valid_phases = False
+                                if not (
+                                    qualification.get("status") == "unknown"
+                                    and phase_document.get("candidate") is None
+                                    and phase_document.get("source_run_ids") == []
+                                    and phase_document.get("source_digests") == []
+                                    and phase_document.get("selected_duration_ns") is None
+                                    and phase_document.get("standard_uncertainty_ns") is None
+                                ):
+                                    valid_phases = False
                                 continue
                             process_identities.update(
                                 (tuple(search["process_identity"]), tuple(holdout["process_identity"]))
@@ -2174,7 +2176,12 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                                 }
                             ):
                                 valid_phases = False
-                        if len(process_identities) != 10 or (
+                        expected_process_count = sum(
+                            2
+                            for phase, _, _ in _SOFTMAX_PHASE_SPECS
+                            if set(replay.get(phase, {})) == {"search", "holdout"}
+                        )
+                        if len(process_identities) != expected_process_count or (
                             qualification.get("status") == "qualified"
                             and len(replay_domains) != 1
                         ):

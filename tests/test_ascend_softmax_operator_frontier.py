@@ -257,6 +257,39 @@ def test_missing_softmax_phase_stays_structured_unknown(tmp_path: Path) -> None:
     }
 
 
+def test_missing_phase_verifier_replays_present_phase_sources(
+    tmp_path: Path,
+) -> None:
+    phase_runs = _phase_inputs(tmp_path)
+    del phase_runs["exp"]
+    run = SoftmaxOperatorFrontierBundleWriter().run(
+        tmp_path / "frontier",
+        run_id="issue44-softmax-missing-source-tamper-test",
+        qualification_policy=_policy(),
+        phase_runs=phase_runs,
+        source_demo_bundle=DEMO_BUNDLE,
+        session_metadata=_session_metadata(),
+    )
+    manifest_path = run / "run.manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    entry = next(
+        artifact for artifact in manifest["artifacts"]
+        if artifact["role"] == "operator-frontier-qualification"
+    )
+    path = run / entry["path"]
+    qualification = json.loads(path.read_text())
+    phase = qualification["surface"]["operator_phase_graph"]["phases"][0]
+    phase["source_digests"][0] = "0" * 64
+    phase["candidate"]["candidate_id"] = "forged"
+    surface = qualification["surface"]
+    surface.pop("input_digest")
+    surface["input_digest"] = content_fingerprint(surface)
+    path.write_text(json.dumps(qualification, indent=2, sort_keys=True) + "\n")
+    entry["sha256"] = sha256(path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    assert verify_run_bundle(run)["passed"] is False
+
+
 def test_softmax_phase_domain_mismatch_fails_closed(tmp_path: Path) -> None:
     phase_runs = _phase_inputs(tmp_path)
     phase_runs["normalize"]["holdout"] = [
