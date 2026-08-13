@@ -7532,6 +7532,194 @@ def _latency_primary_response_model(
     return response
 
 
+def _query_setup_plus_throughput_cell(
+    query: dict[str, Any],
+    surface: dict[str, Any],
+    surface_domain: dict[str, Any],
+    domain_policy: dict[str, Any] | None,
+    policy: dict[str, Any],
+    calibration_refs: list[str],
+    anchors_value: list[Any],
+    selected: _SelectedSurfaceCell,
+    confirmation_refs: list[str],
+) -> dict[str, Any] | None:
+    response = selected.cell.get("response")
+    if not isinstance(response, dict) or response.get("target") != "latency":
+        return None
+    work_formula = surface.get("work_formula")
+    setup_latency_ns = response.get("setup_latency_ns")
+    asymptotic_rate = response.get("asymptotic_rate")
+    shape_regime = response.get("shape_regime")
+    if (
+        response.get("kind") != "setup-plus-throughput"
+        or response.get("version") != "v1"
+        or not isinstance(work_formula, dict)
+        or work_formula.get("kind")
+        not in {
+            "matmul-2mnk-fixed-nk",
+            "flash-attention-tnd-forward-qk-pv",
+        }
+        or work_formula.get("version") != "v1"
+        or work_formula.get("work_unit") != "FLOP"
+        or not _finite_number(setup_latency_ns)
+        or setup_latency_ns < 0
+        or not _finite_number(asymptotic_rate)
+        or asymptotic_rate <= 0
+        or not isinstance(shape_regime, dict)
+        or not _nonempty_string(shape_regime.get("identity"))
+        or shape_regime.get("classification") not in {"ramp", "steady"}
+    ):
+        return _unknown_surface_query(query, surface, "invalid_latency_response")
+    try:
+        semantics = semantics_from_surface_query(surface, query.get("shape"))
+    except UnsupportedOperatorShape:
+        return _unknown_surface_query(query, surface, "invalid_latency_response")
+    if semantics.work_formula != work_formula:
+        return _unknown_surface_query(query, surface, "invalid_latency_response")
+
+    latency_ns = float(setup_latency_ns) + (
+        semantics.declared_work / float(asymptotic_rate) * 1_000_000_000.0
+    )
+    exact_anchor = next(
+        (
+            anchor
+            for anchor in selected.anchors
+            if anchor.get("shape") == query.get("shape")
+        ),
+        None,
+    )
+    if exact_anchor is not None:
+        qualified_latency_ns = exact_anchor.get("latency_ns")
+        if not _finite_number(qualified_latency_ns) or qualified_latency_ns <= 0:
+            return _unknown_surface_query(query, surface, "invalid_latency_response")
+        latency_ns = float(qualified_latency_ns)
+
+    covariance = policy.get("anchor_latency_covariance")
+    if (
+        not isinstance(covariance, list)
+        or len(covariance) != len(anchors_value)
+        or any(
+            not isinstance(row, list) or len(row) != len(anchors_value)
+            for row in covariance
+        )
+    ):
+        return _unknown_surface_query(
+            query, surface, "insufficient_uncertainty_evidence"
+        )
+    anchor_indices = [anchors_value.index(anchor) for anchor in selected.anchors]
+    anchor_variance = 0.0
+    for row_index, row_weight in zip(
+        anchor_indices, selected.weights, strict=True
+    ):
+        for column_index, column_weight in zip(
+            anchor_indices, selected.weights, strict=True
+        ):
+            covariance_value = covariance[row_index][column_index]
+            if not _finite_number(covariance_value) or covariance_value < 0:
+                return _unknown_surface_query(
+                    query, surface, "insufficient_uncertainty_evidence"
+                )
+            anchor_variance += (
+                row_weight * column_weight * float(covariance_value)
+            )
+    boundary_standard = policy.get("boundary_standard_uncertainty_latency_ns")
+    components = {
+        "anchor_standard_latency_ns": anchor_variance**0.5,
+        "response_model_standard_latency_ns": (
+            0.0
+            if selected.exact_anchor
+            else policy.get("response_model_standard_uncertainty_latency_ns")
+        ),
+        "instrumentation_standard_latency_ns": policy.get(
+            "instrumentation_standard_uncertainty_latency_ns"
+        ),
+        "boundary_standard_latency_ns": boundary_standard,
+    }
+    if any(
+        value is not None and (not _finite_number(value) or value < 0)
+        for value in components.values()
+    ):
+        return _unknown_surface_query(
+            query, surface, "insufficient_uncertainty_evidence"
+        )
+    combined = sum(
+        float(value) ** 2
+        for value in components.values()
+        if value is not None
+    ) ** 0.5
+    latency = {
+        "declared_work": semantics.declared_work,
+        "work_unit": "FLOP",
+        "value_ns": latency_ns,
+    }
+    evidence_refs = [
+        *(anchor["evidence_ref"] for anchor in selected.anchors),
+        *confirmation_refs,
+        *calibration_refs,
+        *cast(list[str], surface.get("evidence_refs", [])),
+    ]
+    return {
+        "query_id": query.get("query_id"),
+        "status": "exact_anchor" if selected.exact_anchor else "modeled",
+        "reason_code": None,
+        "surface": {
+            "surface_id": surface["surface_id"],
+            "version": surface["version"],
+            "input_digest": surface["input_digest"],
+        },
+        "cohort_id": surface["cohort_id"],
+        "domain": surface_domain,
+        "domain_policy": domain_policy,
+        "query_shape": query.get("shape"),
+        "operator_shape_identity": semantics.shape_identity,
+        "normalized_operator_shape": semantics.normalized_shape,
+        "candidate_families": [surface["candidate_family"]],
+        "algorithm_families": [],
+        "selected_candidate_family": surface["candidate_family"],
+        "selected_algorithm_family": None,
+        "cell_id": selected.cell["cell_id"],
+        "anchors": [
+            {
+                "anchor_id": anchor["anchor_id"],
+                "anchor_version": anchor["anchor_version"],
+                "shape": anchor["shape"],
+                "latency_ns": anchor["latency_ns"],
+                "evidence_ref": anchor["evidence_ref"],
+            }
+            for anchor in selected.anchors
+        ],
+        "weights": list(selected.weights),
+        "latency": latency,
+        "work_rate_latency": latency,
+        "effective_rate": {
+            "value": semantics.declared_work / (latency_ns * 1e-9),
+            "unit": "FLOP/s",
+        },
+        "work_formula": work_formula,
+        "response": {
+            "target": response["target"],
+            "kind": response["kind"],
+            "version": response["version"],
+            "setup_latency_ns": setup_latency_ns,
+            "asymptotic_rate": asymptotic_rate,
+            "rate_unit": response["rate_unit"],
+        },
+        "shape_regime": shape_regime,
+        "uncertainty": {
+            "components": components,
+            "combined_standard_latency_ns": combined,
+            "target_coverage": policy.get("target_coverage"),
+            "policy_ref": f"{policy['policy_id']}/{policy['version']}",
+            "calibration_evidence_refs": list(calibration_refs),
+            "latency_interval": {
+                "lower_ns": max(0.0, latency_ns - combined),
+                "upper_ns": latency_ns + combined,
+            },
+        },
+        "evidence_refs": evidence_refs,
+    }
+
+
 def _query_capability_surface(
     query: dict[str, Any], surface: dict[str, Any]
 ) -> dict[str, Any]:
@@ -7845,6 +8033,19 @@ def _query_capability_surface(
         return _unknown_surface_query(
             query, surface, "insufficient_uncertainty_evidence"
         )
+    setup_response = _query_setup_plus_throughput_cell(
+        query,
+        surface,
+        surface_domain,
+        domain_policy,
+        policy,
+        cast(list[str], calibration_refs),
+        anchors_value,
+        selected,
+        cast(list[str], confirmation_refs),
+    )
+    if setup_response is not None:
+        return setup_response
     point_map = {
         axis: value for axis, value in zip(axes, point, strict=True)
     }
@@ -9089,14 +9290,27 @@ def render_diagnostic_report(result: dict[str, Any]) -> str:
             )
             winner_text = ""
         response = query.get("response")
-        response_text = (
-            f"primary-response={response['primary_response']}; "
-            f"response={response['value_ns']:.6f} ns; "
-            f"response-identity={response['response_identity']}; "
-            f"shape-regime={response['shape_regime_identity']}; "
-            if isinstance(response, dict)
-            else ""
-        )
+        shape_regime = query.get("shape_regime")
+        if (
+            isinstance(response, dict)
+            and isinstance(shape_regime, dict)
+            and response.get("kind") == "setup-plus-throughput"
+        ):
+            response_text = (
+                f"response={response['kind']}/{response['version']}; "
+                f"Setup Latency={response['setup_latency_ns']:.6f} ns; "
+                f"asymptotic-rate={response['asymptotic_rate'] / 1_000_000_000_000:.9f} TFLOP/s; "
+                f"Shape Regime={shape_regime['identity']}/{shape_regime['classification']}; "
+            )
+        elif isinstance(response, dict):
+            response_text = (
+                f"primary-response={response['primary_response']}; "
+                f"response={response['value_ns']:.6f} ns; "
+                f"response-identity={response['response_identity']}; "
+                f"shape-regime={response['shape_regime_identity']}; "
+            )
+        else:
+            response_text = ""
         lines.append(
             f"{prefix}: {query['status']}; "
             f"cohort={query['cohort_id']}; "
