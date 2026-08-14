@@ -2,6 +2,8 @@
 
 > 一句话：同一 Benchmark Scope 同时展示算法无关经验硬件地板、未来的实现预测和当前 Observation；地板与实测的距离表示优化空间，只有实现预测与实测之间才计算预测误差。
 
+面向迭代的中文报告格式、非空 Report Value、A–D Evidence Grade、两侧 TOP10 与 E2E contribution 规则由[中文预测—实测迭代报告规范](prediction-observation-report.md)定义。该报告层不改变本文件中的权威数值、Frontier promotion 或 prediction-error 门禁。
+
 ## 三类数值不能混用
 
 | 数值 | 回答的问题 | 能否计算 prediction error |

@@ -21,7 +21,7 @@
 - Diagnostic Evidence Bundle、回放、配置策略和 conformance tests。
 
 `MUST/MUST NOT` 是规范约束，`SHOULD` 是有充分理由才可偏离的建议，`MAY` 是可选能力。
-系统不得通过实现默认值替代本规范列出的 unknown。
+系统不得通过实现默认值替代本规范列出的权威 unknown。按照 [ADR 0038](../adr/0038-separate-authority-from-tiered-iteration-values.md)，迭代报告可以在独立 Report Value 字段中提供带 Evidence Grade、Generation Stage、区间、方法和用途限制的数值，但不得回写或覆盖权威字段。
 
 ## 2. 规范结果模型
 
@@ -54,7 +54,7 @@ Trigger_i = gap_i > combined_uncertainty_i and
 ```
 
 资源能力、候选、路径或查询点不满足公式的域条件时，对应结果 MUST 为结构化
-`unknown(reason_code)`，不能把缺失量当作 0、无穷或一个猜测值。
+`unknown(reason_code)`，不能把缺失量当作 0、无穷或一个猜测值。非空降级估计只能存在于独立、可重放的 Report Value 层。
 
 ## 3. 已确认决策（规范性需求）
 
@@ -146,7 +146,7 @@ uncertainty。Rate interval 映射到 latency 时上下界方向反转，不能�
 | ID | 需求 |
 | --- | --- |
 | GOV-001 | 每个可配置 policy MUST 带稳定 `policy_id/version`、适用 scope、变更理由与 revalidation 要求；缺少已批准 policy 时 MUST fail closed。 |
-| GOV-002 | 本规范列出的 unknown MUST 保持未决；实现 MUST NOT 以隐藏默认值、heuristic 或报告层补值代替决策。 |
+| GOV-002 | 本规范列出的 Authority unknown MUST 保持未决；实现 MUST NOT 以隐藏默认值、heuristic 或 Report Value 代替权威决策。迭代报告 MAY 使用版本化降级策略生成独立的 B/C/D 级数值，但 MUST 保存区间、推导、允许用途且不得 promotion。 |
 | GOV-003 | #5–#7 prototype artifacts MUST 保持 decision-only/throwaway；源码、机器数值和实验阈值 MUST NOT 复制、演化或 promotion 为生产实现/校准。 |
 
 ## 4. 可配置策略
@@ -178,7 +178,7 @@ profile 的 P80/P95 或固定 Shape 数，只属于各自实验或 profile，MUS
   plan、collect 五步；这不要求各平台暴露相同 counters。
 - 复用 Stable Path、Metric Derivation、Explanation Graph、Alignment Map、Error Attribution
   和 Run Manifest，不建立平行 provenance 系统。
-- 展示层只投影机器结果，不自行重算、填补或隐藏 unknown。
+- 展示层只投影机器结果，不自行重算或隐藏 Authority unknown；所有非空 Report Values 必须先进入同一机器结果，再投影到 HTML/JSON/CSV。
 
 ## 6. 未解决、不能猜测的 unknown
 
@@ -194,7 +194,7 @@ profile 的 P80/P95 或固定 Shape 数，只属于各自实验或 profile，MUS
 - 第二真实硬件 cohort 的生产验收结果；
 - CI 频率、retention、签名、审批和真实硬件门禁 policy 的具体值。
 
-这些 unknown 可以由后续 decision ticket 解决。实现不得在代码中放置一个未获批准的全局默认值。
+这些 Authority unknown 可以由后续 decision ticket 解决。实现不得在代码中放置一个未获批准的全局默认值；报告降级策略必须按 ADR 0038 版本化、可重放并与 Authority Result 分离。
 
 ## 7. Fixture 与生产证据边界
 
@@ -231,8 +231,8 @@ versions，执行诊断后读取机器结果与同源报告。测试只断言外
 | CT-015 | 慢样本不能确认 bug；直接可复现 correctness/contract failure 才 confirmed bug | DIA-009 |
 | CT-016 | suspected regression policy 缺失时不自动 emit，保留 evidence 并 fail closed | DIA-010 |
 | CT-017 | 相同 Bundle+policy 结果确定；篡改 digest 失败；新 run/version 不覆盖旧结果 | DEB-001..004 |
-| CT-018 | 机器结果与报告同源；四轴、domain/unknown、Top 10、gates、residual、cohort、lane 可下钻 | BND-001, DIA-004, DEB-002..004 |
-| CT-019 | 缺 policy/version 或输入标记 prototype-only 时拒绝 promotion；unknown 不被默认值补全 | GOV-001..003 |
+| CT-018 | 机器结果与 HTML/JSON/CSV 同源；四轴、Authority unknown、Report Values、Evidence Grade、Top 10、gates、residual、cohort、lane 可下钻 | BND-001, DIA-004, DEB-002..004 |
+| CT-019 | 缺 policy/version 或输入标记 prototype-only 时拒绝 promotion；Authority unknown 不被默认值覆盖，降级 Report Value 不改变 promotion 状态 | GOV-001..003 |
 
 ### MUST 到执行门的完整映射
 

@@ -353,6 +353,30 @@ _Avoid_: Scalar result, arbitrary percentage breakdown
 An evidence-backed classification and decomposition of prediction-versus-observation discrepancy across semantic, cost, backend, scheduling, observation, and environment causes.
 _Avoid_: Uniformly distributed residual, calibration update
 
+**Report Value**:
+A numeric performance quantity shown for iteration together with its provenance, evidence stage, uncertainty, and permitted use; displaying it does not promote it to authoritative evidence.
+_Avoid_: Unlabeled estimate, filled unknown, authoritative value
+
+**Observation-side Degraded Estimate**:
+A Report Value attributed to the observation side from weaker direct evidence, an explicit proxy, or a declared allocation method when a directly attributable component observation is unavailable.
+_Avoid_: Observed Value, zero fill, hidden imputation
+
+**Evidence Grade**:
+An ordered A–D classification attached to every Report Value: authoritative evidence, reproducible direct measurement, proxy derivation, or model-degraded estimate; the grade declares permitted use without changing authority status.
+_Avoid_: Confidence percentage, authority status, quality score without usage semantics
+
+**Generation Stage**:
+The named provenance stage that produced a Report Value, such as resource modeling, implementation prediction, Operator Frontier, schedule composition, baseline measurement, diagnostic attribution, or independent holdout.
+_Avoid_: Evidence Grade, pipeline status, generic source
+
+**Exclusive E2E Contribution**:
+A component's non-duplicated allocation of one side's E2E duration, counted exactly once so all components plus the explicit residual reconcile to the E2E total.
+_Avoid_: Inclusive parent duration, overlapped duration counted twice, raw kernel sum
+
+**Exploratory Gap**:
+A numeric prediction-versus-observation-side difference for which at least one Report Value is Evidence Grade B, C, or D; it forms an iteration hypothesis but is not an acceptance error.
+_Avoid_: Prediction error, acceptance gap, confirmed regression
+
 **Deployment Intent**:
 User-supplied constraints that associate selected workload or model scopes with execution strategies, placement requirements, and deployable service policies.
 _Avoid_: Global strategy, global hardware configuration
