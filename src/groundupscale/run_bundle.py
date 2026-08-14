@@ -2400,6 +2400,7 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
             try:
                 from groundupscale.gap_report import (
                     compose_gap_report,
+                    render_gap_report_csv,
                     render_gap_report_html,
                 )
 
@@ -2423,6 +2424,40 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ]:
                     failures.append("E2E gap report lineage mismatch")
 
+                if source.get("schema") == (
+                    "groundupscale.dev/e2e-gap-report-input/v1alpha2"
+                ):
+                    csv_entry = next(
+                        (
+                            artifact
+                            for artifact in artifacts
+                            if isinstance(artifact, dict)
+                            and artifact.get("role") == "e2e-components-csv"
+                        ),
+                        None,
+                    )
+                    if not isinstance(csv_entry, dict):
+                        failures.append("missing required artifact role: e2e-components-csv")
+                    else:
+                        try:
+                            actual_csv = (root / str(csv_entry["path"])).read_text(
+                                encoding="utf-8"
+                            )
+                            expected_csv = render_gap_report_csv(expected)
+                        except (OSError, UnicodeDecodeError, ValueError) as error:
+                            failures.append(
+                                f"invalid E2E gap report CSV projection: {error}"
+                            )
+                        else:
+                            if actual_csv != expected_csv:
+                                failures.append(
+                                    "E2E gap report CSV projection mismatch"
+                                )
+                            if csv_entry.get("inputs") != [
+                                paths_by_role.get("e2e-gap-report")
+                            ]:
+                                failures.append("E2E gap report lineage mismatch")
+
                 source_entry = next(
                     (
                         artifact
@@ -2438,13 +2473,81 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                     failures.append("E2E gap report lineage mismatch")
                 locked_sources = source.get("source_bundles")
                 manifest_sources = manifest.get("source_bundles")
-                if manifest_sources is not None:
+                if (
+                    source.get("schema")
+                    == "groundupscale.dev/e2e-gap-report-input/v1alpha2"
+                    or manifest_sources is not None
+                ):
                     verify_locked_sources(
                         locked_sources,
                         manifest_sources,
                         label="E2E gap report",
                         require_nonempty=True,
                     )
+                if source.get("schema") == (
+                    "groundupscale.dev/e2e-gap-report-input/v1alpha2"
+                ):
+                    try:
+                        from groundupscale.gap_report import (
+                            derive_tiered_iteration_report,
+                        )
+
+                        replayed_iteration = derive_tiered_iteration_report(
+                            source, root
+                        )
+                    except (OSError, UnicodeDecodeError, ValueError) as error:
+                        failures.append(
+                            f"E2E gap report source replay failed: {error}"
+                        )
+                    else:
+                        if source.get("iteration_report") != replayed_iteration:
+                            failures.append(
+                                "E2E gap report source replay mismatch"
+                            )
+                    superseded = source.get("supersedes")
+                    if (
+                        not isinstance(superseded, list)
+                        or len(superseded) != 1
+                        or manifest.get("supersedes") != superseded
+                    ):
+                        failures.append("E2E gap report supersession mismatch")
+                    else:
+                        record = superseded[0]
+                        if not isinstance(record, dict):
+                            failures.append("E2E gap report supersession mismatch")
+                        else:
+                            try:
+                                previous_root = (
+                                    root / str(record.get("path"))
+                                ).resolve()
+                                previous_manifest_path = (
+                                    previous_root / "run.manifest.json"
+                                )
+                                previous_manifest = json.loads(
+                                    previous_manifest_path.read_text(
+                                        encoding="utf-8"
+                                    )
+                                )
+                            except (
+                                OSError,
+                                UnicodeDecodeError,
+                                json.JSONDecodeError,
+                            ):
+                                failures.append(
+                                    "E2E gap report supersession is not resolvable"
+                                )
+                            else:
+                                if (
+                                    previous_manifest.get("run_id")
+                                    != record.get("run_id")
+                                    or _sha256(previous_manifest_path)
+                                    != record.get("manifest_sha256")
+                                    or verify_run_bundle(previous_root).get("passed")
+                                    is not True
+                                ):
+                                    failures.append(
+                                        "E2E gap report supersession mismatch"
+                                    )
 
     if final_hardware_acceptance:
         source = documents_by_role.get("final-hardware-acceptance-input")

@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import argparse
+from datetime import UTC, datetime
 from hashlib import sha256
 import json
 from pathlib import Path
 
-from groundupscale.gap_report import write_gap_report_bundle
+from groundupscale.gap_report import (
+    derive_tiered_iteration_report,
+    write_gap_report_bundle,
+)
 from groundupscale.run_bundle import verify_run_bundle
 
 
@@ -20,6 +25,16 @@ OBSERVED_RUN = (
     ROOT
     / "goal_process/issue-47-observed-decomposition/evidence/runs"
     / "issue47-ascend-observed-decomposition-20260813-v1"
+)
+MODEL_RUN = (
+    ROOT
+    / "goal_process/issue-30-ascend-transformer-demo/evidence/runs"
+    / "ascend-910b2-transformer-demo-20260811-v1"
+)
+LEGACY_REPORT_RUN = (
+    ROOT
+    / "goal_process/issue-49-e2e-gap-report/evidence/runs"
+    / "issue49-20260814T0345Z-e2e-gap-report-v6"
 )
 
 
@@ -38,8 +53,20 @@ def _manifest_source(run: Path) -> dict[str, object]:
         "bundle_kind": manifest["bundle_kind"],
         "manifest_sha256": sha256(manifest_path.read_bytes()).hexdigest(),
         "verification_passed": True,
-        "evidence_ref": f"run://{manifest['run_id']}",
+        "evidence_ref": (
+            f"run://{manifest['run_id']}@sha256:"
+            f"{sha256(manifest_path.read_bytes()).hexdigest()}"
+        ),
         "path": str(run.relative_to(ROOT)),
+    }
+
+
+def _artifact_contract(run: Path, relative: str) -> dict[str, object]:
+    payload = run / relative
+    return {
+        "run_id": _load(run / "run.manifest.json")["run_id"],
+        "artifact_path": relative,
+        "artifact_sha256": sha256(payload.read_bytes()).hexdigest(),
     }
 
 
@@ -47,10 +74,7 @@ def build_document() -> dict[str, object]:
     predicted = _load(PREDICTED_RUN / "comparison/model-e2e-frontier.json")
     observed = _load(OBSERVED_RUN / "observation/observed-decomposition.json")
     identity = observed["identity"]
-    issue30_run = (
-        ROOT / "goal_process/issue-30-ascend-transformer-demo/evidence/runs"
-        / "ascend-910b2-transformer-demo-20260811-v1"
-    )
+    issue30_run = MODEL_RUN
     issue30_contract = _load(issue30_run / "resolved/execution-contract.json")
     issue30_benchmark = _load(issue30_run / "observation/raw/benchmark.json")
     issue30_case = next(
@@ -71,6 +95,7 @@ def build_document() -> dict[str, object]:
     report_identity = {
         "case": identity["benchmark_case"],
         "shape": identity["shape"],
+        "dtype": issue30_contract["dtype"],
         "candidate_id": identity["candidate_id"],
         "hardware_cohort": identity["hardware_cohort"],
         "completion_boundary": identity["completion_boundary"],
@@ -132,8 +157,8 @@ def build_document() -> dict[str, object]:
         }
         for index, leaf in enumerate(observed_decomposition.get("leaves", []))
     ]
-    return {
-        "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha1",
+    document: dict[str, object] = {
+        "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha2",
         "identity": report_identity,
         "policy": {
             "policy_id": "issue49-e2e-gap-materiality-v1",
@@ -188,14 +213,90 @@ def build_document() -> dict[str, object]:
         "source_bundles": [
             _manifest_source(PREDICTED_RUN),
             _manifest_source(OBSERVED_RUN),
+            _manifest_source(MODEL_RUN),
+        ],
+        "iteration_report_derivation": {
+            "schema": "groundupscale.dev/e2e-gap-report-value-derivation/v1alpha1",
+            "report_policy": {
+                "policy_id": "tiered-report-values-v1",
+                "version": "1",
+                "grade_minimum_intervals": {
+                    "B": [0.85, 1.15],
+                    "C": [0.70, 1.30],
+                    "D": [0.50, 2.00],
+                },
+            },
+            "prediction_model": {
+                "policy_id": "serialized-resource-model-with-dispatch-floor-v1",
+                "version": "1",
+                "compute_efficiency": 0.50,
+                "memory_efficiency": 0.50,
+                "dispatch_floor_ns": 15_000.0,
+                "schedule": "serialized-unfused",
+                "purpose": "iteration-prior-only",
+            },
+            "observation_component_model": {
+                "policy_id": "scale-predicted-weights-to-observed-e2e-v1",
+                "version": "1",
+                "purpose": "diagnostic-attribution-only",
+            },
+            "artifacts": {
+                "cost_ir": _artifact_contract(MODEL_RUN, "ir/cost.ir.json"),
+                "hardware_backend": _artifact_contract(
+                    MODEL_RUN, "prediction/hardware-backend.json"
+                ),
+                "baseline_observation": _artifact_contract(
+                    OBSERVED_RUN, "observation/observed-decomposition.json"
+                ),
+                "execution_contract": _artifact_contract(
+                    MODEL_RUN, "resolved/execution-contract.json"
+                ),
+                "schedule_authority": _artifact_contract(
+                    PREDICTED_RUN, "comparison/model-e2e-frontier.json"
+                ),
+            },
+        },
+        "supersedes": [
+            {
+                "run_id": "issue49-20260814T0345Z-e2e-gap-report-v6",
+                "path": "../issue49-20260814T0345Z-e2e-gap-report-v6",
+                "manifest_sha256": sha256(
+                    (LEGACY_REPORT_RUN / "run.manifest.json").read_bytes()
+                ).hexdigest(),
+            }
         ],
     }
+    document["iteration_report"] = derive_tiered_iteration_report(document, ROOT)
+    return document
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="一键生成两层 Transformer 中文预测—实测报告"
+    )
+    parser.add_argument(
+        "--run-id",
+        default=(
+            "issue49-"
+            f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%S%fZ')}-"
+            "e2e-gap-report"
+        ),
+        help="唯一 Run Bundle ID；默认使用当前 UTC 时间",
+    )
+    parser.add_argument(
+        "--artifact-store",
+        type=Path,
+        default=Path(__file__).parent / "evidence",
+    )
+    args = parser.parse_args()
     destination = write_gap_report_bundle(
-        Path(__file__).parent / "evidence",
-        run_id="issue49-20260814T0345Z-e2e-gap-report-v6",
+        args.artifact_store,
+        run_id=args.run_id,
         document=build_document(),
     )
+    verification = verify_run_bundle(destination)
+    if verification.get("passed") is not True:
+        raise RuntimeError(
+            f"generated report failed public verification: {verification}"
+        )
     print(destination)

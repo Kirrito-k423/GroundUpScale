@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from hashlib import sha256
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
+import shutil
 
 import pytest
 
 from groundupscale.gap_report import (
     GapReportError,
     compose_gap_report,
+    derive_tiered_iteration_report,
     render_gap_report_html,
     write_gap_report_bundle,
 )
@@ -45,6 +50,7 @@ def _input() -> dict[str, object]:
         "identity": {
             "case": "two-layer-prefill",
             "shape": [1, 512, 512],
+            "dtype": "float32",
             "candidate_id": "eager-v1",
             "hardware_cohort": "ascend-test",
             "completion_boundary": "device-event-completion",
@@ -62,6 +68,7 @@ def _input() -> dict[str, object]:
         "predicted": {
             "identity": {
                 "case": "two-layer-prefill", "shape": [1, 512, 512],
+                "dtype": "float32",
                 "candidate_id": "eager-v1", "hardware_cohort": "ascend-test",
                 "completion_boundary": "device-event-completion",
             },
@@ -77,6 +84,7 @@ def _input() -> dict[str, object]:
         "observed": {
             "identity": {
                 "case": "two-layer-prefill", "shape": [1, 512, 512],
+                "dtype": "float32",
                 "candidate_id": "eager-v1", "hardware_cohort": "ascend-test",
                 "completion_boundary": "device-event-completion",
             },
@@ -121,6 +129,68 @@ def _unavailable_input() -> dict[str, object]:
     return document
 
 
+def _tiered_iteration_input() -> dict[str, object]:
+    document = _unavailable_input()
+    document["schema"] = "groundupscale.dev/e2e-gap-report-input/v1alpha2"
+    document["source_bundles"] = [
+        {
+            "run_id": "synthetic-contract",
+            "bundle_kind": "fixture",
+            "path": "fixtures/synthetic-contract",
+            "manifest_sha256": "c" * 64,
+            "verification_passed": True,
+        }
+    ]
+    predicted_items = [
+        {
+            "stable_path": f"semantic/model/leaf_{index:02d}",
+            "operation_class": "MatMul",
+            "duration_ns": float(120 - index * 5),
+            "evidence_grade": "D",
+            "generation_stage": "resource-model",
+            "method": "cost-demand-with-conservative-efficiency",
+            "uncertainty_interval_ns": [float(60 - index * 2.5), float(240 - index * 10)],
+            "evidence_refs": [f"run://prediction@sha256:{'a' * 64}#p{index}"],
+            "accounting_interval": [index * 10, index * 10 + 10],
+        }
+        for index in range(12)
+    ]
+    predicted_e2e = sum(item["duration_ns"] for item in predicted_items)
+    document["iteration_report"] = {
+        "policy": {
+            "policy_id": "tiered-report-values-v1",
+            "version": "1",
+            "grade_minimum_intervals": {
+                "B": [0.85, 1.15],
+                "C": [0.70, 1.30],
+                "D": [0.50, 2.00],
+            },
+        },
+        "predicted": {
+            "e2e_duration_ns": predicted_e2e,
+            "evidence_grade": "D",
+            "generation_stage": "resource-model",
+            "method": "cost-demand-with-conservative-efficiency",
+            "uncertainty_interval_ns": [predicted_e2e * 0.5, predicted_e2e * 2.0],
+            "items": predicted_items,
+            "residual": {
+                "label": "框架/调度/未归因",
+                "duration_ns": 0.0,
+            },
+        },
+        "observed": {
+            "e2e_duration_ns": 1920.0,
+            "evidence_grade": "B",
+            "generation_stage": "baseline-measurement",
+            "method": "benchmark-median",
+            "uncertainty_interval_ns": [1632.0, 2208.0],
+            "component_method": "scale-predicted-weights-to-observed-e2e",
+            "evidence_refs": [f"run://observation@sha256:{'b' * 64}"],
+        },
+    }
+    return document
+
+
 def test_compose_selects_each_side_independently_and_joins_exact_union() -> None:
     report = compose_gap_report(_input())
 
@@ -145,6 +215,43 @@ def test_compose_selects_each_side_independently_and_joins_exact_union() -> None
     assert edge["ratio"] == pytest.approx(210 / 145)
     assert edge["predicted_evidence_refs"] == [f"run://prediction@sha256:{'a' * 64}#p11"]
     assert edge["observed_evidence_refs"] == [f"run://observation@sha256:{'b' * 64}#o11"]
+
+
+def test_unknown_authority_still_publishes_nonempty_tiered_iteration_values() -> None:
+    report = compose_gap_report(_tiered_iteration_input())
+
+    assert report["status"] == "structured-unknown"
+    assert report["iteration_status"] == "numeric-report-values-available"
+    assert report["report_values"]["predicted"]["e2e_duration_ns"] > 0
+    assert report["report_values"]["observed"]["e2e_duration_ns"] == 1920.0
+    assert report["report_values"]["predicted"]["evidence_grade"] == "D"
+    assert report["report_values"]["observed"]["evidence_grade"] == "B"
+    assert len(report["report_values"]["predicted"]["top10"]) == 10
+    assert len(report["report_values"]["observed"]["top10"]) == 10
+    assert report["report_values"]["predicted"]["reconciliation"]["share_total"] == 1.0
+    assert report["report_values"]["observed"]["reconciliation"]["share_total"] == 1.0
+    assert all(row["predicted_time_ns"] is not None for row in report["iteration_gap_table"])
+    assert all(row["observed_time_ns"] is not None for row in report["iteration_gap_table"])
+    assert report["iteration_metrics"]["comparison_kind"] == "exploratory-gap"
+    assert report["iteration_metrics"]["e2e_absolute_gap_ns"] is not None
+
+    html = render_gap_report_html(report)
+    assert "<title>两层 Transformer 预测—实测迭代报告</title>" in html
+    assert "探索性差异" in html
+    assert "预测侧 TOP10" in html
+    assert "实测侧 TOP10" in html
+    assert "证据等级与适用范围" in html
+    assert "模块汇总" in html
+    assert "不确定区间" in html
+    assert "第1层 / 注意力" in html or "其他组件" in html
+    assert "框架/调度/未归因" in html
+
+    promoted = _tiered_iteration_input()
+    promoted["iteration_report"]["predicted"]["permitted_use"] = (  # type: ignore[index]
+        "acceptance-and-calibration"
+    )
+    with pytest.raises(GapReportError, match="grade-permitted-use"):
+        compose_gap_report(promoted)
 
 
 def test_reconciliation_metrics_and_diagnosis_are_policy_gated() -> None:
@@ -244,6 +351,75 @@ def test_bundle_is_immutable_replayable_and_tamper_detected(tmp_path: Path) -> N
     verification = verify_run_bundle(run)
     assert verification["passed"] is False
     assert "digest mismatch: comparison/e2e-gap-report.json" in verification["failures"]
+
+
+def test_tiered_bundle_requires_locked_replay_contract(tmp_path: Path) -> None:
+    with pytest.raises(GapReportError, match="replay-contract-required"):
+        write_gap_report_bundle(
+            tmp_path,
+            run_id="issue49-test-tiered-gap-report-v2",
+            document=_tiered_iteration_input(),
+        )
+
+
+def test_published_tiered_values_replay_frozen_cost_and_observation_sources(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    builder_path = (
+        root
+        / "goal_process/issue-49-e2e-gap-report/build_gap_report_bundle.py"
+    )
+    spec = importlib.util.spec_from_file_location("issue49_gap_builder", builder_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    document = module.build_document()
+
+    replayed = derive_tiered_iteration_report(document, root)
+    assert document["iteration_report"] == replayed
+    assert len(replayed["predicted"]["items"]) == 52
+    assert replayed["predicted"]["evidence_grade"] == "D"
+    assert replayed["observed"]["evidence_grade"] == "B"
+    assert replayed["observed"]["e2e_duration_ns"] == 1_921_530.0
+
+    tampered = deepcopy(document)
+    tampered["iteration_report"]["predicted"]["items"][0]["duration_ns"] += 1  # type: ignore[index]
+    with pytest.raises(GapReportError, match="source-replay-mismatch"):
+        write_gap_report_bundle(
+            tmp_path,
+            run_id="issue49-tampered-tiered-report-v1",
+            document=tampered,
+        )
+
+    wrong_identity = deepcopy(document)
+    wrong_identity["identity"]["hardware_cohort"] = "forged-cohort"  # type: ignore[index]
+    with pytest.raises(GapReportError, match="identity-mismatch"):
+        derive_tiered_iteration_report(wrong_identity, root)
+
+    wrong_policy = deepcopy(document)
+    wrong_policy["iteration_report_derivation"]["observation_component_model"] = {  # type: ignore[index]
+        "policy_id": "lie",
+        "version": "999",
+        "purpose": "acceptance",
+    }
+    with pytest.raises(GapReportError, match="observation-component-model"):
+        derive_tiered_iteration_report(wrong_policy, root)
+
+    forged_authority = deepcopy(document)
+    forged_authority["predicted"]["items"][0]["stable_path"] = "forged/path"  # type: ignore[index]
+    with pytest.raises(GapReportError, match="predicted-authority-replay"):
+        derive_tiered_iteration_report(forged_authority, root)
+
+    forged_provenance = deepcopy(document)
+    forged_provenance["predicted"]["evidence_refs"] = ["run://forged"]  # type: ignore[index]
+    with pytest.raises(GapReportError, match="predicted-authority-replay"):
+        derive_tiered_iteration_report(forged_provenance, root)
+
+    suppressed_measurement = deepcopy(document)
+    suppressed_measurement["observed"]["required_next_measurement"] = "无需补测"  # type: ignore[index]
+    with pytest.raises(GapReportError, match="observed-authority-replay"):
+        derive_tiered_iteration_report(suppressed_measurement, root)
 
 
 def test_rejects_inclusive_parent_mixed_with_descendant_as_additive_item() -> None:
@@ -347,12 +523,80 @@ def test_published_authority_recursively_verifies_locked_sources() -> None:
     verification = verify_run_bundle(run)
 
     assert verification["passed"] is True
+    assert sha256((run / "run.manifest.json").read_bytes()).hexdigest() == (
+        "d582877c0f095e5a8a918a28e2888c71ce1b28ea7746738cac8f62fbc7f1ea10"
+    )
+    assert sha256((run / "reports/report.html").read_bytes()).hexdigest() == (
+        "36fdc7a22cfafd7065577e582a11948204fa44eb3e786e78c0f8f9f71659b2c4"
+    )
     manifest = json.loads((run / "run.manifest.json").read_text())
     assert [source["run_id"] for source in manifest["source_bundles"]] == [
         "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
         "issue47-ascend-observed-decomposition-20260813-v1",
     ]
     assert all(source["verification_passed"] for source in manifest["source_bundles"])
+
+
+def test_published_chinese_iteration_report_has_complete_numeric_components() -> None:
+    root = Path(__file__).resolve().parents[1]
+    run = (
+        root
+        / "goal_process/issue-49-e2e-gap-report/evidence/runs"
+        / "issue49-20260814T0730Z-e2e-gap-report-v12"
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    manifest = json.loads((run / "run.manifest.json").read_text())
+    assert {artifact["role"] for artifact in manifest["artifacts"]} == {
+        "e2e-gap-report-input",
+        "e2e-gap-report",
+        "e2e-components-csv",
+        "html-report",
+    }
+    report = json.loads(
+        (run / "comparison/e2e-gap-report.json").read_text(encoding="utf-8")
+    )
+    assert report["status"] == "structured-unknown"
+    assert report["iteration_status"] == "numeric-report-values-available"
+    assert report["report_values"]["predicted"]["e2e_duration_ns"] > 0
+    assert report["report_values"]["observed"]["e2e_duration_ns"] == 1_921_530.0
+    assert len(report["report_values"]["predicted"]["all_items"]) == 52
+    assert len(report["report_values"]["observed"]["all_items"]) == 52
+    assert all(
+        item["duration_ns"] is not None
+        for side in report["report_values"].values()
+        for item in side["all_items"]
+    )
+    assert len(
+        (run / "comparison/e2e-components.csv").read_text().splitlines()
+    ) == 53
+    assert (run / "comparison/e2e-components.csv").read_text().splitlines()[
+        0
+    ].startswith(
+        "stable_path,operation_class,selected_in_top10_union,predicted_time_ns"
+    )
+    html_before_payload = (
+        (run / "reports/report.html")
+        .read_text(encoding="utf-8")
+        .split('<script type="application/json"', 1)[0]
+    )
+    assert "实测侧 TOP10（降级估计）" in html_before_payload
+    assert ">unavailable<" not in html_before_payload
+    assert ">unknown<" not in html_before_payload
+
+    forged_run = run.parent / ".pytest-v12-missing-manifest-sources"
+    assert not forged_run.exists()
+    try:
+        shutil.copytree(run, forged_run)
+        forged_manifest_path = forged_run / "run.manifest.json"
+        forged_manifest = json.loads(forged_manifest_path.read_text())
+        forged_manifest.pop("source_bundles")
+        forged_manifest_path.write_text(json.dumps(forged_manifest))
+        verification = verify_run_bundle(forged_run)
+        assert verification["passed"] is False
+        assert "E2E gap report source lineage mismatch" in verification["failures"]
+    finally:
+        shutil.rmtree(forged_run, ignore_errors=True)
 
 
 def test_module_cli_publishes_same_machine_and_human_projection(tmp_path: Path) -> None:
@@ -377,3 +621,35 @@ def test_module_cli_publishes_same_machine_and_human_projection(tmp_path: Path) 
     )
 
     assert verify_run_bundle(tmp_path / "runs/issue49-cli-contract-v1")["passed"] is True
+
+
+def test_two_layer_demo_one_click_builder_allocates_unique_run_id() -> None:
+    root = Path(__file__).resolve().parents[1]
+    run: Path | None = None
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(
+                    root
+                    / "goal_process/issue-49-e2e-gap-report/build_gap_report_bundle.py"
+                ),
+            ],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        run = Path(completed.stdout.strip())
+        assert run.parent == (
+            root / "goal_process/issue-49-e2e-gap-report/evidence/runs"
+        ).resolve()
+        assert run.name.startswith("issue49-")
+        assert verify_run_bundle(run)["passed"] is True
+        assert "两层 Transformer 预测—实测迭代报告" in (
+            run / "reports/report.html"
+        ).read_text(encoding="utf-8")
+    finally:
+        if run is not None and run.is_dir():
+            shutil.rmtree(run)
