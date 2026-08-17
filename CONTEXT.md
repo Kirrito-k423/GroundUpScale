@@ -357,12 +357,20 @@ _Avoid_: Uniformly distributed residual, calibration update
 A numeric performance quantity shown for iteration together with its provenance, evidence stage, uncertainty, and permitted use; displaying it does not promote it to authoritative evidence.
 _Avoid_: Unlabeled estimate, filled unknown, authoritative value
 
-**Observation-side Degraded Estimate**:
-A Report Value attributed to the observation side from weaker direct evidence, an explicit proxy, or a declared allocation method when a directly attributable component observation is unavailable.
-_Avoid_: Observed Value, zero fill, hidden imputation
+**Measured Value**:
+A Report Value derived only from directly recorded samples, device events, or a replayable device timeline for the stated identity and Completion Boundary; model allocation and proxy scaling are never Measured Values.
+_Avoid_: Observation-side estimate, proxy observation, predicted value in a measured column
+
+**Measured E2E Residual**:
+The measured E2E duration minus non-overlapping directly measured component contributions; when no component timing is directly measured, it equals the full measured E2E and remains unattributed rather than being allocated by a model.
+_Avoid_: Estimated component, hidden residual, model-weight allocation
+
+**Predicted Attribution**:
+A model-derived allocation of predicted E2E across components, including degraded estimates used to prioritize future measurements; it belongs only to the prediction side.
+_Avoid_: Measured attribution, observation-side degraded estimate
 
 **Evidence Grade**:
-An ordered A–D classification attached to every Report Value: authoritative evidence, reproducible direct measurement, proxy derivation, or model-degraded estimate; the grade declares permitted use without changing authority status.
+An ordered A–D classification attached to every Report Value: authoritative evidence, reproducible direct measurement, proxy prediction, or model-degraded prediction; measured-side values are restricted to A or B.
 _Avoid_: Confidence percentage, authority status, quality score without usage semantics
 
 **Generation Stage**:

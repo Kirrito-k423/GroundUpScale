@@ -158,13 +158,13 @@ def _tiered_iteration_input() -> dict[str, object]:
     predicted_e2e = sum(item["duration_ns"] for item in predicted_items)
     document["iteration_report"] = {
         "policy": {
-            "policy_id": "tiered-report-values-v1",
-            "version": "1",
+            "policy_id": "direct-measurement-observation-v2",
+            "version": "2",
             "grade_minimum_intervals": {
-                "B": [0.85, 1.15],
                 "C": [0.70, 1.30],
                 "D": [0.50, 2.00],
             },
+            "measured_uncertainty": "recorded-sample-statistics-only",
         },
         "predicted": {
             "e2e_duration_ns": predicted_e2e,
@@ -182,9 +182,20 @@ def _tiered_iteration_input() -> dict[str, object]:
             "e2e_duration_ns": 1920.0,
             "evidence_grade": "B",
             "generation_stage": "baseline-measurement",
-            "method": "benchmark-median",
-            "uncertainty_interval_ns": [1632.0, 2208.0],
-            "component_method": "scale-predicted-weights-to-observed-e2e",
+            "method": "benchmark-median-with-iqr",
+            "uncertainty_interval_ns": [1900.0, 1940.0],
+            "component_method": "direct-measurements-only",
+            "items": [],
+            "residual": {
+                "label": "未分解实测残差",
+                "duration_ns": 1920.0,
+                "evidence_grade": "B",
+                "generation_stage": "baseline-measurement",
+                "method": "measured-e2e-minus-direct-components",
+                "uncertainty_interval_ns": [1900.0, 1940.0],
+                "permitted_use": "iteration-baseline-only",
+                "evidence_refs": [f"run://observation@sha256:{'b' * 64}"],
+            },
             "evidence_refs": [f"run://observation@sha256:{'b' * 64}"],
         },
     }
@@ -217,21 +228,40 @@ def test_compose_selects_each_side_independently_and_joins_exact_union() -> None
     assert edge["observed_evidence_refs"] == [f"run://observation@sha256:{'b' * 64}#o11"]
 
 
-def test_unknown_authority_still_publishes_nonempty_tiered_iteration_values() -> None:
+def test_only_direct_measurements_enter_observed_values() -> None:
     report = compose_gap_report(_tiered_iteration_input())
 
     assert report["status"] == "structured-unknown"
-    assert report["iteration_status"] == "numeric-report-values-available"
+    assert report["iteration_status"] == "prediction-and-e2e-measurement-available"
     assert report["report_values"]["predicted"]["e2e_duration_ns"] > 0
     assert report["report_values"]["observed"]["e2e_duration_ns"] == 1920.0
     assert report["report_values"]["predicted"]["evidence_grade"] == "D"
     assert report["report_values"]["observed"]["evidence_grade"] == "B"
     assert len(report["report_values"]["predicted"]["top10"]) == 10
-    assert len(report["report_values"]["observed"]["top10"]) == 10
+    assert report["report_values"]["observed"]["top10"] == []
+    assert report["report_values"]["observed"]["all_items"] == []
+    assert report["report_values"]["observed"]["reconciliation"] == {
+        "status": "reconciled",
+        "e2e_ns": 1920.0,
+        "all_components_ns": 0.0,
+        "residual_label": "未分解实测残差",
+        "residual_ns": 1920.0,
+        "residual_evidence_grade": "B",
+        "residual_generation_stage": "baseline-measurement",
+        "residual_method": "measured-e2e-minus-direct-components",
+        "residual_uncertainty_interval_ns": [1900.0, 1940.0],
+        "residual_evidence_refs": [f"run://observation@sha256:{'b' * 64}"],
+        "overlap_ns": 0.0,
+        "share_total": 1.0,
+    }
     assert report["report_values"]["predicted"]["reconciliation"]["share_total"] == 1.0
     assert report["report_values"]["observed"]["reconciliation"]["share_total"] == 1.0
-    assert all(row["predicted_time_ns"] is not None for row in report["iteration_gap_table"])
-    assert all(row["observed_time_ns"] is not None for row in report["iteration_gap_table"])
+    assert report["iteration_gap_table"] == []
+    assert len(report["prediction_measurement_priorities"]) == 10
+    assert all(
+        row["minimum_next_measurement"] == "同 Stable Path 的直接 device timing"
+        for row in report["prediction_measurement_priorities"]
+    )
     assert report["iteration_metrics"]["comparison_kind"] == "exploratory-gap"
     assert report["iteration_metrics"]["e2e_absolute_gap_ns"] is not None
 
@@ -239,7 +269,11 @@ def test_unknown_authority_still_publishes_nonempty_tiered_iteration_values() ->
     assert "<title>两层 Transformer 预测—实测迭代报告</title>" in html
     assert "探索性差异" in html
     assert "预测侧 TOP10" in html
-    assert "实测侧 TOP10" in html
+    assert "实测组成（仅直接测量）" in html
+    assert "未分解实测残差" in html
+    assert "建议优先实测" in html
+    assert "实测侧降级估计" not in html
+    assert "scale-predicted-weights-to-observed-e2e" not in html
     assert "证据等级与适用范围" in html
     assert "模块汇总" in html
     assert "不确定区间" in html
@@ -382,6 +416,13 @@ def test_published_tiered_values_replay_frozen_cost_and_observation_sources(
     assert replayed["predicted"]["evidence_grade"] == "D"
     assert replayed["observed"]["evidence_grade"] == "B"
     assert replayed["observed"]["e2e_duration_ns"] == 1_921_530.0
+    assert replayed["observed"]["uncertainty_interval_ns"] == [
+        1_911_720.0,
+        1_924_885.0,
+    ]
+    assert replayed["observed"]["component_method"] == "direct-measurements-only"
+    assert replayed["observed"]["items"] == []
+    assert replayed["observed"]["residual"]["duration_ns"] == 1_921_530.0
 
     tampered = deepcopy(document)
     tampered["iteration_report"]["predicted"]["items"][0]["duration_ns"] += 1  # type: ignore[index]
@@ -405,6 +446,21 @@ def test_published_tiered_values_replay_frozen_cost_and_observation_sources(
     }
     with pytest.raises(GapReportError, match="observation-component-model"):
         derive_tiered_iteration_report(wrong_policy, root)
+
+    forged_measured_component = deepcopy(document)
+    forged_measured_component["iteration_report"]["observed"]["items"] = [  # type: ignore[index]
+        {
+            **forged_measured_component["iteration_report"]["predicted"]["items"][0],  # type: ignore[index]
+            "evidence_grade": "D",
+            "generation_stage": "diagnostic-attribution",
+        }
+    ]
+    with pytest.raises(GapReportError, match="source-replay-mismatch"):
+        write_gap_report_bundle(
+            tmp_path,
+            run_id="issue49-forged-observed-component-v2",
+            document=forged_measured_component,
+        )
 
     forged_authority = deepcopy(document)
     forged_authority["predicted"]["items"][0]["stable_path"] = "forged/path"  # type: ignore[index]
@@ -599,6 +655,38 @@ def test_published_chinese_iteration_report_has_complete_numeric_components() ->
         shutil.rmtree(forged_run, ignore_errors=True)
 
 
+def test_published_direct_measurement_report_never_estimates_observed_components() -> None:
+    root = Path(__file__).resolve().parents[1]
+    run = (
+        root
+        / "goal_process/issue-49-e2e-gap-report/evidence/runs"
+        / "issue49-20260817T025339Z-e2e-gap-report-v13"
+    )
+
+    assert verify_run_bundle(run)["passed"] is True
+    report = json.loads(
+        (run / "comparison/e2e-gap-report.json").read_text(encoding="utf-8")
+    )
+    observed = report["report_values"]["observed"]
+    assert report["schema"] == "groundupscale.dev/e2e-gap-report/v1alpha3"
+    assert observed["e2e_duration_ns"] == 1_921_530.0
+    assert observed["uncertainty_interval_ns"] == [1_911_720.0, 1_924_885.0]
+    assert observed["component_method"] == "direct-measurements-only"
+    assert observed["all_items"] == []
+    assert observed["top10"] == []
+    assert observed["reconciliation"]["residual_ns"] == 1_921_530.0
+    assert observed["reconciliation"]["share_total"] == 1.0
+    assert report["iteration_gap_table"] == []
+    assert len(report["prediction_measurement_priorities"]) == 10
+    html = (run / "reports/report.html").read_text(encoding="utf-8")
+    assert "未分解实测残差" in html
+    assert "实测侧降级估计" not in html
+    assert "scale-predicted-weights-to-observed-e2e" not in html
+    csv_text = (run / "comparison/e2e-components.csv").read_text(encoding="utf-8")
+    assert csv_text.count("not-measured") == 52
+    assert csv_text.count("measured-residual") == 1
+
+
 def test_module_cli_publishes_same_machine_and_human_projection(tmp_path: Path) -> None:
     document = _unavailable_input()
     input_path = tmp_path / "input.json"
@@ -647,9 +735,31 @@ def test_two_layer_demo_one_click_builder_allocates_unique_run_id() -> None:
         ).resolve()
         assert run.name.startswith("issue49-")
         assert verify_run_bundle(run)["passed"] is True
-        assert "两层 Transformer 预测—实测迭代报告" in (
-            run / "reports/report.html"
-        ).read_text(encoding="utf-8")
+        report = json.loads(
+            (run / "comparison/e2e-gap-report.json").read_text(encoding="utf-8")
+        )
+        assert report["schema"] == "groundupscale.dev/e2e-gap-report/v1alpha3"
+        assert len(report["report_values"]["predicted"]["all_items"]) == 52
+        assert report["report_values"]["observed"]["all_items"] == []
+        assert report["report_values"]["observed"]["reconciliation"][
+            "residual_ns"
+        ] == 1_921_530.0
+        html = (run / "reports/report.html").read_text(encoding="utf-8")
+        visible_html = html.split('<script type="application/json"', 1)[0]
+        assert "两层 Transformer 预测—实测迭代报告" in html
+        assert "实测组成（仅直接测量）" in html
+        assert "实测侧降级估计" not in html
+        assert "scale-predicted-weights-to-observed-e2e" not in html
+        assert "基线样本中位数与四分位区间" in visible_html
+        assert "实测 E2E 减去直接实测组件" in visible_html
+        assert "benchmark-median-with-iqr" not in visible_html
+        assert "measured-e2e-minus-direct-components" not in visible_html
+        csv_rows = (run / "comparison/e2e-components.csv").read_text().splitlines()
+        assert len(csv_rows) == 54
+        assert sum("not-measured" in row for row in csv_rows[1:]) == 52
+        residual_row = next(row for row in csv_rows[1:] if "measured-residual" in row)
+        assert "MeasuredE2EResidual" in residual_row
+        assert "1921530.0" in residual_row
     finally:
         if run is not None and run.is_dir():
             shutil.rmtree(run)

@@ -34,7 +34,7 @@ MODEL_RUN = (
 LEGACY_REPORT_RUN = (
     ROOT
     / "goal_process/issue-49-e2e-gap-report/evidence/runs"
-    / "issue49-20260814T0345Z-e2e-gap-report-v6"
+    / "issue49-20260814T0730Z-e2e-gap-report-v12"
 )
 
 
@@ -158,7 +158,7 @@ def build_document() -> dict[str, object]:
         for index, leaf in enumerate(observed_decomposition.get("leaves", []))
     ]
     document: dict[str, object] = {
-        "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha2",
+        "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha3",
         "identity": report_identity,
         "policy": {
             "policy_id": "issue49-e2e-gap-materiality-v1",
@@ -216,15 +216,15 @@ def build_document() -> dict[str, object]:
             _manifest_source(MODEL_RUN),
         ],
         "iteration_report_derivation": {
-            "schema": "groundupscale.dev/e2e-gap-report-value-derivation/v1alpha1",
+            "schema": "groundupscale.dev/e2e-gap-report-value-derivation/v1alpha2",
             "report_policy": {
-                "policy_id": "tiered-report-values-v1",
-                "version": "1",
+                "policy_id": "direct-measurement-observation-v2",
+                "version": "2",
                 "grade_minimum_intervals": {
-                    "B": [0.85, 1.15],
                     "C": [0.70, 1.30],
                     "D": [0.50, 2.00],
                 },
+                "measured_uncertainty": "recorded-sample-statistics-only",
             },
             "prediction_model": {
                 "policy_id": "serialized-resource-model-with-dispatch-floor-v1",
@@ -236,9 +236,9 @@ def build_document() -> dict[str, object]:
                 "purpose": "iteration-prior-only",
             },
             "observation_component_model": {
-                "policy_id": "scale-predicted-weights-to-observed-e2e-v1",
-                "version": "1",
-                "purpose": "diagnostic-attribution-only",
+                "policy_id": "direct-measurements-only-v2",
+                "version": "2",
+                "purpose": "measured-column-only",
             },
             "artifacts": {
                 "cost_ir": _artifact_contract(MODEL_RUN, "ir/cost.ir.json"),
@@ -258,8 +258,8 @@ def build_document() -> dict[str, object]:
         },
         "supersedes": [
             {
-                "run_id": "issue49-20260814T0345Z-e2e-gap-report-v6",
-                "path": "../issue49-20260814T0345Z-e2e-gap-report-v6",
+                "run_id": "issue49-20260814T0730Z-e2e-gap-report-v12",
+                "path": "../issue49-20260814T0730Z-e2e-gap-report-v12",
                 "manifest_sha256": sha256(
                     (LEGACY_REPORT_RUN / "run.manifest.json").read_bytes()
                 ).hexdigest(),

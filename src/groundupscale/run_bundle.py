@@ -2424,9 +2424,10 @@ def verify_run_bundle(path: str | Path) -> dict[str, Any]:
                 ]:
                     failures.append("E2E gap report lineage mismatch")
 
-                if source.get("schema") == (
-                    "groundupscale.dev/e2e-gap-report-input/v1alpha2"
-                ):
+                if source.get("schema") in {
+                    "groundupscale.dev/e2e-gap-report-input/v1alpha2",
+                    "groundupscale.dev/e2e-gap-report-input/v1alpha3",
+                }:
                     csv_entry = next(
                         (
                             artifact

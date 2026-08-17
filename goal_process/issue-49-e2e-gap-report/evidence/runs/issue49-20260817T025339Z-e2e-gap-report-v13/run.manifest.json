@@ -1,0 +1,85 @@
+{
+  "artifacts": [
+    {
+      "inputs": [],
+      "media_type": "application/json",
+      "path": "resolved/e2e-gap-report-input.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "e2e-gap-report-input",
+      "schema": "groundupscale.dev/e2e-gap-report-input/v1alpha3",
+      "sha256": "e79c4ed04f74e7c1c5ca8391273f625b82e36db5ddf8a70bc59cedd80392aa3b"
+    },
+    {
+      "inputs": [
+        "resolved/e2e-gap-report-input.json"
+      ],
+      "media_type": "application/json",
+      "path": "comparison/e2e-gap-report.json",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "e2e-gap-report",
+      "schema": "groundupscale.dev/e2e-gap-report/v1alpha3",
+      "sha256": "3edca7127ea0021af7d5939f3d10c3e62e59469d04d924ce530689d9274eef98"
+    },
+    {
+      "inputs": [
+        "comparison/e2e-gap-report.json"
+      ],
+      "media_type": "text/csv",
+      "path": "comparison/e2e-components.csv",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "e2e-components-csv",
+      "schema": "groundupscale.dev/e2e-components-csv/v1alpha2",
+      "sha256": "7244e09682716744ef15a7a11467c40f614a7c4131e24a75863d939e1d2808e3"
+    },
+    {
+      "inputs": [
+        "comparison/e2e-gap-report.json"
+      ],
+      "media_type": "text/html",
+      "path": "reports/report.html",
+      "produced_by": "groundupscale@0.1.0",
+      "role": "html-report",
+      "schema": "groundupscale.dev/e2e-gap-report-html/v1alpha3",
+      "sha256": "e7811f71ab724f91775cbe650d01744ac72cb367010dc46003ddbe5c2599eff4"
+    }
+  ],
+  "bundle_kind": "e2e-gap-report",
+  "hardware_cohort": "ascend-npu-23b93a89d5fecc79",
+  "producer": "groundupscale@0.1.0",
+  "run_id": "issue49-20260817T025339Z-e2e-gap-report-v13",
+  "schema": "groundupscale.dev/run-manifest/v1alpha1",
+  "source_bundles": [
+    {
+      "bundle_kind": "model-e2e-frontier",
+      "evidence_ref": "run://issue48-20260814T0002Z-schedule-frontier-unknown-v2@sha256:dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "manifest_sha256": "dd43fbd0f5ab5809a49de9bd8fac1a3b1acba0cd7fb578172b21ca878bd1d75d",
+      "path": "goal_process/issue-48-schedule-achievable-frontier/evidence/runs/issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "run_id": "issue48-20260814T0002Z-schedule-frontier-unknown-v2",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "schedule-effect-frontier",
+      "evidence_ref": "run://issue47-ascend-observed-decomposition-20260813-v1@sha256:8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "manifest_sha256": "8590bf91a159b0b2c0bb8ba25abaee1ab5180986c9c79a739cf589b68f21dfe7",
+      "path": "goal_process/issue-47-observed-decomposition/evidence/runs/issue47-ascend-observed-decomposition-20260813-v1",
+      "run_id": "issue47-ascend-observed-decomposition-20260813-v1",
+      "verification_passed": true
+    },
+    {
+      "bundle_kind": "transformer-demo",
+      "evidence_ref": "run://ascend-910b2-transformer-demo-20260811-v1@sha256:8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "manifest_sha256": "8898cc5a3f0b36dd77e7510addcd289c504dcbfbdc1768a4394787939fa802c1",
+      "path": "goal_process/issue-30-ascend-transformer-demo/evidence/runs/ascend-910b2-transformer-demo-20260811-v1",
+      "run_id": "ascend-910b2-transformer-demo-20260811-v1",
+      "verification_passed": true
+    }
+  ],
+  "status": "completed",
+  "supersedes": [
+    {
+      "manifest_sha256": "c3f1a512785d275d37afb1a448926e409e7dab3fc48b8c71ce4ee748f3b61ae5",
+      "path": "../issue49-20260814T0730Z-e2e-gap-report-v12",
+      "run_id": "issue49-20260814T0730Z-e2e-gap-report-v12"
+    }
+  ]
+}

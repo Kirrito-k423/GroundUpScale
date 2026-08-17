@@ -22,9 +22,15 @@ REPORT_SCHEMA = "groundupscale.dev/e2e-gap-report-html/v1alpha1"
 TIERED_INPUT_SCHEMA = "groundupscale.dev/e2e-gap-report-input/v1alpha2"
 TIERED_RESULT_SCHEMA = "groundupscale.dev/e2e-gap-report/v1alpha2"
 TIERED_REPORT_SCHEMA = "groundupscale.dev/e2e-gap-report-html/v1alpha2"
+DIRECT_INPUT_SCHEMA = "groundupscale.dev/e2e-gap-report-input/v1alpha3"
+DIRECT_RESULT_SCHEMA = "groundupscale.dev/e2e-gap-report/v1alpha3"
+DIRECT_REPORT_SCHEMA = "groundupscale.dev/e2e-gap-report-html/v1alpha3"
 PRODUCER = "groundupscale@0.1.0"
 TIERED_DERIVATION_SCHEMA = (
     "groundupscale.dev/e2e-gap-report-value-derivation/v1alpha1"
+)
+DIRECT_DERIVATION_SCHEMA = (
+    "groundupscale.dev/e2e-gap-report-value-derivation/v1alpha2"
 )
 
 
@@ -281,7 +287,10 @@ def derive_tiered_iteration_report(
         document.get("iteration_report_derivation"),
         "missing-iteration-report-derivation",
     )
-    if derivation.get("schema") != TIERED_DERIVATION_SCHEMA:
+    if derivation.get("schema") not in {
+        TIERED_DERIVATION_SCHEMA,
+        DIRECT_DERIVATION_SCHEMA,
+    }:
         raise GapReportError("unsupported-iteration-report-derivation")
     artifacts = _mapping(
         derivation.get("artifacts"), "missing-iteration-report-source-artifacts"
@@ -432,12 +441,21 @@ def derive_tiered_iteration_report(
         derivation.get("observation_component_model"),
         "missing-observation-component-model",
     )
-    if observation_policy != {
+    direct_measurement = observation_policy == {
+        "policy_id": "direct-measurements-only-v2",
+        "version": "2",
+        "purpose": "measured-column-only",
+    }
+    if not direct_measurement and observation_policy != {
         "policy_id": "scale-predicted-weights-to-observed-e2e-v1",
         "version": "1",
         "purpose": "diagnostic-attribution-only",
     }:
         raise GapReportError("unsupported-observation-component-model")
+    if direct_measurement != (
+        derivation.get("schema") == DIRECT_DERIVATION_SCHEMA
+    ):
+        raise GapReportError("observation-component-model-schema-mismatch")
     compute_efficiency = _number(
         model_policy.get("compute_efficiency"), "invalid-compute-efficiency"
     )
@@ -512,15 +530,29 @@ def derive_tiered_iteration_report(
     if _number(source_summary.get("median_ns"), "invalid-baseline-median") != observed_e2e:
         raise GapReportError("baseline-observation-median-mismatch")
     report_policy = derivation.get("report_policy")
-    if (
-        not isinstance(report_policy, Mapping)
-        or report_policy.get("policy_id") != "tiered-report-values-v1"
-        or report_policy.get("version") != "1"
-        or report_policy.get("grade_minimum_intervals")
-        != {"B": [0.85, 1.15], "C": [0.70, 1.30], "D": [0.50, 2.00]}
+    legacy_policy = {
+        "policy_id": "tiered-report-values-v1",
+        "version": "1",
+        "grade_minimum_intervals": {
+            "B": [0.85, 1.15],
+            "C": [0.70, 1.30],
+            "D": [0.50, 2.00],
+        },
+    }
+    direct_policy = {
+        "policy_id": "direct-measurement-observation-v2",
+        "version": "2",
+        "grade_minimum_intervals": {
+            "C": [0.70, 1.30],
+            "D": [0.50, 2.00],
+        },
+        "measured_uncertainty": "recorded-sample-statistics-only",
+    }
+    if not isinstance(report_policy, Mapping) or dict(report_policy) != (
+        direct_policy if direct_measurement else legacy_policy
     ):
         raise GapReportError("missing-iteration-report-policy")
-    return {
+    result = {
         "policy": dict(report_policy),
         "predicted": {
             "e2e_duration_ns": predicted_e2e,
@@ -544,6 +576,33 @@ def derive_tiered_iteration_report(
             "evidence_refs": [observation_ref],
         },
     }
+    if direct_measurement:
+        q1 = _number(source_summary.get("q1_ns"), "invalid-baseline-q1")
+        q3 = _number(source_summary.get("q3_ns"), "invalid-baseline-q3")
+        if not q1 <= observed_e2e <= q3:
+            raise GapReportError("invalid-baseline-iqr")
+        result["observed"] = {
+            "e2e_duration_ns": observed_e2e,
+            "evidence_grade": "B",
+            "generation_stage": "baseline-measurement",
+            "method": "benchmark-median-with-iqr",
+            "permitted_use": "iteration-baseline-only",
+            "uncertainty_interval_ns": [q1, q3],
+            "component_method": "direct-measurements-only",
+            "items": [],
+            "residual": {
+                "label": "未分解实测残差",
+                "duration_ns": observed_e2e,
+                "evidence_grade": "B",
+                "generation_stage": "baseline-measurement",
+                "method": "measured-e2e-minus-direct-components",
+                "uncertainty_interval_ns": [q1, q3],
+                "permitted_use": "iteration-baseline-only",
+                "evidence_refs": [observation_ref],
+            },
+            "evidence_refs": [observation_ref],
+        }
+    return result
 
 
 def _mapping(value: object, reason: str) -> Mapping[str, Any]:
@@ -811,7 +870,11 @@ GRADE_PERMITTED_USE = {
 
 
 def _uncertainty_interval(
-    value: object, *, duration_ns: float, grade: str
+    value: object,
+    *,
+    duration_ns: float,
+    grade: str,
+    enforce_grade_floor: bool = True,
 ) -> list[float]:
     if (
         not isinstance(value, list)
@@ -822,18 +885,21 @@ def _uncertainty_interval(
     upper = _number(value[1], "invalid-report-value-uncertainty")
     if lower > duration_ns or upper < duration_ns:
         raise GapReportError("invalid-report-value-uncertainty")
-    minimum = {
-        "A": (1.0, 1.0),
-        "B": (0.85, 1.15),
-        "C": (0.70, 1.30),
-        "D": (0.50, 2.00),
-    }[grade]
-    if lower > duration_ns * minimum[0] or upper < duration_ns * minimum[1]:
-        raise GapReportError("report-value-uncertainty-too-narrow")
+    if enforce_grade_floor:
+        minimum = {
+            "A": (1.0, 1.0),
+            "B": (0.85, 1.15),
+            "C": (0.70, 1.30),
+            "D": (0.50, 2.00),
+        }[grade]
+        if lower > duration_ns * minimum[0] or upper < duration_ns * minimum[1]:
+            raise GapReportError("report-value-uncertainty-too-narrow")
     return [lower, upper]
 
 
-def _report_value_item(value: object) -> dict[str, Any]:
+def _report_value_item(
+    value: object, *, direct_measurement: bool = False
+) -> dict[str, Any]:
     item = _mapping(value, "invalid-report-value-item")
     path = item.get("stable_path")
     grade = item.get("evidence_grade")
@@ -842,7 +908,7 @@ def _report_value_item(value: object) -> dict[str, Any]:
     if (
         not isinstance(path, str)
         or not path
-        or grade not in EVIDENCE_GRADES
+        or grade not in ({"A", "B"} if direct_measurement else EVIDENCE_GRADES)
         or stage not in GENERATION_STAGES
         or not isinstance(method, str)
         or not method
@@ -853,7 +919,10 @@ def _report_value_item(value: object) -> dict[str, Any]:
     if permitted_use != GRADE_PERMITTED_USE[str(grade)]:
         raise GapReportError("report-value-grade-permitted-use-mismatch")
     interval = _uncertainty_interval(
-        item.get("uncertainty_interval_ns"), duration_ns=duration, grade=str(grade)
+        item.get("uncertainty_interval_ns"),
+        duration_ns=duration,
+        grade=str(grade),
+        enforce_grade_floor=not direct_measurement,
     )
     accounting_interval = item.get("accounting_interval")
     if (
@@ -980,6 +1049,100 @@ def _tiered_side(
     }
 
 
+def _direct_measurement_side(
+    value: object, policy: Mapping[str, Any]
+) -> dict[str, Any]:
+    side = _mapping(value, "invalid-tiered-report-side")
+    grade = side.get("evidence_grade")
+    stage = side.get("generation_stage")
+    method = side.get("method")
+    if (
+        grade not in {"A", "B"}
+        or stage not in GENERATION_STAGES
+        or not isinstance(method, str)
+        or not method
+        or side.get("component_method") != "direct-measurements-only"
+    ):
+        raise GapReportError("invalid-direct-measurement-side")
+    e2e = _number(side.get("e2e_duration_ns"), "invalid-tiered-report-e2e")
+    permitted_use = side.get("permitted_use", GRADE_PERMITTED_USE[str(grade)])
+    if permitted_use != GRADE_PERMITTED_USE[str(grade)]:
+        raise GapReportError("report-value-grade-permitted-use-mismatch")
+    interval = _uncertainty_interval(
+        side.get("uncertainty_interval_ns"),
+        duration_ns=e2e,
+        grade=str(grade),
+        enforce_grade_floor=False,
+    )
+    raw_items = side.get("items")
+    if not isinstance(raw_items, list):
+        raise GapReportError("missing-direct-measurement-items")
+    items = [
+        _report_value_item(item, direct_measurement=True) for item in raw_items
+    ]
+    paths = [item["stable_path"] for item in items]
+    if len(paths) != len(set(paths)):
+        raise GapReportError("duplicate-tiered-report-path")
+    selected = _select(items, e2e, policy)
+    attributed = fsum(item["duration_ns"] for item in selected["all_items"])
+    residual = _mapping(
+        side.get("residual"), "missing-measured-e2e-residual"
+    )
+    residual_ns = _number(
+        residual.get("duration_ns"), "invalid-measured-e2e-residual"
+    )
+    if residual.get("label") != "未分解实测残差" or residual_ns != fsum(
+        (e2e, -attributed)
+    ):
+        raise GapReportError("measured-e2e-residual-mismatch")
+    residual_grade = residual.get("evidence_grade")
+    residual_stage = residual.get("generation_stage")
+    residual_method = residual.get("method")
+    residual_permitted_use = residual.get("permitted_use")
+    if (
+        residual_grade not in {"A", "B"}
+        or residual_grade != grade
+        or residual_stage != stage
+        or residual_method != "measured-e2e-minus-direct-components"
+        or residual_permitted_use != permitted_use
+    ):
+        raise GapReportError("invalid-measured-e2e-residual")
+    residual_interval = _uncertainty_interval(
+        residual.get("uncertainty_interval_ns"),
+        duration_ns=residual_ns,
+        grade=str(residual_grade),
+        enforce_grade_floor=False,
+    )
+    residual_refs = _refs(residual.get("evidence_refs"))
+    if not residual_refs:
+        raise GapReportError("invalid-measured-e2e-residual")
+    return {
+        "e2e_duration_ns": e2e,
+        "evidence_grade": grade,
+        "generation_stage": stage,
+        "method": method,
+        "permitted_use": permitted_use,
+        "uncertainty_interval_ns": interval,
+        "evidence_refs": _refs(side.get("evidence_refs", [])),
+        "component_method": "direct-measurements-only",
+        **selected,
+        "reconciliation": {
+            "status": "reconciled",
+            "e2e_ns": e2e,
+            "all_components_ns": attributed,
+            "residual_label": residual["label"],
+            "residual_ns": residual_ns,
+            "residual_evidence_grade": residual_grade,
+            "residual_generation_stage": residual_stage,
+            "residual_method": residual_method,
+            "residual_uncertainty_interval_ns": residual_interval,
+            "residual_evidence_refs": residual_refs,
+            "overlap_ns": 0.0,
+            "share_total": (attributed + residual_ns) / e2e,
+        },
+    }
+
+
 def _compose_tiered_report_values(
     document: Mapping[str, object], policy: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -987,24 +1150,45 @@ def _compose_tiered_report_values(
     iteration_policy = _mapping(
         iteration.get("policy"), "missing-iteration-report-policy"
     )
-    if (
-        iteration_policy.get("policy_id") != "tiered-report-values-v1"
-        or iteration_policy.get("version") != "1"
-    ):
+    policy_identity = (
+        iteration_policy.get("policy_id"), iteration_policy.get("version")
+    )
+    if policy_identity not in {
+        ("tiered-report-values-v1", "1"),
+        ("direct-measurement-observation-v2", "2"),
+    }:
         raise GapReportError("unsupported-iteration-report-policy")
     predicted = _tiered_side(iteration.get("predicted"), policy)
-    observed = _tiered_side(
-        iteration.get("observed"), policy, derived_from=predicted
+    direct_measurement = policy_identity == (
+        "direct-measurement-observation-v2", "2"
     )
+    if direct_measurement:
+        if iteration_policy != {
+            "policy_id": "direct-measurement-observation-v2",
+            "version": "2",
+            "grade_minimum_intervals": {
+                "C": [0.70, 1.30],
+                "D": [0.50, 2.00],
+            },
+            "measured_uncertainty": "recorded-sample-statistics-only",
+        }:
+            raise GapReportError("unsupported-iteration-report-policy")
+        observed = _direct_measurement_side(iteration.get("observed"), policy)
+    else:
+        observed = _tiered_side(
+            iteration.get("observed"), policy, derived_from=predicted
+        )
     predicted_by_path = {
         item["stable_path"]: item for item in predicted["all_items"]
     }
     observed_by_path = {
         item["stable_path"]: item for item in observed["all_items"]
     }
-    selected_paths = {
+    selected_paths = ({
         item["stable_path"] for item in predicted["selected"]
-    } | {item["stable_path"] for item in observed["selected"]}
+    } | {item["stable_path"] for item in observed["selected"]}) & (
+        predicted_by_path.keys() & observed_by_path.keys()
+    )
     rows = []
     for path in sorted(selected_paths):
         p = predicted_by_path[path]
@@ -1054,16 +1238,31 @@ def _compose_tiered_report_values(
             else "hypothesis-only"
         ),
     }
-    return {
+    measurement_priorities = [
+        {
+            **item,
+            "minimum_next_measurement": "同 Stable Path 的直接 device timing",
+        }
+        for item in predicted["selected"]
+        if item["stable_path"] not in observed_by_path
+    ]
+    result = {
         "report_values": {"predicted": predicted, "observed": observed},
         "iteration_gap_table": rows,
         "iteration_metrics": metrics,
-        "iteration_status": "numeric-report-values-available",
+        "iteration_status": (
+            "prediction-and-e2e-measurement-available"
+            if direct_measurement
+            else "numeric-report-values-available"
+        ),
         "iteration_provenance": {
             "source_bundles": document.get("source_bundles", []),
             "derivation": document.get("iteration_report_derivation"),
         },
     }
+    if direct_measurement:
+        result["prediction_measurement_priorities"] = measurement_priorities
+    return result
 
 
 def _classification(
@@ -1086,8 +1285,9 @@ def _classification(
 def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     """Compose one report without converting missing evidence into zero."""
 
-    tiered = document.get("schema") == TIERED_INPUT_SCHEMA
-    if document.get("schema") not in {INPUT_SCHEMA, TIERED_INPUT_SCHEMA}:
+    document_schema = document.get("schema")
+    tiered = document_schema in {TIERED_INPUT_SCHEMA, DIRECT_INPUT_SCHEMA}
+    if document_schema not in {INPUT_SCHEMA, TIERED_INPUT_SCHEMA, DIRECT_INPUT_SCHEMA}:
         raise GapReportError("unsupported-gap-report-input")
     identity = dict(_mapping(document.get("identity"), "invalid-report-identity"))
     policy = _mapping(document.get("policy"), "invalid-report-policy")
@@ -1247,7 +1447,11 @@ def compose_gap_report(document: Mapping[str, object]) -> dict[str, Any]:
     else:
         drilldown = {"kind": "none", "stable_path": None, "evidence_boundaries": []}
     result = {
-        "schema": TIERED_RESULT_SCHEMA if tiered else RESULT_SCHEMA,
+        "schema": (
+            DIRECT_RESULT_SCHEMA
+            if document_schema == DIRECT_INPUT_SCHEMA
+            else TIERED_RESULT_SCHEMA if tiered else RESULT_SCHEMA
+        ),
         "status": "complete" if comparable else "structured-unknown",
         "identity": identity,
         "visibility_rule": {
@@ -1275,7 +1479,13 @@ def _fmt(value: object) -> str:
 def render_gap_report_html(report: Mapping[str, Any]) -> str:
     """Project the machine report verbatim into a human-readable report."""
 
-    if report.get("schema") == TIERED_RESULT_SCHEMA:
+    if report.get("schema") in {TIERED_RESULT_SCHEMA, DIRECT_RESULT_SCHEMA}:
+        values = _mapping(report.get("report_values"), "missing-report-values")
+        observed = _mapping(
+            values.get("observed"), "missing-observed-report-values"
+        )
+        if observed.get("component_method") == "direct-measurements-only":
+            return _render_direct_measurement_gap_report_html(report)
         return _render_tiered_gap_report_html(report)
 
     rows = "".join(
@@ -1337,6 +1547,8 @@ METHOD_NAMES_ZH = {
         "串行资源模型 + 15 µs 派发下限"
     ),
     "benchmark-median": "独立基线测量中位数",
+    "benchmark-median-with-iqr": "基线样本中位数与四分位区间",
+    "measured-e2e-minus-direct-components": "实测 E2E 减去直接实测组件",
     "scale-predicted-weights-to-observed-e2e": (
         "按预测组件权重分配到实测 E2E"
     ),
@@ -1511,6 +1723,94 @@ def _render_provenance(report: Mapping[str, Any]) -> str:
     )
 
 
+def _render_direct_measurement_gap_report_html(
+    report: Mapping[str, Any],
+) -> str:
+    values = _mapping(report.get("report_values"), "missing-report-values")
+    predicted = _mapping(values.get("predicted"), "missing-predicted-report-values")
+    observed = _mapping(values.get("observed"), "missing-observed-report-values")
+    metrics = _mapping(report.get("iteration_metrics"), "missing-iteration-metrics")
+    residual = _mapping(
+        observed.get("reconciliation"), "missing-observed-reconciliation"
+    )
+    identity = _mapping(report.get("identity"), "missing-report-identity")
+    priorities = report.get("prediction_measurement_priorities")
+    if not isinstance(priorities, list):
+        raise GapReportError("invalid-prediction-measurement-priorities")
+    predicted_modules = "".join(
+        "<tr>"
+        f"<td>{escape(label)}</td>"
+        f"<td>{_display_ms(duration)}</td>"
+        f"<td>{_display_percent(duration / predicted['e2e_duration_ns'])}</td>"
+        "<td>未实测</td>"
+        "</tr>"
+        for label, duration in _module_totals(predicted)
+    )
+    priority_rows = _render_top10_rows(priorities)
+    comparable_rows = report.get("iteration_gap_table")
+    if not isinstance(comparable_rows, list):
+        raise GapReportError("invalid-iteration-gap-table")
+    if comparable_rows:
+        comparison_body = "".join(
+            "<tr>"
+            f"<td><code>{escape(str(row['stable_path']))}</code></td>"
+            f"<td>{_display_ms(row['predicted_time_ns'])}</td>"
+            f"<td>{_display_ms(row['observed_time_ns'])}</td>"
+            f"<td>{_display_ms(row['absolute_gap_ns'])}</td>"
+            f"<td>{float(row['ratio']):.3f}×</td>"
+            "</tr>"
+            for row in comparable_rows
+        )
+        comparison = (
+            "<table><thead><tr><th>Stable Path</th><th>预测时间</th>"
+            "<th>直接实测时间</th><th>绝对差</th><th>倍率</th></tr></thead>"
+            f"<tbody>{comparison_body}</tbody></table>"
+        )
+    else:
+        comparison = (
+            "<p>当前没有同 Stable Path 的逐组件直接 device timing，因此不计算"
+            "逐组件差异或倍率；预测热点保留在上表作为建议优先实测项。</p>"
+        )
+    leaves = "".join(
+        "<tr>"
+        f"<td><code>{escape(str(item['stable_path']))}</code></td>"
+        f"<td>{escape(_operation_name_zh(item.get('operation_class')))}</td>"
+        f"<td>{_display_ms(item['duration_ns'])}</td>"
+        f"<td>{_display_percent(item['share_of_e2e'])}</td>"
+        f"<td>{escape(str(item['evidence_grade']))}</td>"
+        f"<td>{escape(_stage_name_zh(item['generation_stage']))}</td>"
+        f"<td>{_display_interval(item['uncertainty_interval_ns'])}</td>"
+        f"<td>{escape(_method_name_zh(item['method']))}</td>"
+        "<td>未实测</td>"
+        "</tr>"
+        for item in predicted.get("all_items", [])
+    )
+    payload = json.dumps(
+        canonical_data(report), ensure_ascii=False, sort_keys=True
+    ).replace("</", "<\\/")
+    provenance_rows = _render_provenance(report)
+    return f"""<!doctype html>
+<html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>两层 Transformer 预测—实测迭代报告</title>
+<style>body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:1500px;margin:0 auto;padding:24px;color:#17202a}}.cards{{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px}}.card{{border:1px solid #d9e2ec;border-radius:10px;padding:16px;background:#f8fafc}}table{{border-collapse:collapse;width:100%;margin:12px 0 28px}}th,td{{border-bottom:1px solid #d9e2ec;padding:8px;text-align:right}}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){{text-align:left}}code{{font-size:12px;overflow-wrap:anywhere}}.notice{{padding:12px;border-left:4px solid #f39c12;background:#fff8e7}}.stacked{{height:22px;display:flex;border-radius:6px;overflow:hidden;background:#eef2f7;margin:6px 0 14px}}.stacked span:nth-child(4n+1){{background:#2563eb}}.stacked span:nth-child(4n+2){{background:#16a34a}}.stacked span:nth-child(4n+3){{background:#f59e0b}}.stacked span:nth-child(4n){{background:#9333ea}}@media(max-width:900px){{.cards{{grid-template-columns:1fr 1fr}}table{{display:block;overflow-x:auto}}}}</style></head>
+<body><h1>两层 Transformer 预测—实测迭代报告</h1>
+<p class=\"notice\">权威证据尚未闭合。E2E 仅形成探索性差异；预测侧允许显式降级，实测侧只显示直接测量，绝不使用预测权重或代理比例补值。</p>
+<h2>运行身份</h2><p>案例：<code>{escape(str(identity['case']))}</code>；Shape：<code>{escape(str(identity['shape']))}</code>；dtype：<code>{escape(str(identity['dtype']))}</code>；候选：<code>{escape(str(identity['candidate_id']))}</code>；Hardware Cohort：<code>{escape(str(identity['hardware_cohort']))}</code>；Completion Boundary：<code>{escape(str(identity['completion_boundary']))}</code>。</p>
+<div class=\"cards\"><div class=\"card\"><strong>预测 E2E</strong><br>{_display_ms(predicted['e2e_duration_ns'])}<br>区间 {_display_interval(predicted['uncertainty_interval_ns'])}<br>等级 {escape(str(predicted['evidence_grade']))}<br>阶段：{escape(_stage_name_zh(predicted['generation_stage']))}<br>方法：{escape(_method_name_zh(predicted['method']))}</div>
+<div class=\"card\"><strong>实测 E2E</strong><br>{_display_ms(observed['e2e_duration_ns'])}<br>实测 IQR {_display_interval(observed['uncertainty_interval_ns'])}<br>等级 {escape(str(observed['evidence_grade']))}<br>阶段：{escape(_stage_name_zh(observed['generation_stage']))}<br>方法：{escape(_method_name_zh(observed['method']))}</div>
+<div class=\"card\"><strong>E2E 绝对差</strong><br>{_display_ms(metrics['e2e_absolute_gap_ns'])}</div><div class=\"card\"><strong>E2E 倍率</strong><br>{float(metrics['e2e_ratio']):.3f}×</div></div>
+<h2>证据等级与适用范围（含不确定区间）</h2><p>预测为 {escape(str(predicted['evidence_grade']))} 级，可用于形成优化假设；实测为 {escape(str(observed['evidence_grade']))} 级，来自实际 NPU benchmark 样本，仅作迭代基线。C/D 只允许出现在预测侧。</p>
+<h2>模块汇总</h2><table><thead><tr><th>模块</th><th>预测时间</th><th>预测 E2E 贡献</th><th>直接实测组件</th></tr></thead><tbody>{predicted_modules}</tbody></table>
+<h3>预测贡献构成</h3>{_render_contribution_bar(predicted)}
+<h3>实测组成（仅直接测量）</h3><table><thead><tr><th>项目</th><th>实测时间</th><th>实测 E2E 占比</th><th>实测区间</th><th>等级</th><th>阶段</th><th>方法</th></tr></thead><tbody><tr><td>{escape(str(residual['residual_label']))}</td><td>{_display_ms(residual['residual_ns'])}</td><td>{_display_percent(residual['share_total'])}</td><td>{_display_interval(residual['residual_uncertainty_interval_ns'])}</td><td>{escape(str(residual['residual_evidence_grade']))}</td><td>{escape(_stage_name_zh(residual['residual_generation_stage']))}</td><td>{escape(_method_name_zh(residual['residual_method']))}</td></tr></tbody></table>
+<h2>预测侧 TOP10 / 建议优先实测</h2><table><thead><tr><th>排名</th><th>Stable Path</th><th>组件</th><th>预测时间</th><th>预测 E2E 占比</th><th>预测区间</th><th>等级</th><th>生成阶段</th><th>推导方法</th><th>允许用途</th></tr></thead><tbody>{priority_rows}</tbody></table>
+<h2>逐组件预测—实测对比</h2>{comparison}
+<h2>平账与证据边界</h2><p>预测组件与预测 residual 合计 {_display_percent(predicted['reconciliation']['share_total'])}；直接实测组件为 {_display_ms(residual['all_components_ns'])}，未分解实测残差为 {_display_ms(residual['residual_ns'])}，两者合计实测 E2E 的 {_display_percent(residual['share_total'])}。没有把任何预测值写入实测列。</p>
+<h2>下一轮建议</h2><ol><li>按预测 TOP10 顺序采集同 Stable Path 的直接 NPU device timing。</li><li>采集同一身份的 Ascend device timeline，并完成 profiling overhead 独立消融。</li><li>只有直接、非重叠的组件证据才能从未分解残差迁入实测 TOP10。</li></ol>
+<h2>{len(predicted.get('all_items', []))} 个预测叶子下钻</h2><details><summary>展开全部预测叶子与实测覆盖状态</summary><table><thead><tr><th>Stable Path</th><th>组件</th><th>预测时间</th><th>预测贡献</th><th>预测等级</th><th>预测阶段</th><th>预测区间</th><th>预测方法</th><th>实测状态</th></tr></thead><tbody>{leaves}</tbody></table></details>
+<h2>来源与机器产物</h2><ul>{provenance_rows}</ul><p><a href=\"../comparison/e2e-gap-report.json\">同源机器 JSON</a> · <a href=\"../comparison/e2e-components.csv\">预测组件与实测覆盖 CSV</a> · <a href=\"../resolved/e2e-gap-report-input.json\">锁定输入与 Derivation Record</a></p>
+<script type=\"application/json\" id=\"groundupscale-gap-report\">{payload}</script></body></html>\n"""
+
+
 def _render_tiered_gap_report_html(report: Mapping[str, Any]) -> str:
     values = _mapping(report.get("report_values"), "missing-report-values")
     predicted = _mapping(values.get("predicted"), "missing-predicted-report-values")
@@ -1602,8 +1902,9 @@ def _render_tiered_gap_report_html(report: Mapping[str, Any]) -> str:
 def render_gap_report_csv(report: Mapping[str, Any]) -> str:
     """Project tiered component rows into a stable machine-readable CSV."""
 
-    if report.get("schema") != TIERED_RESULT_SCHEMA:
+    if report.get("schema") not in {TIERED_RESULT_SCHEMA, DIRECT_RESULT_SCHEMA}:
         raise GapReportError("csv-requires-tiered-report-values")
+    direct_measurement = report.get("schema") == DIRECT_RESULT_SCHEMA
     report_values = _mapping(report.get("report_values"), "missing-report-values")
     predicted = _mapping(
         report_values.get("predicted"), "missing-predicted-report-values"
@@ -1617,10 +1918,10 @@ def render_gap_report_csv(report: Mapping[str, Any]) -> str:
         raise GapReportError("invalid-tiered-report-items")
     predicted_by_path = {item["stable_path"]: item for item in predicted_items}
     observed_by_path = {item["stable_path"]: item for item in observed_items}
-    if predicted_by_path.keys() != observed_by_path.keys():
-        raise GapReportError("tiered-report-path-set-mismatch")
     selected_paths = {
-        row["stable_path"] for row in report.get("iteration_gap_table", [])
+        item["stable_path"] for item in predicted.get("selected", [])
+    } | {
+        item["stable_path"] for item in observed.get("selected", [])
     }
     fields = [
         "stable_path",
@@ -1646,42 +1947,84 @@ def render_gap_report_csv(report: Mapping[str, Any]) -> str:
         "predicted_evidence_refs",
         "observed_evidence_refs",
     ]
+    if direct_measurement:
+        fields.insert(fields.index("absolute_gap_ns"), "observed_measurement_status")
     output = io.StringIO(newline="")
     writer = csv.DictWriter(output, fieldnames=fields, lineterminator="\n")
     writer.writeheader()
-    for path in sorted(predicted_by_path):
-        predicted_item = predicted_by_path[path]
-        observed_item = observed_by_path[path]
-        predicted_ns = float(predicted_item["duration_ns"])
-        observed_ns = float(observed_item["duration_ns"])
+    for path in sorted(predicted_by_path.keys() | observed_by_path.keys()):
+        predicted_item = predicted_by_path.get(path)
+        observed_item = observed_by_path.get(path)
+        predicted_ns = (
+            float(predicted_item["duration_ns"])
+            if predicted_item is not None
+            else None
+        )
+        observed_ns = (
+            float(observed_item["duration_ns"])
+            if observed_item is not None
+            else None
+        )
         record = {
             "stable_path": path,
-            "operation_class": predicted_item.get("operation_class"),
+            "operation_class": (predicted_item or observed_item or {}).get(
+                "operation_class"
+            ),
             "selected_in_top10_union": path in selected_paths,
             "predicted_time_ns": predicted_ns,
-            "predicted_share_of_e2e": predicted_item["share_of_e2e"],
-            "predicted_rank": predicted_item["rank"],
-            "predicted_evidence_grade": predicted_item["evidence_grade"],
-            "predicted_generation_stage": predicted_item["generation_stage"],
-            "predicted_uncertainty_interval_ns": predicted_item[
-                "uncertainty_interval_ns"
-            ],
-            "predicted_method": predicted_item["method"],
+            "predicted_share_of_e2e": (
+                predicted_item["share_of_e2e"] if predicted_item else None
+            ),
+            "predicted_rank": predicted_item["rank"] if predicted_item else None,
+            "predicted_evidence_grade": (
+                predicted_item["evidence_grade"] if predicted_item else None
+            ),
+            "predicted_generation_stage": (
+                predicted_item["generation_stage"] if predicted_item else None
+            ),
+            "predicted_uncertainty_interval_ns": (
+                predicted_item["uncertainty_interval_ns"]
+                if predicted_item else None
+            ),
+            "predicted_method": predicted_item["method"] if predicted_item else None,
             "observed_time_ns": observed_ns,
-            "observed_share_of_e2e": observed_item["share_of_e2e"],
-            "observed_rank": observed_item["rank"],
-            "observed_evidence_grade": observed_item["evidence_grade"],
-            "observed_generation_stage": observed_item["generation_stage"],
-            "observed_uncertainty_interval_ns": observed_item[
-                "uncertainty_interval_ns"
-            ],
-            "observed_method": observed_item["method"],
-            "absolute_gap_ns": abs(observed_ns - predicted_ns),
-            "ratio": observed_ns / predicted_ns if predicted_ns else 0.0,
+            "observed_share_of_e2e": (
+                observed_item["share_of_e2e"] if observed_item else None
+            ),
+            "observed_rank": observed_item["rank"] if observed_item else None,
+            "observed_evidence_grade": (
+                observed_item["evidence_grade"] if observed_item else None
+            ),
+            "observed_generation_stage": (
+                observed_item["generation_stage"] if observed_item else None
+            ),
+            "observed_uncertainty_interval_ns": (
+                observed_item["uncertainty_interval_ns"]
+                if observed_item else None
+            ),
+            "observed_method": observed_item["method"] if observed_item else None,
+            "absolute_gap_ns": (
+                abs(observed_ns - predicted_ns)
+                if observed_ns is not None and predicted_ns is not None
+                else None
+            ),
+            "ratio": (
+                observed_ns / predicted_ns
+                if observed_ns is not None and predicted_ns not in {None, 0}
+                else None
+            ),
             "permitted_use": "hypothesis-only",
-            "predicted_evidence_refs": predicted_item["evidence_refs"],
-            "observed_evidence_refs": observed_item["evidence_refs"],
+            "predicted_evidence_refs": (
+                predicted_item["evidence_refs"] if predicted_item else []
+            ),
+            "observed_evidence_refs": (
+                observed_item["evidence_refs"] if observed_item else []
+            ),
         }
+        if direct_measurement:
+            record["observed_measurement_status"] = (
+                "measured" if observed_item else "not-measured"
+            )
         for field in (
             "predicted_uncertainty_interval_ns",
             "observed_uncertainty_interval_ns",
@@ -1690,6 +2033,38 @@ def render_gap_report_csv(report: Mapping[str, Any]) -> str:
         ):
             record[field] = json.dumps(record[field], separators=(",", ":"))
         writer.writerow(record)
+    if direct_measurement:
+        residual = _mapping(
+            observed.get("reconciliation"), "missing-observed-reconciliation"
+        )
+        residual_record = {field: None for field in fields}
+        residual_record.update(
+            {
+                "stable_path": "measurement/e2e/unattributed",
+                "operation_class": "MeasuredE2EResidual",
+                "selected_in_top10_union": False,
+                "observed_time_ns": residual["residual_ns"],
+                "observed_share_of_e2e": residual["share_total"],
+                "observed_evidence_grade": residual[
+                    "residual_evidence_grade"
+                ],
+                "observed_generation_stage": residual[
+                    "residual_generation_stage"
+                ],
+                "observed_uncertainty_interval_ns": json.dumps(
+                    residual["residual_uncertainty_interval_ns"],
+                    separators=(",", ":"),
+                ),
+                "observed_method": residual["residual_method"],
+                "observed_measurement_status": "measured-residual",
+                "permitted_use": "iteration-baseline-only",
+                "predicted_evidence_refs": "[]",
+                "observed_evidence_refs": json.dumps(
+                    residual["residual_evidence_refs"], separators=(",", ":")
+                ),
+            }
+        )
+        writer.writerow(residual_record)
     return output.getvalue()
 
 
@@ -1700,7 +2075,7 @@ def write_gap_report_bundle(
 
     if not RUN_ID_PATTERN.fullmatch(run_id):
         raise GapReportError("unsafe-run-id")
-    if document.get("schema") == TIERED_INPUT_SCHEMA:
+    if document.get("schema") in {TIERED_INPUT_SCHEMA, DIRECT_INPUT_SCHEMA}:
         if (
             document.get("iteration_report_derivation") is None
             or not isinstance(document.get("source_bundles"), list)
@@ -1716,7 +2091,8 @@ def write_gap_report_bundle(
         if document.get("iteration_report") != replayed_iteration:
             raise GapReportError("tiered-report-source-replay-mismatch")
     report = compose_gap_report(document)
-    tiered = report.get("schema") == TIERED_RESULT_SCHEMA
+    tiered = report.get("schema") in {TIERED_RESULT_SCHEMA, DIRECT_RESULT_SCHEMA}
+    direct_measurement = report.get("schema") == DIRECT_RESULT_SCHEMA
     selected_rows = report["gap_table"]
     sources_value = document.get("source_bundles")
     if selected_rows:
@@ -1777,7 +2153,7 @@ def write_gap_report_bundle(
             "resolved/e2e-gap-report-input.json",
             _json_bytes(document),
             "application/json",
-            TIERED_INPUT_SCHEMA if tiered else INPUT_SCHEMA,
+            str(document.get("schema")),
             [],
         )
         write(
@@ -1785,7 +2161,7 @@ def write_gap_report_bundle(
             "comparison/e2e-gap-report.json",
             _json_bytes(report),
             "application/json",
-            TIERED_RESULT_SCHEMA if tiered else RESULT_SCHEMA,
+            str(report.get("schema")),
             ["resolved/e2e-gap-report-input.json"],
         )
         if tiered:
@@ -1794,7 +2170,11 @@ def write_gap_report_bundle(
                 "comparison/e2e-components.csv",
                 render_gap_report_csv(report).encode("utf-8"),
                 "text/csv",
-                "groundupscale.dev/e2e-components-csv/v1alpha1",
+                (
+                    "groundupscale.dev/e2e-components-csv/v1alpha2"
+                    if direct_measurement
+                    else "groundupscale.dev/e2e-components-csv/v1alpha1"
+                ),
                 ["comparison/e2e-gap-report.json"],
             )
         write(
@@ -1802,7 +2182,11 @@ def write_gap_report_bundle(
             "reports/report.html",
             render_gap_report_html(report).encode(),
             "text/html",
-            TIERED_REPORT_SCHEMA if tiered else REPORT_SCHEMA,
+            (
+                DIRECT_REPORT_SCHEMA
+                if direct_measurement
+                else TIERED_REPORT_SCHEMA if tiered else REPORT_SCHEMA
+            ),
             ["comparison/e2e-gap-report.json"],
         )
         manifest = {
